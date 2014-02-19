@@ -1,5 +1,13 @@
 {
+    "autoload": {
+        "psr-4": {
+            "Cake\\ElasticSearch\\": "src",
+        }
+    },
     "require": {
         "ruflin/elastica": "1.0.*"
+    },
+    "require-dev": {
+        "cakephp/cakephp": "3.0.x-dev"
     }
 }
