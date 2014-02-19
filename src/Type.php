@@ -15,6 +15,13 @@ class Type implements RepositoryInterface {
 	protected $_connection;
 
 /**
+ * The name of the Elastic Search type this class represents
+ *
+ * @var string
+ */
+	protected $_name;
+
+/**
  * Returns the connection instance or sets a new one
  *
  * @param Cake\ElasticSearch\Connection $conn the new connection instance
@@ -45,15 +52,6 @@ class Type implements RepositoryInterface {
 /**
  * Returns a single record after finding it by its primary key, if no record is
  * found this method throws an exception.
- *
- * ###Example:
- *
- * {{{
- * $id = 10;
- * $article = $articles->get($id) { }
- *
- * $article = $articles->get($id, ['contain' => ['Comments]]) { }
- * }}}
  *
  * @param mixed primary key value to find
  * @param array $options options accepted by `Table::find()`

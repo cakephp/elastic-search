@@ -1,13 +1,17 @@
 {
-    "autoload": {
-        "psr-4": {
-            "Cake\\ElasticSearch\\": "src",
-        }
-    },
+    "name": "cakephp/elastic-search",
+	"description": "An Elastic Search datasource and data mapper for CakePHP 3.0",
+	"license": "MIT",
     "require": {
         "ruflin/elastica": "1.0.*"
     },
     "require-dev": {
         "cakephp/cakephp": "3.0.x-dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Cake\\ElasticSearch\\": "src",
+            "Cake\\ElasticSearch\\Test\\": "tests"
+        }
     }
 }
