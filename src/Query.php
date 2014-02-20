@@ -12,6 +12,28 @@ class Query implements IteratorAggregate {
 
 	use QueryTrait;
 
+/**
+ * Indicates that the operation should append to the list
+ *
+ * @var integer
+ */
+	const APPEND = 0;
+
+/**
+ * Indicates that the operation should prepend to the list
+ *
+ * @var integer
+ */
+	const PREPEND = 1;
+
+/**
+ * Indicates that the operation should overwrite the list
+ *
+ * @var boolean
+ */
+	const OVERWRITE = true;
+
+
 	public function __construct(Type $repository) {
 		$this->repository($repository);
 	}
