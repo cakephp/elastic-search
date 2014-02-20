@@ -124,8 +124,8 @@ class Type implements RepositoryInterface {
  * @throws \BadMethodCallException
  */
 	public function callFinder($type, Query $query, $options = []) {
-		//$query->applyOptions($options);
-		//$options = $query->getOptions();
+		$query->applyOptions($options);
+		$options = $query->getOptions();
 		$finder = 'find' . ucfirst($type);
 		if (method_exists($this, $finder)) {
 			return $this->{$finder}($query, $options);
