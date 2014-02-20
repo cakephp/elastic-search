@@ -33,4 +33,5 @@ class ConnectionTest extends TestCase {
 		$index = $connection->getIndex('baz');
 		$this->assertEquals('baz', $index->getName());
 	}
+
 }

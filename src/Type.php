@@ -2,8 +2,12 @@
 
 namespace Cake\ElasticSearch;
 
-use Cake\ElasticSearch\Connection;
+use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
+use Cake\ElasticSearch\Datasource\Connection;
+use Cake\ElasticSearch\Query;
+use Cake\Event\EventManager;
+use Cake\Utility\Inflector;
 
 class Type implements RepositoryInterface {
 
@@ -22,6 +26,29 @@ class Type implements RepositoryInterface {
 	protected $_name;
 
 /**
+ * EventManager for this table.
+ *
+ * All model/behavior callbacks will be dispatched on this manager.
+ *
+ * @var Cake\Event\EventManager
+ */
+	protected $_eventManager;
+
+
+	public function __construct() {
+		$this->_eventManager = new EventManager;
+	}
+
+/**
+ * Get the event manager for this Table.
+ *
+ * @return Cake\Event\EventManager
+ */
+	public function getEventManager() {
+		return $this->_eventManager;
+	}
+
+/**
  * Returns the connection instance or sets a new one
  *
  * @param Cake\ElasticSearch\Connection $conn the new connection instance
@@ -32,6 +59,29 @@ class Type implements RepositoryInterface {
 			return $this->_connection;
 		}
 		return $this->_connection = $conn;
+	}
+
+/**
+ * Returns the type name name or sets a new one
+ *
+ * @param string $name the new type name
+ * @return string
+ */
+	public function name($name = null) {
+		if ($name !== null) {
+			$this->_name = $name;
+		}
+
+		if ($this->_name === null) {
+			$name = namespaceSplit(get_class($this));
+			$name = substr(end($name), 0, -4);
+			if (empty($name)) {
+				$name = '*';
+			}
+			$this->_name = Inflector::underscore($name);
+		}
+
+		return $this->_name;
 	}
 
 /**
@@ -47,27 +97,60 @@ class Type implements RepositoryInterface {
  * @param array $options An array that will be passed to Query::applyOptions
  * @return \Cake\ORM\Query
  */
-	public function find($type = 'all', $options = []) {}
+	public function find($type = 'all', $options = []) {
+		$query = $this->query();
+		return $this->callFinder($type, $query, $options);
+	}
 
 /**
- * Returns a single record after finding it by its primary key, if no record is
- * found this method throws an exception.
+ * Returns the query as passed
  *
- * @param mixed primary key value to find
- * @param array $options options accepted by `Table::find()`
- * @throws Cake\ORM\Error\RecordNotFoundException if the record with such id
- * could not be found
- * @return \Cake\Datasource\EntityInterface
- * @see RepositoryInterface::find()
+ * @param \Cake\ElasticSearch\Query $query
+ * @param array $options
+ * @return \Cake\ElasticSearch\Query
  */
-	public function get($primaryKey, $options = []) { }
+	public function findAll(Query $query, array $options = []) {
+		return $query;
+	}
+
+/**
+ * Calls a finder method directly and applies it to the passed query,
+ * if no query is passed a new one will be created and returned
+ *
+ * @param string $type name of the finder to be called
+ * @param \Cake\ElasticSearch\Query $query The query object to apply the finder options to
+ * @param array $args List of options to pass to the finder
+ * @return \Cake\ElasticSearch\Query
+ * @throws \BadMethodCallException
+ */
+	public function callFinder($type, Query $query, $options = []) {
+		//$query->applyOptions($options);
+		//$options = $query->getOptions();
+		$finder = 'find' . ucfirst($type);
+		if (method_exists($this, $finder)) {
+			return $this->{$finder}($query, $options);
+		}
+
+		throw new \BadMethodCallException(
+			sprintf('Unknown finder method "%s"', $type)
+		);
+	}
+
+/**
+ * @{inheritdoc}
+ *
+ */
+	public function get($primaryKey, $options = []) {
+	}
 
 /**
  * Creates a new Query instance for this repository
  *
  * @return \Cake\ORM\Query
  */
-	public function query() { }
+	public function query() {
+		return new Query($this);
+	}
 
 /**
  * Update all matching records.
