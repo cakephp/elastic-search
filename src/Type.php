@@ -34,6 +34,8 @@ class Type implements RepositoryInterface {
  */
 	protected $_eventManager;
 
+	protected $_documentClass;
+
 
 	public function __construct(array $config = []) {
 		if (!empty($config['connection'])) {
@@ -262,4 +264,41 @@ class Type implements RepositoryInterface {
  * @return array An array of hydrated records.
  */
 	public function newEntities(array $data, $associations = null) {}
+
+/**
+ * Returns the class used to hydrate rows for this table or sets
+ * a new one
+ *
+ * @param string $name the name of the class to use
+ * @throws \Cake\ORM\Error\MissingEntityException when the entity class cannot be found
+ * @return string
+ */
+	public function entityClass($name = null) {
+		if ($name === null && !$this->_documentClass) {
+			$default = '\Cake\ElasticSearch\Document';
+			$self = get_called_class();
+			$parts = explode('\\', $self);
+
+			if ($self === __CLASS__ || count($parts) < 3) {
+				return $this->_documentClass = $default;
+			}
+
+			$alias = Inflector::singularize(substr(array_pop($parts), 0, -4));
+			$name = implode('\\', array_slice($parts, 0, -1)) . '\Document\\' . $alias;
+			if (!class_exists($name)) {
+				return $this->_documentClass = $default;
+			}
+		}
+
+		if ($name !== null) {
+			$class = App::classname($name, 'Model/Document');
+			$this->_documentClass = $class;
+		}
+
+		if (!$this->_documentClass) {
+			throw new \RuntimeException(sprintf('Missing document class "%s"', $class));
+		}
+
+		return $this->_documentClass;
+	}
 }

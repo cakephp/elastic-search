@@ -23,13 +23,21 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
 	protected $_resultSet;
 
 /**
+ * The full class name of the document class to wrap the results
+ *
+ * @var \Cake\ElasticSearch\Document
+ */
+	protected $_entityClass;
+
+/**
  * Decorator's constructor
  *
  * @param \Elastica\ResultSet $resultSet The results from Elastica to wrap
  * @return void
  */
-	public function __construct($resultSet) {
+	public function __construct($resultSet, $query) {
 		$this->_resultSet = $resultSet;
+		$this->_entityClass = $query->repository()->entityClass();
 		parent::__construct($resultSet);
 	}
 
@@ -57,7 +65,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
 */
 	public function getSuggests() {
 		return $this->_resultSet->getSuggests();
-    }
+	}
 
 /**
  * Returns whether facets exist
@@ -164,6 +172,14 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
  */
 	public function countSuggests() {
 		return $this->_resultSet->countSuggests();
+	}
+
+	public function current() {
+		$class = $this->_entityClass;
+		$document = new $class(parent::current());
+		$document->clean();
+		$document->isNew(false);
+		return $document;
 	}
 
 }

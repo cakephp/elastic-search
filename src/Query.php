@@ -48,7 +48,7 @@ class Query implements IteratorAggregate {
 		$type = $connection->getIndex()->getType($name);
 
 		$query = $this->_compileQuery();
-		return new ResultSet($type->search($query));
+		return new ResultSet($type->search($query), $this);
 	}
 
 	protected function _compileQuery() {
