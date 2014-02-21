@@ -9,7 +9,7 @@ use JsonSerializable;
 
 /**
  * Decorates the Elastica ResultSet in order to hydrate results with the
- * correct class.
+ * correct class and provide a Collection interface to the returned results.
  */
 class ResultSet extends IteratorIterator implements Countable, JsonSerializable {
 

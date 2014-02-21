@@ -35,7 +35,15 @@ class Type implements RepositoryInterface {
 	protected $_eventManager;
 
 
-	public function __construct() {
+	public function __construct(array $config = []) {
+		if (!empty($config['connection'])) {
+			$this->connection($config['connection']);
+		}
+
+		if (!empty($config['name'])) {
+			$this->name($config['name']);
+		}
+
 		$this->_eventManager = new EventManager;
 	}
 

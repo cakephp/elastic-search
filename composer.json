@@ -6,7 +6,8 @@
         "ruflin/elastica": "1.0.*"
     },
     "require-dev": {
-        "cakephp/cakephp": "3.0.x-dev"
+        "cakephp/cakephp": "3.0.x-dev",
+        "psr/log": "~1.0"
     },
     "autoload": {
         "psr-4": {
