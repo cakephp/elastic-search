@@ -43,6 +43,23 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
 	}
 
 /**
+ * Returns true if the response contains suggestion results; false otherwise
+ * @return bool
+ */
+	public function hasSuggests() {
+		return $this->_resultSet->hasSuggests();
+	}
+
+/**
+* Return all suggests
+*
+* @return array suggest results
+*/
+	public function getSuggests() {
+		return $this->_resultSet->getSuggests();
+    }
+
+/**
  * Returns whether facets exist
  *
  * @return boolean Facet existence
@@ -58,6 +75,25 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
  */
 	public function getFacets() {
 		return $this->_resultSet->getFacets();
+	}
+
+/**
+ * Returns all aggregation results
+ *
+ * @return array
+ */
+	public function getAggregations() {
+		$this->_resultSet->getAggregations();
+	}
+
+/**
+ * Retrieve a specific aggregation from this result set
+ * @param string $name the name of the desired aggregation
+ * @return array
+ * @throws Exception\InvalidException if an aggregation by the given name cannot be found
+ */
+	public function getAggregation($name) {
+		$this->_resultSet->getAggregation($name);
 	}
 
 /**
@@ -119,6 +155,15 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
  */
 	public function count() {
 		return $this->_resultSet->count();
+	}
+
+/**
+ * Returns size of current suggests
+ *
+ * @return int Size of suggests
+ */
+	public function countSuggests() {
+		return $this->_resultSet->countSuggests();
 	}
 
 }
