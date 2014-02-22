@@ -24,4 +24,48 @@ class TypeTest extends TestCase {
 		$this->assertSame($type, $query->repository());
 	}
 
+/**
+ * Test the default entityClass.
+ *
+ * @return void
+ */
+	public function testEntityClassDefault() {
+		$type = new Type();
+		$this->assertEquals('\Cake\ElasticSearch\Document', $type->entityClass());
+	}
+
+/**
+ * Tests that using a simple string for entityClass will try to
+ * load the class from the App namespace
+ *
+ * @return void
+ */
+	public function testTableClassInApp() {
+		$class = $this->getMockClass('Cake\ElasticSearch\Document');
+		class_alias($class, 'App\Model\Document\TestUser');
+
+		$type = new Type();
+		$this->assertEquals(
+			'App\Model\Document\TestUser',
+			$type->entityClass('TestUser')
+		);
+	}
+
+/**
+ * Tests that using a simple string for entityClass will try to
+ * load the class from the Plugin namespace when using plugin notation
+ *
+ * @return void
+ */
+	public function testTableClassInPlugin() {
+		$class = $this->getMockClass('\Cake\ElasticSearch\Document');
+		class_alias($class, 'MyPlugin\Model\Document\SuperUser');
+
+		$type = new Type();
+		$this->assertEquals(
+			'MyPlugin\Model\Document\SuperUser',
+			$type->entityClass('MyPlugin.SuperUser')
+		);
+	}
+
 }

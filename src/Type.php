@@ -2,6 +2,7 @@
 
 namespace Cake\ElasticSearch;
 
+use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
 use Cake\ElasticSearch\Datasource\Connection;
@@ -270,7 +271,7 @@ class Type implements RepositoryInterface {
  * a new one
  *
  * @param string $name the name of the class to use
- * @throws \Cake\ORM\Error\MissingEntityException when the entity class cannot be found
+ * @throws \RuntimeException when the entity class cannot be found
  * @return string
  */
 	public function entityClass($name = null) {
