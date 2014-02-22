@@ -7,7 +7,7 @@ use Cake\ElasticSearch\Type;
 use Cake\TestSuite\TestCase;
 
 /**
- * Tests the connection class
+ * Tests the Type class
  *
  */
 class TypeTest extends TestCase {

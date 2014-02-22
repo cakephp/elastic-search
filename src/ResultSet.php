@@ -174,6 +174,11 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
 		return $this->_resultSet->countSuggests();
 	}
 
+/**
+ * Returns the current document for the iteration
+ *
+ * @return Cake\ElasticSearch\Document
+ */
 	public function current() {
 		$class = $this->_entityClass;
 		$document = new $class(parent::current());
