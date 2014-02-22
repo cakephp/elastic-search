@@ -35,6 +35,11 @@ class Type implements RepositoryInterface {
  */
 	protected $_eventManager;
 
+/**
+ * The name of the class that represent a single document for this type
+ *
+ * @var string
+ */
 	protected $_documentClass;
 
 
@@ -150,8 +155,23 @@ class Type implements RepositoryInterface {
 /**
  * @{inheritdoc}
  *
+ * Any key present in the options array will be translated as a GET argument
+ * when getting the documetn by its id. This is often useful whe you need to
+ * specify the parent or routing.
+ *
+ * This method will not trigger the Model.beforeFind callback as it does not use
+ * queries for the search, but a faster key lookup to the search index.
+ *
+ * @throws \Elastica\Exception\NotFoundException if no document exist with such id
  */
 	public function get($primaryKey, $options = []) {
+		$type = $this->connection()->getIndex()->getType($this->name());
+		$result = $type->getDocument($primaryKey, $options);
+		$class = $this->entityClass();
+		$document = new $class($result->getData());
+		$document->clean();
+		$document->isNew(false);
+		return $document;
 	}
 
 /**

@@ -68,4 +68,51 @@ class TypeTest extends TestCase {
 		);
 	}
 
+/**
+ * Tests the get method
+ *
+ * @return void
+ */
+	public function testGet() {
+		$connection = $this->getMock(
+			'Cake\ElasticSearch\Datasource\Connection',
+			['getIndex']
+		);
+		$type = new Type([
+			'name' => 'foo',
+			'connection' => $connection
+		]);
+
+		$index = $this->getMockBuilder('Elastica\Index')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$internalType = $this->getMockBuilder('Elastica\Type')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$connection->expects($this->once())
+			->method('getIndex')
+			->will($this->returnValue($index));
+
+		$index->expects($this->once())
+			->method('getType')
+			->will($this->returnValue($internalType));
+
+		$document = $this->getMock('Elastica\Document', ['getData']);
+		$internalType->expects($this->once())
+			->method('getDocument')
+			->with('foo', ['bar' => 'baz'])
+			->will($this->returnValue($document));
+
+		$document->expects($this->once())->method('getData')
+			->will($this->returnValue(['a' => 'b']));
+
+		$result = $type->get('foo', ['bar' => 'baz']);
+		$this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+		$this->assertEquals(['a' => 'b'], $result->toArray());
+		$this->assertFalse($result->dirty());
+		$this->assertFalse($result->isNew());
+	}
+
 }
