@@ -91,7 +91,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
  * @return array
  */
 	public function getAggregations() {
-		$this->_resultSet->getAggregations();
+		return $this->_resultSet->getAggregations();
 	}
 
 /**
@@ -101,7 +101,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
  * @throws Exception\InvalidException if an aggregation by the given name cannot be found
  */
 	public function getAggregation($name) {
-		$this->_resultSet->getAggregation($name);
+		return $this->_resultSet->getAggregation($name);
 	}
 
 /**
@@ -181,7 +181,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable 
  */
 	public function current() {
 		$class = $this->_entityClass;
-		$document = new $class(parent::current());
+		$document = new $class($this->_resultSet->current());
 		$document->clean();
 		$document->isNew(false);
 		return $document;

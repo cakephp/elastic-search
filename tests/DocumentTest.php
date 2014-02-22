@@ -2,7 +2,6 @@
 
 namespace Cake\ElasticSearch\Test;
 
-use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Document;
 use Cake\TestSuite\TestCase;
 use Elatica\Result;
