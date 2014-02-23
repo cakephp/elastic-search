@@ -25,7 +25,7 @@ class QueryTest extends TestCase {
 	}
 
 /**
- * Tests that executing a query means executing a search agains the associated
+ * Tests that executing a query means executing a search against the associated
  * Type and decorates the internal ResultSet
  *
  * @return void
