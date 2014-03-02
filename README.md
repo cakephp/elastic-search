@@ -1,7 +1,7 @@
 # Elastic search datasource for CakePHP 3.0
 
-This is a pre-alpha version of an alretnative ORM for CakePHP 3.0 using Elastic Search
-as its backend. It is currently under development as is only being used to test the
+This is a pre-alpha version of an alternative ORM for CakePHP 3.0 using Elastic Search
+as its backend. It is currently under development and is only being used to test the
 interfaces exposed in CakePHP 3.0.
 
 ## Installing CakePHP via composer
