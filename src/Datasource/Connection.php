@@ -49,7 +49,7 @@ class Connection extends Client {
 			}
 
 			$data = json_encode($data, JSON_PRETTY_PRINT);
-			Log::write('debug', $data, ['elasticSearhLog']);
+			Log::write('debug', $data, ['elasticSearchLog']);
 		}
 	}
 
