@@ -19,7 +19,7 @@ class Document implements EntityInterface {
  * a search query. It can contain extra information about this document
  * concerning the search operation, such as highlights, score and version.
  *
- * @var \Elstica\Result
+ * @var \Elastica\Result
  */
 	protected $_result;
 
