@@ -221,7 +221,7 @@ class Type implements RepositoryInterface {
  * @param array $conditions list of conditions to pass to the query
  * @return boolean
  */
-	public function exists(array $conditions) { }
+	public function exists($conditions) { }
 
 /**
  * Persists an entity based on the fields that are marked as dirty and
@@ -232,7 +232,7 @@ class Type implements RepositoryInterface {
  * @param array $options
  * @return \Cake\Datasource\EntityInterface|boolean
  */
-	public function save(EntityInterface $entity, array $options = []) { }
+	public function save(EntityInterface $entity, $options = []) { }
 
 /**
  * Delete a single entity.
@@ -244,7 +244,7 @@ class Type implements RepositoryInterface {
  * @param array $options The options fo the delete.
  * @return boolean success
  */
-	public function delete(EntityInterface $entity, array $options = []) { }
+	public function delete(EntityInterface $entity, $options = []) { }
 
 /**
  * Create a new entity + associated entities from an array.
@@ -252,20 +252,19 @@ class Type implements RepositoryInterface {
  * This is most useful when hydrating request data back into entities.
  * For example, in your controller code:
  *
- * {{{
- * $article = $this->Articles->newEntity($this->request->data()) { }
- * }}}
+ * ```
+ * $article = $this->Articles->newEntity($this->request->data());
+ * ```
  *
  * The hydrated entity will correctly do an insert/update based
  * on the primary key data existing in the database when the entity
  * is saved. Until the entity is saved, it will be a detached record.
  *
- * @param array $data The data to build an entity with.
- * @param array $associations A whitelist of associations
- *   to hydrate. Defaults to all associations
- * @return Cake\Datasource\EntityInterface
+ * @param array|null $data The data to build an entity with.
+ * @param array $options A list of options for the object hydration.
+ * @return \Cake\Datasource\EntityInterface
  */
-	public function newEntity(array $data = [], $associations = null) { }
+	public function newEntity($data = null, array $options = null) { }
 
 /**
  * Create a list of entities + associated entities from an array.
@@ -273,18 +272,17 @@ class Type implements RepositoryInterface {
  * This is most useful when hydrating request data back into entities.
  * For example, in your controller code:
  *
- * {{{
- * $articles = $this->Articles->newEntities($this->request->data()) { }
- * }}}
+ * ```
+ * $articles = $this->Articles->newEntities($this->request->data());
+ * ```
  *
  * The hydrated entities can then be iterated and saved.
  *
  * @param array $data The data to build an entity with.
- * @param array $associations A whitelist of associations
- *   to hydrate. Defaults to all associations
+ * @param array $options A list of options for the objects hydration.
  * @return array An array of hydrated records.
  */
-	public function newEntities(array $data, $associations = null) {}
+	public function newEntities(array $data, array $options = null) { }
 
 /**
  * Returns the class used to hydrate rows for this table or sets
@@ -322,4 +320,43 @@ class Type implements RepositoryInterface {
 
 		return $this->_documentClass;
 	}
+
+/**
+ * Merges the passed `$data` into `$entity` respecting the accessible
+ * fields configured on the entity. Returns the same entity after being
+ * altered.
+ *
+ * This is most useful when editing an existing entity using request data:
+ *
+ * ```
+ * $article = $this->Articles->patchEntity($article, $this->request->data());
+ * ```
+ *
+ * @param \Cake\Datasource\EntityInterface $entity the entity that will get the
+ * data merged in
+ * @param array $data key value list of fields to be merged into the entity
+ * @param array $options A list of options for the object hydration.
+ * @return \Cake\Datasource\EntityInterface
+ */
+    public function patchEntity(EntityInterface $entity, array $data, array $options = []) { }
+
+/**
+ * Merges each of the elements passed in `$data` into the entities
+ * found in `$entities` respecting the accessible fields configured on the entities.
+ * Merging is done by matching the primary key in each of the elements in `$data`
+ * and `$entities`.
+ *
+ * This is most useful when editing a list of existing entities using request data:
+ *
+ * ```
+ * $article = $this->Articles->patchEntities($articles, $this->request->data());
+ * ```
+ *
+ * @param array|\Traversable $entities the entities that will get the
+ * data merged in
+ * @param array $data list of arrays to be merged into the entities
+ * @param array $options A list of options for the objects hydration.
+ * @return array
+ */
+    public function patchEntities($entities, array $data, array $options = []) { }
 }

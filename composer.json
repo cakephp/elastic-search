@@ -3,7 +3,7 @@
     "description": "An Elastic Search datasource and data mapper for CakePHP 3.0",
     "license": "MIT",
     "require": {
-        "ruflin/elastica": "1.0.*"
+        "ruflin/elastica": "~1.4"
     },
     "require-dev": {
         "cakephp/cakephp": "3.0.x-dev",
