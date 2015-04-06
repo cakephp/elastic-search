@@ -2,12 +2,27 @@
 
 namespace Cake\ElasticSearch\Datasource;
 
+use Cake\ElasticSearch\Datasource\SchemaCollection;
 use Cake\Log\Log;
 use Elastica\Client;
 use Elastica\Request;
+use Elastica\Type\Mapping;
 
 class Connection extends Client
 {
+    /**
+     * Whether or not query logging is enabled.
+     *
+     * @var bool
+     */
+    protected $logQueries = false;
+
+    /**
+     * The connection name in the connection manager.
+     *
+     * @var string
+     */
+    protected $configName = '';
 
     /**
      * Constructor. Appends the default index name to the config array, which by default
@@ -20,7 +35,80 @@ class Connection extends Client
     public function __construct(array $config = [], $callback = null)
     {
         $config += ['index' => '_all'];
+        if (isset($config['name'])) {
+            $this->configName = $config['name'];
+        }
         parent::__construct($config, $callback);
+    }
+
+    public function schemaCollection()
+    {
+        return new SchemaCollection();
+    }
+
+    public function configName()
+    {
+        return $this->configName;
+    }
+
+    /**
+     * Part of the implicit Connection interface.
+     *
+     * @return bool
+     */
+    public function enabled()
+    {
+        return true;
+    }
+
+    /**
+     * Part of the implicit Connection interface.
+     *
+     * @return void
+     */
+    public function beginTransaction()
+    {
+    }
+
+    /**
+     * Part of the implicit Connection interface.
+     *
+     * @return void
+     */
+    public function disableForeignKeys()
+    {
+    }
+
+    /**
+     * Part of the implicit Connection interface.
+     *
+     * @return void
+     */
+    public function enableForeignKeys()
+    {
+    }
+
+    /**
+     * Part of the implicit Connection interface.
+     *
+     * @return void
+     */
+    public function logQueries($enable = null)
+    {
+        if ($enable === null) {
+            return $this->logQueries;
+        }
+        $this->logQueries = $enable;
+    }
+
+    /**
+     * Part of the implicit Connection interface.
+     *
+     * @return void
+     */
+    public function transactional($callable)
+    {
+        return $callable($this);
     }
 
     public function config()
@@ -41,6 +129,26 @@ class Connection extends Client
     }
 
     /**
+     * Set the mapping for the named type.
+     *
+     * @param string $type The name of the type to update.
+     * @param array $schema The mapping field configuration.
+     * @param array $params Additional parameters for the type.
+     */
+    public function setMapping($type, array $schema, array $params = [])
+    {
+        $index = $this->getIndex();
+        $type = $index->getType($type);
+        $mapping = new Mapping();
+        $mapping->setType($type);
+        foreach ($params as $key => $value) {
+            $mapping->setParam($key, $value);
+        }
+        $mapping->setProperties($schema);
+        $mapping->send();
+    }
+
+    /**
      * Log requests to Elastic Search.
      *
      * @param Request|array $context The context of the request made.
@@ -48,6 +156,10 @@ class Connection extends Client
      */
     protected function _log($context)
     {
+        if (!$this->logQueries) {
+            return;
+        }
+
         if ($this->_logger) {
             parent::_log($context);
         }

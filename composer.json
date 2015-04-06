@@ -12,7 +12,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Cake\\ElasticSearch\\": "src",
+            "Cake\\ElasticSearch\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
             "Cake\\ElasticSearch\\Test\\": "tests"
         }
     }

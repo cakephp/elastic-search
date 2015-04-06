@@ -4,6 +4,7 @@ namespace Cake\ElasticSearch\Test;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Type;
+use Cake\TestSuite\TestCase;
 
 /**
  * Test entity for mass assignment.
@@ -20,14 +21,14 @@ class ProtectedArticle extends Document
 /**
  * Test case for the marshaller.
  */
-class MarshallerTest extends \PHPUnit_Framework_TestCase
+class MarshallerTest extends TestCase
 {
     /**
      * Fixtures for this test.
      *
      * @var array
      */
-    public $fixtures = ['plugin.elastic_search.articles'];
+    public $fixtures = ['plugin.cake/elastic_search.articles'];
 
     /**
      * Setup method.
