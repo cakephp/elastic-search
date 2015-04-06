@@ -23,6 +23,13 @@ class ProtectedArticle extends Document
 class MarshallerTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * Fixtures for this test.
+     *
+     * @var array
+     */
+    public $fixtures = ['plugin.elastic_search.articles'];
+
+    /**
      * Setup method.
      *
      * @return void
