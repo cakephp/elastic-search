@@ -175,7 +175,7 @@ class FilterBuilder
     public function and_()
     {
         $filters = func_get_args();
-        $boolFilter = $this->bool();
+        $bool = $this->bool();
 
         foreach ($filters as $k => $filter) {
             if ($filter instanceof Filter\Bool) {
@@ -210,5 +210,115 @@ class FilterBuilder
             return call_user_func_array([$this, $method . '_'], $args);
         }
         throw new \BadMethodCallException('Cannot build filter ' . $method);
+    }
+
+    public function parse($conditions)
+    {
+        if ($conditions instanceof AbstractFilter) {
+            return $conditions;
+        }
+
+        $result = [];
+        foreach ($conditions as $k => $c) {
+            $numericKey = is_numeric($k);
+            $operator = strtolower($k);
+
+            if ($numericKey) {
+                $c = $this->parse($c);
+                if (is_array($c)) {
+                    $c = $this->__call('and', $c);
+                }
+                $result[] = $c;
+                continue;
+            }
+
+            if ($operator === 'and') {
+                $result[] = $this->__call('and', $this->parse($c));
+                continue;
+            }
+
+            if ($operator === 'or') {
+                $result[] = $this->__call('or', $this->parse($c));
+                continue;
+            }
+
+            if ($operator === 'not') {
+                $result[] = $this->not($this->parse($c));
+                continue;
+            }
+
+            if ($c instanceof AbstractFilter) {
+                $result[] = $c;
+                continue;
+            }
+
+            if (!$numericKey) {
+                $result[] = $this->_parseFilter($k, $c);
+            }
+        }
+
+        return $result;
+    }
+
+    protected function _parseFilter($field, $value)
+    {
+        $operator = '=';
+        $parts = explode(' ', trim($field), 2);
+
+        if (count($parts) > 1) {
+            list($field, $operator) = $parts;
+        }
+
+        $operator = strtolower(trim($operator));
+
+        if ($operator === '>') {
+            return $this->gt($field, $value);
+        }
+
+        if ($operator === '>=') {
+            return $this->gte($field, $value);
+        }
+
+        if ($operator === '<') {
+            return $this->lt($field, $value);
+        }
+
+        if ($operator === '<=') {
+            return $this->lte($field, $value);
+        }
+
+        if (in_array($operator, ['in', 'not in'])) {
+            $value = (array)$value;
+        }
+
+        if ($operator === 'in') {
+            return $this->terms($field, $value);
+        }
+
+        if ($operator === 'not in') {
+            return $this->not($this->terms($field, $value));
+        }
+
+        if ($operator === 'is' && $value === null) {
+            return $this->missing($field);
+        }
+
+        if ($operator === 'is not' && $value === null) {
+            return $this->not($this->missing($field));
+        }
+
+        if ($operator === 'is' && $value !== null) {
+            return $this->term($field, $value);
+        }
+
+        if ($operator === 'is not' && $value !== null) {
+            return $this->not($this->term($field, $value));
+        }
+
+        if ($operator === '!=') {
+            return $this->not($this->term($field, $value));
+        }
+
+        return $this->term($field, $value);
     }
 }

@@ -132,6 +132,8 @@ class Query implements IteratorAggregate
 
         if (is_array($conditions)) {
             $conditions = (new FilterBuilder)->parse($conditions);
+            array_map([$this->_parts['preFilter'], 'addMust'], $conditions);
+            return $this;
         }
 
         $this->_parts['preFilter']->addMust($conditions);
