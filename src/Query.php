@@ -71,8 +71,9 @@ class Query implements IteratorAggregate
     * The accepted format for the $order param is:
     *
     * - [['name' => ['order'=> 'asc', ...]], ['price' => ['order'=> 'asc', ...]]]
-    *  - ['name' => 'asc', 'price' => 'desc']
+    * - ['name' => 'asc', 'price' => 'desc']
     * - 'field1' (defaults to order => 'desc')
+    *
     * @param string|array $order The sorting order to use.
     * @param bool $overwrite Whether or not to replace previous sorting.
     * @return $this
