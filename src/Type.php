@@ -237,7 +237,7 @@ class Type implements RepositoryInterface
      * @param array $conditions list of conditions to pass to the query
      * @return boolean
      */
-    public function exists(array $conditions)
+    public function exists($conditions)
     {
     }
 
