@@ -40,7 +40,13 @@ class Connection extends Client
         return parent::getIndex($name ?: $this->getConfig('index'));
     }
 
-    protected function _log($context) 
+    /**
+     * Log requests to Elastic Search.
+     *
+     * @param Request|array $context The context of the request made.
+     * @return void
+     */
+    protected function _log($context)
     {
         if ($this->_logger) {
             parent::_log($context);

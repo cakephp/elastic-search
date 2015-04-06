@@ -8,10 +8,12 @@ use Cake\Datasource\RepositoryInterface;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Query;
 use Cake\Event\EventManager;
+use Cake\Event\EventManagerTrait;
 use Cake\Utility\Inflector;
 
 class Type implements RepositoryInterface
 {
+    use EventManagerTrait;
 
     /**
      * Connection instance
@@ -53,8 +55,12 @@ class Type implements RepositoryInterface
         if (!empty($config['name'])) {
             $this->name($config['name']);
         }
-
-        $this->_eventManager = new EventManager;
+        $eventManager = null;
+        if (isset($config['eventManager'])) {
+            $eventManager = $config['eventManager'];
+        }
+        $this->_eventManager = $eventManager ?: new EventManager();
+        $this->dispatchEvent('Model.initialize');
     }
 
     /**
