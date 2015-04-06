@@ -53,8 +53,24 @@ class Query implements IteratorAggregate
         $this->_elasticQuery = new ElasticaQuery;
     }
 
-    public function select($fields)
+    /**
+    * Adds fields to be selected from _source.
+    *
+    * Calling this function multiple times will append more fields to the
+    * list of fields to be selected from _source.
+    *
+    * If `true` is passed in the second argument, any previous selections
+    * will be overwritten with the list passed in the first argument.
+    *
+    * @param array $order The list of fields to select from _source.
+    * @param bool $overwrite Whether or not to replace previous selections.
+    * @return $this
+    */
+    public function select(array $fields, $overwrite = false)
     {
+        if (!$overwrite) {
+            $fields = array_merge($this->_parts['fields'], $fields);
+        }
         $this->_parts['fields'] = $fields;
         return $this;
     }
@@ -152,11 +168,11 @@ class Query implements IteratorAggregate
         $name = $this->_repository->name();
         $type = $connection->getIndex()->getType($name);
 
-        $this->_compileQuery();
-        return new ResultSet($type->search($this->_elasticQuery), $this);
+        $query = $this->compileQuery();
+        return new ResultSet($type->search($query), $this);
     }
 
-    protected function _compileQuery()
+    public function compileQuery()
     {
         if ($this->_parts['fields']) {
             $this->_elasticQuery->setSource($this->_parts['fields']);
@@ -175,5 +191,7 @@ class Query implements IteratorAggregate
             $filteredQuery->setFilter($this->_parts['preFilter']);
             $this->_elasticQuery->setQuery($filteredQuery);
         }
+
+        return $this->_elasticQuery;
     }
 }

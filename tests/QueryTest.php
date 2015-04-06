@@ -79,4 +79,27 @@ class QueryTest extends TestCase
         $this->assertInstanceOf('Cake\ElasticSearch\ResultSet', $resultSet);
         $this->assertSame($result, $resultSet->getInnerIterator());
     }
+
+    /**
+     * Tests that calling select() sets the field to select from _source
+     *
+     * @return void
+     */
+    public function testSelect()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $this->assertSame($query, $query->select(['a', 'b']));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertEquals(['a', 'b'], $elasticQuery['_source']);
+
+        $query->select(['c', 'd']);
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertEquals(['a', 'b', 'c', 'd'], $elasticQuery['_source']);
+
+        $query->select(['e', 'f'], true);
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertEquals(['e', 'f'], $elasticQuery['_source']);
+    }
+
 }
