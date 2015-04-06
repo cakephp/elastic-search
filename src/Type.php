@@ -31,15 +31,6 @@ class Type implements RepositoryInterface
     protected $_name;
 
     /**
-     * EventManager for this table.
-     *
-     * All model/behavior callbacks will be dispatched on this manager.
-     *
-     * @var Cake\Event\EventManager
-     */
-    protected $_eventManager;
-
-    /**
      * The name of the class that represent a single document for this type
      *
      * @var string
@@ -254,7 +245,7 @@ class Type implements RepositoryInterface
      * @param array $conditions list of conditions to pass to the query
      * @return boolean
      */
-    public function exists(array $conditions)
+    public function exists($conditions)
     {
     }
 

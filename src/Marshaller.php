@@ -8,7 +8,7 @@ use Cake\ElasticSearch\Type;
  *
  * Useful when converting request data into documents.
  */
-class Marshaller extends OrmMarshaller
+class Marshaller
 {
     protected $type;
 
