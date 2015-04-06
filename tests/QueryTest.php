@@ -102,4 +102,21 @@ class QueryTest extends TestCase
         $this->assertEquals(['e', 'f'], $elasticQuery['_source']);
     }
 
+    /**
+     * Tests that calling limit() sets the size option for the elastic query
+     *
+     * @return void
+     */
+    public function testLimit()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $this->assertSame($query, $query->limit(10));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(10, $elasticQuery['size']);
+
+        $this->assertSame($query, $query->limit(20));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(20, $elasticQuery['size']);
+    }
 }

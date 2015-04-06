@@ -75,6 +75,13 @@ class Query implements IteratorAggregate
         return $this;
     }
 
+    /**
+    * Sets the maximum number of results to return for this query.
+    * This sets the `size` option for the Elastic Search query.
+    *
+    * @param int $limit The number of documents to return.
+    * @return $this
+    */
     public function limit($limit)
     {
         $this->_parts['limit'] = (int)$limit;
