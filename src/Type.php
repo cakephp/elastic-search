@@ -6,6 +6,7 @@ use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
 use Cake\ElasticSearch\Datasource\Connection;
+use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Query;
 use Cake\Event\EventManager;
 use Cake\Event\EventManagerTrait;
@@ -202,6 +203,16 @@ class Type implements RepositoryInterface
     }
 
     /**
+     * Get a marshaller for this Type instance.
+     *
+     * @return \Cake\ElasticSearch\Marshaller
+     */
+    public function marshaller()
+    {
+        return new Marshaller($this);
+    }
+
+    /**
      * Update all matching records.
      *
      * Sets the $fields to the provided values based on $conditions.
@@ -294,6 +305,11 @@ class Type implements RepositoryInterface
      */
     public function newEntity($data = null, array $options = null)
     {
+        if ($data === null) {
+            $class = $this->entityClass();
+            return new $class([], ['source' => $this->name()]);
+        }
+        return $this->marshaller()->one($data, $options);
     }
 
     /**
