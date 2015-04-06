@@ -20,6 +20,12 @@ class Marshaller
     /**
      * Hydrate a single document.
      *
+     * ### Options:
+     *
+     * * fieldList: A whitelist of fields to be assigned to the entity. If not present,
+     *   the accessible fields list in the entity will be used.
+     * * accessibleFields: A list of fields to allow or deny in entity accessible fields.
+     *
      * @param array $data The data to hydrate.
      * @param array $options List of options
      * @return \Cake\ElasticSearch\Document;
@@ -49,7 +55,24 @@ class Marshaller
         return $entity;
     }
 
+    /**
+     * Hydrate a collection of entities.
+     *
+     * ### Options:
+     *
+     * * associated: Associations listed here will be marshalled as well.
+     * * fieldList: A whitelist of fields to be assigned to the entity. If not present,
+     *   the accessible fields list in the entity will be used.
+     *
+     * @param array $data A list of entity data you want converted into objects.
+     * @param array $options Options
+     */
     public function many(array $data, array $options = [])
     {
+        $output = [];
+        foreach ($data as $record) {
+            $output[] = $this->one($record, $options);
+        }
+        return $output;
     }
 }

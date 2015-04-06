@@ -105,4 +105,33 @@ class MarshallerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($data['body'], $result->body);
         $this->assertNull($result->user_id);
     }
+
+    /**
+     * Test converting multiple objects at once.
+     *
+     * @return void
+     */
+    public function testMany()
+    {
+        $data = [
+            [
+                'title' => 'Testing',
+                'body' => 'Elastic text',
+                'user_id' => 1,
+            ],
+            [
+                'title' => 'Second article',
+                'body' => 'Stretchy text',
+                'user_id' => 2,
+            ]
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->many($data);
+
+        $this->assertCount(2, $result);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[1]);
+        $this->assertSame($data[0], $result[0]->toArray());
+        $this->assertSame($data[1], $result[1]->toArray());
+    }
 }

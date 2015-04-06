@@ -321,6 +321,7 @@ class Type implements RepositoryInterface
      */
     public function newEntities(array $data, array $options = null)
     {
+        return $this->marshaller()->many($data, $options);
     }
 
     /**
