@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <phpunit backupGlobals="false"
          backupStaticAttributes="false"
          bootstrap="./tests/init.php"
@@ -12,9 +13,18 @@
          stopOnSkipped="false"
          syntaxCheck="false">
 
+    <listeners>
+        <listener class="\Cake\TestSuite\Fixture\FixtureInjector"
+                  file="./vendor/cakephp/cakephp/src/TestSuite/Fixture/FixtureInjector.php">
+            <arguments>
+                <object class="\Cake\TestSuite\Fixture\FixtureManager" />
+            </arguments>
+        </listener>
+    </listeners>
+
     <testsuites>
         <testsuite name="ElasticSearch">
-            <directory>./tests/</directory>
+            <directory>./tests/TestCase/</directory>
         </testsuite>
     </testsuites>
 </phpunit>

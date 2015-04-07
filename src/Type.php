@@ -6,12 +6,15 @@ use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
 use Cake\ElasticSearch\Datasource\Connection;
+use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Query;
 use Cake\Event\EventManager;
+use Cake\Event\EventManagerTrait;
 use Cake\Utility\Inflector;
 
 class Type implements RepositoryInterface
 {
+    use EventManagerTrait;
 
     /**
      * Connection instance
@@ -26,15 +29,6 @@ class Type implements RepositoryInterface
      * @var string
      */
     protected $_name;
-
-    /**
-     * EventManager for this table.
-     *
-     * All model/behavior callbacks will be dispatched on this manager.
-     *
-     * @var Cake\Event\EventManager
-     */
-    protected $_eventManager;
 
     /**
      * The name of the class that represent a single document for this type
@@ -53,8 +47,12 @@ class Type implements RepositoryInterface
         if (!empty($config['name'])) {
             $this->name($config['name']);
         }
-
-        $this->_eventManager = new EventManager;
+        $eventManager = null;
+        if (isset($config['eventManager'])) {
+            $eventManager = $config['eventManager'];
+        }
+        $this->_eventManager = $eventManager ?: new EventManager();
+        $this->dispatchEvent('Model.initialize');
     }
 
     /**
@@ -196,6 +194,16 @@ class Type implements RepositoryInterface
     }
 
     /**
+     * Get a marshaller for this Type instance.
+     *
+     * @return \Cake\ElasticSearch\Marshaller
+     */
+    public function marshaller()
+    {
+        return new Marshaller($this);
+    }
+
+    /**
      * Update all matching records.
      *
      * Sets the $fields to the provided values based on $conditions.
@@ -288,6 +296,11 @@ class Type implements RepositoryInterface
      */
     public function newEntity($data = null, array $options = null)
     {
+        if ($data === null) {
+            $class = $this->entityClass();
+            return new $class([], ['source' => $this->name()]);
+        }
+        return $this->marshaller()->one($data, $options);
     }
 
     /**
@@ -308,6 +321,7 @@ class Type implements RepositoryInterface
      */
     public function newEntities(array $data, array $options = null)
     {
+        return $this->marshaller()->many($data, $options);
     }
 
     /**
