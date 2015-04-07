@@ -3,6 +3,7 @@ namespace Cake\ElasticSearch\TestSuite;
 
 use Cake\ElasticSearch\Datasource\Connection;
 use Elastica\Document as ElasticaDocument;
+use Elastica\Type\Mapping as ElasticaMapping;
 
 /**
  * A Test fixture implementation for elastic search.
@@ -56,7 +57,16 @@ class TestFixture
         if (empty($this->schema)) {
             return;
         }
-        $db->setMapping($this->table, $this->schema);
+        $index = $db->getIndex();
+        if (!$index->exists()) {
+            $index->create();
+        }
+
+        $type = $index->getType($this->table);
+        $mapping = new ElasticaMapping();
+        $mapping->setType($type);
+        $mapping->setProperties($this->schema);
+        $mapping->send();
     }
 
     /**
@@ -97,6 +107,7 @@ class TestFixture
         $index = $db->getIndex();
         $type = $index->getType($this->table);
         $type->delete();
+        $index->refresh();
     }
 
     /**
@@ -119,5 +130,6 @@ class TestFixture
         $index = $db->getIndex();
         $type = $index->getType($this->table);
         $type->deleteByIds($ids);
+        $index->refresh();
     }
 }

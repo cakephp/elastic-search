@@ -6,7 +6,6 @@ use Cake\ElasticSearch\Datasource\SchemaCollection;
 use Cake\Log\Log;
 use Elastica\Client;
 use Elastica\Request;
-use Elastica\Type\Mapping;
 
 class Connection extends Client
 {
@@ -126,26 +125,6 @@ class Connection extends Client
     public function getIndex($name = null)
     {
         return parent::getIndex($name ?: $this->getConfig('index'));
-    }
-
-    /**
-     * Set the mapping for the named type.
-     *
-     * @param string $type The name of the type to update.
-     * @param array $schema The mapping field configuration.
-     * @param array $params Additional parameters for the type.
-     */
-    public function setMapping($type, array $schema, array $params = [])
-    {
-        $index = $this->getIndex();
-        $type = $index->getType($type);
-        $mapping = new Mapping();
-        $mapping->setType($type);
-        foreach ($params as $key => $value) {
-            $mapping->setParam($key, $value);
-        }
-        $mapping->setProperties($schema);
-        $mapping->send();
     }
 
     /**

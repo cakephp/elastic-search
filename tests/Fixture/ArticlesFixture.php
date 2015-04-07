@@ -24,14 +24,14 @@ class ArticlesFixture extends TestFixture
             'title' => 'First article',
             'user_id' => 1,
             'body' => 'A big box of bolts and nuts.',
-            'created' => '2014-04-01 15:01:30',
+            'created' => '2014-04-01T15:01:30',
         ],
         [
             'id' => '2',
             'title' => 'Second article',
             'user_id' => 2,
             'body' => 'A delicious cake I made yesterday for you.',
-            'created' => '2015-04-06 16:03:30'
+            'created' => '2015-04-06T16:03:30'
         ],
     ];
 }
