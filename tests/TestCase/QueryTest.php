@@ -119,4 +119,57 @@ class QueryTest extends TestCase
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(20, $elasticQuery['size']);
     }
+
+    /**
+     * Tests that calling order() will populate the sort part of the elastic
+     * query.
+     *
+     * @return void
+     */
+    public function testOrder()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $this->assertSame($query, $query->order('price'));
+
+        $elasticQuery = $query->compileQuery()->toArray();
+        $expected = [['price' => ['order' => 'desc']]];
+        $this->assertEquals($expected, $elasticQuery['sort']);
+
+        $query->order(['created' => 'asc']);
+        $elasticQuery = $query->compileQuery()->toArray();
+        $expected = [
+            ['price' => ['order' => 'desc']],
+            ['created' => ['order' => 'asc']]
+        ];
+        $this->assertEquals($expected, $elasticQuery['sort']);
+
+        $query->order(['modified' => 'desc', 'score' => 'asc']);
+        $elasticQuery = $query->compileQuery()->toArray();
+        $expected = [
+            ['price' => ['order' => 'desc']],
+            ['created' => ['order' => 'asc']],
+            ['modified' => ['order' => 'desc']],
+            ['score' => ['order' => 'asc']],
+        ];
+        $this->assertEquals($expected, $elasticQuery['sort']);
+
+        $query->order(['clicks' => ['mode' => 'avg', 'order' => 'asc']]);
+        $elasticQuery = $query->compileQuery()->toArray();
+        $expected = [
+            ['price' => ['order' => 'desc']],
+            ['created' => ['order' => 'asc']],
+            ['modified' => ['order' => 'desc']],
+            ['score' => ['order' => 'asc']],
+            ['clicks' => ['mode' => 'avg', 'order' => 'asc']]
+        ];
+        $this->assertEquals($expected, $elasticQuery['sort']);
+
+        $query->order(['created' => 'asc'], true);
+        $elasticQuery = $query->compileQuery()->toArray();
+        $expected = [
+            ['created' => ['order' => 'asc']]
+        ];
+        $this->assertEquals($expected, $elasticQuery['sort']);
+    }
 }

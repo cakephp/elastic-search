@@ -91,7 +91,7 @@ class Query implements IteratorAggregate
     /**
     * Sets the sorting options for the result set.
     *
-    * The accepted format for the $order param is:
+    * The accepted format for the $order parameter is:
     *
     * - [['name' => ['order'=> 'asc', ...]], ['price' => ['order'=> 'asc', ...]]]
     * - ['name' => 'asc', 'price' => 'desc']

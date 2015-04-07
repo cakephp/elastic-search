@@ -6,7 +6,7 @@
         "ruflin/elastica": "~1.4"
     },
     "require-dev": {
-        "cakephp/cakephp": "~3.0",
+        "cakephp/cakephp": "dev-master",
         "psr/log": "~1.0",
         "phpunit/phpunit": "~4.0"
     },
