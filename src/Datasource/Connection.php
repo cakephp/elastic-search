@@ -40,11 +40,24 @@ class Connection extends Client
         parent::__construct($config, $callback);
     }
 
+    /**
+     * Part of the implicit Connection interface.
+     *
+     * Returns a SchemaCollection stub until we can add more
+     * abstract API's in Connection.
+     *
+     * @return bool
+     */
     public function schemaCollection()
     {
         return new SchemaCollection();
     }
 
+    /**
+     * Part of the implicit Connection interface.
+     *
+     * @return bool
+     */
     public function configName()
     {
         return $this->configName;
@@ -110,6 +123,11 @@ class Connection extends Client
         return $callable($this);
     }
 
+    /**
+     * Get the config data for this connection.
+     *
+     * @return array
+     */
     public function config()
     {
         return $this->_config;

@@ -8,8 +8,18 @@ use Cake\ElasticSearch\TestSuite\TestFixture;
  */
 class ArticlesFixture extends TestFixture
 {
+    /**
+     * The table/type for this fixture.
+     *
+     * @var string
+     */
     public $table = 'articles';
 
+    /**
+     * The mapping data.
+     *
+     * @var array
+     */
     public $schema = [
         'id' => ['type' => 'integer'],
         'title' => ['type' => 'string'],
@@ -18,6 +28,11 @@ class ArticlesFixture extends TestFixture
         'created' => ['type' => 'date'],
     ];
 
+    /**
+     * The fixture records
+     *
+     * @var array
+     */
     public $records = [
         [
             'id' => '1',
