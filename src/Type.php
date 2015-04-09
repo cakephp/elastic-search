@@ -185,7 +185,11 @@ class Type implements RepositoryInterface
         $type = $this->connection()->getIndex()->getType($this->name());
         $result = $type->getDocument($primaryKey, $options);
         $class = $this->entityClass();
-        $document = new $class($result->getData(), [
+
+        $data = $result->getData();
+        $data['id'] = $result->getId();
+
+        $document = new $class($data, [
             'markNew' => false,
             'markClean' => true,
             'useSetters' => false

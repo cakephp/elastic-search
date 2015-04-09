@@ -47,7 +47,11 @@ class Document implements EntityInterface
     {
         if ($data instanceof Result) {
             $this->_result = $data;
+            $id = $data->getId();
             $data = $data->getData();
+            if ($id !== []) {
+                $data['id'] = $id;
+            }
         }
 
         $options += [

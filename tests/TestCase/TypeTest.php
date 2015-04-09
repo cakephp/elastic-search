@@ -118,18 +118,22 @@ class TypeTest extends TestCase
             ->method('getType')
             ->will($this->returnValue($internalType));
 
-        $document = $this->getMock('Elastica\Document', ['getData']);
+        $document = $this->getMock('Elastica\Document', ['getId', 'getData']);
         $internalType->expects($this->once())
             ->method('getDocument')
             ->with('foo', ['bar' => 'baz'])
             ->will($this->returnValue($document));
 
-        $document->expects($this->once())->method('getData')
+        $document->expects($this->once())
+            ->method('getData')
             ->will($this->returnValue(['a' => 'b']));
+        $document->expects($this->once())
+            ->method('getId')
+            ->will($this->returnValue('foo'));
 
         $result = $type->get('foo', ['bar' => 'baz']);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertEquals(['a' => 'b'], $result->toArray());
+        $this->assertEquals(['a' => 'b', 'id' => 'foo'], $result->toArray());
         $this->assertFalse($result->dirty());
         $this->assertFalse($result->isNew());
     }
