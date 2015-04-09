@@ -14,6 +14,7 @@
  */
 namespace Cake\ElasticSearch\Test;
 
+use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Type;
@@ -51,10 +52,10 @@ class MarshallerTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $connection = $this->getMock('Cake\ElasticSearch\Datasource\Connection', [], [], '', false);
+        $connection = ConnectionManager::get('test');
         $this->type = new Type([
             'connection' => $connection,
-            'name' => 'articles'
+            'name' => 'articles',
         ]);
     }
 
@@ -154,5 +155,192 @@ class MarshallerTest extends TestCase
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[1]);
         $this->assertSame($data[0], $result[0]->toArray());
         $this->assertSame($data[1], $result[1]->toArray());
+    }
+
+    /**
+     * Test merging data into existing records.
+     *
+     * @return void
+     */
+    public function testMerge()
+    {
+        $doc = $this->type->get(1);
+        $data = [
+            'title' => 'New title',
+            'body' => 'Updated',
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($doc, $data);
+
+        $this->assertSame($result, $doc, 'Object should be the same.');
+        $this->assertSame($data['title'], $doc->title, 'title should be the same.');
+        $this->assertSame($data['body'], $doc->body, 'body should be the same.');
+        $this->assertTrue($doc->dirty('title'));
+        $this->assertTrue($doc->dirty('body'));
+        $this->assertFalse($doc->dirty('user_id'));
+        $this->assertFalse($doc->isNew(), 'Should not end up new');
+    }
+
+    /**
+     * Test merging data into existing records with a fieldlist
+     *
+     * @return void
+     */
+    public function testMergeFieldList()
+    {
+        $doc = $this->type->get(1);
+        $doc->accessible('*', false);
+
+        $data = [
+            'title' => 'New title',
+            'body' => 'Updated',
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($doc, $data, ['fieldList' => ['title']]);
+
+        $this->assertSame($result, $doc, 'Object should be the same.');
+        $this->assertSame($data['title'], $doc->title, 'title should be the same.');
+        $this->assertNotEquals($data['body'], $doc->body, 'body should be the same.');
+        $this->assertTrue($doc->dirty('title'));
+        $this->assertFalse($doc->dirty('body'));
+    }
+
+    /**
+     * Test that mergeMany will create new objects if the entity list is empty.
+     *
+     * @return void
+     */
+    public function testMergeManyAllNew()
+    {
+        $entities = [];
+        $data = [
+            [
+                'title' => 'New first',
+            ],
+            [
+                'title' => 'New second',
+            ],
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->mergeMany($entities, $data);
+
+        $this->assertCount(2, $result);
+        $this->assertSame($data[0], $result[0]->toArray());
+        $this->assertSame($data[1], $result[1]->toArray());
+    }
+
+    /**
+     * Ensure that mergeMany uses the fieldList option.
+     *
+     * @return void
+     */
+    public function testMergeManyFieldList()
+    {
+        $entities = [];
+        $data = [
+            [
+                'title' => 'New first',
+                'body' => 'Nope',
+            ],
+            [
+                'title' => 'New second',
+                'body' => 'Nope',
+            ],
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->mergeMany($entities, $data, ['fieldList' => ['title']]);
+
+        $this->assertCount(2, $result);
+        $this->assertNull($result[0]->body);
+        $this->assertNull($result[1]->body);
+    }
+
+    /**
+     * Ensure that mergeMany can merge a sparse data set.
+     *
+     * @return void
+     */
+    public function testMergeManySomeNew()
+    {
+        $doc = $this->type->get(1);
+        $entities = [$doc];
+
+        $data = [
+            [
+                'id' => 1,
+                'title' => 'New first',
+            ],
+            [
+                'title' => 'New second',
+            ],
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->mergeMany($entities, $data);
+
+        $this->assertCount(2, $result);
+        $this->assertEquals($data[0]['title'], $result[0]->title);
+        $this->assertFalse($result[0]->isNew());
+        $this->assertTrue($result[0]->dirty());
+        $this->assertTrue($result[0]->dirty('title'));
+
+        $this->assertTrue($result[1]->isNew());
+        $this->assertTrue($result[1]->dirty());
+        $this->assertTrue($result[1]->dirty('title'));
+    }
+
+    /**
+     * Test that unknown entities are excluded from the results.
+     *
+     * @return void
+     */
+    public function testMergeManyDropsUnknownEntities()
+    {
+        $doc = $this->type->get(1);
+        $entities = [$doc];
+
+        $data = [
+            [
+                'id' => 2,
+                'title' => 'New first',
+            ],
+            [
+                'title' => 'New third',
+            ],
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->mergeMany($entities, $data);
+
+        $this->assertCount(2, $result);
+        $this->assertEquals($data[0], $result[0]->toArray());
+        $this->assertTrue($result[0]->isNew());
+        $this->assertTrue($result[0]->dirty());
+        $this->assertTrue($result[0]->dirty('title'));
+
+        $this->assertEquals($data[1], $result[1]->toArray());
+        $this->assertTrue($result[1]->isNew());
+        $this->assertTrue($result[1]->dirty());
+        $this->assertTrue($result[1]->dirty('title'));
+    }
+
+    /**
+     * Ensure that only entities are updated.
+     *
+     * @return void
+     */
+    public function testMergeManyBadEntityData()
+    {
+        $doc = $this->type->get(1);
+        $entities = ['string', ['herp' => 'derp']];
+
+        $data = [
+            [
+                'title' => 'New first',
+            ],
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->mergeMany($entities, $data);
+
+        $this->assertCount(1, $result);
+        $this->assertEquals($data[0], $result[0]->toArray());
     }
 }

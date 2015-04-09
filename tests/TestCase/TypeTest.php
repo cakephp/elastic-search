@@ -16,6 +16,7 @@ namespace Cake\ElasticSearch\Test;
 
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Type;
+use Cake\ElasticSearch\Document;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -117,19 +118,77 @@ class TypeTest extends TestCase
             ->method('getType')
             ->will($this->returnValue($internalType));
 
-        $document = $this->getMock('Elastica\Document', ['getData']);
+        $document = $this->getMock('Elastica\Document', ['getId', 'getData']);
         $internalType->expects($this->once())
             ->method('getDocument')
             ->with('foo', ['bar' => 'baz'])
             ->will($this->returnValue($document));
 
-        $document->expects($this->once())->method('getData')
+        $document->expects($this->once())
+            ->method('getData')
             ->will($this->returnValue(['a' => 'b']));
+        $document->expects($this->once())
+            ->method('getId')
+            ->will($this->returnValue('foo'));
 
         $result = $type->get('foo', ['bar' => 'baz']);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertEquals(['a' => 'b'], $result->toArray());
+        $this->assertEquals(['a' => 'b', 'id' => 'foo'], $result->toArray());
         $this->assertFalse($result->dirty());
         $this->assertFalse($result->isNew());
+    }
+
+    /**
+     * Test that newEntity is wired up.
+     *
+     * @return void
+     */
+    public function testNewEntity()
+    {
+        $connection = $this->getMock(
+            'Cake\ElasticSearch\Datasource\Connection',
+            ['getIndex']
+        );
+        $type = new Type([
+            'name' => 'articles',
+            'connection' => $connection
+        ]);
+        $data = [
+            'title' => 'A newer title'
+        ];
+        $result = $type->newEntity($data);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertSame($data, $result->toArray());
+    }
+
+    /**
+     * Test that newEntities is wired up.
+     *
+     * @return void
+     */
+    public function testNewEntities()
+    {
+        $connection = $this->getMock(
+            'Cake\ElasticSearch\Datasource\Connection',
+            ['getIndex']
+        );
+        $type = new Type([
+            'name' => 'articles',
+            'connection' => $connection
+        ]);
+        $data = [
+            [
+                'title' => 'A newer title'
+            ],
+            [
+                'title' => 'A second title'
+            ],
+        ];
+        $result = $type->newEntities($data);
+        $this->assertCount(2, $result);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[1]);
+        $this->assertSame($data[0], $result[0]->toArray());
+        $this->assertSame($data[1], $result[1]->toArray());
     }
 }

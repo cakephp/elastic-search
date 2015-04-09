@@ -185,7 +185,11 @@ class Type implements RepositoryInterface
         $type = $this->connection()->getIndex()->getType($this->name());
         $result = $type->getDocument($primaryKey, $options);
         $class = $this->entityClass();
-        $document = new $class($result->getData(), [
+
+        $data = $result->getData();
+        $data['id'] = $result->getId();
+
+        $document = new $class($data, [
             'markNew' => false,
             'markClean' => true,
             'useSetters' => false
@@ -306,7 +310,7 @@ class Type implements RepositoryInterface
      * @param array $options A list of options for the object hydration.
      * @return \Cake\Datasource\EntityInterface
      */
-    public function newEntity($data = null, array $options = null)
+    public function newEntity($data = null, array $options = [])
     {
         if ($data === null) {
             $class = $this->entityClass();
@@ -331,7 +335,7 @@ class Type implements RepositoryInterface
      * @param array $options A list of options for the objects hydration.
      * @return array An array of hydrated records.
      */
-    public function newEntities(array $data, array $options = null)
+    public function newEntities(array $data, array $options = [])
     {
         return $this->marshaller()->many($data, $options);
     }
@@ -393,6 +397,8 @@ class Type implements RepositoryInterface
      */
     public function patchEntity(EntityInterface $entity, array $data, array $options = [])
     {
+        $marshaller = $this->marshaller();
+        return $marshaller->merge($entity, $data, $options);
     }
 
     /**
@@ -415,5 +421,7 @@ class Type implements RepositoryInterface
      */
     public function patchEntities($entities, array $data, array $options = [])
     {
+        $marshaller = $this->marshaller();
+        return $marshaller->mergeMany($entity, $data, $options);
     }
 }
