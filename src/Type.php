@@ -306,7 +306,7 @@ class Type implements RepositoryInterface
      * @param array $options A list of options for the object hydration.
      * @return \Cake\Datasource\EntityInterface
      */
-    public function newEntity($data = null, array $options = null)
+    public function newEntity($data = null, array $options = [])
     {
         if ($data === null) {
             $class = $this->entityClass();
@@ -331,7 +331,7 @@ class Type implements RepositoryInterface
      * @param array $options A list of options for the objects hydration.
      * @return array An array of hydrated records.
      */
-    public function newEntities(array $data, array $options = null)
+    public function newEntities(array $data, array $options = [])
     {
         return $this->marshaller()->many($data, $options);
     }
