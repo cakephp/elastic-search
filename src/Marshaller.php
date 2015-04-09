@@ -14,6 +14,7 @@
  */
 namespace Cake\ElasticSearch;
 
+use Cake\Datasource\EntityInterface;
 use Cake\ElasticSearch\Type;
 
 /**
@@ -87,5 +88,41 @@ class Marshaller
             $output[] = $this->one($record, $options);
         }
         return $output;
+    }
+
+    /**
+     * Merges `$data` into `$document`.
+     *
+     * ### Options:
+     *
+     * * fieldList: A whitelist of fields to be assigned to the entity. If not present
+     *   the accessible fields list in the entity will be used.
+     *
+     * @param \Cake\Datasource\EntityInterface $entity the entity that will get the
+     * data merged in
+     * @param array $data key value list of fields to be merged into the entity
+     * @param array $options List of options.
+     * @return \Cake\Datasource\EntityInterface
+     */
+    public function merge(EntityInterface $entity, array $data, array $options = [])
+    {
+        $isNew = $entity->isNew();
+        $key = null;
+
+        if (!$isNew) {
+            $key = $entity->get('id');
+        }
+
+        if (!isset($options['fieldList'])) {
+            $entity->set($data);
+            return $entity;
+        }
+
+        foreach ((array)$options['fieldList'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $entity->set($field, $data[$field]);
+            }
+        }
+        return $entity;
     }
 }

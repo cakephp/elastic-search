@@ -393,6 +393,8 @@ class Type implements RepositoryInterface
      */
     public function patchEntity(EntityInterface $entity, array $data, array $options = [])
     {
+        $marshaller = $this->marshaller();
+        return $marshaller->merge($entity, $data, $options);
     }
 
     /**
@@ -415,5 +417,7 @@ class Type implements RepositoryInterface
      */
     public function patchEntities($entities, array $data, array $options = [])
     {
+        $marshaller = $this->marshaller();
+        return $marshaller->mergeMany($entity, $data, $options);
     }
 }

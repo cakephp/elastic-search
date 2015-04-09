@@ -14,6 +14,7 @@
  */
 namespace Cake\ElasticSearch\Test;
 
+use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Type;
@@ -51,10 +52,10 @@ class MarshallerTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $connection = $this->getMock('Cake\ElasticSearch\Datasource\Connection', [], [], '', false);
+        $connection = ConnectionManager::get('test');
         $this->type = new Type([
             'connection' => $connection,
-            'name' => 'articles'
+            'name' => 'articles',
         ]);
     }
 
@@ -154,5 +155,53 @@ class MarshallerTest extends TestCase
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[1]);
         $this->assertSame($data[0], $result[0]->toArray());
         $this->assertSame($data[1], $result[1]->toArray());
+    }
+
+    /**
+     * Test merging data into existing records.
+     *
+     * @return void
+     */
+    public function testMerge()
+    {
+        $doc = $this->type->get(1);
+        $data = [
+            'title' => 'New title',
+            'body' => 'Updated',
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($doc, $data);
+
+        $this->assertSame($result, $doc, 'Object should be the same.');
+        $this->assertSame($data['title'], $doc->title, 'title should be the same.');
+        $this->assertSame($data['body'], $doc->body, 'body should be the same.');
+        $this->assertTrue($doc->dirty('title'));
+        $this->assertTrue($doc->dirty('body'));
+        $this->assertFalse($doc->dirty('user_id'));
+        $this->assertFalse($doc->isNew(), 'Should not end up new');
+    }
+
+    /**
+     * Test merging data into existing records with a fieldlist
+     *
+     * @return void
+     */
+    public function testMergeFieldList()
+    {
+        $doc = $this->type->get(1);
+        $doc->accessible('*', false);
+
+        $data = [
+            'title' => 'New title',
+            'body' => 'Updated',
+        ];
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($doc, $data, ['fieldList' => ['title']]);
+
+        $this->assertSame($result, $doc, 'Object should be the same.');
+        $this->assertSame($data['title'], $doc->title, 'title should be the same.');
+        $this->assertNotEquals($data['body'], $doc->body, 'body should be the same.');
+        $this->assertTrue($doc->dirty('title'));
+        $this->assertFalse($doc->dirty('body'));
     }
 }
