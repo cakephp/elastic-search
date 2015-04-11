@@ -239,4 +239,31 @@ class TypeTest extends TestCase
         $this->assertFalse($doc->isNew(), 'Not new.');
         $this->assertFalse($doc->dirty(), 'Not dirty anymore.');
     }
+
+    /**
+     * Test deleting a document.
+     *
+     * @return void
+     */
+    public function testDeleteBasic()
+    {
+        $doc = $this->type->get(1);
+        $this->assertTrue($this->type->delete($doc));
+
+        $dead = $this->type->find()->where(['id' => 1])->first();
+        $this->assertNull($dead, 'No record.');
+    }
+
+    /**
+     * Test deleting a new document
+     *
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Deleting requires an "id" value.
+     * @return void
+     */
+    public function testDeleteMissing()
+    {
+        $doc = new Document(['title' => 'not there.']);
+        $this->type->delete($doc);
+    }
 }

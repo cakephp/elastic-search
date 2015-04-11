@@ -24,6 +24,7 @@ use Cake\Event\EventManager;
 use Cake\Event\EventManagerTrait;
 use Cake\Utility\Inflector;
 use Elastica\Document as ElasticaDocument;
+use InvalidArgumentException;
 
 class Type implements RepositoryInterface
 {
@@ -307,6 +308,18 @@ class Type implements RepositoryInterface
      */
     public function delete(EntityInterface $entity, $options = [])
     {
+        $type = $this->connection()->getIndex()->getType($this->name());
+        if (!$entity->has('id')) {
+            $msg = 'Deleting requires an "id" value.';
+            throw new InvalidArgumentException($msg);
+        }
+
+        $data = $entity->toArray();
+        unset($data['id']);
+
+        $doc = new ElasticaDocument($entity->id, $data);
+        $result = $type->deleteDocument($doc);
+        return $result->isOk();
     }
 
     /**
