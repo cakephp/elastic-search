@@ -14,6 +14,7 @@
  */
 namespace Cake\ElasticSearch\Test;
 
+use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Type;
 use Cake\ElasticSearch\Document;
@@ -25,6 +26,16 @@ use Cake\TestSuite\TestCase;
  */
 class TypeTest extends TestCase
 {
+    public $fixtures = ['plugin.cake/elastic_search.articles'];
+
+    public function setUp()
+    {
+        parent::setUp();
+        $this->type = new Type([
+            'name' => 'articles',
+            'connection' => ConnectionManager::get('test')
+        ]);
+    }
 
     /**
      * Tests that calling find will return a query object
@@ -33,10 +44,9 @@ class TypeTest extends TestCase
      */
     public function testFindAll()
     {
-        $type = new Type();
-        $query = $type->find('all');
+        $query = $this->type->find('all');
         $this->assertInstanceOf('Cake\ElasticSearch\Query', $query);
-        $this->assertSame($type, $query->repository());
+        $this->assertSame($this->type, $query->repository());
     }
 
     /**
@@ -46,8 +56,7 @@ class TypeTest extends TestCase
      */
     public function testEntityClassDefault()
     {
-        $type = new Type();
-        $this->assertEquals('\Cake\ElasticSearch\Document', $type->entityClass());
+        $this->assertEquals('\Cake\ElasticSearch\Document', $this->type->entityClass());
     }
 
     /**
@@ -190,5 +199,44 @@ class TypeTest extends TestCase
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[1]);
         $this->assertSame($data[0], $result[0]->toArray());
         $this->assertSame($data[1], $result[1]->toArray());
+    }
+
+    /**
+     * Test saving a new document.
+     *
+     * @return void
+     */
+    public function testSaveNew()
+    {
+        $doc = new Document([
+            'title' => 'A brand new article',
+            'body' => 'Some new content'
+        ], ['markNew' => true]);
+        $this->assertSame($doc, $this->type->save($doc));
+        $this->assertNotEmpty($doc->id, 'Should get an id');
+        $this->assertNotEmpty($doc->_version, 'Should get a version');
+        $this->assertFalse($doc->isNew(), 'Not new anymore.');
+        $this->assertFalse($doc->dirty(), 'Not dirty anymore.');
+
+        $result = $this->type->get($doc->id);
+        $this->assertEquals($doc->title, $result->title);
+        $this->assertEquals($doc->body, $result->body);
+    }
+
+    /**
+     * Test saving a new document.
+     *
+     * @return void
+     */
+    public function testSaveUpdate()
+    {
+        $doc = new Document([
+            'id' => '123',
+            'title' => 'A brand new article',
+            'body' => 'Some new content'
+        ], ['markNew' => false]);
+        $this->assertSame($doc, $this->type->save($doc));
+        $this->assertFalse($doc->isNew(), 'Not new.');
+        $this->assertFalse($doc->dirty(), 'Not dirty anymore.');
     }
 }
