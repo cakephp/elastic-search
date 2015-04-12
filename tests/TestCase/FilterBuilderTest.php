@@ -207,4 +207,29 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the geoShapeIndex() filter
+     *
+     * @return void
+     */
+    public function testGeoShapeIndex()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->geoShapeIndex('location', 'DEU', 'countries', 'shapes', 'location');
+        $expected = [
+            'geo_shape' => [
+                'location' => [
+                    'relation' => 'intersects',
+                    'indexed_shape' => [
+                        'id' => 'DEU',
+                        'type' => 'countries',
+                        'index' => 'shapes',
+                        'path' => 'location'
+                    ]
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

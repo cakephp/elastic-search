@@ -70,7 +70,7 @@ class FilterBuilder
     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', 'drj7teegpus6');
     * }}}
     *
-    * @param string $field The field to check for existence.
+    * @param string $field The field to compare.
     * @param array|string $topLeft The top left coordinate.
     * @param array|string $bottomRight The bottom right coordinate.
     * @return Elastica\Filter\GeoBoundingBox
@@ -93,7 +93,7 @@ class FilterBuilder
     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km');
     * }}}
     *
-    * @param string $field The field to check for existence.
+    * @param string $field The field to compare.
     * @param array|string $location The coordinate from which to compare.
     * @param string $distance The distance radius.
     * @return Elastica\Filter\GeoDistance
@@ -116,7 +116,7 @@ class FilterBuilder
     *    $filter = $builder->geoDistanceRange('location', 'dr5r9ydj2y73', '5km', '10km');
     * }}}
     *
-    * @param string $field The field to check for existence.
+    * @param string $field The field to compare.
     * @param array|string $location The coordinate from which to compare.
     * @param string $from The initial distance radius.
     * @param string $top The ending distance radius.
@@ -151,7 +151,7 @@ class FilterBuilder
     *    ]);
     * }}}
     *
-    * @param string $field The field to check for existence.
+    * @param string $field The field to compare.
     * @param array $geoPoints List of geo points that form the polygon
     * @return Elastica\Filter\GeoPolygon
     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-filter.html
@@ -179,7 +179,7 @@ class FilterBuilder
     * You can read about the supported shapes and how they are created here:
     * http://www.elastic.co/guide/en/elasticsearch/reference/1.x/mapping-geo-shape-type.html
     *
-    * @param string $field The field to check for existence.
+    * @param string $field The field to compare.
     * @param array $geoPoints List of geo points that form the shape.
     * @param string $type The shape type to use (envelope, linestring, polygon, multipolygon...)
     * @return Elastica\Filter\GeoShapeProvided
@@ -188,6 +188,29 @@ class FilterBuilder
     public function geoShape($field, array $geoPoints, $type = 'envelope')
     {
         return new Filter\GeoShapeProvided($field, $geoPoints, $type);
+    }
+
+    /**
+    * Returns an GeoShapeProvided filter object setup to filter documents having a property
+    * enclosed in the specified geometrical shape type.
+    *
+    * ### Example:
+    *
+    * {{{
+    *    $filter = $builder->geoShapeIndex('location', 'DEU', 'countries', 'shapes', 'location');
+    * }}}
+    *
+    * @param string $field The field to check for existence.
+    * @param string $id The ID of the document containing the pre-indexed shape.
+    * @param string $type Index type where the pre-indexed shape is.
+    * @param string $index Name of the index where the pre-indexed shape is.
+    * @param string The field specified as path containing the pre-indexed shape.
+    * @return Elastica\Filter\GeoShapePreIndex
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
+    */
+    public function geoShapeIndex($field, $id, $type, $index = 'shapes', $path = 'shape')
+    {
+        return new Filter\GeoShapePreIndexed($field, $id, $type, $index, $path);
     }
 
     public function geoHashCell($field, $location, $precision = -1, $neighbors = false)
