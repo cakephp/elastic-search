@@ -13,7 +13,7 @@ class FilterBuilder
     * Returns a Range filter object setup to filter documents having the field between
     * a `from` and a `to` value
     *
-    * @param string The field to filter by.
+    * @param string $field The field to filter by.
     * @param mixed $from The lower bound value.
     * @param mixed $to The upper bound value.
     * @return Elastica\Filter\Range
@@ -43,7 +43,7 @@ class FilterBuilder
     * Returns an Exists filter object setup to filter documents having a property present
     * or not set to null.
     *
-    * @param string The field to check for existance.
+    * @param string $field The field to check for existance.
     * @return Elastica\Filter\Exists
     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
     */
@@ -70,7 +70,7 @@ class FilterBuilder
     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', 'drj7teegpus6');
     * }}}
     *
-    * @param string The field to check for existence.
+    * @param string $field The field to check for existence.
     * @param array|string $topLeft The top left coordinate.
     * @param array|string $bottomRight The bottom right coordinate.
     * @return Elastica\Filter\GeoBoundingBox
@@ -93,7 +93,7 @@ class FilterBuilder
     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km');
     * }}}
     *
-    * @param string The field to check for existence.
+    * @param string $field The field to check for existence.
     * @param array|string $location The coordinate from which to compare.
     * @param string $distance The distance radius.
     * @return Elastica\Filter\GeoDistance
@@ -116,7 +116,7 @@ class FilterBuilder
     *    $filter = $builder->geoDistanceRange('location', 'dr5r9ydj2y73', '5km', '10km');
     * }}}
     *
-    * @param string The field to check for existence.
+    * @param string $field The field to check for existence.
     * @param array|string $location The coordinate from which to compare.
     * @param string $from The initial distance radius.
     * @param string $top The ending distance radius.
@@ -151,8 +151,8 @@ class FilterBuilder
     *    ]);
     * }}}
     *
-    * @param string The field to check for existence.
-    * @param array List of geo points that form the polygon
+    * @param string $field The field to check for existence.
+    * @param array $geoPoints List of geo points that form the polygon
     * @return Elastica\Filter\GeoPolygon
     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-filter.html
     */
@@ -161,9 +161,33 @@ class FilterBuilder
         return new Filter\GeoPolygon($field, $geoPoints);
     }
 
-    public function geoShape($field, array $geoPoints)
+    /**
+    * Returns an GeoShapeProvided filter object setup to filter documents having a property
+    * enclosed in the specified geometrical shape type.
+    *
+    * ### Example:
+    *
+    * {{{
+    *    $filter = $builder->geoShape('location', [[13.0, 53.0], [14.0, 52.0]], 'envelope');
+    *
+    *    $filter = $builder->geoShape('location', [
+    *        [[-77.03653, 38.897676], [-77.009051, 38.889939]],
+    *        'linestring'
+    *    ]);
+    * }}}
+    *
+    * You can read about the supported shapes and how they are created here:
+    * http://www.elastic.co/guide/en/elasticsearch/reference/1.x/mapping-geo-shape-type.html
+    *
+    * @param string $field The field to check for existence.
+    * @param array $geoPoints List of geo points that form the shape.
+    * @param string $type The shape type to use (envelope, linestring, polygon, multipolygon...)
+    * @return Elastica\Filter\GeoShapeProvided
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
+    */
+    public function geoShape($field, array $geoPoints, $type = 'envelope')
     {
-        return new Filter\GeoShape($field, $geoPoints);
+        return new Filter\GeoShapeProvided($field, $geoPoints, $type);
     }
 
     public function geoHashCell($field, $location, $precision = -1, $neighbors = false)

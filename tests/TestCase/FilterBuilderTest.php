@@ -178,4 +178,33 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the geoShape() filter
+     *
+     * @return void
+     */
+    public function testGeoShape()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->geoShape('location', [
+            ['lat' => 40, 'lon' => -70],
+            ['lat' => 30, 'lon' => -80],
+        ], 'linestring');
+        $expected = [
+            'geo_shape' => [
+                'location' => [
+                    'relation' => 'intersects',
+                    'shape' => [
+                        'type' => 'linestring',
+                        'coordinates' => [
+                            ['lat' => 40, 'lon' => -70],
+                            ['lat' => 30, 'lon' => -80],
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
