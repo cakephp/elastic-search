@@ -273,12 +273,23 @@ class Type implements RepositoryInterface
      * returns the same entity after a successful save or false in case
      * of any error.
      *
+     * Triggers the `Model.beforeSave` and `Model.afterSave` events.
+     *
      * @param \Cake\Datasource\EntityInterface the entity to be saved
      * @param array $options
      * @return \Cake\Datasource\EntityInterface|boolean
      */
     public function save(EntityInterface $entity, $options = [])
     {
+        $options = new ArrayObject($options);
+        $event = $this->dispatchEvent('Model.beforeSave', [
+            'entity' => $entity,
+            'options' => $options
+        ]);
+        if ($event->isStopped()) {
+            return $event->result;
+        }
+
         $type = $this->connection()->getIndex()->getType($this->name());
         $id = $entity->id ?: null;
 
@@ -294,6 +305,10 @@ class Type implements RepositoryInterface
         $entity->isNew(false);
         $entity->clean();
 
+        $this->dispatchEvent('Model.afterSave', [
+            'entity' => $entity,
+            'options' => $options
+        ]);
         return $entity;
     }
 
@@ -302,6 +317,8 @@ class Type implements RepositoryInterface
      *
      * Deletes an entity and possibly related associations from the database
      * based on the 'dependent' option used when defining the association.
+     *
+     * Triggers the `Model.beforeDelete` and `Model.afterDelete` events.
      *
      * @param \Cake\Datasource\EntityInterface $entity The entity to remove.
      * @param array $options The options fo the delete.

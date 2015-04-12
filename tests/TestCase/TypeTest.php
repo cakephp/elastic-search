@@ -241,6 +241,56 @@ class TypeTest extends TestCase
     }
 
     /**
+     * Test save triggers events.
+     *
+     * @return void
+     */
+    public function testSaveEvents()
+    {
+        $doc = $this->type->get(1);
+        $doc->title = 'A new title';
+
+        $called = 0;
+        $this->type->eventManager()->on(
+            'Model.beforeSave',
+            function ($event, $entity, $options) use ($doc, &$called) {
+                $called++;
+                $this->assertSame($doc, $entity);
+                $this->assertInstanceOf('ArrayObject', $options);
+            });
+        $this->type->eventManager()->on(
+            'Model.afterSave',
+            function ($event, $entity, $options) use ($doc, &$called) {
+                $called++;
+                $this->assertInstanceOf('ArrayObject', $options);
+                $this->assertSame($doc, $entity);
+                $this->assertFalse($doc->isNew(), 'Should not be new');
+                $this->assertFalse($doc->dirty(), 'Should not be dirty');
+            });
+        $this->type->save($doc);
+        $this->assertEquals(2, $called);
+    }
+
+    /**
+     * Test beforeSave abort.
+     *
+     * @return void
+     */
+    public function testSaveBeforeSaveAbort()
+    {
+        $doc = $this->type->get(1);
+        $doc->title = 'new title';
+        $this->type->eventManager()->on('Model.beforeSave', function ($event, $entity, $options) use ($doc) {
+            $event->stopPropagation();
+            return 'kaboom';
+        });
+        $this->type->eventManager()->on('Model.afterSave', function () {
+            $this->fail('Should not be fired');
+        });
+        $this->assertSame('kaboom', $this->type->save($doc));
+    }
+
+    /**
      * Test deleting a document.
      *
      * @return void
@@ -261,16 +311,24 @@ class TypeTest extends TestCase
      */
     public function testDeleteEvents()
     {
+        $called = 0;
         $doc = $this->type->get(1);
-        $this->type->eventManager()->on('Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
-            $this->assertSame($doc, $entity);
-            $this->assertInstanceOf('ArrayObject', $options);
-        });
-        $this->type->eventManager()->on('Model.afterDelete', function ($event, $entity, $options) use ($doc) {
-            $this->assertSame($doc, $entity);
-            $this->assertInstanceOf('ArrayObject', $options);
-        });
+        $this->type->eventManager()->on(
+            'Model.beforeDelete',
+            function ($event, $entity, $options) use ($doc, &$called) {
+                $called++;
+                $this->assertSame($doc, $entity);
+                $this->assertInstanceOf('ArrayObject', $options);
+            });
+        $this->type->eventManager()->on(
+            'Model.afterDelete',
+            function ($event, $entity, $options) use ($doc, &$called) {
+                $called++;
+                $this->assertSame($doc, $entity);
+                $this->assertInstanceOf('ArrayObject', $options);
+            });
         $this->assertTrue($this->type->delete($doc));
+        $this->assertEquals(2, $called);
     }
 
     /**
