@@ -59,6 +59,13 @@ class Query implements IteratorAggregate
         'limit' => null
     ];
 
+    /**
+     * Internal state to track whether or not the query has been modified.
+     *
+     * @var bool
+     */
+    protected $_dirty = false;
+
     public function __construct(Type $repository)
     {
         $this->repository($repository);
