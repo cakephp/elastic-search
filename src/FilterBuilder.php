@@ -31,6 +31,7 @@ class FilterBuilder
     * Returns a bool filter that can be chained with the `addMust()`, `addShould()`
     * and `addMustNot()` methods.
     *
+    * @return Elastica\Filter\Bool
     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-filter.html
     */
     public function bool()
@@ -43,6 +44,7 @@ class FilterBuilder
     * or not set to null.
     *
     * @param string The field to check for existance.
+    * @return Elastica\Filter\Exists
     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
     */
     public function exists($field)
@@ -50,9 +52,33 @@ class FilterBuilder
         return new Filter\Exists($field);
     }
 
-    public function geoBoundingBox($field, array $coordinates)
+    /**
+    * Returns an GeoBoundingBox filter object setup to filter documents having a property
+    * bound by two coordinates.
+    *
+    * ### Example:
+    *
+    * {{{
+    *    $filter = $builder->geoBoundingBox('location', [40.73, -74.1], [40.01, -71.12]);
+    *
+    *    $filter = $builder->geoBoundingBox(
+    *        'location',
+    *        ['lat => 40.73, 'lon' => -74.1],
+    *        ['lat => 40.01, 'lon' => -71.12]
+    *    );
+    *
+    *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', 'drj7teegpus6');
+    * }}}
+    *
+    * @param string The field to check for existance.
+    * @param array|string $topLeft The top left coordinate.
+    * @param array|string $bottomRight The bottom right coordinate.
+    * @return Elastica\Filter\GeoBoundingBox
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-bounding-box-filter.html
+    */
+    public function geoBoundingBox($field, $topLeft, $bottomRight)
     {
-        return new Filter\GeoBoundingBox($field, $coordinates);
+        return new Filter\GeoBoundingBox($field, [$topLeft, $bottomRight]);
     }
 
     public function geoDistance($field, $location, $distance)

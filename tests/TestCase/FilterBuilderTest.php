@@ -75,4 +75,24 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the geoBoundingBox() filter
+     *
+     * @return void
+     */
+    public function testGeoBoundingBox()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->geoBoundingBox('location', [40.73, -74.1], [40.01, -71.12]);
+        $expected = [
+            'geo_bounding_box' => [
+                'location' => [
+                    'top_left' => [40.73, -74.1],
+                    'bottom_right' => [40.01, -71.12]
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
