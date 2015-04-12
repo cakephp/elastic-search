@@ -236,6 +236,15 @@ class FilterBuilder
         return new Filter\GeohashCell($field, $location, $precision, $neighbors);
     }
 
+    /**
+    * Returns a Range filter object setup to filter documents having the field
+    * greater than the provided value.
+    *
+    * @param string $field The field to filter by.
+    * @param mixed $value The value to compare with.
+    * @return Elastica\Filter\Range
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+    */
     public function gt($field, $value)
     {
         return $this->range($field, ['gt' => $value]);

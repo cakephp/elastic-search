@@ -261,4 +261,25 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the gt() filter
+     *
+     * @return void
+     */
+    public function testGt()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->gt('price', 10);
+        $expected = [
+            'range' => ['price' => ['gt' => 10]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->gt('year', '2014');
+        $expected = [
+            'range' => ['year' => ['gt' => '2014']]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
