@@ -93,20 +93,42 @@ class FilterBuilder
     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km');
     * }}}
     *
-    * @param string The field to check for existance.
-    * @param array|string $location The coordinate from wich to compare.
+    * @param string The field to check for existence.
+    * @param array|string $location The coordinate from which to compare.
     * @param string $distance The distance radius.
-    * @return Elastica\Filter\GeoBoundingBox
-    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-filter.html
+    * @return Elastica\Filter\GeoDistance
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-range-filter.html
     */
     public function geoDistance($field, $location, $distance)
     {
         return new Filter\GeoDistance($field, $location, $distance);
     }
 
-    public function geoDistanceRange($field, $location, array $ranges)
+    /**
+    * Returns an GeoDistanceRange filter object setup to filter documents having a property
+    * in betwen two distance radius from a location coordinate.
+    *
+    * ### Example:
+    *
+    * {{{
+    *    $filter = $builder->geoDistance('location', [40.73, -74.1], '10km', '20km');
+    *
+    *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km', '10km');
+    * }}}
+    *
+    * @param string The field to check for existence.
+    * @param array|string $location The coordinate from which to compare.
+    * @param string $from The initial distance radius.
+    * @param string $top The ending distance radius.
+    * @return Elastica\Filter\GeoDistanceRange
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-filter.html
+    */
+    public function geoDistanceRange($field, $location, $from, $to)
     {
-        return new Filter\GeoDistanceRange($field, $location, $ranges);
+        return new Filter\GeoDistanceRange($field, $location, [
+            'gte' => $from,
+            'lte' => $to
+        ]);
     }
 
     public function geoPolygon($field, array $geoPoints)
