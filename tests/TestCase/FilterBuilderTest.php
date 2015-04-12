@@ -282,4 +282,25 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the gte() filter
+     *
+     * @return void
+     */
+    public function testGte()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->gte('price', 10);
+        $expected = [
+            'range' => ['price' => ['gte' => 10]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->gte('year', '2014');
+        $expected = [
+            'range' => ['year' => ['gte' => '2014']]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
