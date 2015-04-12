@@ -303,4 +303,22 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the hasChild() filter
+     *
+     * @return void
+     */
+    public function testHashChild()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->hasChild($builder->term('user', 'john'), 'comment');
+        $expected = [
+            'has_child' => [
+                'type' => 'comment',
+                'filter' => ['term' => ['user' => 'john']]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

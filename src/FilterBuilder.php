@@ -264,6 +264,15 @@ class FilterBuilder
         return $this->range($field, ['gte' => $value]);
     }
 
+    /**
+    * Accepts a query and the child type to run against, and results in parent
+    * documents that have child docs matching the query.
+    *
+    * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
+    * @param string $type Thechild type to query against.
+    * @return Elastica\Filter\HasChild
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-filter.html
+    */
     public function hasChild($query, $type = null)
     {
         return new Filter\HasChild($query, $type);
