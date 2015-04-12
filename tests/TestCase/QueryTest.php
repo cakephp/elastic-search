@@ -184,6 +184,4 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $elasticQuery['sort']);
     }
-
-
 }
