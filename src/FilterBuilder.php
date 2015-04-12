@@ -53,7 +53,7 @@ class FilterBuilder
     }
 
     /**
-    * Returns an GeoBoundingBox filter object setup to filter documents having a property
+    * Returns a GeoBoundingBox filter object setup to filter documents having a property
     * bound by two coordinates.
     *
     * ### Example:
@@ -81,6 +81,24 @@ class FilterBuilder
         return new Filter\GeoBoundingBox($field, [$topLeft, $bottomRight]);
     }
 
+    /**
+    * Returns an GeoDistance filter object setup to filter documents having a property
+    * in the radius distance of a coordinate.
+    *
+    * ### Example:
+    *
+    * {{{
+    *    $filter = $builder->geoDistance('location', [40.73, -74.1], '10km');
+    *
+    *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km');
+    * }}}
+    *
+    * @param string The field to check for existance.
+    * @param array|string $location The coordinate from wich to compare.
+    * @param string $distance The distance radius.
+    * @return Elastica\Filter\GeoBoundingBox
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-filter.html
+    */
     public function geoDistance($field, $location, $distance)
     {
         return new Filter\GeoDistance($field, $location, $distance);

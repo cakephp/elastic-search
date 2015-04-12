@@ -95,4 +95,31 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the geoDistance() filter
+     *
+     * @return void
+     */
+    public function testGeoDistance()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->geoDistance('location', ['lat' => 40.73, 'lon' => -74.1], '10km');
+        $expected = [
+            'geo_distance' => [
+                'location' => ['lat' => 40.73, 'lon' => -74.1],
+                'distance' => '10km'
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->geoDistance('location', 'dr5r9ydj2y73', '10km');
+        $expected = [
+            'geo_distance' => [
+                'location' => 'dr5r9ydj2y73',
+                'distance' => '10km'
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
