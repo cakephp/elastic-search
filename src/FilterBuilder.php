@@ -9,6 +9,16 @@ use Elastica\Query\AbstractQuery;
 class FilterBuilder
 {
 
+    /**
+     * Returns a Range filter object setup to filter documents having the field between
+     * a `from` and a `to` value
+     *
+     * @param string The field to filter by.
+     * @param mixed $from The lower bound value.
+     * @param mixed $to The upper bound value.
+     * @return Elastica\Filter\Range
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     */
     public function between($field, $from, $to)
     {
         return $this->range($field, [
@@ -17,21 +27,78 @@ class FilterBuilder
         ]);
     }
 
+    /**
+     * Returns a bool filter that can be chained with the `addMust()`, `addShould()`
+     * and `addMustNot()` methods.
+     *
+     * @return Elastica\Filter\Bool
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-filter.html
+     */
     public function bool()
     {
         return new Filter\Bool();
     }
 
+    /**
+     * Returns an Exists filter object setup to filter documents having a property present
+     * or not set to null.
+     *
+     * @param string The field to check for existance.
+     * @return Elastica\Filter\Exists
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
+     */
     public function exists($field)
     {
         return new Filter\Exists($field);
     }
 
-    public function geoBoundingBox($field, array $coordinates)
+    /**
+     * Returns a GeoBoundingBox filter object setup to filter documents having a property
+     * bound by two coordinates.
+     *
+     * ### Example:
+     *
+     * {{{
+     *    $filter = $builder->geoBoundingBox('location', [40.73, -74.1], [40.01, -71.12]);
+     *
+     *    $filter = $builder->geoBoundingBox(
+     *        'location',
+     *        ['lat => 40.73, 'lon' => -74.1],
+     *        ['lat => 40.01, 'lon' => -71.12]
+     *    );
+     *
+     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', 'drj7teegpus6');
+     * }}}
+     *
+     * @param string The field to check for existance.
+     * @param array|string $topLeft The top left coordinate.
+     * @param array|string $bottomRight The bottom right coordinate.
+     * @return Elastica\Filter\GeoBoundingBox
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-bounding-box-filter.html
+     */
+    public function geoBoundingBox($field, $topLeft, $bottomRight)
     {
-        return new Filter\GeoBoundingBox($field, $coordinates);
+        return new Filter\GeoBoundingBox($field, [$topLeft, $bottomRight]);
     }
 
+    /**
+     * Returns an GeoDistance filter object setup to filter documents having a property
+     * in the radius distance of a coordinate.
+     *
+     * ### Example:
+     *
+     * {{{
+     *    $filter = $builder->geoDistance('location', [40.73, -74.1], '10km');
+     *
+     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km');
+     * }}}
+     *
+     * @param string The field to check for existance.
+     * @param array|string $location The coordinate from wich to compare.
+     * @param string $distance The distance radius.
+     * @return Elastica\Filter\GeoBoundingBox
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-filter.html
+     */
     public function geoDistance($field, $location, $distance)
     {
         return new Filter\GeoDistance($field, $location, $distance);
