@@ -27,11 +27,24 @@ class FilterBuilder
         ]);
     }
 
+    /**
+    * Returns a bool filter that can be chained with the `addMust()`, `addShould()`
+    * and `addMustNot()` methods.
+    *
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-filter.html
+    */
     public function bool()
     {
         return new Filter\Bool();
     }
 
+    /**
+    * Returns an Exists filter object setup to filter documents having a property present
+    * or not set to null.
+    *
+    * @param string The field to check for existance.
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
+    */
     public function exists($field)
     {
         return new Filter\Exists($field);
