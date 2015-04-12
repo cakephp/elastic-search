@@ -232,4 +232,33 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the geoHashCell() filter
+     *
+     * @return void
+     */
+    public function testGeoHashCell()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->geoHashCell('location', ['lat' => 40.73, 'lon' => -74.1], 3);
+        $expected = [
+            'geohash_cell' => [
+                'location' => ['lat' => 40.73, 'lon' => -74.1],
+                'precision' => 3,
+                'neighbors' => false,
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->geoHashCell('location', 'dr5r9ydj2y73', '50m', true);
+        $expected = [
+            'geohash_cell' => [
+                'location' => 'dr5r9ydj2y73',
+                'precision' => '50m',
+                'neighbors' => true,
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

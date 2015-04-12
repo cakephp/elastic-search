@@ -191,7 +191,7 @@ class FilterBuilder
     }
 
     /**
-    * Returns an GeoShapeProvided filter object setup to filter documents having a property
+    * Returns an GeoShapePreIndex filter object setup to filter documents having a property
     * enclosed in the specified geometrical shape type.
     *
     * ### Example:
@@ -200,7 +200,7 @@ class FilterBuilder
     *    $filter = $builder->geoShapeIndex('location', 'DEU', 'countries', 'shapes', 'location');
     * }}}
     *
-    * @param string $field The field to check for existence.
+    * @param string $field The field to compare.
     * @param string $id The ID of the document containing the pre-indexed shape.
     * @param string $type Index type where the pre-indexed shape is.
     * @param string $index Name of the index where the pre-indexed shape is.
@@ -213,6 +213,24 @@ class FilterBuilder
         return new Filter\GeoShapePreIndexed($field, $id, $type, $index, $path);
     }
 
+    /**
+    * Returns an GeohashCell filter object setup to filter documents having a property
+    * enclosed inside the specified geohash in teh give precision.
+    *
+    * ### Example:
+    *
+    * {{{
+    *    $filter = $builder->geoHashCell('location', [40, -70], 3);
+    * }}}
+    *
+    * @param string $field The field to compare.
+    * @param string|array $location Location as coordinates array or geohash string.
+    * @param int|string $precision Length of geohash prefix or distance (3, or "50m")
+    * @param string $index Name of the index where the pre-indexed shape is.
+    * @param bool $neighbors If true, filters cells next to the given cell.
+    * @return Elastica\Filter\GeohashCell
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geohash-cell-filter.html
+    */
     public function geoHashCell($field, $location, $precision = -1, $neighbors = false)
     {
         return new Filter\GeohashCell($field, $location, $precision, $neighbors);
