@@ -14,6 +14,7 @@
  */
 namespace Cake\ElasticSearch;
 
+use ArrayObject;
 use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
@@ -308,17 +309,31 @@ class Type implements RepositoryInterface
      */
     public function delete(EntityInterface $entity, $options = [])
     {
-        $type = $this->connection()->getIndex()->getType($this->name());
         if (!$entity->has('id')) {
             $msg = 'Deleting requires an "id" value.';
             throw new InvalidArgumentException($msg);
+        }
+        $options = new ArrayObject($options);
+        $event = $this->dispatchEvent('Model.beforeDelete', [
+            'entity' => $entity,
+            'options' => $options
+        ]);
+        if ($event->isStopped()) {
+            return $event->result;
         }
 
         $data = $entity->toArray();
         unset($data['id']);
 
         $doc = new ElasticaDocument($entity->id, $data);
+
+        $type = $this->connection()->getIndex()->getType($this->name());
         $result = $type->deleteDocument($doc);
+
+        $this->dispatchEvent('Model.afterDelete', [
+            'entity' => $entity,
+            'options' => $options
+        ]);
         return $result->isOk();
     }
 

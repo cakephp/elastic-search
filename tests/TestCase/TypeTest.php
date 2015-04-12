@@ -255,6 +255,43 @@ class TypeTest extends TestCase
     }
 
     /**
+     * Test delete triggers events.
+     *
+     * @return void
+     */
+    public function testDeleteEvents()
+    {
+        $doc = $this->type->get(1);
+        $this->type->eventManager()->on('Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
+            $this->assertSame($doc, $entity);
+            $this->assertInstanceOf('ArrayObject', $options);
+        });
+        $this->type->eventManager()->on('Model.afterDelete', function ($event, $entity, $options) use ($doc) {
+            $this->assertSame($doc, $entity);
+            $this->assertInstanceOf('ArrayObject', $options);
+        });
+        $this->assertTrue($this->type->delete($doc));
+    }
+
+    /**
+     * Test beforeDelete abort.
+     *
+     * @return void
+     */
+    public function testDeleteBeforeDeleteAbort()
+    {
+        $doc = $this->type->get(1);
+        $this->type->eventManager()->on('Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
+            $event->stopPropagation();
+            return 'kaboom';
+        });
+        $this->type->eventManager()->on('Model.afterDelete', function () {
+            $this->fail('Should not be fired');
+        });
+        $this->assertSame('kaboom', $this->type->delete($doc));
+    }
+
+    /**
      * Test deleting a new document
      *
      * @expectedException \InvalidArgumentException
