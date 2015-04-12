@@ -151,4 +151,31 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the geoPolygon() filter
+     *
+     * @return void
+     */
+    public function testGeoPolygon()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->geoPolygon('location', [
+            ['lat' => 40, 'lon' => -70],
+            ['lat' => 30, 'lon' => -80],
+            ['lat' => 20, 'lon' => -90],
+        ]);
+        $expected = [
+            'geo_polygon' => [
+                'location' => [
+                    'points' => [
+                        ['lat' => 40, 'lon' => -70],
+                        ['lat' => 30, 'lon' => -80],
+                        ['lat' => 20, 'lon' => -90]
+                    ]
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

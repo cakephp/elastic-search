@@ -70,7 +70,7 @@ class FilterBuilder
     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', 'drj7teegpus6');
     * }}}
     *
-    * @param string The field to check for existance.
+    * @param string The field to check for existence.
     * @param array|string $topLeft The top left coordinate.
     * @param array|string $bottomRight The bottom right coordinate.
     * @return Elastica\Filter\GeoBoundingBox
@@ -106,14 +106,14 @@ class FilterBuilder
 
     /**
     * Returns an GeoDistanceRange filter object setup to filter documents having a property
-    * in betwen two distance radius from a location coordinate.
+    * in between two distance radius from a location coordinate.
     *
     * ### Example:
     *
     * {{{
-    *    $filter = $builder->geoDistance('location', [40.73, -74.1], '10km', '20km');
+    *    $filter = $builder->geoDistanceRange('location', [40.73, -74.1], '10km', '20km');
     *
-    *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km', '10km');
+    *    $filter = $builder->geoDistanceRange('location', 'dr5r9ydj2y73', '5km', '10km');
     * }}}
     *
     * @param string The field to check for existence.
@@ -131,6 +131,31 @@ class FilterBuilder
         ]);
     }
 
+    /**
+    * Returns an GeoPolygon filter object setup to filter documents having a property
+    * enclosed in the polygon induced by the passed geo points.
+    *
+    * ### Example:
+    *
+    * {{{
+    *    $filter = $builder->geoPolygon('location', [
+    *        ['lat' => 40, 'lon' => -70],
+    *        ['lat' => 30, 'lon' => -80],
+    *        ['lat' => 20, 'lon' => -90],
+    *    ]);
+    *
+    *    $filter = $builder->geoPolygon('location', [
+    *        'drn5x1g8cu2y',
+    *        ['lat' => 30, 'lon' => -80],
+    *        '20, -90',
+    *    ]);
+    * }}}
+    *
+    * @param string The field to check for existence.
+    * @param array List of geo points that form the polygon
+    * @return Elastica\Filter\GeoPolygon
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-filter.html
+    */
     public function geoPolygon($field, array $geoPoints)
     {
         return new Filter\GeoPolygon($field, $geoPoints);
