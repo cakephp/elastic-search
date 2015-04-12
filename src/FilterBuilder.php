@@ -9,6 +9,16 @@ use Elastica\Query\AbstractQuery;
 class FilterBuilder
 {
 
+    /**
+    * Returns a Range filter object setup to filter documents having the field between
+    * a `from` and a `to` value
+    *
+    * @param string The field to filter by.
+    * @param mixed $from The lower bound value.
+    * @param mixed $to The upper bound value.
+    * @return Elastica\Filter\Range
+    * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+    */
     public function between($field, $from, $to)
     {
         return $this->range($field, [
