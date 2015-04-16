@@ -81,6 +81,31 @@ class MarshallerTest extends TestCase
     }
 
     /**
+     * Test validation errors being set.
+     *
+     * @return void
+     */
+    public function testOneValidationErrorsSet()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $this->type->validator()
+            ->add('title', 'numbery', ['rule' => 'numeric']);
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->one($data);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertNull($result->title, 'Invalid fields are not set.');
+        $this->assertSame($data['body'], $result->body);
+        $this->assertSame($data['user_id'], $result->user_id);
+        $this->assertNotEmpty($result->errors('title'), 'Should have an error.');
+    }
+
+    /**
      * test marshalling with fieldList
      *
      * @return void
@@ -179,6 +204,30 @@ class MarshallerTest extends TestCase
         $this->assertTrue($doc->dirty('body'));
         $this->assertFalse($doc->dirty('user_id'));
         $this->assertFalse($doc->isNew(), 'Should not end up new');
+    }
+
+    /**
+     * Test validation errors being set.
+     *
+     * @return void
+     */
+    public function testMergeValidationErrorsSet()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $this->type->validator()
+            ->add('title', 'numbery', ['rule' => 'numeric']);
+        $doc = $this->type->get(1);
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($doc, $data);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertSame('First article', $result->title, 'Invalid fields are not modified.');
+        $this->assertNotEmpty($result->errors('title'), 'Should have an error.');
     }
 
     /**

@@ -24,12 +24,20 @@ use Cake\ElasticSearch\Query;
 use Cake\Event\EventManager;
 use Cake\Event\EventManagerTrait;
 use Cake\Utility\Inflector;
+use Cake\Validation\Validator;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 
 class Type implements RepositoryInterface
 {
     use EventManagerTrait;
+
+    /**
+     * Default validator name.
+     *
+     * @var string
+     */
+    const DEFAULT_VALIDATOR = 'default';
 
     /**
      * Connection instance
@@ -485,5 +493,76 @@ class Type implements RepositoryInterface
     {
         $marshaller = $this->marshaller();
         return $marshaller->mergeMany($entity, $data, $options);
+    }
+
+    /**
+     * Returns the validation rules tagged with $name. It is possible to have
+     * multiple different named validation sets, this is useful when you need
+     * to use varying rules when saving from different routines in your system.
+     *
+     * There are two different ways of creating and naming validation sets: by
+     * creating a new method inside your own Type subclass, or by building
+     * the validator object yourself and storing it using this method.
+     *
+     * For example, if you wish to create a validation set called 'forSubscription',
+     * you will need to create a method in your Type subclass as follows:
+     *
+     * ```
+     * public function validationForSubscription($validator)
+     * {
+     *  return $validator
+     *    ->add('email', 'valid-email', ['rule' => 'email'])
+     *    ->add('password', 'valid', ['rule' => 'notEmpty'])
+     *    ->requirePresence('username');
+     * }
+     * ```
+     *
+     * Otherwise, you can build the object by yourself and store it in the Table object:
+     *
+     * ```
+     * $validator = new \Cake\Validation\Validator();
+     * $validator
+     *   ->add('email', 'valid-email', ['rule' => 'email'])
+     *   ->add('password', 'valid', ['rule' => 'notEmpty'])
+     *   ->allowEmpty('bio');
+     * $type->validator('forSubscription', $validator);
+     * ```
+     *
+     * You can implement the method in `validationDefault` in your Type subclass
+     * should you wish to have a validation set that applies in cases where no other
+     * set is specified.
+     *
+     * @param string $name the name of the validation set to return
+     * @param \Cake\Validation\Validator|null $validator The validator instance to store,
+     *   use null to get a validator.
+     * @return \Cake\Validation\Validator
+     */
+    public function validator($name = self::DEFAULT_VALIDATOR, Validator $validator = null)
+    {
+        if ($validator === null && isset($this->_validators[$name])) {
+            return $this->_validators[$name];
+        }
+
+        if ($validator === null) {
+            $validator = new Validator();
+            $validator = $this->{'validation' . ucfirst($name)}($validator);
+            $this->dispatchEvent('Model.buildValidator', compact('validator', 'name'));
+        }
+
+        $validator->provider('collection', $this);
+        return $this->_validators[$name] = $validator;
+    }
+
+    /**
+     * Returns the default validator object. Subclasses can override this function
+     * to add a default validation set to the validator object.
+     *
+     * @param \Cake\Validation\Validator $validator The validator that can be modified to
+     * add some rules to it.
+     * @return \Cake\Validation\Validator
+     */
+    public function validationDefault(Validator $validator)
+    {
+        return $validator;
     }
 }

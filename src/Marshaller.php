@@ -51,10 +51,17 @@ class Marshaller
         $entity = new $entityClass();
         $entity->source($this->type->name());
 
+        list($data, $options) = $this->_prepareDataAndOptions($data, $options);
+
         if (isset($options['accessibleFields'])) {
             foreach ((array)$options['accessibleFields'] as $key => $value) {
                 $entity->accessible($key, $value);
             }
+        }
+        $errors = $this->_validate($data, $options, true);
+        $entity->errors($errors);
+        foreach (array_keys($errors) as $badKey) {
+            unset($data[$badKey]);
         }
 
         if (!isset($options['fieldList'])) {
@@ -107,6 +114,14 @@ class Marshaller
      */
     public function merge(EntityInterface $entity, array $data, array $options = [])
     {
+        list($data, $options) = $this->_prepareDataAndOptions($data, $options);
+        $errors = $this->_validate($data, $options, $entity->isNew());
+        $entity->errors($errors);
+
+        foreach (array_keys($errors) as $badKey) {
+            unset($data[$badKey]);
+        }
+
         if (!isset($options['fieldList'])) {
             $entity->set($data);
             return $entity;
@@ -167,5 +182,51 @@ class Marshaller
             $output[] = $this->one($newRecord, $options);
         }
         return $output;
+    }
+
+    /**
+     * Returns the validation errors for a data set based on the passed options
+     *
+     * @param array $data The data to validate.
+     * @param array $options The options passed to this marshaller.
+     * @param bool $isNew Whether it is a new entity or one to be updated.
+     * @return array The list of validation errors.
+     * @throws \RuntimeException If no validator can be created.
+     */
+    protected function _validate($data, $options, $isNew)
+    {
+        if (!$options['validate']) {
+            return [];
+        }
+        if ($options['validate'] === true) {
+            $options['validate'] = $this->type->validator('default');
+        }
+        if (is_string($options['validate'])) {
+            $options['validate'] = $this->type->validator($options['validate']);
+        }
+        if (!is_object($options['validate'])) {
+            throw new RuntimeException(
+                sprintf('validate must be a boolean, a string or an object. Got %s.', gettype($options['validate']))
+            );
+        }
+
+        return $options['validate']->errors($data, $isNew);
+    }
+
+    /**
+     * Returns data and options prepared to validate and marshall.
+     *
+     * @param array $data The data to prepare.
+     * @param array $options The options passed to this marshaller.
+     * @return array An array containing prepared data and options.
+     */
+    protected function _prepareDataAndOptions($data, $options)
+    {
+        $options += ['validate' => true];
+        $data = new \ArrayObject($data);
+        $options = new \ArrayObject($options);
+        $this->type->dispatchEvent('Model.beforeMarshal', compact('data', 'options'));
+
+        return [(array)$data, (array)$options];
     }
 }
