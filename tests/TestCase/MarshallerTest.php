@@ -81,6 +81,31 @@ class MarshallerTest extends TestCase
     }
 
     /**
+     * Test validation errors being set.
+     *
+     * @return void
+     */
+    public function testOneValidationErrorsSet()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $this->type->validator()
+            ->add('title', 'numbery', ['rule' => 'numeric']);
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->one($data);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertNull($result->title, 'Invalid fields are not set.');
+        $this->assertSame($data['body'], $result->body);
+        $this->assertSame($data['user_id'], $result->user_id);
+        $this->assertNotEmpty($result->errors('title'), 'Should have an error.');
+    }
+
+    /**
      * test marshalling with fieldList
      *
      * @return void
@@ -126,6 +151,52 @@ class MarshallerTest extends TestCase
         $this->assertSame($data['title'], $result->title);
         $this->assertSame($data['body'], $result->body);
         $this->assertNull($result->user_id);
+    }
+
+    /**
+     * test beforeMarshal event
+     *
+     * @return void
+     */
+    public function testOneBeforeMarshalEvent()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $called = 0;
+        $this->type->eventManager()->on(
+            'Model.beforeMarshal',
+            function ($event, $data, $options) use (&$called) {
+                $called++;
+                $this->assertInstanceOf('ArrayObject', $data);
+                $this->assertInstanceOf('ArrayObject', $options);
+            });
+        $marshaller = new Marshaller($this->type);
+        $marshaller->one($data);
+
+        $this->assertEquals(1, $called, 'method should be called');
+    }
+
+    /**
+     * test beforeMarshal event allows data mutation.
+     *
+     * @return void
+     */
+    public function testOneBeforeMarshalEventMutateData()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $this->type->eventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
+            $data['title'] = 'Mutated';
+        });
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->one($data);
+        $this->assertEquals('Mutated', $result->title);
     }
 
     /**
@@ -182,6 +253,30 @@ class MarshallerTest extends TestCase
     }
 
     /**
+     * Test validation errors being set.
+     *
+     * @return void
+     */
+    public function testMergeValidationErrorsSet()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $this->type->validator()
+            ->add('title', 'numbery', ['rule' => 'numeric']);
+        $doc = $this->type->get(1);
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($doc, $data);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertSame('First article', $result->title, 'Invalid fields are not modified.');
+        $this->assertNotEmpty($result->errors('title'), 'Should have an error.');
+    }
+
+    /**
      * Test merging data into existing records with a fieldlist
      *
      * @return void
@@ -203,6 +298,54 @@ class MarshallerTest extends TestCase
         $this->assertNotEquals($data['body'], $doc->body, 'body should be the same.');
         $this->assertTrue($doc->dirty('title'));
         $this->assertFalse($doc->dirty('body'));
+    }
+
+    /**
+     * test beforeMarshal event
+     *
+     * @return void
+     */
+    public function testMergeBeforeMarshalEvent()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $called = 0;
+        $this->type->eventManager()->on(
+            'Model.beforeMarshal',
+            function ($event, $data, $options) use (&$called) {
+                $called++;
+                $this->assertInstanceOf('ArrayObject', $data);
+                $this->assertInstanceOf('ArrayObject', $options);
+            });
+        $marshaller = new Marshaller($this->type);
+        $doc = new Document(['title' => 'original', 'body' => 'original']);
+        $marshaller->merge($doc, $data);
+
+        $this->assertEquals(1, $called, 'method should be called');
+    }
+
+    /**
+     * test beforeMarshal event allows data mutation.
+     *
+     * @return void
+     */
+    public function testMergeBeforeMarshalEventMutateData()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $this->type->eventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
+            $data['title'] = 'Mutated';
+        });
+        $marshaller = new Marshaller($this->type);
+        $doc = new Document(['title' => 'original', 'body' => 'original']);
+        $result = $marshaller->merge($doc, $data);
+        $this->assertEquals('Mutated', $result->title);
     }
 
     /**

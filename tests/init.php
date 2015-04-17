@@ -14,11 +14,19 @@
  */
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+define('APP', __DIR__);
+
 use Cake\Core\Configure;
+use Cake\Cache\Cache;
 use Cake\Datasource\ConnectionManager;
 
 Configure::write('App', [
     'namespace' => 'App'
+]);
+
+Cache::config('_cake_core_', [
+    'className' => 'File',
+    'path' => sys_get_temp_dir(),
 ]);
 
 if (!getenv('db_dsn')) {

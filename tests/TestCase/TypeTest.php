@@ -361,4 +361,35 @@ class TypeTest extends TestCase
         $doc = new Document(['title' => 'not there.']);
         $this->type->delete($doc);
     }
+
+    /**
+     * Test getting and setting validators.
+     *
+     * @return void
+     */
+    public function testValidatorSetAndGet()
+    {
+        $result = $this->type->validator();
+
+        $this->assertInstanceOf('Cake\Validation\Validator', $result);
+        $this->assertSame($result, $this->type->validator(), 'validator instances are persistent');
+        $this->assertSame($this->type, $result->provider('collection'), 'type bound as provider');
+    }
+
+    /**
+     * Test buildValidator event
+     *
+     * @return void
+     */
+    public function testValidatorTriggerEvent()
+    {
+        $called = 0;
+        $this->type->eventManager()->on('Model.buildValidator', function ($event, $validator, $name) use (&$called) {
+            $called++;
+            $this->assertInstanceOf('Cake\Validation\Validator', $validator);
+            $this->assertEquals('default', $name);
+        });
+        $this->type->validator();
+        $this->assertEquals(1, $called, 'Event not triggered');
+    }
 }
