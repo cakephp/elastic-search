@@ -48,6 +48,8 @@ class ResultSetTest extends TestCase
         $type->expects($this->once())
             ->method('entityClass')
             ->will($this->returnValue(__NAMESPACE__ . '\MyTestDocument'));
+        $type->method('embedded')
+            ->will($this->returnValue([]));
         return [new ResultSet($elasticaSet, $query), $elasticaSet];
     }
 
@@ -63,11 +65,14 @@ class ResultSetTest extends TestCase
         list($resultSet, $elasticaSet) = $resultSets;
         $data = ['foo' => 1, 'bar' => 2];
         $result = $this->getMock('Elastica\Result', ['getData'], [[]]);
-        $result->expects($this->once())->method('getData')
+        $result->expects($this->once())
+            ->method('getData')
             ->will($this->returnValue($data));
 
-        $elasticaSet->expects($this->once())->method('current')
+        $elasticaSet->expects($this->once())
+            ->method('current')
             ->will($this->returnValue($result));
+
         $document = $resultSet->current();
         $this->assertInstanceOf(__NAMESPACE__ . '\MyTestDocument', $document);
         $this->assertSame($data, $document->toArray());
@@ -93,7 +98,9 @@ class ResultSetTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods($methods)
             ->getMock();
-            $type = $this->getMock('Cake\ElasticSearch\Type');
+        $type = $this->getMock('Cake\ElasticSearch\Type');
+        $type->method('embedded')
+            ->will($this->returnValue([]));
         $query = $this->getMock('Cake\ElasticSearch\Query', [], [$type]);
         $query->expects($this->once())->method('repository')
             ->will($this->returnValue($type));

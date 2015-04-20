@@ -18,6 +18,8 @@ use ArrayObject;
 use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
+use Cake\ElasticSearch\Association\EmbedOne;
+use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Query;
@@ -60,6 +62,12 @@ class Type implements RepositoryInterface
      */
     protected $_documentClass;
 
+    /**
+     * Collection of Embedded sub documents this type has.
+     *
+     * @var array
+     */
+    protected $embeds = [];
 
     public function __construct(array $config = [])
     {
@@ -76,6 +84,48 @@ class Type implements RepositoryInterface
         }
         $this->_eventManager = $eventManager ?: new EventManager();
         $this->dispatchEvent('Model.initialize');
+    }
+
+    /**
+     * Mark a property in documents of this type as an embedded sub-document.
+     *
+     * Embedded documents are converted into instances of the named document type.
+     * This allows you to attach entity level behavior to subsections of your documents.
+     *
+     * @param string $name The name of the property that contains the embedded document.
+     * @param array $options The options for the embedded document.
+     * @return void
+     */
+    public function embedOne($name, $options = [])
+    {
+        $this->embeds[] = new EmbedOne($name, $options);
+    }
+
+    /**
+     * Mark a property in documents of this type as list of embedded sub-documents.
+     *
+     * Embedded documents are converted into instances of the named document type.
+     * This allows you to attach entity level behavior to subsections of your documents.
+     *
+     * This method will make a list of embedded documents from the named property.
+     *
+     * @param string $name The name of the property that contains the embedded document.
+     * @param array $options The options for the embedded document.
+     * @return void
+     */
+    public function embedMany($name, $options = [])
+    {
+        $this->embeds[] = new EmbedMany($name, $options);
+    }
+
+    /**
+     * Get the list of embedded documents this type has.
+     *
+     * @return array
+     */
+    public function embedded()
+    {
+        return $this->embeds;
     }
 
     /**
@@ -197,17 +247,21 @@ class Type implements RepositoryInterface
         $result = $type->getDocument($primaryKey, $options);
         $class = $this->entityClass();
 
-        $data = $result->getData();
-        $data['id'] = $result->getId();
-
-        $document = new $class($data, [
+        $options = [
             'markNew' => false,
             'markClean' => true,
             'useSetters' => false
-        ]);
-        $document->clean();
-        $document->isNew(false);
-        return $document;
+        ];
+        $data = $result->getData();
+        $data['id'] = $result->getId();
+        foreach ($this->embedded() as $embed) {
+            $prop = $embed->property();
+            if (isset($data[$prop])) {
+                $data[$prop] = $embed->hydrate($data[$prop], $options);
+            }
+        }
+
+        return new $class($data, $options);
     }
 
     /**
