@@ -16,7 +16,7 @@ namespace Cake\ElasticSearch\Test;
 
 use Cake\ElasticSearch\Document;
 use Cake\TestSuite\TestCase;
-use Elatica\Result;
+use Elastica\Result;
 
 /**
  * Tests the Document class
