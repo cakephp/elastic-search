@@ -63,4 +63,17 @@ class EmbeddedDocumentTest extends TestCase
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address);
     }
 
+    /**
+     * Test fetching with embedded documents.
+     *
+     * @return void
+     */
+    public function testFindWithEmbedOne()
+    {
+        $this->type->embedOne('Address');
+        $result = $this->type->find()->where(['username' => 'mark']);
+        $rows = $result->toArray();
+        $this->assertCount(1, $rows);
+    }
+
 }

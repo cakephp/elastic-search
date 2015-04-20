@@ -231,13 +231,17 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
             'useSetters' => false,
             'markNew' => false
         ];
-        $record = $this->resultSet->current();
+
+        $result = $this->resultSet->current();
+        $data = $result->getData();
+        $data['id'] = $result->getId();
+
         foreach ($this->embeds as $property => $embed) {
-            if (isset($record[$property])) {
-                $record[$property] = $embed->hydrate($record[$property], $options);
+            if (isset($data[$property])) {
+                $data[$property] = $embed->hydrate($data[$property], $options);
             }
         }
-        $document = new $class($record, $options);
+        $document = new $class($data, $options);
         return $document;
     }
 }
