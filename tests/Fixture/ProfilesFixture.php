@@ -73,5 +73,23 @@ class ProfilesFixture extends TestFixture
                 'country' => 'Denmark'
             ]
         ],
+        [
+            'id' => '3',
+            'username' => 'sara',
+            'address' => [
+                [
+                    'street' => '456 street',
+                    'city' => 'Copenhagen',
+                    'province' => 'Copenhagen',
+                    'country' => 'Denmark'
+                ],
+                [
+                    'street' => '89 street',
+                    'city' => 'Calgary',
+                    'province' => 'Alberta',
+                    'country' => 'Canada'
+                ]
+            ]
+        ],
     ];
 }

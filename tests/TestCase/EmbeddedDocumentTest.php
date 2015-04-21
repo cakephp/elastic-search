@@ -61,6 +61,7 @@ class EmbeddedDocumentTest extends TestCase
         $this->type->embedOne('Address');
         $result = $this->type->get(1);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address);
+        $this->assertEquals('123 street', $result->address->street);
     }
 
     /**
@@ -76,4 +77,34 @@ class EmbeddedDocumentTest extends TestCase
         $this->assertCount(1, $rows);
     }
 
+    /**
+     * Test fetching with embedded has many documents.
+     *
+     * @return void
+     */
+    public function testGetWithEmbedMany()
+    {
+        $this->type->embedMany('Address');
+        $result = $this->type->get(3);
+        $this->assertInternalType('array', $result->address);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address[1]);
+    }
+
+    /**
+     * Test fetching with embedded documents.
+     *
+     * @return void
+     */
+    public function testFindWithEmbedMany()
+    {
+        $this->type->embedMany('Address');
+        $result = $this->type->find()->where(['username' => 'sara']);
+        $rows = $result->toArray();
+
+        $this->assertCount(1, $rows);
+        $this->assertInternalType('array', $rows[0]->address);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address[1]);
+    }
 }
