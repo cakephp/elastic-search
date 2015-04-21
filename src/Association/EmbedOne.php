@@ -1,91 +1,14 @@
 <?php
 namespace Cake\ElasticSearch\Association;
 
-use Cake\Core\App;
-use Cake\Utility\Inflector;
+use Cake\ElasticSearch\Association\Embedded;
 
 /**
  * Represents an embedded document that only contains
  * one instance.
  */
-class EmbedOne
+class EmbedOne extends Embedded
 {
-    protected $alias;
-
-    /**
-     * The class to use for the embeded document.
-     *
-     * @var string
-     */
-    protected $entityClass;
-
-    /**
-     * The property the embedded document is located under.
-     *
-     * @var string
-     */
-    protected $property;
-
-    /**
-     * Constructor
-     *
-     * @param string $alias The alias/name for the embedded document.
-     * @param array $options The options for the embedded document.
-     */
-    public function __construct($alias, $options = [])
-    {
-        $this->alias = $alias;
-        $defaults = [
-            'entityClass',
-            'property'
-        ];
-        foreach ($defaults as $prop) {
-            if (isset($options[$prop])) {
-                $this->{$prop} = $options[$prop];
-            }
-        }
-
-        if (empty($this->entityClass) && strpos($alias, '.')) {
-            $this->entityClass = $alias;
-        }
-    }
-
-    public function property($name = null)
-    {
-        if ($name === null) {
-            if (!$this->property) {
-                $this->property = Inflector::underscore($this->alias);
-            }
-            return $this->property;
-        }
-        $this->property = $name;
-    }
-
-    public function entityClass($name = null)
-    {
-        if ($name === null && !$this->entityClass) {
-            $default = '\Cake\ElasticSearch\Document';
-            $self = get_called_class();
-            $parts = explode('\\', $self);
-
-            if ($self === __CLASS__ || count($parts) < 3) {
-                return $this->entityClass = $default;
-            }
-
-            $alias = Inflector::singularize(substr(array_pop($parts), 0, -5));
-            $name = implode('\\', array_slice($parts, 0, -1)) . '\Document\\' . $alias;
-            if (!class_exists($name)) {
-                return $this->entityClass = $default;
-            }
-        }
-
-        if ($name !== null) {
-            $class = App::className($name, 'Model/Document');
-            $this->entityClass = $class;
-        }
-        return $this->entityClass;
-    }
-
     /**
      * Hydrate an instance from the parent documents data.
      *
