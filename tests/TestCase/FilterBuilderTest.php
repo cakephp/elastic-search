@@ -357,4 +357,27 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the indices() filter
+     *
+     * @return void
+     */
+    public function testIndices()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->indices(
+            ['a', 'b'],
+            $builder->term('user', 'mark'),
+            $builder->term('tag', 'wow')
+        );
+        $expected = [
+            'indices' => [
+                'indices' => ['a', 'b'],
+                'filter' => ['term' => ['user' => 'mark']],
+                'no_match_filter' => ['term' => ['tag' => 'wow']]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

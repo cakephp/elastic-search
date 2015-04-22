@@ -304,9 +304,31 @@ class FilterBuilder
         return new Filter\Ids($type, $ids);
     }
 
-    public function indices(AbstractFilter $filter, array $indices)
+    /**
+     * The indices filter can be used when executed across multiple indices, allowing to have a filter
+     * that executes only when executed on an index that matches a specific list of indices, and another
+     * filter that executes when it is executed on an index that does not match the listed indices.
+     *
+     * ### Example:
+     *
+     * {{{
+     *    $bilder->indices(
+     *       ['index1', 'index2'],
+     *       $builder->term('user', 'jhon'),
+     *       $builder->term('tag', 'wow')
+     *    );
+     * }}}
+     *
+     * @param array $indices The indices where to apply the filter.
+     * @param \Elastica\Filter\AbstractFilter $match Filter which will be applied to docs
+     * in the specified indices.
+     * @param \Elastica\Filter\AbstractFilter $noMatch Filter to apply to documents not present
+     * in the specified indices.
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-indices-filter.html
+     */
+    public function indices(array $indices, AbstractFilter $match, AbstractFilter $noMatch)
     {
-        return new Filter\Indices($filter, $indices);
+        return (new Filter\Indices($match, $indices))->setNoMatchFilter($noMatch);
     }
 
     public function limit($limit)
