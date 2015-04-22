@@ -291,6 +291,14 @@ class FilterBuilder
         return new Filter\HasParent($query, $type);
     }
 
+    /**
+     * Filters documents that only have the provided ids.
+     *
+     * @param array $ids The list of ids to filter by.
+     * @param string|array $type A single or multiple types in which the ids should be looked for.
+     * @return Elastica\Filter\Ids
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-filter.html
+     */
     public function ids(array $ids = [], $type = null)
     {
         return new Filter\Ids($type, $ids);

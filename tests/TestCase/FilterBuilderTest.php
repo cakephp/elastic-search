@@ -339,4 +339,22 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the ids() filter
+     *
+     * @return void
+     */
+    public function testIds()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->ids([1, 2, 3], 'user');
+        $expected = [
+            'ids' => [
+                'type' => 'user',
+                'values' => [1, 2, 3]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
