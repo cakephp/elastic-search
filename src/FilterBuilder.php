@@ -324,6 +324,7 @@ class FilterBuilder
      * in the specified indices.
      * @param \Elastica\Filter\AbstractFilter $noMatch Filter to apply to documents not present
      * in the specified indices.
+     * @return Elastica\Filter\Indices
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-indices-filter.html
      */
     public function indices(array $indices, AbstractFilter $match, AbstractFilter $noMatch)
@@ -331,6 +332,13 @@ class FilterBuilder
         return (new Filter\Indices($match, $indices))->setNoMatchFilter($noMatch);
     }
 
+    /**
+     * Limits the number of documents (per shard) to execute on.
+     *
+     * @param integer $limit The maximum number of documents to filter.
+     * @return Elastica\Filter\Limit
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-limit-filter.html
+     */
     public function limit($limit)
     {
         return new Filter\Limit((int)$limit);

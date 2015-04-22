@@ -380,4 +380,19 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the limit() filter
+     *
+     * @return void
+     */
+    public function testLimit()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->limit(10);
+        $expected = [
+            'limit' => ['value' => 10]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
