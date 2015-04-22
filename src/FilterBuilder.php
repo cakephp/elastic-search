@@ -344,6 +344,12 @@ class FilterBuilder
         return new Filter\Limit((int)$limit);
     }
 
+    /**
+     * A filter that returns all documents.
+     *
+     * @return Elastica\Filter\MatchAll
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-filter.html
+     */
     public function matchAll()
     {
         return new Filter\MatchAll();

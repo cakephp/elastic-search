@@ -395,4 +395,19 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the matchAll() filter
+     *
+     * @return void
+     */
+    public function testMatchAll()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->matchAll();
+        $expected = [
+            'match_all' => new \stdClass
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
