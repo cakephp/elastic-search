@@ -410,4 +410,46 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the lt() filter
+     *
+     * @return void
+     */
+    public function testLt()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->lt('price', 10);
+        $expected = [
+            'range' => ['price' => ['lt' => 10]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->lt('year', '2014');
+        $expected = [
+            'range' => ['year' => ['lt' => '2014']]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the lte() filter
+     *
+     * @return void
+     */
+    public function testLte()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->lte('price', 10);
+        $expected = [
+            'range' => ['price' => ['lte' => 10]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->lte('year', '2014');
+        $expected = [
+            'range' => ['year' => ['lte' => '2014']]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
