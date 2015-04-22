@@ -269,16 +269,24 @@ class FilterBuilder
      * documents that have child docs matching the query.
      *
      * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
-     * @param string $type Thechild type to query against.
+     * @param string $type The child type to query against.
      * @return Elastica\Filter\HasChild
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-filter.html
      */
-    public function hasChild($query, $type = null)
+    public function hasChild($query, $type)
     {
         return new Filter\HasChild($query, $type);
     }
 
-    public function hasParent()
+    /**
+     * Filters by child documents having parent docs matching the query
+     *
+     * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
+     * @param string $type The parent type to query against.
+     * @return Elastica\Filter\HasParent
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-filter.html
+     */
+    public function hasParent($query, $type)
     {
         return new Filter\HasParent($query, $type);
     }
