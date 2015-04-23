@@ -321,4 +321,135 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the hasParent() filter
+     *
+     * @return void
+     */
+    public function testHashParent()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->hasParent($builder->term('name', 'john'), 'user');
+        $expected = [
+            'has_parent' => [
+                'type' => 'user',
+                'filter' => ['term' => ['name' => 'john']]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the ids() filter
+     *
+     * @return void
+     */
+    public function testIds()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->ids([1, 2, 3], 'user');
+        $expected = [
+            'ids' => [
+                'type' => 'user',
+                'values' => [1, 2, 3]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the indices() filter
+     *
+     * @return void
+     */
+    public function testIndices()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->indices(
+            ['a', 'b'],
+            $builder->term('user', 'mark'),
+            $builder->term('tag', 'wow')
+        );
+        $expected = [
+            'indices' => [
+                'indices' => ['a', 'b'],
+                'filter' => ['term' => ['user' => 'mark']],
+                'no_match_filter' => ['term' => ['tag' => 'wow']]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the limit() filter
+     *
+     * @return void
+     */
+    public function testLimit()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->limit(10);
+        $expected = [
+            'limit' => ['value' => 10]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the matchAll() filter
+     *
+     * @return void
+     */
+    public function testMatchAll()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->matchAll();
+        $expected = [
+            'match_all' => new \stdClass
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the lt() filter
+     *
+     * @return void
+     */
+    public function testLt()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->lt('price', 10);
+        $expected = [
+            'range' => ['price' => ['lt' => 10]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->lt('year', '2014');
+        $expected = [
+            'range' => ['year' => ['lt' => '2014']]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the lte() filter
+     *
+     * @return void
+     */
+    public function testLte()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->lte('price', 10);
+        $expected = [
+            'range' => ['price' => ['lte' => 10]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->lte('year', '2014');
+        $expected = [
+            'range' => ['year' => ['lte' => '2014']]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

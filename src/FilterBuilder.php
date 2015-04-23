@@ -269,45 +269,115 @@ class FilterBuilder
      * documents that have child docs matching the query.
      *
      * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
-     * @param string $type Thechild type to query against.
+     * @param string $type The child type to query against.
      * @return Elastica\Filter\HasChild
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-filter.html
      */
-    public function hasChild($query, $type = null)
+    public function hasChild($query, $type)
     {
         return new Filter\HasChild($query, $type);
     }
 
-    public function hasParent()
+    /**
+     * Filters by child documents having parent documents matching the query
+     *
+     * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
+     * @param string $type The parent type to query against.
+     * @return Elastica\Filter\HasParent
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-filter.html
+     */
+    public function hasParent($query, $type)
     {
         return new Filter\HasParent($query, $type);
     }
 
+    /**
+     * Filters documents that only have the provided ids.
+     *
+     * @param array $ids The list of ids to filter by.
+     * @param string|array $type A single or multiple types in which the ids should be searched.
+     * @return Elastica\Filter\Ids
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-filter.html
+     */
     public function ids(array $ids = [], $type = null)
     {
         return new Filter\Ids($type, $ids);
     }
 
-    public function indices(AbstractFilter $filter, array $indices)
+    /**
+     * The indices filter can be used when executed across multiple indices, allowing you to have a filter
+     * that is only applied when executed on an index matching a specific list of indices, and another
+     * filter that executes when it is executed on an index that does not match the listed indices.
+     *
+     * ### Example:
+     *
+     * {{{
+     *    $bilder->indices(
+     *       ['index1', 'index2'],
+     *       $builder->term('user', 'jhon'),
+     *       $builder->term('tag', 'wow')
+     *    );
+     * }}}
+     *
+     * @param array $indices The indices where to apply the filter.
+     * @param \Elastica\Filter\AbstractFilter $match Filter which will be applied to docs
+     * in the specified indices.
+     * @param \Elastica\Filter\AbstractFilter $noMatch Filter to apply to documents not present
+     * in the specified indices.
+     * @return Elastica\Filter\Indices
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-indices-filter.html
+     */
+    public function indices(array $indices, AbstractFilter $match, AbstractFilter $noMatch)
     {
-        return new Filter\Indices($filter, $indices);
+        return (new Filter\Indices($match, $indices))->setNoMatchFilter($noMatch);
     }
 
+    /**
+     * Limits the number of documents (per shard) to execute on.
+     *
+     * @param integer $limit The maximum number of documents to filter.
+     * @return Elastica\Filter\Limit
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-limit-filter.html
+     */
     public function limit($limit)
     {
         return new Filter\Limit((int)$limit);
     }
 
+    /**
+     * A filter that returns all documents.
+     *
+     * @return Elastica\Filter\MatchAll
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-filter.html
+     */
     public function matchAll()
     {
         return new Filter\MatchAll();
     }
 
+    /**
+     * Returns a Range filter object setup to filter documents having the field
+     * smaller than the provided value.
+     *
+     * @param string $field The field to filter by.
+     * @param mixed $value The value to compare with.
+     * @return Elastica\Filter\Range
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     */
     public function lt($field, $value)
     {
         return $this->range($field, ['lt' => $value]);
     }
 
+    /**
+     * Returns a Range filter object setup to filter documents having the field
+     * smaller or equals than the provided value.
+     *
+     * @param string $field The field to filter by.
+     * @param mixed $value The value to compare with.
+     * @return Elastica\Filter\Range
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     */
     public function lte($field, $value)
     {
         return $this->range($field, ['lte' => $value]);
