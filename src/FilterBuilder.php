@@ -279,7 +279,7 @@ class FilterBuilder
     }
 
     /**
-     * Filters by child documents having parent docs matching the query
+     * Filters by child documents having parent documents matching the query
      *
      * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
      * @param string $type The parent type to query against.
@@ -295,7 +295,7 @@ class FilterBuilder
      * Filters documents that only have the provided ids.
      *
      * @param array $ids The list of ids to filter by.
-     * @param string|array $type A single or multiple types in which the ids should be looked for.
+     * @param string|array $type A single or multiple types in which the ids should be searched.
      * @return Elastica\Filter\Ids
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-filter.html
      */
@@ -305,8 +305,8 @@ class FilterBuilder
     }
 
     /**
-     * The indices filter can be used when executed across multiple indices, allowing to have a filter
-     * that executes only when executed on an index that matches a specific list of indices, and another
+     * The indices filter can be used when executed across multiple indices, allowing you to have a filter
+     * that is only applied when executed on an index matching a specific list of indices, and another
      * filter that executes when it is executed on an index that does not match the listed indices.
      *
      * ### Example:
