@@ -33,14 +33,21 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      *
      * @var string
      */
-    protected $_resultSet;
+    protected $resultSet;
 
     /**
      * The full class name of the document class to wrap the results
      *
      * @var \Cake\ElasticSearch\Document
      */
-    protected $_entityClass;
+    protected $entityClass;
+
+    /**
+     * Embedded type references
+     *
+     * @var array
+     */
+    protected $embeds = [];
 
     /**
      * Decorator's constructor
@@ -50,8 +57,12 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function __construct($resultSet, $query)
     {
-        $this->_resultSet = $resultSet;
-        $this->_entityClass = $query->repository()->entityClass();
+        $this->resultSet = $resultSet;
+        $repo = $query->repository();
+        foreach ($repo->embedded() as $embed) {
+            $this->embeds[$embed->property()] = $embed;
+        }
+        $this->entityClass = $repo->entityClass();
         parent::__construct($resultSet);
     }
 
@@ -62,7 +73,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function getResults()
     {
-        return $this->_resultSet->getResults();
+        return $this->resultSet->getResults();
     }
 
     /**
@@ -72,7 +83,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function hasSuggests()
     {
-        return $this->_resultSet->hasSuggests();
+        return $this->resultSet->hasSuggests();
     }
 
     /**
@@ -82,7 +93,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
     */
     public function getSuggests()
     {
-        return $this->_resultSet->getSuggests();
+        return $this->resultSet->getSuggests();
     }
 
     /**
@@ -92,7 +103,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function hasFacets()
     {
-        return $this->_resultSet->hasFacets();
+        return $this->resultSet->hasFacets();
     }
 
     /**
@@ -102,7 +113,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function getFacets()
     {
-        return $this->_resultSet->getFacets();
+        return $this->resultSet->getFacets();
     }
 
     /**
@@ -112,7 +123,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function getAggregations()
     {
-        return $this->_resultSet->getAggregations();
+        return $this->resultSet->getAggregations();
     }
 
     /**
@@ -124,7 +135,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function getAggregation($name)
     {
-        return $this->_resultSet->getAggregation($name);
+        return $this->resultSet->getAggregation($name);
     }
 
     /**
@@ -134,7 +145,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function getTotalHits()
     {
-        return $this->_resultSet->getTotalHits();
+        return $this->resultSet->getTotalHits();
     }
 
     /**
@@ -144,7 +155,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function getMaxScore()
     {
-        return $this->_resultSet->getMaxScore();
+        return $this->resultSet->getMaxScore();
     }
 
     /**
@@ -154,7 +165,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function getTotalTime()
     {
-        return $this->_resultSet->getTotalTime();
+        return $this->resultSet->getTotalTime();
     }
 
     /**
@@ -164,7 +175,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function hasTimedOut()
     {
-        return $this->_resultSet->hasTimedOut();
+        return $this->resultSet->hasTimedOut();
     }
 
     /**
@@ -174,7 +185,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function getResponse()
     {
-        return $this->_resultSet->getResponse();
+        return $this->resultSet->getResponse();
     }
 
     /**
@@ -184,7 +195,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function getQuery()
     {
-        return $this->_resultSet->getQuery();
+        return $this->resultSet->getQuery();
     }
 
     /**
@@ -194,7 +205,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function count()
     {
-        return $this->_resultSet->count();
+        return $this->resultSet->count();
     }
 
     /**
@@ -204,7 +215,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function countSuggests()
     {
-        return $this->_resultSet->countSuggests();
+        return $this->resultSet->countSuggests();
     }
 
     /**
@@ -214,13 +225,23 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      */
     public function current()
     {
-        $class = $this->_entityClass;
+        $class = $this->entityClass;
         $options = [
             'markClean' => true,
             'useSetters' => false,
             'markNew' => false
         ];
-        $document = new $class($this->_resultSet->current(), $options);
+
+        $result = $this->resultSet->current();
+        $data = $result->getData();
+        $data['id'] = $result->getId();
+
+        foreach ($this->embeds as $property => $embed) {
+            if (isset($data[$property])) {
+                $data[$property] = $embed->hydrate($data[$property], $options);
+            }
+        }
+        $document = new $class($data, $options);
         return $document;
     }
 }
