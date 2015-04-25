@@ -11,6 +11,10 @@ use Cake\Utility\Inflector;
  */
 abstract class Embedded
 {
+    const ONE_TO_ONE = 'oneToOne';
+
+    const ONE_TO_MANY = 'oneToMany';
+
     /**
      * The alias this association uses.
      *
@@ -122,4 +126,13 @@ abstract class Embedded
      * @return \Cake\ElasticSearch\Document|array
      */
     abstract public function hydrate(array $data, $options);
+
+    /**
+     * Get the type of association this is.
+     *
+     * Returns one of the association type constants.
+     *
+     * @return string
+     */
+    abstract public function type();
 }

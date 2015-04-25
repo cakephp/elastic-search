@@ -27,4 +27,12 @@ class EmbedMany extends Embedded
         }
         return $out;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function type()
+    {
+        return static::ONE_TO_MANY;
+    }
 }

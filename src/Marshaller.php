@@ -16,6 +16,7 @@ namespace Cake\ElasticSearch;
 
 use Cake\Collection\Collection;
 use Cake\Datasource\EntityInterface;
+use Cake\ElasticSearch\Association\Embedded;
 use Cake\ElasticSearch\Type;
 
 /**
@@ -76,15 +77,13 @@ class Marshaller
             unset($data[$badKey]);
         }
 
-        $embeds = $this->type->embedded();
         foreach ($this->type->embedded() as $embed) {
             $property = $embed->property();
             if (
                 in_array($embed->alias(), $options['associated']) &&
                 isset($data[$property])
             ) {
-                $class = $embed->entityClass();
-                $data[$property] = new $class($data[$property]);
+                $data[$property] = $this->newNested($embed, $data[$property]);
             }
         }
 
@@ -99,6 +98,66 @@ class Marshaller
             }
         }
         return $entity;
+    }
+
+    /**
+     * Marshal an embedded document.
+     *
+     * @param \Cake\ElasticSearch\Association\Embedded $embed The embed definition.
+     * @param array $data The data to marshal
+     * @return array|Cake\ElasticSearch\Document Either a document or an array of documents.
+     */
+    protected function newNested($embed, $data)
+    {
+        $class = $embed->entityClass();
+        if ($embed->type() === Embedded::ONE_TO_ONE) {
+            return new $class($data);
+        }
+        if ($embed->type() === Embedded::ONE_TO_MANY) {
+            $children = [];
+            foreach ((array)$data as $row) {
+                if (is_array($row)) {
+                    $children[] = new $class($row);
+                }
+            }
+            return $children;
+        }
+    }
+
+    /**
+     * Merge an embedded document.
+     *
+     * @param \Cake\ElasticSearch\Association\Embedded $embed The embed definition.
+     * @param \Cake\ElasticSearch\Document|array $existing The existing entity or entities.
+     * @param array $data The data to marshal
+     * @return array|Cake\ElasticSearch\Document Either a document or an array of documents.
+     */
+    protected function mergeNested($embed, $existing, $data)
+    {
+        $class = $embed->entityClass();
+        if ($embed->type() === Embedded::ONE_TO_ONE) {
+            if (!($existing instanceof EntityInterface)) {
+                $existing = new $class();
+            }
+            $existing->set($data);
+            return $existing;
+        }
+        if ($embed->type() === Embedded::ONE_TO_MANY) {
+            foreach ($existing as $i => $row) {
+                if (isset($data[$i])) {
+                    $row->set($data[$i]);
+                }
+                unset($data[$i]);
+            }
+            foreach ($data as $row) {
+                if (is_array($row)) {
+                    $new = new $class();
+                    $new->set($row);
+                    $existing[] = $new;
+                }
+            }
+            return $existing;
+        }
     }
 
     /**
@@ -144,6 +203,16 @@ class Marshaller
 
         foreach (array_keys($errors) as $badKey) {
             unset($data[$badKey]);
+        }
+
+        foreach ($this->type->embedded() as $embed) {
+            $property = $embed->property();
+            if (
+                in_array($embed->alias(), $options['associated']) &&
+                isset($data[$property])
+            ) {
+                $data[$property] = $this->mergeNested($embed, $entity->{$property}, $data[$property]);
+            }
         }
 
         if (!isset($options['fieldList'])) {
