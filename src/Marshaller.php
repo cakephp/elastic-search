@@ -25,8 +25,18 @@ use Cake\ElasticSearch\Type;
  */
 class Marshaller
 {
+    /**
+     * Type instance this marshaller is for.
+     *
+     * @var \Cake\ElasticSearch\Type
+     */
     protected $type;
 
+    /**
+     * Constructor
+     *
+     * @param \Cake\ElasticSearch\Type $type The type instance this marshaller is for.
+     */
     public function __construct(Type $type)
     {
         $this->type = $type;
@@ -40,6 +50,7 @@ class Marshaller
      * * fieldList: A whitelist of fields to be assigned to the entity. If not present,
      *   the accessible fields list in the entity will be used.
      * * accessibleFields: A list of fields to allow or deny in entity accessible fields.
+     * * associated: A list of embedded documents you want to marshal.
      *
      * @param array $data The data to hydrate.
      * @param array $options List of options
@@ -50,6 +61,7 @@ class Marshaller
         $entityClass = $this->type->entityClass();
         $entity = new $entityClass();
         $entity->source($this->type->name());
+        $options += ['associated' => []];
 
         list($data, $options) = $this->_prepareDataAndOptions($data, $options);
 
@@ -62,6 +74,18 @@ class Marshaller
         $entity->errors($errors);
         foreach (array_keys($errors) as $badKey) {
             unset($data[$badKey]);
+        }
+
+        $embeds = $this->type->embedded();
+        foreach ($this->type->embedded() as $embed) {
+            $property = $embed->property();
+            if (
+                in_array($embed->alias(), $options['associated']) &&
+                isset($data[$property])
+            ) {
+                $class = $embed->entityClass();
+                $data[$property] = new $class($data[$property]);
+            }
         }
 
         if (!isset($options['fieldList'])) {

@@ -105,6 +105,16 @@ abstract class Embedded
     }
 
     /**
+     * Get the alias for this embed.
+     *
+     * @return string
+     */
+    public function alias()
+    {
+        return $this->alias;
+    }
+
+    /**
      * Hydrate instance(s) from the parent documents data.
      *
      * @param array $data The data to use in the embedded document.

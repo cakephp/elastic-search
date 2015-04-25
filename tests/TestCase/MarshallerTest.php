@@ -200,6 +200,32 @@ class MarshallerTest extends TestCase
     }
 
     /**
+     * test marshalling a simple object.
+     *
+     * @return void
+     */
+    public function testOneRelations()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user' => [
+                'username' => 'mark',
+            ],
+        ];
+        $this->type->embedOne('User');
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->one($data, ['associated' => ['User']]);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
+        $this->assertSame($data['title'], $result->title);
+        $this->assertSame($data['body'], $result->body);
+        $this->assertSame($data['user']['username'], $result->user->username);
+    }
+
+    /**
      * Test converting multiple objects at once.
      *
      * @return void
