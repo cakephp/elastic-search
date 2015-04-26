@@ -291,6 +291,51 @@ class TypeTest extends TestCase
     }
 
     /**
+     * Test save with embedded documents.
+     *
+     * @return void
+     */
+    public function testSaveEmbedOne()
+    {
+        $entity = new Document([
+            'title' => 'A brand new article',
+            'body' => 'Some new content',
+            'user' => new Document(['username' => 'sarah'])
+        ]);
+        $this->type->embedOne('User');
+        $this->type->save($entity);
+
+        $compare = $this->type->get($entity->id);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->user);
+        $this->assertEquals('sarah', $compare->user->username);
+    }
+
+    /**
+     * Test save with embedded documents.
+     *
+     * @return void
+     */
+    public function testSaveEmbedMany()
+    {
+        $entity = new Document([
+            'title' => 'A brand new article',
+            'body' => 'Some new content',
+            'comments' => [
+                new Document(['comment' => 'Nice post']),
+                new Document(['comment' => 'Awesome!']),
+            ]
+        ]);
+        $this->type->embedMany('Comments');
+        $this->type->save($entity);
+
+        $compare = $this->type->get($entity->id);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->comments[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->comments[1]);
+        $this->assertEquals('Nice post', $compare->comments[0]->comment);
+        $this->assertEquals('Awesome!', $compare->comments[1]->comment);
+    }
+
+    /**
      * Test deleting a document.
      *
      * @return void
