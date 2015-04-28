@@ -200,6 +200,71 @@ class MarshallerTest extends TestCase
     }
 
     /**
+     * test marshalling a simple object.
+     *
+     * @return void
+     */
+    public function testOneEmbeddedOne()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user' => [
+                'username' => 'mark',
+            ],
+        ];
+        $this->type->embedOne('User');
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->one($data, ['associated' => ['User']]);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
+        $this->assertSame($data['title'], $result->title);
+        $this->assertSame($data['body'], $result->body);
+        $this->assertSame($data['user']['username'], $result->user->username);
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->one($data);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInternalType('array', $result->user);
+        $this->assertSame($data['title'], $result->title);
+        $this->assertSame($data['body'], $result->body);
+        $this->assertSame($data['user']['username'], $result->user['username']);
+    }
+
+    /**
+     * test marshalling a simple object.
+     *
+     * @return void
+     */
+    public function testOneEmbeddedMany()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'comments' => [
+                ['comment' => 'First comment'],
+                ['comment' => 'Second comment'],
+                'bad' => 'data'
+            ],
+        ];
+        $this->type->embedMany('Comments');
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->one($data, ['associated' => ['Comments']]);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInternalType('array', $result->comments);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
+        $this->assertTrue($result->isNew());
+        $this->assertTrue($result->comments[0]->isNew());
+        $this->assertTrue($result->comments[1]->isNew());
+    }
+
+    /**
      * Test converting multiple objects at once.
      *
      * @return void
@@ -346,6 +411,145 @@ class MarshallerTest extends TestCase
         $doc = new Document(['title' => 'original', 'body' => 'original']);
         $result = $marshaller->merge($doc, $data);
         $this->assertEquals('Mutated', $result->title);
+    }
+
+    /**
+     * test merge with an embed one
+     *
+     * @return void
+     */
+    public function testMergeEmbeddedOneExisting()
+    {
+        $this->type->embedOne('User');
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user' => [
+                'username' => 'mark',
+            ],
+        ];
+        $entity = new Document([
+            'title' => 'Old',
+            'user' => new Document(['username' => 'old'], ['markNew' => false])
+        ], ['markNew' => false]);
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($entity, $data, ['associated' => ['User']]);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
+        $this->assertFalse($result->isNew(), 'Existing doc');
+        $this->assertFalse($result->user->isNew(), 'Existing sub-doc');
+        $this->assertSame($data['title'], $result->title);
+        $this->assertSame($data['body'], $result->body);
+        $this->assertSame($data['user']['username'], $result->user->username);
+    }
+
+    /**
+     * test merge when embedded documents don't exist
+     *
+     * @return void
+     */
+    public function testMergeEmbeddedOneMissing()
+    {
+        $this->type->embedOne('User');
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user' => [
+                'username' => 'mark',
+            ],
+        ];
+        $entity = new Document([
+            'title' => 'Old',
+        ], ['markNew' => false]);
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($entity, $data, ['associated' => ['User']]);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
+        $this->assertSame($data['title'], $result->title);
+        $this->assertSame($data['body'], $result->body);
+        $this->assertSame($data['user']['username'], $result->user->username);
+        $this->assertTrue($result->user->isNew(), 'Was missing, should now be new.');
+    }
+
+    /**
+     * test marshalling a simple object.
+     *
+     * @return void
+     */
+    public function testMergeEmbeddedMany()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'comments' => [
+                ['comment' => 'First comment'],
+                ['comment' => 'Second comment'],
+                'bad' => 'data'
+            ],
+        ];
+        $this->type->embedMany('Comments');
+
+        $entity = new Document([
+            'title' => 'old',
+            'comments' => [
+                new Document(['comment' => 'old'], ['markNew' => false]),
+                new Document(['comment' => 'old'], ['markNew' => false]),
+            ]
+        ], ['markNew' => false]);
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($entity, $data, ['associated' => ['Comments']]);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInternalType('array', $result->comments);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
+        $this->assertFalse($result->comments[0]->isNew());
+        $this->assertFalse($result->comments[1]->isNew());
+    }
+
+    /**
+     * test merge with some sub documents not existing.
+     *
+     * @return void
+     */
+    public function testMergeEmbeddedManySomeMissing()
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'comments' => [
+                ['comment' => 'First comment'],
+                ['comment' => 'Second comment'],
+                'bad' => 'data'
+            ],
+        ];
+        $entity = new Document([
+            'title' => 'old',
+            'comments' => [
+                new Document(['comment' => 'old'], ['markNew' => false]),
+            ]
+        ], ['markNew' => false]);
+
+        $this->type->embedMany('Comments');
+
+        $marshaller = new Marshaller($this->type);
+        $result = $marshaller->merge($entity, $data, ['associated' => ['Comments']]);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInternalType('array', $result->comments);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
+        $this->assertSame('First comment', $result->comments[0]->comment);
+        $this->assertFalse($result->comments[0]->isNew());
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
+        $this->assertSame('Second comment', $result->comments[1]->comment);
+        $this->assertTrue($result->comments[1]->isNew());
     }
 
     /**

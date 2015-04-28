@@ -21,4 +21,12 @@ class EmbedOne extends Embedded
         $class = $this->entityClass();
         return new $class($data, $options);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function type()
+    {
+        return static::ONE_TO_ONE;
+    }
 }

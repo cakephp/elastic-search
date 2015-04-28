@@ -12,6 +12,20 @@ use Cake\Utility\Inflector;
 abstract class Embedded
 {
     /**
+     * Type name for a single embedded document.
+     *
+     * @var string
+     */
+    const ONE_TO_ONE = 'oneToOne';
+
+    /**
+     * Type name for many embedded documents.
+     *
+     * @var string
+     */
+    const ONE_TO_MANY = 'oneToMany';
+
+    /**
      * The alias this association uses.
      *
      * @var string
@@ -105,6 +119,16 @@ abstract class Embedded
     }
 
     /**
+     * Get the alias for this embed.
+     *
+     * @return string
+     */
+    public function alias()
+    {
+        return $this->alias;
+    }
+
+    /**
      * Hydrate instance(s) from the parent documents data.
      *
      * @param array $data The data to use in the embedded document.
@@ -112,4 +136,13 @@ abstract class Embedded
      * @return \Cake\ElasticSearch\Document|array
      */
     abstract public function hydrate(array $data, $options);
+
+    /**
+     * Get the type of association this is.
+     *
+     * Returns one of the association type constants.
+     *
+     * @return string
+     */
+    abstract public function type();
 }
