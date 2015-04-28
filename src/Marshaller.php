@@ -107,7 +107,7 @@ class Marshaller
      * @param array $data The data to marshal
      * @return array|Cake\ElasticSearch\Document Either a document or an array of documents.
      */
-    protected function newNested($embed, $data)
+    protected function newNested(Embedded $embed, array $data)
     {
         $class = $embed->entityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
@@ -115,7 +115,7 @@ class Marshaller
         }
         if ($embed->type() === Embedded::ONE_TO_MANY) {
             $children = [];
-            foreach ((array)$data as $row) {
+            foreach ($data as $row) {
                 if (is_array($row)) {
                     $children[] = new $class($row);
                 }
@@ -132,7 +132,7 @@ class Marshaller
      * @param array $data The data to marshal
      * @return array|Cake\ElasticSearch\Document Either a document or an array of documents.
      */
-    protected function mergeNested($embed, $existing, $data)
+    protected function mergeNested(Embedded $embed, $existing, array $data)
     {
         $class = $embed->entityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
