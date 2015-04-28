@@ -11,8 +11,18 @@ use Cake\Utility\Inflector;
  */
 abstract class Embedded
 {
+    /**
+     * Type name for a single embedded document.
+     *
+     * @var string
+     */
     const ONE_TO_ONE = 'oneToOne';
 
+    /**
+     * Type name for many embedded documents.
+     *
+     * @var string
+     */
     const ONE_TO_MANY = 'oneToMany';
 
     /**
