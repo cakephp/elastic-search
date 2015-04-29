@@ -328,6 +328,11 @@ class Type implements RepositoryInterface
      */
     public function exists($conditions)
     {
+        $query = $this->query();
+        $query->where($conditions);
+        $q = $query->compileQuery();
+        $type = $this->connection()->getIndex()->getType($this->name());
+        return $type->count($query->compileQuery()) > 0;
     }
 
     /**
