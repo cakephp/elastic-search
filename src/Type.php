@@ -315,16 +315,18 @@ class Type implements RepositoryInterface
      * This method will *not* trigger beforeDelete/afterDelete events. If you
      * need those first load a collection of records and delete them.
      *
-     * This method will *not* execute on associations `cascade` attribute. You should
-     * use database foreign keys + ON CASCADE rules if you need cascading deletes combined
-     * with this method.
-     *
      * @param array $conditions An array of conditions, similar to those used with find()
      * @return boolean Success Returns true if one or more rows are effected.
      * @see RepositoryInterface::delete()
      */
     public function deleteAll($conditions)
     {
+        $query = $this->query();
+        $query->where($conditions);
+        $q = $query->compileQuery();
+        $type = $this->connection()->getIndex()->getType($this->name());
+        $response = $type->deleteByQuery($query->compileQuery());
+        return $response->isOk();
     }
 
     /**

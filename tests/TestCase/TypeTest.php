@@ -448,4 +448,28 @@ class TypeTest extends TestCase
         $this->assertTrue($this->type->exists(['id' => '123']));
         $this->assertFalse($this->type->exists(['id' => '999999']));
     }
+
+    /**
+     * Test that deleteAll works.
+     *
+     * @return void
+     */
+    public function testDeleteAll()
+    {
+        $result = $this->type->deleteAll(['title' => 'article']);
+        $this->assertTrue($result);
+        $this->assertEquals(0, $this->type->find()->count());
+    }
+
+    /**
+     * Test that deleteAll works.
+     *
+     * @return void
+     */
+    public function testDeleteAllOnlySome()
+    {
+        $result = $this->type->deleteAll(['body' => 'cake']);
+        $this->assertTrue($result);
+        $this->assertEquals(1, $this->type->find()->count());
+    }
 }
