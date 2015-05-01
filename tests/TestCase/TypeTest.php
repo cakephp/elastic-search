@@ -437,4 +437,15 @@ class TypeTest extends TestCase
         $this->type->validator();
         $this->assertEquals(1, $called, 'Event not triggered');
     }
+
+    /**
+     * Test that exists works.
+     *
+     * @return void
+     */
+    public function testExists()
+    {
+        $this->assertTrue($this->type->exists(['id' => '123']));
+        $this->assertFalse($this->type->exists(['id' => '999999']));
+    }
 }
