@@ -538,6 +538,22 @@ class FilterBuilderTest extends TestCase
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
+    }
 
+    /**
+     * Tests the query() filter
+     *
+     * @return void
+     */
+    public function testQuery()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->query(new \Elastica\Query\SimpleQueryString('awesome'));
+        $expected = [
+            'query' => [
+                'simple_query_string' => ['query' => 'awesome']
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
     }
 }

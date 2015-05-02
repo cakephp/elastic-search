@@ -455,6 +455,19 @@ class FilterBuilder
         return new Filter\Prefix($field, $prefix);
     }
 
+    /**
+     * Returns a Query filter that Wraps any query to be used as a filter.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->query(new \Elastica\Query\SimpleQueryString('awesome OR great'));
+     * }}}
+     *
+     * @param array|\Elastica\Query\AbstractQuery The Query to wrap as a filter
+     * @return Elastica\Filter\Query
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-filter.html
+     */
     public function query($query)
     {
         return new Filter\Query($query);
