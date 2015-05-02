@@ -534,6 +534,20 @@ class FilterBuilder
         return new Filter\Script($script);
     }
 
+    /**
+     * Returns a Term filter object that filters documents that have fields containing a term.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->term('user.name', 'jose');
+     * }}}
+     *
+     * @param string $field The field to filter by.
+     * @param string $value The term to find in field.
+     * @return Elastica\Filter\Term
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-filter.html
+     */
     public function term($field, $value)
     {
         return new Filter\Term([$field => $value]);
