@@ -383,6 +383,14 @@ class FilterBuilder
         return $this->range($field, ['lte' => $value]);
     }
 
+    /**
+     * Returns a Missing filter object setup to filter documents not having a property present or
+	 * not null.
+     *
+     * @param string $field The field to check for existance.
+     * @return Elastica\Filter\Missing
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
+     */
     public function missing($field = '')
     {
         return new Filter\Missing($field);

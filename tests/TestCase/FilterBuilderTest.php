@@ -452,4 +452,19 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the missing() filter
+     *
+     * @return void
+     */
+    public function testMissing()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->missing('comments');
+        $expected = [
+            'missing' => ['field' => 'comments']
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
