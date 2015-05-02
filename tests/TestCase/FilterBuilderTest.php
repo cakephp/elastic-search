@@ -581,4 +581,28 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the regexp() filter
+     *
+     * @return void
+     */
+    public function testRegexp()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->regexp('name.first', 'mar[c|k]', [
+            'flags' => 'INTERSECTION|COMPLEMENT|EMPTY',
+            'max_determinized_states' => 200
+        ]);
+        $expected = [
+            'regexp' => [
+                'name.first' => [
+                    'value' => 'mar[c|k]',
+                    'flags' => 'INTERSECTION|COMPLEMENT|EMPTY',
+                    'max_determinized_states' => 200
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

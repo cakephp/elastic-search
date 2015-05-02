@@ -494,9 +494,24 @@ class FilterBuilder
         return new Filter\Range($field, $args);
     }
 
+    /**
+     * Returns a Regexp filter to filter documents based on a regular expression.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->regexp('name.first', 'ma.*');
+     * }}}
+     *
+     * @param string $field The field to filter by.
+     * @param string The regular expression.
+     * @param array $options Regultar expression flags or options.
+     * @return Elastica\Filter\Regexp
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
+     */
     public function regexp($field, $regexp, array $options = [])
     {
-        return new Filter\Regexp($field, $args);
+        return new Filter\Regexp($field, $regexp, $options);
     }
 
     public function script($script)
