@@ -605,4 +605,19 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the script() filter
+     *
+     * @return void
+     */
+    public function testScript()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->script("doc['foo'] > 2");
+        $expected = [
+            'script' => ['script' => "doc['foo'] > 2"]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

@@ -447,6 +447,8 @@ class FilterBuilder
      * Returns a Prefix filter to filter documents that have fields containing terms with
      * a specified prefix
      *
+     * @param string $field The field to filter by.
+     * @param string $prefix The prefix to check for.
      * @return Elastica\Filter\Prefix
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-filter.html
      */
@@ -464,7 +466,7 @@ class FilterBuilder
      *  $builder->query(new \Elastica\Query\SimpleQueryString('awesome OR great'));
      * }}}
      *
-     * @param array|\Elastica\Query\AbstractQuery The Query to wrap as a filter
+     * @param array|\Elastica\Query\AbstractQuery $query The Query to wrap as a filter
      * @return Elastica\Filter\Query
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-filter.html
      */
@@ -504,7 +506,7 @@ class FilterBuilder
      * }}}
      *
      * @param string $field The field to filter by.
-     * @param string The regular expression.
+     * @param string $regexp The regular expression.
      * @param array $options Regultar expression flags or options.
      * @return Elastica\Filter\Regexp
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
@@ -514,6 +516,19 @@ class FilterBuilder
         return new Filter\Regexp($field, $regexp, $options);
     }
 
+    /**
+     * Returns a Script filter object that allows to filter based on the return value of a script.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->script("doc['price'].value > 1");
+     * }}}
+     *
+     * @param string $script The script.
+     * @return Elastica\Filter\Regexp
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
+     */
     public function script($script)
     {
         return new Filter\Script($script);
