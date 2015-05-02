@@ -467,4 +467,41 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the nested() filter
+     *
+     * @return void
+     */
+    public function testNested()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->nested('comments', $builder->term('author', 'mark'));
+        $expected = [
+            'nested' => [
+                'path' => 'comments',
+                'filter' => ['term' => ['author' => 'mark']]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the nested() filter
+     *
+     * @return void
+     */
+    public function testNestedWithQuery()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->nested(
+            'comments',
+            new \Elastica\Query\SimpleQueryString('great')
+        );
+        $expected = [
+            'nested' => [
+                'path' => 'comments',
+                'query' => ['simple_query_string' => ['query' => 'great']]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

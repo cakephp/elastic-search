@@ -385,7 +385,7 @@ class FilterBuilder
 
     /**
      * Returns a Missing filter object setup to filter documents not having a property present or
-	 * not null.
+     * not null.
      *
      * @param string $field The field to check for existance.
      * @return Elastica\Filter\Missing
@@ -396,12 +396,32 @@ class FilterBuilder
         return new Filter\Missing($field);
     }
 
+    /**
+     * Returns a Nested filter object setup to filter sub documents by a path.
+     *
+     * ### Example:
+     *
+     * {{{
+     *    $builder->nested('comments', $builder->term('author', 'mark'));
+     * }}}
+     *
+     * Or using a query as filter:
+     *
+     * {{{
+     *    $builder->nested('comments', new \Elastica\Query\SimpleQueryString('awesome'));
+     * }}}
+     *
+     * @param string $path A dot separated string denoting the path to the property to filter.
+     * @param Elastica\Query\AbstractQuery|Elastica\Filter\AbstractFilter $filter The filtering conditions.
+     * @return Elastica\Filter\Nested
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-filter.html
+     */
     public function nested($path, $filter)
     {
         $nested = new Filter\Nested();
         $nested->setPath($path);
 
-        if ($filter instanceof $filter) {
+        if ($filter instanceof AbstractFilter) {
             $nested->setFilter($filter);
         }
 
