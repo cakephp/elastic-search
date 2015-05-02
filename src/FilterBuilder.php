@@ -473,6 +473,22 @@ class FilterBuilder
         return new Filter\Query($query);
     }
 
+    /**
+     * Returns a Range filter object setup to filter documents having the field
+     * greater than the provided values.
+     *
+     * The $args array accepts the following keys:
+     *
+     * - gte: greater than or equal
+     * - gt: greater than
+     * - lte: less than or equal
+     * - lt: less than
+     *
+     * @param string $field The field to filter by.
+     * @param array $args An array describing the search range
+     * @return Elastica\Filter\Range
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     */
     public function range($field, array $args)
     {
         return new Filter\Range($field, $args);

@@ -556,4 +556,29 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the range() filter
+     *
+     * @return void
+     */
+    public function testRange()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->range('created', [
+            'gte' => '2012-01-01',
+            'lte' => 'now',
+            'format' => 'dd/MM/yyyy||yyyy'
+        ]);
+        $expected = [
+            'range' => [
+                'created' => [
+                    'gte' => '2012-01-01',
+                    'lte' => 'now',
+                    'format' => 'dd/MM/yyyy||yyyy'
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
