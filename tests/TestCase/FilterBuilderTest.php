@@ -635,4 +635,19 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the terms() filter
+     *
+     * @return void
+     */
+    public function testTerms()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->terms('user.name', ['mark', 'jose']);
+        $expected = [
+            'terms' => ['user.name' => ['mark', 'jose']]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
