@@ -650,4 +650,19 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the type() filter
+     *
+     * @return void
+     */
+    public function testType()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->type('products');
+        $expected = [
+            'type' => ['value' => 'products']
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

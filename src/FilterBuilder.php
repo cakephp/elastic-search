@@ -554,7 +554,7 @@ class FilterBuilder
     }
 
     /**
-     * Returns a Term filter object that filters documents that have fields containing some terms.
+     * Returns a Terms filter object that filters documents that have fields containing some terms.
      *
      * ### Example:
      *
@@ -572,6 +572,19 @@ class FilterBuilder
         return new Filter\Terms($field, $values);
     }
 
+    /**
+     * Returns a Type filter object that filters documents matching the provided document/mapping type.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->type('products');
+     * }}}
+     *
+     * @param string $type The type name
+     * @return Elastica\Filter\Type
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-filter.html
+     */
     public function type($type)
     {
         return new Filter\Type($type);
