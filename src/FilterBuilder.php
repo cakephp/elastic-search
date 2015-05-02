@@ -431,6 +431,12 @@ class FilterBuilder
         return $nested;
     }
 
+    /**
+     * Returns a BoolNot filter that is typically ussed to negate another filter expression
+     *
+     * @return Elastica\Filter\BoolNot
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-not-filter.html
+     */
     public function not($filter)
     {
         return new Filter\BoolNot($filter);

@@ -504,4 +504,22 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the not() filter
+     *
+     * @return void
+     */
+    public function testNot()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->not($builder->term('title', 'cake'));
+        $expected = [
+            'not' => [
+                'filter' => ['term' => ['title' => 'cake']]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+    }
 }
