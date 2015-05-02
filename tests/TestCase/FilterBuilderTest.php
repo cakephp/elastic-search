@@ -522,4 +522,22 @@ class FilterBuilderTest extends TestCase
         $this->assertEquals($expected, $result->toArray());
 
     }
+
+    /**
+     * Tests the prefix() filter
+     *
+     * @return void
+     */
+    public function testPrefix()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->prefix('user', 'ki');
+        $expected = [
+            'prefix' => [
+                'user' => 'ki'
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+    }
 }

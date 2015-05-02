@@ -434,6 +434,7 @@ class FilterBuilder
     /**
      * Returns a BoolNot filter that is typically ussed to negate another filter expression
      *
+     * @param Elastica\Filter\AbstractFilter $filter The filter to negate
      * @return Elastica\Filter\BoolNot
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-not-filter.html
      */
@@ -442,6 +443,13 @@ class FilterBuilder
         return new Filter\BoolNot($filter);
     }
 
+    /**
+     * Returns a Prefix filter to filter documents that have fields containing terms with
+     * a specified prefix
+     *
+     * @return Elastica\Filter\Prefix
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-filter.html
+     */
     public function prefix($field, $prefix)
     {
         return new Filter\Prefix($field, $prefix);
