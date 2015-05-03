@@ -719,4 +719,27 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the or() method
+     *
+     * @return void
+     */
+    public function testOr()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->or(
+            $builder->term('user', 'jose'),
+            $builder->gte('age', 29),
+            $builder->missing('tags')
+        );
+        $expected = [
+            'or' => [
+                ['term' => ['user' => 'jose']],
+                ['range' => ['age' => ['gte' => 29]]],
+                ['missing' => ['field' => 'tags']],
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

@@ -591,13 +591,14 @@ class FilterBuilder
     }
 
     /**
-     * Combines all the passed arguments in a single boolean filter.
+     * Combines all the passed arguments in a single boolean filter
+     * using the "must" clause.
      *
      * ### Example:
      *
      * {{{
      *  $bool = $builder->and(
-     *     $builder->missing('tags'),
+     *     $builder->terms('tags', ['cool', 'stuff']),
      *     $builder->exists('comments')
      *  );
      * }}}
@@ -624,6 +625,20 @@ class FilterBuilder
         return $bool;
     }
 
+    /**
+     * Combines all the passed arguments in a single BoolOr filter.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $bool = $builder->or(
+     *     $builder->missing('tags'),
+     *     $builder->exists('comments')
+     *  );
+     * }}}
+     *
+     * @return Elastica\Filter\BoolOr
+     */
     public function or_()
     {
         $filters = func_get_args();
