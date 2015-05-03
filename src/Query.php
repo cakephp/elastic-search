@@ -218,6 +218,15 @@ class Query implements IteratorAggregate
         return $this->_buildFilter('postFilter', $conditions, $overwrite);
     }
 
+    /**
+    * Auxiliary function used to parse conditions into filters and store them in a _parts
+    * variable.
+    *
+    * @param string $type The name of the part in which the filters will be stored
+    * @param array|callable|Elastica\Filter\AbstractFilter $conditions The list of conditions.
+    * @param bool $overwrite Whether or not to replace previous filters.
+    * @return $this
+    */
     protected function _buildFilter($type, $conditions, $overwrite)
     {
         if ($this->_parts[$type] === null || $overwrite) {
