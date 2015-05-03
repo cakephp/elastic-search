@@ -590,6 +590,20 @@ class FilterBuilder
         return new Filter\Type($type);
     }
 
+    /**
+     * Combines all the passed arguments in a single boolean filter.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $bool = $builder->and(
+     *     $builder->missing('tags'),
+     *     $builder->exists('comments')
+     *  );
+     * }}}
+     *
+     * @return Elastica\Filter\Bool
+     */
     public function and_()
     {
         $filters = func_get_args();

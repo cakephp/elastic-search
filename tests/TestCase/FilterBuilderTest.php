@@ -665,4 +665,58 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the and() method
+     *
+     * @return void
+     */
+    public function testAnd()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->and(
+            $builder->term('user', 'jose'),
+            $builder->gte('age', 29),
+            $builder->missing('tags')
+        );
+        $expected = [
+            'bool' => [
+                'must' => [
+                    ['term' => ['user' => 'jose']],
+                    ['range' => ['age' => ['gte' => 29]]],
+                    ['missing' => ['field' => 'tags']],
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the and() method with boolean collapsing
+     *
+     * @return void
+     */
+    public function testAndWithCollapsedBoolean()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->and(
+            $builder->term('user', 'jose'),
+            $builder->gte('age', 29),
+            $builder->and(
+                $builder->missing('tags'),
+                $builder->exists('comments')
+            )
+        );
+        $expected = [
+            'bool' => [
+                'must' => [
+                    ['missing' => ['field' => 'tags']],
+                    ['exists' => ['field' => 'comments']],
+                    ['term' => ['user' => 'jose']],
+                    ['range' => ['age' => ['gte' => 29]]],
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }
