@@ -781,4 +781,75 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $filter);
     }
+
+    /**
+     * Tests the parse() method for generating or conditions
+     *
+     * @return void
+     */
+    public function testParseOr()
+    {
+        $builder = new FilterBuilder;
+        $filter = $builder->parse([
+            'or' => [
+                'name' => 'jose',
+                'age >' => 29
+            ]
+        ]);
+        $expected = [
+            $builder->or(
+                $builder->term('name', 'jose'),
+                $builder->gt('age', 29)
+            )
+        ];
+        $this->assertEquals($expected, $filter);
+    }
+
+    /**
+     * Tests the parse() method for generating and conditions
+     *
+     * @return void
+     */
+    public function testParseAnd()
+    {
+        $builder = new FilterBuilder;
+        $filter = $builder->parse([
+            'and' => [
+                'name' => 'jose',
+                'age >' => 29
+            ]
+        ]);
+        $expected = [
+            $builder->and(
+                $builder->term('name', 'jose'),
+                $builder->gt('age', 29)
+            )
+        ];
+        $this->assertEquals($expected, $filter);
+    }
+
+    /**
+     * Tests the parse() method for generating not conditions
+     *
+     * @return void
+     */
+    public function testParseNot()
+    {
+        $builder = new FilterBuilder;
+        $filter = $builder->parse([
+            'not' => [
+                'name' => 'jose',
+                'age >' => 29
+            ]
+        ]);
+        $expected = [
+            $builder->not(
+                $builder->and(
+                    $builder->term('name', 'jose'),
+                    $builder->gt('age', 29)
+                )
+            )
+        ];
+        $this->assertEquals($expected, $filter);
+    }
 }

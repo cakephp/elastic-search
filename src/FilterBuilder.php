@@ -783,7 +783,7 @@ class FilterBuilder
             }
 
             if ($operator === 'not') {
-                $result[] = $this->not($this->parse($c));
+                $result[] = $this->not($this->__call('and', $this->parse($c)));
                 continue;
             }
 
