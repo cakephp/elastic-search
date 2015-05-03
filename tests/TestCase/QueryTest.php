@@ -247,4 +247,66 @@ class QueryTest extends TestCase
         $expected = ['term' => ['name.first' => 'jose']];
         $this->assertEquals([$expected], $filter);
     }
+
+    /**
+     * Tests the postFilter() method
+     *
+     * @return void
+     */
+    public function testPostFilter()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $query->postFilter([
+            'name.first' => 'jose',
+            'age >' => 29,
+            'or' => [
+                'tags in' => ['cake', 'php'],
+                'interests not in' => ['c#', 'java']
+            ]
+        ]);
+
+        $compiled = $query->compileQuery()->toArray();
+        $filter = $compiled['post_filter']['bool']['must'];
+
+        $expected = ['term' => ['name.first' => 'jose']];
+        $this->assertEquals($expected, $filter[0]);
+
+        $expected = ['range' => ['age' => ['gt' => 29]]];
+        $this->assertEquals($expected, $filter[1]);
+
+        $expected = ['terms' => ['tags' => ['cake', 'php']]];
+        $this->assertEquals($expected, $filter[2]['or'][0]);
+
+        $expected = [
+            'not' => [
+                'filter' => [
+                    'terms' => ['interests' => ['c#', 'java']]
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $filter[2]['or'][1]);
+
+        $query->postFilter(function (FilterBuilder $builder) {
+            return $builder->and(
+                $builder->term('another.thing', 'value'),
+                $builder->exists('stuff')
+            );
+        });
+
+        $compiled = $query->compileQuery()->toArray();
+        $filter = $compiled['post_filter']['bool']['must'];
+        $filter = $filter[3]['bool']['must'];
+        $expected = [
+            ['term' => ['another.thing' => 'value']],
+            ['exists' => ['field' => 'stuff']],
+        ];
+        $this->assertEquals($expected, $filter);
+
+        $query->postFilter(['name.first' => 'jose'], true);
+        $compiled = $query->compileQuery()->toArray();
+        $filter = $compiled['post_filter']['bool']['must'];
+        $expected = ['term' => ['name.first' => 'jose']];
+        $this->assertEquals([$expected], $filter);
+    }
 }

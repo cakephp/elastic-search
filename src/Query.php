@@ -201,6 +201,18 @@ class Query implements IteratorAggregate
         return $this->_buildFilter('preFilter', $conditions, $overwrite);
     }
 
+    /**
+    * Sets the filter to use in the post_filter object. Filters added using this method
+    * will be stacked on a bool filter.
+    *
+    * This method can be used in the same way the `where()` method is used. Please refer to
+    * its documentation for more details.
+    *
+    * @param array|callable|Elastica\Filter\AbstractFilter $conditions The list of conditions.
+    * @param bool $overwrite Whether or not to replace previous filters.
+    * @return $this
+    * @see Cake\ElasticSearch\Query::where()
+    */
     public function postFilter($conditions, $overwrite = false)
     {
         return $this->_buildFilter('postFilter', $conditions, $overwrite);
@@ -271,7 +283,7 @@ class Query implements IteratorAggregate
         }
 
         if ($this->_parts['postFilter'] !== null) {
-            $this->_elasticQuery->setPostFilter($this->_parts['preFilter']);
+            $this->_elasticQuery->setPostFilter($this->_parts['postFilter']);
         }
 
         return $this->_elasticQuery;
