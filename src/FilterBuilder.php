@@ -667,9 +667,9 @@ class FilterBuilder
     }
 
     /**
-     * Converts an array into a single filter object by parsing it recursively.
+     * Converts an array into a single array of filter objects
      *
-     * ### Creating "and" conditions:
+     * ### Parsing a single array:
      *
      *   {{{
      *       $filter = $builder->parse([
@@ -678,10 +678,10 @@ class FilterBuilder
      *       ]);
      *
      *       // Equivalent to:
-     *       $filter = $builder->and(
+     *       $filter = [
      *           $builder->term('name', 'mark'),
      *           $builder->lte('age', 35)
-     *       );
+     *       ];
      *   }}}
      *
      * ### Creating "or" conditions:
@@ -695,10 +695,10 @@ class FilterBuilder
      *  ]);
      *
      *  // Equivalent to:
-     *  $filter = $builder->or(
+     *  $filter = [$builder->or(
      *      $builder->term('name', 'mark'),
      *      $builder->lte('age', 35)
-     *  );
+     *  )];
      * }}}
      *
      * ### Negating conditions:
@@ -712,12 +712,12 @@ class FilterBuilder
      *  ]);
      *
      *  // Equivalent to:
-     *  $filter = $builder->not(
+     *  $filter = [$builder->not(
      *      $builder->and(
      *          $builder->term('name', 'mark'),
      *          $builder->lte('age', 35)
      *      )
-     *  );
+     *  )];
      * }}}
 
      * ### Checking for filed existance
@@ -728,10 +728,10 @@ class FilterBuilder
      *       ]);
      *
      *       // Equivalent to:
-     *       $filter = $builder->and(
+     *       $filter = [
      *           $builder->missing('name'),
      *           $builder->exists('age')
-     *       );
+     *       ];
      * }}}
      *
      * ### Checking if a value is in a list of terms
@@ -742,7 +742,7 @@ class FilterBuilder
      *       ]);
      *
      *       // Equivalent to:
-     *       $filter = $builder->terms('name', ['jose', 'mark'])
+     *       $filter = [$builder->terms('name', ['jose', 'mark'])]
      * }}}
      *
      * The list of supported operators is:
@@ -750,7 +750,7 @@ class FilterBuilder
      * `<`, `>`, `<=`, `>=`, `in`, `not in`, `is`, `is not`, `!=`
      *
      * @param array|Elastica\Filter\AbstractFilter $conditions The list of conditions to parse.
-     * @return Elastica\Filter\AbstractFilter
+     * @return array
      */
     public function parse($conditions)
     {
@@ -851,7 +851,7 @@ class FilterBuilder
         }
 
         if ($operator === 'is not' && $value === null) {
-            return $this->not($this->missing($field));
+            return $this->exists($field);
         }
 
         if ($operator === 'is' && $value !== null) {

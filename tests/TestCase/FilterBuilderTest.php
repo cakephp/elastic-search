@@ -742,4 +742,43 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the parse() method
+     *
+     * @return void
+     */
+    public function testParseSingleArray()
+    {
+        $builder = new FilterBuilder;
+        $filter = $builder->parse([
+            'name' => 'jose',
+            'age >=' => 29,
+            'age <=' => 50,
+            'salary >' => 50,
+            'salary <' => 60,
+            'interests in' => ['cakephp', 'food'],
+            'interests not in' => ['boring stuff', 'c#'],
+            'profile is' => null,
+            'tags is not' => null,
+            'address is' => 'something',
+            'address is not' => 'something else',
+            'last_name !=' => 'gonzalez',
+        ]);
+        $expected = [
+            $builder->term('name', 'jose'),
+            $builder->gte('age', 29),
+            $builder->lte('age', 50),
+            $builder->gt('salary', 50),
+            $builder->lt('salary', 60),
+            $builder->terms('interests', ['cakephp', 'food']),
+            $builder->not($builder->terms('interests', ['boring stuff', 'c#'])),
+            $builder->missing('profile'),
+            $builder->exists('tags'),
+            $builder->term('address', 'something'),
+            $builder->not($builder->term('address', 'something else')),
+            $builder->not($builder->term('last_name', 'gonzalez'))
+        ];
+        $this->assertEquals($expected, $filter);
+    }
 }
