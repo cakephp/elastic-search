@@ -452,4 +452,217 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the missing() filter
+     *
+     * @return void
+     */
+    public function testMissing()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->missing('comments');
+        $expected = [
+            'missing' => ['field' => 'comments']
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the nested() filter
+     *
+     * @return void
+     */
+    public function testNested()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->nested('comments', $builder->term('author', 'mark'));
+        $expected = [
+            'nested' => [
+                'path' => 'comments',
+                'filter' => ['term' => ['author' => 'mark']]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the nested() filter
+     *
+     * @return void
+     */
+    public function testNestedWithQuery()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->nested(
+            'comments',
+            new \Elastica\Query\SimpleQueryString('great')
+        );
+        $expected = [
+            'nested' => [
+                'path' => 'comments',
+                'query' => ['simple_query_string' => ['query' => 'great']]]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the not() filter
+     *
+     * @return void
+     */
+    public function testNot()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->not($builder->term('title', 'cake'));
+        $expected = [
+            'not' => [
+                'filter' => ['term' => ['title' => 'cake']]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+    }
+
+    /**
+     * Tests the prefix() filter
+     *
+     * @return void
+     */
+    public function testPrefix()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->prefix('user', 'ki');
+        $expected = [
+            'prefix' => [
+                'user' => 'ki'
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the query() filter
+     *
+     * @return void
+     */
+    public function testQuery()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->query(new \Elastica\Query\SimpleQueryString('awesome'));
+        $expected = [
+            'query' => [
+                'simple_query_string' => ['query' => 'awesome']
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the range() filter
+     *
+     * @return void
+     */
+    public function testRange()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->range('created', [
+            'gte' => '2012-01-01',
+            'lte' => 'now',
+            'format' => 'dd/MM/yyyy||yyyy'
+        ]);
+        $expected = [
+            'range' => [
+                'created' => [
+                    'gte' => '2012-01-01',
+                    'lte' => 'now',
+                    'format' => 'dd/MM/yyyy||yyyy'
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the regexp() filter
+     *
+     * @return void
+     */
+    public function testRegexp()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->regexp('name.first', 'mar[c|k]', [
+            'flags' => 'INTERSECTION|COMPLEMENT|EMPTY',
+            'max_determinized_states' => 200
+        ]);
+        $expected = [
+            'regexp' => [
+                'name.first' => [
+                    'value' => 'mar[c|k]',
+                    'flags' => 'INTERSECTION|COMPLEMENT|EMPTY',
+                    'max_determinized_states' => 200
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the script() filter
+     *
+     * @return void
+     */
+    public function testScript()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->script("doc['foo'] > 2");
+        $expected = [
+            'script' => ['script' => "doc['foo'] > 2"]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the term() filter
+     *
+     * @return void
+     */
+    public function testTerm()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->term('user.name', 'jose');
+        $expected = [
+            'term' => ['user.name' => 'jose']
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the terms() filter
+     *
+     * @return void
+     */
+    public function testTerms()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->terms('user.name', ['mark', 'jose']);
+        $expected = [
+            'terms' => ['user.name' => ['mark', 'jose']]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the type() filter
+     *
+     * @return void
+     */
+    public function testType()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->type('products');
+        $expected = [
+            'type' => ['value' => 'products']
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
 }

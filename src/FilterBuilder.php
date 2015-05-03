@@ -383,17 +383,45 @@ class FilterBuilder
         return $this->range($field, ['lte' => $value]);
     }
 
+    /**
+     * Returns a Missing filter object setup to filter documents not having a property present or
+     * not null.
+     *
+     * @param string $field The field to check for existance.
+     * @return Elastica\Filter\Missing
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
+     */
     public function missing($field = '')
     {
         return new Filter\Missing($field);
     }
 
+    /**
+     * Returns a Nested filter object setup to filter sub documents by a path.
+     *
+     * ### Example:
+     *
+     * {{{
+     *    $builder->nested('comments', $builder->term('author', 'mark'));
+     * }}}
+     *
+     * Or using a query as filter:
+     *
+     * {{{
+     *    $builder->nested('comments', new \Elastica\Query\SimpleQueryString('awesome'));
+     * }}}
+     *
+     * @param string $path A dot separated string denoting the path to the property to filter.
+     * @param Elastica\Query\AbstractQuery|Elastica\Filter\AbstractFilter $filter The filtering conditions.
+     * @return Elastica\Filter\Nested
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-filter.html
+     */
     public function nested($path, $filter)
     {
         $nested = new Filter\Nested();
         $nested->setPath($path);
 
-        if ($filter instanceof $filter) {
+        if ($filter instanceof AbstractFilter) {
             $nested->setFilter($filter);
         }
 
@@ -403,46 +431,160 @@ class FilterBuilder
         return $nested;
     }
 
+    /**
+     * Returns a BoolNot filter that is typically ussed to negate another filter expression
+     *
+     * @param Elastica\Filter\AbstractFilter $filter The filter to negate
+     * @return Elastica\Filter\BoolNot
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-not-filter.html
+     */
     public function not($filter)
     {
         return new Filter\BoolNot($filter);
     }
 
+    /**
+     * Returns a Prefix filter to filter documents that have fields containing terms with
+     * a specified prefix
+     *
+     * @param string $field The field to filter by.
+     * @param string $prefix The prefix to check for.
+     * @return Elastica\Filter\Prefix
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-filter.html
+     */
     public function prefix($field, $prefix)
     {
         return new Filter\Prefix($field, $prefix);
     }
 
+    /**
+     * Returns a Query filter that Wraps any query to be used as a filter.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->query(new \Elastica\Query\SimpleQueryString('awesome OR great'));
+     * }}}
+     *
+     * @param array|\Elastica\Query\AbstractQuery $query The Query to wrap as a filter
+     * @return Elastica\Filter\Query
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-filter.html
+     */
     public function query($query)
     {
         return new Filter\Query($query);
     }
 
+    /**
+     * Returns a Range filter object setup to filter documents having the field
+     * greater than the provided values.
+     *
+     * The $args array accepts the following keys:
+     *
+     * - gte: greater than or equal
+     * - gt: greater than
+     * - lte: less than or equal
+     * - lt: less than
+     *
+     * @param string $field The field to filter by.
+     * @param array $args An array describing the search range
+     * @return Elastica\Filter\Range
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     */
     public function range($field, array $args)
     {
         return new Filter\Range($field, $args);
     }
 
+    /**
+     * Returns a Regexp filter to filter documents based on a regular expression.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->regexp('name.first', 'ma.*');
+     * }}}
+     *
+     * @param string $field The field to filter by.
+     * @param string $regexp The regular expression.
+     * @param array $options Regultar expression flags or options.
+     * @return Elastica\Filter\Regexp
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
+     */
     public function regexp($field, $regexp, array $options = [])
     {
-        return new Filter\Regexp($field, $args);
+        return new Filter\Regexp($field, $regexp, $options);
     }
 
+    /**
+     * Returns a Script filter object that allows to filter based on the return value of a script.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->script("doc['price'].value > 1");
+     * }}}
+     *
+     * @param string $script The script.
+     * @return Elastica\Filter\Regexp
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
+     */
     public function script($script)
     {
         return new Filter\Script($script);
     }
 
+    /**
+     * Returns a Term filter object that filters documents that have fields containing a term.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->term('user.name', 'jose');
+     * }}}
+     *
+     * @param string $field The field to filter by.
+     * @param string $value The term to find in field.
+     * @return Elastica\Filter\Term
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-filter.html
+     */
     public function term($field, $value)
     {
         return new Filter\Term([$field => $value]);
     }
 
+    /**
+     * Returns a Terms filter object that filters documents that have fields containing some terms.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->terms('user.name', ['jose', 'mark']);
+     * }}}
+     *
+     * @param string $field The field to filter by.
+     * @param array $values The list of terms to find in field.
+     * @return Elastica\Filter\Terms
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-filter.html
+     */
     public function terms($field, $values)
     {
         return new Filter\Terms($field, $values);
     }
 
+    /**
+     * Returns a Type filter object that filters documents matching the provided document/mapping type.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->type('products');
+     * }}}
+     *
+     * @param string $type The type name
+     * @return Elastica\Filter\Type
+     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-filter.html
+     */
     public function type($type)
     {
         return new Filter\Type($type);
