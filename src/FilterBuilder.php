@@ -720,7 +720,7 @@ class FilterBuilder
      *  )];
      * }}}
 
-     * ### Checking for filed existance
+     * ### Checking for field existance
      * {{{
      *       $filter = $builder->parse([
      *           'name is' => null,
