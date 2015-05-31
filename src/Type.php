@@ -364,8 +364,13 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     public function exists($conditions)
     {
         $query = $this->query();
-        $query->where($conditions);
-        $q = $query->compileQuery();
+        if (count($conditions) && isset($conditions['id'])) {
+            $query->where(function ($builder) use ($conditions) {
+                return $builder->ids((array)$conditions['id']);
+            });
+        } else {
+            $query->where($conditions);
+        }
         $type = $this->connection()->getIndex()->getType($this->name());
         return $type->count($query->compileQuery()) > 0;
     }

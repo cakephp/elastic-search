@@ -498,8 +498,8 @@ class TypeTest extends TestCase
      */
     public function testExists()
     {
-        $this->assertTrue($this->type->exists(['id' => '123']));
         $this->assertFalse($this->type->exists(['id' => '999999']));
+        $this->assertTrue($this->type->exists(['id' => '1']));
     }
 
     /**
