@@ -18,22 +18,33 @@ use ArrayObject;
 use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
+use Cake\Datassource\RulesAwareTrait;
 use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Query;
+use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventManager;
 use Cake\Event\EventManagerTrait;
+use Cake\ORM\RulesChecker;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 
-class Type implements RepositoryInterface
+/**
+ * Base class for mapping types in indexes.
+ *
+ * A type in elastic search is approximately equivalent to a table or collection
+ * in a relational datastore. While an index can have multiple types, this ODM maps
+ * each type in an index maps to a class.
+ */
+class Type implements RepositoryInterface, EventDispatcherInterface
 {
     use EventManagerTrait;
     use ValidatorAwareTrait;
+    use RulesAwareTrait;
 
     /**
      * Default validator name.
@@ -77,6 +88,19 @@ class Type implements RepositoryInterface
      */
     protected $embeds = [];
 
+    /**
+     * Constructor
+     *
+     * ### Options
+     *
+     * - `connection` The Elastica instance.
+     * - `name` The name of the type. If this isn't set the name will be inferred from the class name.
+     * - `eventManager` Used to inject a specific eventmanager.
+     *
+     * At the end of the constructor the `Model.initialize` event will be triggered.
+     *
+     * @param array $config The configuration options, see above.
+     */
     public function __construct(array $config = [])
     {
         if (!empty($config['connection'])) {
@@ -305,6 +329,7 @@ class Type implements RepositoryInterface
      */
     public function updateAll($fields, $conditions)
     {
+        throw new \RuntimeException('Not implemented yet');
     }
 
     /**
