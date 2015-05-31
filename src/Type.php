@@ -18,7 +18,7 @@ use ArrayObject;
 use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
-use Cake\Datassource\RulesAwareTrait;
+use Cake\Datasource\RulesAwareTrait;
 use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Datasource\Connection;
@@ -377,12 +377,17 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      *
      * Triggers the `Model.beforeSave` and `Model.afterSave` events.
      *
+     * ## Options
+     *
+     * - `checkRules` Defaults to true. Check deletion rules before deleting the record.
+     *
      * @param \Cake\Datasource\EntityInterface the entity to be saved
      * @param array $options
      * @return \Cake\Datasource\EntityInterface|boolean
      */
     public function save(EntityInterface $entity, $options = [])
     {
+        $options += ['checkRules' => true];
         $options = new ArrayObject($options);
         $event = $this->dispatchEvent('Model.beforeSave', [
             'entity' => $entity,
@@ -390,6 +395,14 @@ class Type implements RepositoryInterface, EventDispatcherInterface
         ]);
         if ($event->isStopped()) {
             return $event->result;
+        }
+        if ($entity->errors()) {
+            return false;
+        }
+
+        $mode = $entity->isNew() ? RulesChecker::CREATE : RulesChecker::UPDATE;
+        if ($options['checkRules'] && !$this->checkRules($entity, $mode, $options)) {
+            return false;
         }
 
         $type = $this->connection()->getIndex()->getType($this->name());

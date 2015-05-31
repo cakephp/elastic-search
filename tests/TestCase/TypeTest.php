@@ -241,6 +241,22 @@ class TypeTest extends TestCase
     }
 
     /**
+     * Test saving a new document that contains errors
+     *
+     * @return void
+     */
+    public function testSaveDoesNotSaveDocumentWithErrors()
+    {
+        $doc = new Document([
+            'id' => '123',
+            'title' => 'A brand new article',
+            'body' => 'Some new content'
+        ], ['markNew' => false]);
+        $doc->errors(['title' => ['bad news']]);
+        $this->assertFalse($this->type->save($doc), 'Should not save.');
+    }
+
+    /**
      * Test save triggers events.
      *
      * @return void
@@ -333,6 +349,43 @@ class TypeTest extends TestCase
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->comments[1]);
         $this->assertEquals('Nice post', $compare->comments[0]->comment);
         $this->assertEquals('Awesome!', $compare->comments[1]->comment);
+    }
+
+    /**
+     * Test that rules can prevent save.
+     *
+     * @return void
+     */
+    public function testSaveWithRulesCreate()
+    {
+        $this->type->eventManager()->on('Model.buildRules', function ($event, $rules) {
+            $rules->addCreate(function ($doc) {
+                return 'Did not work';
+            }, ['fieldName' => 'name']);
+        });
+
+        $doc = new Document(['title' => 'rules are checked']);
+        $this->assertFalse($this->type->save($doc), 'Save should fail');
+
+        $doc->isNew(false);
+        $this->assertSame($doc, $this->type->save($doc), 'Save should fail');
+    }
+
+    /**
+     * Test that rules can prevent save.
+     *
+     * @return void
+     */
+    public function testSaveWithRulesUpdate()
+    {
+        $this->type->eventManager()->on('Model.buildRules', function ($event, $rules) {
+            $rules->addUpdate(function ($doc) {
+                return 'Did not work';
+            }, ['fieldName' => 'name']);
+        });
+
+        $doc = new Document(['title' => 'update rules'], ['markNew' => false]);
+        $this->assertFalse($this->type->save($doc), 'Save should fail');
     }
 
     /**
@@ -471,5 +524,25 @@ class TypeTest extends TestCase
         $result = $this->type->deleteAll(['body' => 'cake']);
         $this->assertTrue($result);
         $this->assertEquals(1, $this->type->find()->count());
+    }
+
+    /**
+     * Test the rules builder types
+     *
+     * @return void
+     */
+    public function testAddRules()
+    {
+        $this->type->eventManager()->on('Model.buildRules', function ($event, $rules) {
+            $rules->add(function ($doc) {
+                return false;
+            });
+        });
+        $rules = $this->type->rulesChecker();
+        $this->assertInstanceOf('Cake\Datasource\RulesChecker', $rules);
+
+        $doc = new Document();
+        $result = $rules->checkCreate($doc);
+        $this->assertFalse($result, 'Rules should fail.');
     }
 }
