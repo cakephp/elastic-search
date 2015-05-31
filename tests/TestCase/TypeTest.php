@@ -361,7 +361,7 @@ class TypeTest extends TestCase
         $this->type->eventManager()->on('Model.buildRules', function ($event, $rules) {
             $rules->addCreate(function ($doc) {
                 return 'Did not work';
-            }, ['fieldName' => 'name']);
+            }, ['errorField' => 'name']);
         });
 
         $doc = new Document(['title' => 'rules are checked']);
@@ -381,7 +381,7 @@ class TypeTest extends TestCase
         $this->type->eventManager()->on('Model.buildRules', function ($event, $rules) {
             $rules->addUpdate(function ($doc) {
                 return 'Did not work';
-            }, ['fieldName' => 'name']);
+            }, ['errorField' => 'name']);
         });
 
         $doc = new Document(['title' => 'update rules'], ['markNew' => false]);
@@ -400,6 +400,22 @@ class TypeTest extends TestCase
 
         $dead = $this->type->find()->where(['id' => 1])->first();
         $this->assertNull($dead, 'No record.');
+    }
+
+    /**
+     * Test deletion prevented by rules
+     *
+     * @return void
+     */
+    public function testDeleteRules()
+    {
+        $this->type->rulesChecker()->addDelete(function () {
+            return 'not good';
+        }, ['errorField' => 'title']);
+        $doc = $this->type->get(1);
+
+        $this->assertFalse($this->type->delete($doc));
+        $this->assertNotEmpty($doc->errors('title'));
     }
 
     /**

@@ -450,6 +450,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
             $msg = 'Deleting requires an "id" value.';
             throw new InvalidArgumentException($msg);
         }
+        $options += ['checkRules' => true];
         $options = new ArrayObject($options);
         $event = $this->dispatchEvent('Model.beforeDelete', [
             'entity' => $entity,
@@ -457,6 +458,9 @@ class Type implements RepositoryInterface, EventDispatcherInterface
         ]);
         if ($event->isStopped()) {
             return $event->result;
+        }
+        if (!$this->checkRules($entity, RulesChecker::DELETE, $options)) {
+            return false;
         }
 
         $data = $entity->toArray();
