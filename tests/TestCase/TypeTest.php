@@ -367,8 +367,10 @@ class TypeTest extends TestCase
         $doc = new Document(['title' => 'rules are checked']);
         $this->assertFalse($this->type->save($doc), 'Save should fail');
 
+        $doc->clean();
+        $doc->id = 12345;
         $doc->isNew(false);
-        $this->assertSame($doc, $this->type->save($doc), 'Save should fail');
+        $this->assertSame($doc, $this->type->save($doc), 'Save should pass, not new anymore.');
     }
 
     /**
