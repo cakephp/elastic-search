@@ -665,4 +665,191 @@ class FilterBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $result->toArray());
     }
+
+    /**
+     * Tests the and() method
+     *
+     * @return void
+     */
+    public function testAnd()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->and(
+            $builder->term('user', 'jose'),
+            $builder->gte('age', 29),
+            $builder->missing('tags')
+        );
+        $expected = [
+            'bool' => [
+                'must' => [
+                    ['term' => ['user' => 'jose']],
+                    ['range' => ['age' => ['gte' => 29]]],
+                    ['missing' => ['field' => 'tags']],
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the and() method with boolean collapsing
+     *
+     * @return void
+     */
+    public function testAndWithCollapsedBoolean()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->and(
+            $builder->term('user', 'jose'),
+            $builder->gte('age', 29),
+            $builder->and(
+                $builder->missing('tags'),
+                $builder->exists('comments')
+            )
+        );
+        $expected = [
+            'bool' => [
+                'must' => [
+                    ['missing' => ['field' => 'tags']],
+                    ['exists' => ['field' => 'comments']],
+                    ['term' => ['user' => 'jose']],
+                    ['range' => ['age' => ['gte' => 29]]],
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the or() method
+     *
+     * @return void
+     */
+    public function testOr()
+    {
+        $builder = new FilterBuilder;
+        $result = $builder->or(
+            $builder->term('user', 'jose'),
+            $builder->gte('age', 29),
+            $builder->missing('tags')
+        );
+        $expected = [
+            'or' => [
+                ['term' => ['user' => 'jose']],
+                ['range' => ['age' => ['gte' => 29]]],
+                ['missing' => ['field' => 'tags']],
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the parse() method
+     *
+     * @return void
+     */
+    public function testParseSingleArray()
+    {
+        $builder = new FilterBuilder;
+        $filter = $builder->parse([
+            'name' => 'jose',
+            'age >=' => 29,
+            'age <=' => 50,
+            'salary >' => 50,
+            'salary <' => 60,
+            'interests in' => ['cakephp', 'food'],
+            'interests not in' => ['boring stuff', 'c#'],
+            'profile is' => null,
+            'tags is not' => null,
+            'address is' => 'something',
+            'address is not' => 'something else',
+            'last_name !=' => 'gonzalez',
+        ]);
+        $expected = [
+            $builder->term('name', 'jose'),
+            $builder->gte('age', 29),
+            $builder->lte('age', 50),
+            $builder->gt('salary', 50),
+            $builder->lt('salary', 60),
+            $builder->terms('interests', ['cakephp', 'food']),
+            $builder->not($builder->terms('interests', ['boring stuff', 'c#'])),
+            $builder->missing('profile'),
+            $builder->exists('tags'),
+            $builder->term('address', 'something'),
+            $builder->not($builder->term('address', 'something else')),
+            $builder->not($builder->term('last_name', 'gonzalez'))
+        ];
+        $this->assertEquals($expected, $filter);
+    }
+
+    /**
+     * Tests the parse() method for generating or conditions
+     *
+     * @return void
+     */
+    public function testParseOr()
+    {
+        $builder = new FilterBuilder;
+        $filter = $builder->parse([
+            'or' => [
+                'name' => 'jose',
+                'age >' => 29
+            ]
+        ]);
+        $expected = [
+            $builder->or(
+                $builder->term('name', 'jose'),
+                $builder->gt('age', 29)
+            )
+        ];
+        $this->assertEquals($expected, $filter);
+    }
+
+    /**
+     * Tests the parse() method for generating and conditions
+     *
+     * @return void
+     */
+    public function testParseAnd()
+    {
+        $builder = new FilterBuilder;
+        $filter = $builder->parse([
+            'and' => [
+                'name' => 'jose',
+                'age >' => 29
+            ]
+        ]);
+        $expected = [
+            $builder->and(
+                $builder->term('name', 'jose'),
+                $builder->gt('age', 29)
+            )
+        ];
+        $this->assertEquals($expected, $filter);
+    }
+
+    /**
+     * Tests the parse() method for generating not conditions
+     *
+     * @return void
+     */
+    public function testParseNot()
+    {
+        $builder = new FilterBuilder;
+        $filter = $builder->parse([
+            'not' => [
+                'name' => 'jose',
+                'age >' => 29
+            ]
+        ]);
+        $expected = [
+            $builder->not(
+                $builder->and(
+                    $builder->term('name', 'jose'),
+                    $builder->gt('age', 29)
+                )
+            )
+        ];
+        $this->assertEquals($expected, $filter);
+    }
 }

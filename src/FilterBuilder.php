@@ -590,6 +590,21 @@ class FilterBuilder
         return new Filter\Type($type);
     }
 
+    /**
+     * Combines all the passed arguments in a single boolean filter
+     * using the "must" clause.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $bool = $builder->and(
+     *     $builder->terms('tags', ['cool', 'stuff']),
+     *     $builder->exists('comments')
+     *  );
+     * }}}
+     *
+     * @return Elastica\Filter\Bool
+     */
     public function and_()
     {
         $filters = func_get_args();
@@ -610,6 +625,20 @@ class FilterBuilder
         return $bool;
     }
 
+    /**
+     * Combines all the passed arguments in a single BoolOr filter.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $bool = $builder->or(
+     *     $builder->missing('tags'),
+     *     $builder->exists('comments')
+     *  );
+     * }}}
+     *
+     * @return Elastica\Filter\BoolOr
+     */
     public function or_()
     {
         $filters = func_get_args();
@@ -622,6 +651,13 @@ class FilterBuilder
         return $or;
     }
 
+    /**
+     * Helps calling the `and()` and `or()` methods transparently.
+     *
+     * @param string $method The method name.
+     * @param array $args The argumemts to pass to the method.
+     * @return Elastica\Filter\AbstractFilter
+     */
     public function __call($method, $args)
     {
         if (in_array($method, ['and', 'or'])) {
@@ -630,6 +666,92 @@ class FilterBuilder
         throw new \BadMethodCallException('Cannot build filter ' . $method);
     }
 
+    /**
+     * Converts an array into a single array of filter objects
+     *
+     * ### Parsing a single array:
+     *
+     *   {{{
+     *       $filter = $builder->parse([
+     *           'name' => 'mark',
+     *           'age <=' => 35
+     *       ]);
+     *
+     *       // Equivalent to:
+     *       $filter = [
+     *           $builder->term('name', 'mark'),
+     *           $builder->lte('age', 35)
+     *       ];
+     *   }}}
+     *
+     * ### Creating "or" conditions:
+     *
+     * {{{
+     *  $filter = $builder->parse([
+     *      'or' => [
+     *          'name' => 'mark',
+     *          'age <=' => 35
+     *      ]
+     *  ]);
+     *
+     *  // Equivalent to:
+     *  $filter = [$builder->or(
+     *      $builder->term('name', 'mark'),
+     *      $builder->lte('age', 35)
+     *  )];
+     * }}}
+     *
+     * ### Negating conditions:
+     *
+     * {{{
+     *  $filter = $builder->parse([
+     *      'not' => [
+     *          'name' => 'mark',
+     *          'age <=' => 35
+     *      ]
+     *  ]);
+     *
+     *  // Equivalent to:
+     *  $filter = [$builder->not(
+     *      $builder->and(
+     *          $builder->term('name', 'mark'),
+     *          $builder->lte('age', 35)
+     *      )
+     *  )];
+     * }}}
+
+     * ### Checking for field existance
+     * {{{
+     *       $filter = $builder->parse([
+     *           'name is' => null,
+     *           'age is not' => null
+     *       ]);
+     *
+     *       // Equivalent to:
+     *       $filter = [
+     *           $builder->missing('name'),
+     *           $builder->exists('age')
+     *       ];
+     * }}}
+     *
+     * ### Checking if a value is in a list of terms
+     *
+     * {{{
+     *       $filter = $builder->parse([
+     *           'name in' => ['jose', 'mark']
+     *       ]);
+     *
+     *       // Equivalent to:
+     *       $filter = [$builder->terms('name', ['jose', 'mark'])]
+     * }}}
+     *
+     * The list of supported operators is:
+     *
+     * `<`, `>`, `<=`, `>=`, `in`, `not in`, `is`, `is not`, `!=`
+     *
+     * @param array|Elastica\Filter\AbstractFilter $conditions The list of conditions to parse.
+     * @return array
+     */
     public function parse($conditions)
     {
         if ($conditions instanceof AbstractFilter) {
@@ -661,7 +783,7 @@ class FilterBuilder
             }
 
             if ($operator === 'not') {
-                $result[] = $this->not($this->parse($c));
+                $result[] = $this->not($this->__call('and', $this->parse($c)));
                 continue;
             }
 
@@ -678,6 +800,13 @@ class FilterBuilder
         return $result;
     }
 
+    /**
+     * Parses a field name containing an operator into a Filter object.
+     *
+     * @param string $field The filed name containing the operator
+     * @param mixed $value The value to pass to the filter
+     * @return Elastica\Filter\AbstractFilter
+     */
     protected function _parseFilter($field, $value)
     {
         $operator = '=';
@@ -722,7 +851,7 @@ class FilterBuilder
         }
 
         if ($operator === 'is not' && $value === null) {
-            return $this->not($this->missing($field));
+            return $this->exists($field);
         }
 
         if ($operator === 'is' && $value !== null) {
