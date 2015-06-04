@@ -17,6 +17,7 @@ namespace Cake\ElasticSearch\TestSuite;
 use Cake\ElasticSearch\Datasource\Connection;
 use Elastica\Document as ElasticaDocument;
 use Elastica\Type\Mapping as ElasticaMapping;
+use Elastica\Query\MatchAll;
 
 /**
  * A Test fixture implementation for elastic search.
@@ -107,6 +108,7 @@ class TestFixture
         }
         $type->addDocuments($documents);
         $index->refresh();
+        $this->created[] = $db->configName();
     }
 
     /**
@@ -131,18 +133,10 @@ class TestFixture
      */
     public function truncate(Connection $db)
     {
-        $ids = [];
-        foreach ($this->records as $record) {
-            if (isset($record['id'])) {
-                $ids[] = $record['id'];
-            }
-        }
-        if (empty($ids)) {
-            return;
-        }
+        $query = new MatchAll();
         $index = $db->getIndex();
         $type = $index->getType($this->table);
-        $type->deleteByIds($ids);
+        $type->deleteByQuery($query);
         $index->refresh();
     }
 }
