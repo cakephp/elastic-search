@@ -165,7 +165,8 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      *
      * @return Cake\Event\EventManager
      */
-    public function getEventManager() {
+    public function getEventManager()
+    {
         return $this->_eventManager;
     }
 
@@ -233,7 +234,8 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      * @param array $options
      * @return \Cake\ElasticSearch\Query
      */
-    public function findAll(Query $query, array $options = []) {
+    public function findAll(Query $query, array $options = [])
+    {
         return $query;
     }
 
