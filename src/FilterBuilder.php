@@ -719,7 +719,7 @@ class FilterBuilder
      *      )
      *  )];
      * }}}
-
+     *
      * ### Checking for field existance
      * {{{
      *       $filter = $builder->parse([

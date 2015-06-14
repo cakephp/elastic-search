@@ -87,10 +87,10 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
     }
 
     /**
-    * Return all suggests
-    *
-    * @return array suggest results
-    */
+     * Return all suggests
+     *
+     * @return array suggest results
+     */
     public function getSuggests()
     {
         return $this->resultSet->getSuggests();
