@@ -145,6 +145,7 @@ class TypeTest extends TestCase
         $this->assertEquals(['a' => 'b', 'id' => 'foo'], $result->toArray());
         $this->assertFalse($result->dirty());
         $this->assertFalse($result->isNew());
+        $this->assertEquals('foo', $result->source());
     }
 
     /**
@@ -168,6 +169,7 @@ class TypeTest extends TestCase
         $result = $type->newEntity($data);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
         $this->assertSame($data, $result->toArray());
+        $this->assertEquals('articles', $result->source());
     }
 
     /**
@@ -221,6 +223,7 @@ class TypeTest extends TestCase
         $result = $this->type->get($doc->id);
         $this->assertEquals($doc->title, $result->title);
         $this->assertEquals($doc->body, $result->body);
+        $this->assertEquals('articles', $result->source());
     }
 
     /**
@@ -238,6 +241,7 @@ class TypeTest extends TestCase
         $this->assertSame($doc, $this->type->save($doc));
         $this->assertFalse($doc->isNew(), 'Not new.');
         $this->assertFalse($doc->dirty(), 'Not dirty anymore.');
+        $this->assertEquals('articles', $doc->source());
     }
 
     /**

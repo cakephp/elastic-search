@@ -284,7 +284,8 @@ class Type implements RepositoryInterface, EventDispatcherInterface
         $options = [
             'markNew' => false,
             'markClean' => true,
-            'useSetters' => false
+            'useSetters' => false,
+            'source' => $this->name(),
         ];
         $data = $result->getData();
         $data['id'] = $result->getId();
@@ -425,6 +426,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
+        $entity->source($this->name());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [
