@@ -305,6 +305,8 @@ class DocumentContext implements ContextInterface
      */
     public function fieldNames()
     {
+        $fields = $this->_context['type']->schema();
+        return array_keys($fields);
     }
 
     /**
@@ -312,6 +314,23 @@ class DocumentContext implements ContextInterface
      */
     public function type($field)
     {
+        $schema = $this->_context['type']->schema();
+        if (isset($schema[$field]['type'])) {
+            return $schema[$field]['type'];
+        }
+        if (strpos($field, '.') !== false) {
+            $parts = explode('.', $field);
+            $pointer = $schema;
+            foreach ($parts as $part) {
+                if (isset($pointer[$part]['type']) && $pointer[$part]['type'] !== 'nested') {
+                    return $pointer[$part]['type'];
+                }
+                if (isset($pointer[$part]['properties'])) {
+                    $pointer = $pointer[$part]['properties'];
+                }
+            }
+        }
+        return null;
     }
 
     /**

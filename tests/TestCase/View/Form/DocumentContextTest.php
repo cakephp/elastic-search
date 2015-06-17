@@ -43,7 +43,10 @@ class DocumentContextTest extends TestCase
      *
      * @var array
      */
-    public $fixtures = ['plugin.cake/elastic_search.articles'];
+    public $fixtures = [
+        'plugin.cake/elastic_search.articles',
+        'plugin.cake/elastic_search.profiles'
+    ];
 
     /**
      * setup method.
@@ -313,7 +316,7 @@ class DocumentContextTest extends TestCase
      */
     public function testError()
     {
-        $this->setupType();
+        $articles = $this->setupType();
 
         $row = new Article([
             'title' => 'My title',
@@ -327,7 +330,7 @@ class DocumentContextTest extends TestCase
 
         $context = new DocumentContext($this->request, [
             'entity' => $row,
-            'type' => 'articles',
+            'type' => $articles,
         ]);
 
         $this->assertEquals([], $context->error('title'));
@@ -346,7 +349,7 @@ class DocumentContextTest extends TestCase
      */
     public function testErrorAssociatedHasMany()
     {
-        $this->setupType();
+        $articles = $this->setupType();
 
         $row = new Article([
             'title' => 'My title',
@@ -360,7 +363,7 @@ class DocumentContextTest extends TestCase
 
         $context = new DocumentContext($this->request, [
             'entity' => $row,
-            'table' => 'articles',
+            'table' => $articles,
             'validator' => 'default',
         ]);
 
@@ -372,6 +375,71 @@ class DocumentContextTest extends TestCase
         $this->assertEquals([], $context->error('comments.1'));
         $this->assertEquals([], $context->error('comments.1.comment'));
         $this->assertEquals([], $context->error('comments.1.article_id'));
+    }
+
+    /**
+     * Test getting fieldnames.
+     *
+     * @return void
+     */
+    public function testFieldNames()
+    {
+        $articles = $this->setupType();
+        $context = new DocumentContext($this->request, [
+            'entity' => new Document([]),
+            'type' => $articles,
+        ]);
+        $result = $context->fieldNames();
+        $this->assertContains('title', $result);
+        $this->assertContains('body', $result);
+        $this->assertContains('user_id', $result);
+    }
+
+    /**
+     * Test type() basic
+     *
+     * @return void
+     */
+    public function testType()
+    {
+        $articles = $this->setupType();
+
+        $row = new Article([
+            'title' => 'My title',
+            'body' => 'Some content',
+        ]);
+        $context = new DocumentContext($this->request, [
+            'entity' => $row,
+            'type' => $articles,
+        ]);
+
+        $this->assertEquals('string', $context->type('title'));
+        $this->assertEquals('string', $context->type('body'));
+        $this->assertEquals('integer', $context->type('user_id'));
+        $this->assertNull($context->type('nope'));
+    }
+
+    /**
+     * Test type() nested fields
+     *
+     * @return void
+     */
+    public function testTypeNestedFields()
+    {
+        $profiles = new Type([
+            'connection' => ConnectionManager::get('test'),
+            'name' => 'profiles',
+        ]);
+
+        $row = new Document([]);
+        $context = new DocumentContext($this->request, [
+            'entity' => $row,
+            'type' => $profiles,
+        ]);
+
+        $this->assertEquals('string', $context->type('username'));
+        $this->assertEquals('string', $context->type('address.city'));
+        $this->assertNull($context->type('nope'));
     }
 
     /**

@@ -89,6 +89,13 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     protected $embeds = [];
 
     /**
+     * The mapping schema for this type.
+     *
+     * @var array
+     */
+    protected $_schema;
+
+    /**
      * Constructor
      *
      * ### Options
@@ -613,5 +620,25 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     {
         $marshaller = $this->marshaller();
         return $marshaller->mergeMany($entity, $data, $options);
+    }
+
+    /**
+     * Get the mapping data from the index type.
+     *
+     * This will fetch the schema from ElasticSearch the first
+     * time this method is called.
+     *
+     *
+     * @return array
+     */
+    public function schema()
+    {
+        if ($this->_schema !== null) {
+            return $this->_schema;
+        }
+        $type = $this->connection()->getIndex()->getType($this->name());
+        $mapping = $type->getMapping();
+        $this->_schema = $mapping[$this->name()]['properties'];
+        return $this->_schema;
     }
 }
