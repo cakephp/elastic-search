@@ -77,7 +77,7 @@ class DocumentContext implements ContextInterface
         $context += [
             'entity' => null,
             'type' => null,
-            'validator' => [],
+            'validator' => 'default',
         ];
         $this->_context = $context;
         $this->_prepare();
@@ -189,6 +189,13 @@ class DocumentContext implements ContextInterface
         }
     }
 
+    /**
+     * Get the entity that is closest to $path.
+     *
+     * @param array $path The to get an entity for.
+     * @return Cake\Datasource\EntityInterface|false The entity or false.
+     * @throws \RuntimeException when no entity can be found.
+     */
     protected function entity($path)
     {
         if ($path === null) {
@@ -216,10 +223,7 @@ class DocumentContext implements ContextInterface
             $isLast = ($i === $last);
 
             if (!$isLast && $next === null && $prop !== '_ids') {
-                // TODO get embedded docs here.
                 return false;
-                // $table = $this->_getTable($path);
-                // return $table->newEntity();
             }
 
             $isTraversable = (
@@ -268,7 +272,32 @@ class DocumentContext implements ContextInterface
      */
     public function isRequired($field)
     {
+        $parts = explode('.', $field);
+        $entity = $this->entity($parts);
+        $isNew = true;
+        if ($entity instanceof Document) {
+            $isNew = $entity->isNew();
+        }
+        $validator = $this->getValidator();
 
+        $field = array_pop($parts);
+        if (!$validator->hasField($field)) {
+            return false;
+        }
+        if ($this->type($field) !== 'boolean') {
+            return $validator->isEmptyAllowed($field, $isNew) === false;
+        }
+        return false;
+    }
+
+    /**
+     * Get the validator for the current type.
+     *
+     * @return Cake\Validation\Validator The validator for the type.
+     */
+    protected function getValidator()
+    {
+        return $this->_context['type']->validator($this->_context['validator']);
     }
 
     /**
@@ -297,6 +326,7 @@ class DocumentContext implements ContextInterface
      */
     public function hasError($field)
     {
+        return $this->error($field) !== [];
     }
 
     /**
@@ -304,5 +334,12 @@ class DocumentContext implements ContextInterface
      */
     public function error($field)
     {
+        $parts = explode('.', $field);
+        $entity = $this->entity($parts);
+
+        if ($entity instanceof Document) {
+            return $entity->errors(array_pop($parts));
+        }
+        return [];
     }
 }

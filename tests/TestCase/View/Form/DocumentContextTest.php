@@ -14,14 +14,16 @@
  */
 namespace Cake\ElasticSearch\Test\TestCase\View\Form;
 
-use Cake\Collection\Collection;
-use Cake\Network\Request;
-use Cake\ElasticSearch\Document;
-use Cake\TestSuite\TestCase;
-use Cake\Validation\Validator;
-use Cake\ElasticSearch\View\Form\DocumentContext;
 use ArrayIterator;
 use ArrayObject;
+use Cake\Collection\Collection;
+use Cake\Datasource\ConnectionManager;
+use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Type;
+use Cake\ElasticSearch\View\Form\DocumentContext;
+use Cake\Network\Request;
+use Cake\TestSuite\TestCase;
+use Cake\Validation\Validator;
 
 /**
  * Test stub.
@@ -247,7 +249,16 @@ class DocumentContextTest extends TestCase
      */
     public function testIsRequrired()
     {
-        $this->markTestIncomplete();
+        $articles = $this->setupType();
+        $entity = new Document(['title' => 'test']);
+
+        $context = new DocumentContext($this->request, [
+            'entity' => $entity,
+            'type' => $articles,
+        ]);
+        $this->assertTrue($context->isRequired('title'));
+        $this->assertFalse($context->isRequired('body'));
+        $this->assertFalse($context->isRequired('no_validate'));
     }
 
     /**
@@ -257,6 +268,136 @@ class DocumentContextTest extends TestCase
      */
     public function testIsRequriredAlternateValidator()
     {
-        $this->markTestIncomplete();
+        $articles = $this->setupType();
+        $entity = new Document(['title' => 'test']);
+
+        $context = new DocumentContext($this->request, [
+            'entity' => $entity,
+            'type' => $articles,
+            'validator' => 'alternate'
+        ]);
+        $this->assertFalse($context->isRequired('title'));
+        $this->assertTrue($context->isRequired('body'));
+        $this->assertFalse($context->isRequired('no_validate'));
+    }
+
+    /**
+     * Test error operations on a collection of entities.
+     *
+     * @dataProvider collectionProvider
+     * @return void
+     */
+    public function testErrorsOnCollections($collection)
+    {
+        $context = new DocumentContext($this->request, [
+            'entity' => $collection,
+            'tyupe' => 'articles',
+        ]);
+
+        $this->assertTrue($context->hasError('0.title'));
+        $this->assertEquals(['Required field'], $context->error('0.title'));
+        $this->assertFalse($context->hasError('0.body'));
+
+        $this->assertFalse($context->hasError('1.title'));
+        $this->assertEquals(['Not long enough'], $context->error('1.body'));
+        $this->assertTrue($context->hasError('1.body'));
+
+        $this->assertFalse($context->hasError('nope'));
+        $this->assertFalse($context->hasError('99.title'));
+    }
+
+    /**
+     * Test error
+     *
+     * @return void
+     */
+    public function testError()
+    {
+        $this->setupType();
+
+        $row = new Article([
+            'title' => 'My title',
+            'user' => new Document(['username' => 'Mark']),
+        ]);
+        $row->errors('title', []);
+        $row->errors('body', 'Gotta have one');
+        $row->errors('user_id', ['Required field']);
+
+        $row->user->errors('username', ['Required']);
+
+        $context = new DocumentContext($this->request, [
+            'entity' => $row,
+            'type' => 'articles',
+        ]);
+
+        $this->assertEquals([], $context->error('title'));
+
+        $expected = ['Gotta have one'];
+        $this->assertEquals($expected, $context->error('body'));
+
+        $expected = ['Required'];
+        $this->assertEquals($expected, $context->error('user.username'));
+    }
+
+    /**
+     * Test error on associated entities.
+     *
+     * @return void
+     */
+    public function testErrorAssociatedHasMany()
+    {
+        $this->setupType();
+
+        $row = new Article([
+            'title' => 'My title',
+            'comments' => [
+                new Document(['comment' => '']),
+                new Document(['comment' => 'Second comment']),
+            ]
+        ]);
+        $row->comments[0]->errors('comment', ['Is required']);
+        $row->comments[0]->errors('article_id', ['Is required']);
+
+        $context = new DocumentContext($this->request, [
+            'entity' => $row,
+            'table' => 'articles',
+            'validator' => 'default',
+        ]);
+
+        $this->assertEquals([], $context->error('title'));
+        $this->assertEquals([], $context->error('comments.0.user_id'));
+        $this->assertEquals([], $context->error('comments.0'));
+        $this->assertEquals(['Is required'], $context->error('comments.0.comment'));
+        $this->assertEquals(['Is required'], $context->error('comments.0.article_id'));
+        $this->assertEquals([], $context->error('comments.1'));
+        $this->assertEquals([], $context->error('comments.1.comment'));
+        $this->assertEquals([], $context->error('comments.1.article_id'));
+    }
+
+    /**
+     * Setup an articles type for testing against.
+     *
+     * @return \Cake\ElasticSearch\Type
+     */
+    protected function setupType()
+    {
+        $articles = new Type([
+            'connection' => ConnectionManager::get('test'),
+            'name' => 'articles',
+        ]);
+        $articles->embedOne('User');
+        $articles->embedMany('Comments');
+
+        $articles->validator()->add('title', 'notblank', [
+            'rule' => 'notBlank'
+        ]);
+
+        $validator = new Validator();
+        $validator->add('body', 'notblank', [
+            'rule' => 'notBlank'
+        ]);
+        $articles->validator('alternate', $validator);
+
+        return $articles;
     }
 }
