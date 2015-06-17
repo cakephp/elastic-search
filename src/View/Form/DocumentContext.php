@@ -338,6 +338,7 @@ class DocumentContext implements ContextInterface
      */
     public function attributes($field)
     {
+        return ['length' => null, 'precision' => null];
     }
 
     /**
