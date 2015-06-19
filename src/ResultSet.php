@@ -50,6 +50,13 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
     protected $embeds = [];
 
     /**
+     * Name of the type that the originating query came from.
+     *
+     * @var string
+     */
+    protected $repoName;
+
+    /**
      * Decorator's constructor
      *
      * @param \Elastica\ResultSet $resultSet The results from Elastica to wrap
@@ -63,6 +70,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
             $this->embeds[$embed->property()] = $embed;
         }
         $this->entityClass = $repo->entityClass();
+        $this->repoName = $repo->name();
         parent::__construct($resultSet);
     }
 
@@ -229,7 +237,8 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
         $options = [
             'markClean' => true,
             'useSetters' => false,
-            'markNew' => false
+            'markNew' => false,
+            'source' => $this->repoName,
         ];
 
         $result = $this->resultSet->current();

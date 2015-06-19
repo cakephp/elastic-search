@@ -22,6 +22,7 @@ use Cake\Datasource\RulesAwareTrait;
 use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Datasource\Connection;
+use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Query;
 use Cake\Event\EventDispatcherInterface;
@@ -87,6 +88,13 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      * @var array
      */
     protected $embeds = [];
+
+    /**
+     * The mapping schema for this type.
+     *
+     * @var \Cake\ElasticSearch\Datasource\MappingSchema
+     */
+    protected $schema;
 
     /**
      * Constructor
@@ -284,7 +292,8 @@ class Type implements RepositoryInterface, EventDispatcherInterface
         $options = [
             'markNew' => false,
             'markClean' => true,
-            'useSetters' => false
+            'useSetters' => false,
+            'source' => $this->name(),
         ];
         $data = $result->getData();
         $data['id'] = $result->getId();
@@ -425,6 +434,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
+        $entity->source($this->name());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [
@@ -611,5 +621,25 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     {
         $marshaller = $this->marshaller();
         return $marshaller->mergeMany($entity, $data, $options);
+    }
+
+    /**
+     * Get the mapping data from the index type.
+     *
+     * This will fetch the schema from ElasticSearch the first
+     * time this method is called.
+     *
+     *
+     * @return array
+     */
+    public function schema()
+    {
+        if ($this->schema !== null) {
+            return $this->schema;
+        }
+        $name = $this->name();
+        $type = $this->connection()->getIndex()->getType($name);
+        $this->schema = new MappingSchema($name, $type->getMapping());
+        return $this->schema;
     }
 }
