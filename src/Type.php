@@ -22,6 +22,7 @@ use Cake\Datasource\RulesAwareTrait;
 use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Datasource\Connection;
+use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Query;
 use Cake\Event\EventDispatcherInterface;
@@ -91,9 +92,9 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     /**
      * The mapping schema for this type.
      *
-     * @var array
+     * @var \Cake\ElasticSearch\Datasource\MappingSchema
      */
-    protected $_schema;
+    protected $schema;
 
     /**
      * Constructor
@@ -633,12 +634,12 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      */
     public function schema()
     {
-        if ($this->_schema !== null) {
-            return $this->_schema;
+        if ($this->schema !== null) {
+            return $this->schema;
         }
-        $type = $this->connection()->getIndex()->getType($this->name());
-        $mapping = $type->getMapping();
-        $this->_schema = $mapping[$this->name()]['properties'];
-        return $this->_schema;
+        $name = $this->name();
+        $type = $this->connection()->getIndex()->getType($name);
+        $this->schema = new MappingSchema($name, $type->getMapping());
+        return $this->schema;
     }
 }
