@@ -642,4 +642,14 @@ class Type implements RepositoryInterface, EventDispatcherInterface
         $this->schema = new MappingSchema($name, $type->getMapping());
         return $this->schema;
     }
+
+    /**
+     * The default connection name to inject when creating an instance.
+     *
+     * @return string
+     */
+    public static function defaultConnectionName()
+    {
+        return 'default';
+    }
 }
