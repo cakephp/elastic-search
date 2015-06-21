@@ -21,7 +21,10 @@ use Cake\Cache\Cache;
 use Cake\Datasource\ConnectionManager;
 
 Configure::write('App', [
-    'namespace' => 'App'
+    'namespace' => 'App',
+    'paths' => [
+        'plugins' => [APP . DS . 'testapp' . DS . 'Plugin' . DS],
+    ]
 ]);
 
 Cache::config('_cake_core_', [

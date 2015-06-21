@@ -169,47 +169,26 @@ class TypeRegistryTest extends TestCase
     }
 
     /**
-     * Tests that tables can be instantiated based on conventions
-     * and using plugin notation
-     *
-     * @return void
-     */
-    public function testGetWithConventions()
-    {
-        $this->markTestIncomplete();
-        $table = TypeRegistry::get('articles');
-        $this->assertInstanceOf('TestApp\Model\Type\ArticlesTable', $table);
-        $table = TypeRegistry::get('Articles');
-        $this->assertInstanceOf('TestApp\Model\Table\ArticlesTable', $table);
-
-        $table = TypeRegistry::get('authors');
-        $this->assertInstanceOf('TestApp\Model\Table\AuthorsTable', $table);
-        $table = TypeRegistry::get('Authors');
-        $this->assertInstanceOf('TestApp\Model\Table\AuthorsTable', $table);
-    }
-
-    /**
      * Test get() with plugin syntax aliases
      *
      * @return void
      */
     public function testGetPlugin()
     {
-        $this->markTestIncomplete();
         Plugin::load('TestPlugin');
-        $table = TypeRegistry::get('TestPlugin.TestPluginComments');
+        $table = TypeRegistry::get('TestPlugin.Comments');
 
-        $this->assertInstanceOf('TestPlugin\Model\Table\TestPluginCommentsTable', $table);
+        $this->assertInstanceOf('TestPlugin\Model\Type\CommentsType', $table);
         $this->assertFalse(
-            TypeRegistry::exists('TestPluginComments'),
+            TypeRegistry::exists('Comments'),
             'Short form should NOT exist'
         );
         $this->assertTrue(
-            TypeRegistry::exists('TestPlugin.TestPluginComments'),
+            TypeRegistry::exists('TestPlugin.Comments'),
             'Long form should exist'
         );
 
-        $second = TypeRegistry::get('TestPlugin.TestPluginComments');
+        $second = TypeRegistry::get('TestPlugin.Comments');
         $this->assertSame($table, $second, 'Can fetch long form');
     }
 
@@ -222,7 +201,6 @@ class TypeRegistryTest extends TestCase
      */
     public function testGetMultiplePlugins()
     {
-        $this->markTestIncomplete();
         Plugin::load('TestPlugin');
         Plugin::load('TestPluginTwo');
 
@@ -230,17 +208,17 @@ class TypeRegistryTest extends TestCase
         $plugin1 = TypeRegistry::get('TestPlugin.Comments');
         $plugin2 = TypeRegistry::get('TestPluginTwo.Comments');
 
-        $this->assertInstanceOf('Cake\ORM\Table', $app, 'Should be an app table instance');
-        $this->assertInstanceOf('TestPlugin\Model\Table\CommentsTable', $plugin1, 'Should be a plugin 1 table instance');
-        $this->assertInstanceOf('TestPluginTwo\Model\Table\CommentsTable', $plugin2, 'Should be a plugin 2 table instance');
+        $this->assertInstanceOf('Cake\ElasticSearch\Type', $app, 'Should be a generic instance');
+        $this->assertInstanceOf('TestPlugin\Model\Type\CommentsType', $plugin1, 'Should be a concrete class');
+        $this->assertInstanceOf('Cake\ElasticSearch\Type', $plugin2, 'Should be a plugin 2 generic instance');
 
         $plugin2 = TypeRegistry::get('TestPluginTwo.Comments');
         $plugin1 = TypeRegistry::get('TestPlugin.Comments');
         $app = TypeRegistry::get('Comments');
 
-        $this->assertInstanceOf('Cake\ORM\Table', $app, 'Should still be an app table instance');
-        $this->assertInstanceOf('TestPlugin\Model\Table\CommentsTable', $plugin1, 'Should still be a plugin 1 table instance');
-        $this->assertInstanceOf('TestPluginTwo\Model\Table\CommentsTable', $plugin2, 'Should still be a plugin 2 table instance');
+        $this->assertInstanceOf('Cake\ElasticSearch\Type', $app, 'Should still be a generic instance');
+        $this->assertInstanceOf('TestPlugin\Model\Type\CommentsType', $plugin1, 'Should still be a concrete class');
+        $this->assertInstanceOf('Cake\ElasticSearch\Type', $plugin2, 'Should still be a plugin 2 generic instance');
     }
 
     /**
@@ -250,18 +228,17 @@ class TypeRegistryTest extends TestCase
      */
     public function testGetPluginWithClassNameOption()
     {
-        $this->markTestIncomplete();
         Plugin::load('TestPlugin');
-        $table = TypeRegistry::get('Comments', [
-            'className' => 'TestPlugin.TestPluginComments',
+        $table = TypeRegistry::get('MyComments', [
+            'className' => 'TestPlugin.Comments',
         ]);
-        $class = 'TestPlugin\Model\Table\TestPluginCommentsTable';
+        $class = 'TestPlugin\Model\Type\CommentsType';
         $this->assertInstanceOf($class, $table);
-        $this->assertFalse(TypeRegistry::exists('TestPluginComments'), 'Class name should not exist');
-        $this->assertFalse(TypeRegistry::exists('TestPlugin.TestPluginComments'), 'Full class alias should not exist');
-        $this->assertTrue(TypeRegistry::exists('Comments'), 'Class name should exist');
+        $this->assertFalse(TypeRegistry::exists('Comments'), 'Class name should not exist');
+        $this->assertFalse(TypeRegistry::exists('TestPlugin.Comments'), 'Full class alias should not exist');
+        $this->assertTrue(TypeRegistry::exists('MyComments'), 'Class name should exist');
 
-        $second = TypeRegistry::get('Comments');
+        $second = TypeRegistry::get('MyComments');
         $this->assertSame($table, $second);
     }
 
@@ -272,102 +249,14 @@ class TypeRegistryTest extends TestCase
      */
     public function testGetPluginWithFullNamespaceName()
     {
-        $this->markTestIncomplete();
         Plugin::load('TestPlugin');
-        $class = 'TestPlugin\Model\Table\TestPluginCommentsTable';
+        $class = 'TestPlugin\Model\Type\CommentsType';
         $table = TypeRegistry::get('Comments', [
             'className' => $class,
         ]);
         $this->assertInstanceOf($class, $table);
-        $this->assertFalse(TypeRegistry::exists('TestPluginComments'), 'Class name should not exist');
-        $this->assertFalse(TypeRegistry::exists('TestPlugin.TestPluginComments'), 'Full class alias should not exist');
+        $this->assertFalse(TypeRegistry::exists('TestPlugin.Comments'), 'Full class alias should not exist');
         $this->assertTrue(TypeRegistry::exists('Comments'), 'Class name should exist');
-    }
-
-    /**
-     * Tests that table options can be pre-configured for the factory method
-     *
-     * @return void
-     */
-    public function testConfigAndBuild()
-    {
-        $this->markTestIncomplete();
-        TypeRegistry::clear();
-        $map = TypeRegistry::config();
-        $this->assertEquals([], $map);
-
-        $connection = ConnectionManager::get('test', false);
-        $options = ['connection' => $connection];
-        TypeRegistry::config('users', $options);
-        $map = TypeRegistry::config();
-        $this->assertEquals(['users' => $options], $map);
-        $this->assertEquals($options, TypeRegistry::config('users'));
-
-        $schema = ['id' => ['type' => 'rubbish']];
-        $options += ['schema' => $schema];
-        TypeRegistry::config('users', $options);
-
-        $table = TypeRegistry::get('users', ['table' => 'users']);
-        $this->assertInstanceOf('Cake\ORM\Table', $table);
-        $this->assertEquals('users', $table->table());
-        $this->assertEquals('users', $table->alias());
-        $this->assertSame($connection, $table->connection());
-        $this->assertEquals(array_keys($schema), $table->schema()->columns());
-        $this->assertEquals($schema['id']['type'], $table->schema()->column('id')['type']);
-
-        TypeRegistry::clear();
-        $this->assertEmpty(TypeRegistry::config());
-
-        TypeRegistry::config('users', $options);
-        $table = TypeRegistry::get('users', ['className' => __NAMESPACE__ . '\MyUsersTable']);
-        $this->assertInstanceOf(__NAMESPACE__ . '\MyUsersTable', $table);
-        $this->assertEquals('users', $table->table());
-        $this->assertEquals('users', $table->alias());
-        $this->assertSame($connection, $table->connection());
-        $this->assertEquals(array_keys($schema), $table->schema()->columns());
-        $this->assertEquals($schema['id']['type'], $table->schema()->column('id')['type']);
-    }
-
-    /**
-     * Tests that table options can be pre-configured with a single validator
-     *
-     * @return void
-     */
-    public function testConfigWithSingleValidator()
-    {
-        $this->markTestIncomplete();
-        $validator = new Validator();
-
-        TypeRegistry::config('users', ['validator' => $validator]);
-        $table = TypeRegistry::get('users');
-
-        $this->assertSame($table->validator('default'), $validator);
-    }
-
-    /**
-     * Tests that table options can be pre-configured with multiple validators
-     *
-     * @return void
-     */
-    public function testConfigWithMultipleValidators()
-    {
-        $this->markTestIncomplete();
-        $validator1 = new Validator();
-        $validator2 = new Validator();
-        $validator3 = new Validator();
-
-        TypeRegistry::config('users', [
-            'validator' => [
-                'default' => $validator1,
-                'secondary' => $validator2,
-                'tertiary' => $validator3,
-            ]
-        ]);
-        $table = TypeRegistry::get('users');
-
-        $this->assertSame($table->validator('default'), $validator1);
-        $this->assertSame($table->validator('secondary'), $validator2);
-        $this->assertSame($table->validator('tertiary'), $validator3);
     }
 
     /**
@@ -377,8 +266,7 @@ class TypeRegistryTest extends TestCase
      */
     public function testSet()
     {
-        $this->markTestIncomplete();
-        $mock = $this->getMock('Cake\ORM\Table');
+        $mock = $this->getMock('Cake\ElasticSearch\Type');
         $this->assertSame($mock, TypeRegistry::set('Articles', $mock));
         $this->assertSame($mock, TypeRegistry::get('Articles'));
     }
@@ -390,10 +278,9 @@ class TypeRegistryTest extends TestCase
      */
     public function testSetPlugin()
     {
-        $this->markTestIncomplete();
         Plugin::load('TestPlugin');
 
-        $mock = $this->getMock('TestPlugin\Model\Table\CommentsTable');
+        $mock = $this->getMock('TestPlugin\Model\Type\CommentsType');
 
         $this->assertSame($mock, TypeRegistry::set('TestPlugin.Comments', $mock));
         $this->assertSame($mock, TypeRegistry::get('TestPlugin.Comments'));
@@ -406,7 +293,6 @@ class TypeRegistryTest extends TestCase
      */
     public function testRemove()
     {
-        $this->markTestIncomplete();
         $first = TypeRegistry::get('Comments');
 
         $this->assertTrue(TypeRegistry::exists('Comments'));
@@ -432,7 +318,6 @@ class TypeRegistryTest extends TestCase
      */
     public function testRemovePlugin()
     {
-        $this->markTestIncomplete();
         Plugin::load('TestPlugin');
         Plugin::load('TestPluginTwo');
 
