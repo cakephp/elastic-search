@@ -21,7 +21,10 @@ use Cake\Cache\Cache;
 use Cake\Datasource\ConnectionManager;
 
 Configure::write('App', [
-    'namespace' => 'App'
+    'namespace' => 'App',
+    'paths' => [
+        'plugins' => [APP . DS . 'testapp' . DS . 'Plugin' . DS],
+    ]
 ]);
 
 Cache::config('_cake_core_', [
@@ -34,3 +37,4 @@ if (!getenv('db_dsn')) {
 }
 
 ConnectionManager::config('test', ['url' => getenv('db_dsn')]);
+ConnectionManager::config('test_elastic', ['url' => getenv('db_dsn')]);

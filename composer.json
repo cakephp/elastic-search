@@ -17,7 +17,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Cake\\ElasticSearch\\Test\\": "tests"
+            "Cake\\ElasticSearch\\Test\\": "tests",
+            "TestPlugin\\": "tests/testapp/Plugin/TestPlugin/src",
+            "TestPluginTwo\\": "tests/testapp/Plugin/TestPluginTwo/src"
         }
     }
 }
