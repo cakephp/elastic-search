@@ -37,3 +37,4 @@ if (!getenv('db_dsn')) {
 }
 
 ConnectionManager::config('test', ['url' => getenv('db_dsn')]);
+ConnectionManager::config('test_elastic', ['url' => getenv('db_dsn')]);

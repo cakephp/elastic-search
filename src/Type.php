@@ -650,6 +650,6 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      */
     public static function defaultConnectionName()
     {
-        return 'default';
+        return 'elastic';
     }
 }
