@@ -20,6 +20,7 @@ use Cake\Collection\Collection;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Type;
+use Cake\ElasticSearch\TypeRegistry;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Network\Request;
 use Cake\TestSuite\TestCase;
@@ -57,6 +58,17 @@ class DocumentContextTest extends TestCase
     {
         parent::setUp();
         $this->request = new Request();
+    }
+
+    /**
+     * teardown method.
+     *
+     * @return void
+     */
+    public function tearDown()
+    {
+        parent::tearDown();
+        TypeRegistry::clear();
     }
 
     /**
@@ -387,7 +399,7 @@ class DocumentContextTest extends TestCase
         $articles = $this->setupType();
         $context = new DocumentContext($this->request, [
             'entity' => new Document([]),
-            'type' => $articles,
+            'type' => 'articles',
         ]);
         $result = $context->fieldNames();
         $this->assertContains('title', $result);
@@ -449,10 +461,7 @@ class DocumentContextTest extends TestCase
      */
     protected function setupType()
     {
-        $articles = new Type([
-            'connection' => ConnectionManager::get('test'),
-            'name' => 'articles',
-        ]);
+        $articles = TypeRegistry::get('Articles');
         $articles->embedOne('User');
         $articles->embedMany('Comments');
 
