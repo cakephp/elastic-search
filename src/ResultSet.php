@@ -253,4 +253,17 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
         $document = new $class($data, $options);
         return $document;
     }
+
+    /**
+     * Debug output hook method.
+     *
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return [
+            'items' => $this->resultSet->getResponse()->getData(),
+            'query' => $this->resultSet->getQuery(),
+        ];
+    }
 }
