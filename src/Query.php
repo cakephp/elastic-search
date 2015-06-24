@@ -55,6 +55,7 @@ class Query implements IteratorAggregate
         'fields' => [],
         'preFilter' => null,
         'postFilter' => null,
+        'query' => null,
         'order' => [],
         'limit' => null
     ];
@@ -218,6 +219,12 @@ class Query implements IteratorAggregate
         return $this->_buildFilter('postFilter', $conditions, $overwrite);
     }
 
+    public function query($matcher)
+    {
+        $this->_parts['query'] = $matcher;
+        return $this;
+    }
+
     /**
      * Auxiliary function used to parse conditions into filters and store them in a _parts
      * variable.
@@ -285,8 +292,13 @@ class Query implements IteratorAggregate
             $this->_elasticQuery->setSort($this->_parts['order']);
         }
 
+        $filteredQuery = new FilteredQuery();
+
+        if ($this->_parts['query'] !== null) {
+            $filteredQuery->setQuery($this->_parts['query']);
+        }
+
         if ($this->_parts['preFilter'] !== null) {
-            $filteredQuery = new FilteredQuery();
             $filteredQuery->setFilter($this->_parts['preFilter']);
             $this->_elasticQuery->setQuery($filteredQuery);
         }
