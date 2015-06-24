@@ -217,6 +217,18 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     }
 
     /**
+     * Get the alias for this Type.
+     *
+     * This method is just an alias of name().
+     *
+     * @return string
+     */
+    public function alias()
+    {
+        return $this->name();
+    }
+
+    /**
      * Creates a new Query for this repository and applies some defaults based on the
      * type of search that was selected.
      *
@@ -641,6 +653,18 @@ class Type implements RepositoryInterface, EventDispatcherInterface
         $type = $this->connection()->getIndex()->getType($name);
         $this->schema = new MappingSchema($name, $type->getMapping());
         return $this->schema;
+    }
+
+    /**
+     * Check whether or not a field exists in the mapping.
+     *
+     * @param string $field The field to check.
+     * @return bool
+     */
+    public function hasField($field)
+    {
+        $mapping = $this->schema();
+        return $mapping->field($field) !== null;
     }
 
     /**
