@@ -152,8 +152,29 @@ class Query implements IteratorAggregate
         }
         $this->offset((int)$offset);
         return $this;
-    }    
-    
+    }
+
+    /**
+     * Returns any data that was stored in the specified clause. This is useful for
+     * modifying any internal part of the query and it is used during compiling
+     * to transform the query accordingly before it is executed. The valid clauses that
+     * can be retrieved are: fields, preFilter, postFilter, query, order, limit and offset.
+     *
+     * The return value for each of those parts may vary. Some clauses use QueryExpression
+     * to internally store their state, some use arrays and others may use booleans or
+     * integers. This is summary of the return types for each clause.
+     *
+     * - fields: array, will return empty array when no fields are set   
+     * - preFilter: The filter to use in a FilteredQuery object, returns null when not set
+     * - postFilter: The filter to use in the post_filter object, returns null when not set
+     * - query: Raw query (Elastica\Query\AbstractQuery), return null when not set
+     * - order: OrderByExpression, returns null when not set
+     * - limit: integer, null when not set
+     * - offset: integer, null when not set
+     *
+     * @param string $name name of the clause to be returned
+     * @return mixed
+     */  
     public function clause($name)
     {
         return $this->_parts[$name];
