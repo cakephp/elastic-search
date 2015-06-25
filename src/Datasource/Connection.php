@@ -15,7 +15,7 @@
 namespace Cake\ElasticSearch\Datasource;
 
 use Cake\ElasticSearch\Datasource\SchemaCollection;
-use Cake\Log\Log;
+use Cake\Database\Log\LoggedQuery;
 use Elastica\Client;
 use Elastica\Request;
 
@@ -158,6 +158,21 @@ class Connection extends Client
     }
 
     /**
+     * Sets the logger object instance. When called with no arguments
+     * it returns the currently setup logger instance.
+     *
+     * @param object $instance logger object instance
+     * @return object logger instance
+     */
+    public function logger($instance = null)
+    {
+        if ($instance === null) {
+            return $this->_logger;
+        }
+        $this->_logger = $instance;
+    }
+
+    /**
      * Log requests to Elastic Search.
      *
      * @param Request|array $context The context of the request made.
@@ -169,19 +184,20 @@ class Connection extends Client
             return;
         }
 
-        if ($this->_logger) {
-            parent::_log($context);
+        if ($context instanceof Request) {
+            $data = $context->toArray();
+        } else {
+            $data = ['message' => $context];
         }
+        $logData = [
+            'method' => $data['method'],
+            'path' => $data['path'],
+            'data' => $data['data'],
+        ];
 
-        if ($this->getConfig('log')) {
-            if ($context instanceof Request) {
-                $data = $context->toArray();
-            } else {
-                $data = ['message' => $context];
-            }
-
-            $data = json_encode($data, JSON_PRETTY_PRINT);
-            Log::write('debug', $data, ['elasticSearchLog']);
-        }
+        $data = json_encode($logData, JSON_PRETTY_PRINT);
+        $loggedQuery = new LoggedQuery();
+        $loggedQuery->query = $data;
+        $this->_logger->log($loggedQuery);
     }
 }

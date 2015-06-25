@@ -16,6 +16,7 @@ namespace Cake\ElasticSearch\View\Form;
 
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Type;
+use Cake\ElasticSearch\TypeRegistry;
 use Cake\Collection\Collection;
 use Cake\Core\App;
 use Cake\Network\Request;
@@ -57,13 +58,6 @@ class DocumentContext implements ContextInterface
      * @var bool
      */
     protected $_isCollection = false;
-
-    /**
-     * A dictionary of types
-     *
-     * @var array
-     */
-    protected $_types = [];
 
     /**
      * Constructor.
@@ -117,12 +111,7 @@ class DocumentContext implements ContextInterface
             }
         }
         if (is_string($type)) {
-            $typeClass = App::className($type, 'Model\Type', 'Type');
-            if ($typeClass) {
-                $type = new $type();
-            } else {
-                $type = new Type(['name' => $type]);
-            }
+            $type = TypeRegistry::get($type);
         }
 
         if (!is_object($type)) {
@@ -135,7 +124,7 @@ class DocumentContext implements ContextInterface
             $entity instanceof Traversable
         );
         $alias = $this->_rootName = $type->name();
-        $this->_types[$alias] = $type;
+        $this->_context['type'] = $type;
     }
 
     /**

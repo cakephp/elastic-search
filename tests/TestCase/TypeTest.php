@@ -567,4 +567,26 @@ class TypeTest extends TestCase
         $result = $rules->checkCreate($doc);
         $this->assertFalse($result, 'Rules should fail.');
     }
+
+    /**
+     * Test the alias method.
+     *
+     * @return void
+     */
+    public function testAlias()
+    {
+        $this->assertEquals($this->type->name(), $this->type->alias());
+        $this->assertEquals('articles', $this->type->alias());
+    }
+
+    /**
+     * Test hasField()
+     *
+     * @return void
+     */
+    public function testHasField()
+    {
+        $this->assertTrue($this->type->hasField('title'));
+        $this->assertFalse($this->type->hasField('nope'));
+    }
 }
