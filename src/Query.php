@@ -57,7 +57,8 @@ class Query implements IteratorAggregate
         'postFilter' => null,
         'query' => null,
         'order' => [],
-        'limit' => null
+        'limit' => null,
+        'offset' => null
     ];
 
     /**
@@ -108,6 +109,56 @@ class Query implements IteratorAggregate
         return $this;
     }
 
+    /**
+     * Sets the number of records that should be skipped from the original result set
+     * This is commonly used for paginating large results. Accepts an integer.
+     *
+     * @param int $num The number of records to be skipped
+     * @return $this
+     */
+    public function offset($num)
+    {
+        $this->_parts['offset'] = (int)$num;
+        return $this;
+    }    
+
+    /**
+     * Set the page of results you want.
+     *
+     * This method provides an easier to use interface to set the limit + offset
+     * in the record set you want as results. If empty the limit will default to
+     * the existing limit clause, and if that too is empty, then `25` will be used.
+     *
+     * Pages should start at 1.
+     *
+     * @param int $num The page number you want.
+     * @param int $limit The number of rows you want in the page. If null
+     *  the current limit clause will be used.
+     * @return $this
+     */
+    public function page($num, $limit = null)
+    {
+        if ($limit !== null) {
+            $this->limit($limit);
+        }
+        $limit = $this->clause('limit');
+        if ($limit === null) {
+            $limit = 25;
+            $this->limit($limit);
+        }
+        $offset = ($num - 1) * $limit;
+        if (PHP_INT_MAX <= $offset) {
+            $offset = PHP_INT_MAX;
+        }
+        $this->offset((int)$offset);
+        return $this;
+    }    
+    
+    public function clause($name)
+    {
+        return $this->_parts[$name];
+    }    
+    
     /**
      * Sets the sorting options for the result set.
      *
@@ -287,6 +338,10 @@ class Query implements IteratorAggregate
         if ($this->_parts['limit']) {
             $this->_elasticQuery->setSize($this->_parts['limit']);
         }
+        
+        if ($this->_parts['offset']) {
+            $this->_elasticQuery->setFrom($this->_parts['offset']);                
+        }              
 
         if ($this->_parts['order']) {
             $this->_elasticQuery->setSort($this->_parts['order']);
