@@ -225,7 +225,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      */
     public function alias($alias = null)
     {
-        return $this->name();
+        return $this->name($alias);
     }
 
     /**
