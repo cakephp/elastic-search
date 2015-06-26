@@ -120,7 +120,7 @@ class Query implements IteratorAggregate
     {
         $this->_parts['offset'] = (int)$num;
         return $this;
-    }    
+    }
 
     /**
      * Set the page of results you want.
@@ -164,7 +164,7 @@ class Query implements IteratorAggregate
      * to internally store their state, some use arrays and others may use booleans or
      * integers. This is summary of the return types for each clause.
      *
-     * - fields: array, will return empty array when no fields are set   
+     * - fields: array, will return empty array when no fields are set
      * - preFilter: The filter to use in a FilteredQuery object, returns null when not set
      * - postFilter: The filter to use in the post_filter object, returns null when not set
      * - query: Raw query (Elastica\Query\AbstractQuery), return null when not set
@@ -174,12 +174,12 @@ class Query implements IteratorAggregate
      *
      * @param string $name name of the clause to be returned
      * @return mixed
-     */  
+     */
     public function clause($name)
     {
         return $this->_parts[$name];
-    }    
-    
+    }
+
     /**
      * Sets the sorting options for the result set.
      *
@@ -412,10 +412,10 @@ class Query implements IteratorAggregate
         if ($this->_parts['limit']) {
             $this->_elasticQuery->setSize($this->_parts['limit']);
         }
-        
+
         if ($this->_parts['offset']) {
-            $this->_elasticQuery->setFrom($this->_parts['offset']);                
-        }              
+            $this->_elasticQuery->setFrom($this->_parts['offset']);
+        }
 
         if ($this->_parts['order']) {
             $this->_elasticQuery->setSort($this->_parts['order']);
@@ -425,7 +425,7 @@ class Query implements IteratorAggregate
 
         if ($this->_parts['query'] !== null) {
             $filteredQuery->setQuery($this->_parts['query']);
-			$this->_elasticQuery->setQuery($filteredQuery);
+            $this->_elasticQuery->setQuery($filteredQuery);
         }
 
         if ($this->_parts['preFilter'] !== null) {
