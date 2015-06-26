@@ -425,6 +425,7 @@ class Query implements IteratorAggregate
 
         if ($this->_parts['query'] !== null) {
             $filteredQuery->setQuery($this->_parts['query']);
+			$this->_elasticQuery->setQuery($filteredQuery);
         }
 
         if ($this->_parts['preFilter'] !== null) {
