@@ -134,6 +134,78 @@ class QueryTest extends TestCase
     }
 
     /**
+     * Tests that calling offset() sets the from option for the elastic query
+     *
+     * @return void
+     */
+    public function testOffset()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $this->assertSame($query, $query->offset(10));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(10, $elasticQuery['from']);
+
+        $this->assertSame($query, $query->offset(20));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(20, $elasticQuery['from']);
+    }
+
+    /**
+     * Tests that calling page() sets the from option for the elastic query and size (optional)
+     *
+     * @return void
+     */
+    public function testPage()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $this->assertSame($query, $query->page(10));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(225, $elasticQuery['from']);
+        $this->assertSame(25, $elasticQuery['size']);
+
+        $this->assertSame($query, $query->page(20, 50));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(950, $elasticQuery['from']);
+        $this->assertSame(50, $elasticQuery['size']);
+                
+        $query->limit(15);        
+        $this->assertSame($query, $query->page(20));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(285, $elasticQuery['from']);
+        $this->assertSame(15, $elasticQuery['size']);        
+    }
+
+    /**
+     * Tests that calling clause() gets the part of the query
+     *
+     * @return void
+     */
+    public function testClause()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        
+        $query->page(10);
+        $this->assertSame(25, $query->clause('limit'));
+        $this->assertSame(225, $query->clause('offset'));
+        
+        $query->limit(12);
+        $this->assertSame(12, $query->clause('limit'));
+        
+        $query->offset(100);
+        $this->assertSame(100, $query->clause('offset'));        
+        
+        $query->order('price');
+        $this->assertSame([ 0 => [
+            'price' => [
+                'order' => 'desc'
+            ]
+        ]], $query->clause('order'));       
+    }
+    
+    /**
      * Tests that calling order() will populate the sort part of the elastic
      * query.
      *
