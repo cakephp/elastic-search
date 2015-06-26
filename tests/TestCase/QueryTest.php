@@ -169,12 +169,12 @@ class QueryTest extends TestCase
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(950, $elasticQuery['from']);
         $this->assertSame(50, $elasticQuery['size']);
-                
-        $query->limit(15);        
+
+        $query->limit(15);
         $this->assertSame($query, $query->page(20));
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(285, $elasticQuery['from']);
-        $this->assertSame(15, $elasticQuery['size']);        
+        $this->assertSame(15, $elasticQuery['size']);
     }
 
     /**
@@ -186,25 +186,25 @@ class QueryTest extends TestCase
     {
         $type = new Type();
         $query = new Query($type);
-        
+
         $query->page(10);
         $this->assertSame(25, $query->clause('limit'));
         $this->assertSame(225, $query->clause('offset'));
-        
+
         $query->limit(12);
         $this->assertSame(12, $query->clause('limit'));
-        
+
         $query->offset(100);
-        $this->assertSame(100, $query->clause('offset'));        
-        
+        $this->assertSame(100, $query->clause('offset'));
+
         $query->order('price');
         $this->assertSame([ 0 => [
             'price' => [
                 'order' => 'desc'
             ]
-        ]], $query->clause('order'));       
+        ]], $query->clause('order'));
     }
-    
+
     /**
      * Tests that calling order() will populate the sort part of the elastic
      * query.
