@@ -312,7 +312,7 @@ class FilterBuilder
      * ### Example:
      *
      * {{{
-     *    $bilder->indices(
+     *    $builder->indices(
      *       ['index1', 'index2'],
      *       $builder->term('user', 'jhon'),
      *       $builder->term('tag', 'wow')
