@@ -120,7 +120,7 @@ class Query implements IteratorAggregate
     {
         $this->_parts['offset'] = (int)$num;
         return $this;
-    }    
+    }
 
     /**
      * Set the page of results you want.
@@ -164,7 +164,7 @@ class Query implements IteratorAggregate
      * to internally store their state, some use arrays and others may use booleans or
      * integers. This is summary of the return types for each clause.
      *
-     * - fields: array, will return empty array when no fields are set   
+     * - fields: array, will return empty array when no fields are set
      * - preFilter: The filter to use in a FilteredQuery object, returns null when not set
      * - postFilter: The filter to use in the post_filter object, returns null when not set
      * - query: Raw query (Elastica\Query\AbstractQuery), return null when not set
@@ -174,12 +174,12 @@ class Query implements IteratorAggregate
      *
      * @param string $name name of the clause to be returned
      * @return mixed
-     */  
+     */
     public function clause($name)
     {
         return $this->_parts[$name];
-    }    
-    
+    }
+
     /**
      * Sets the sorting options for the result set.
      *
@@ -335,9 +335,62 @@ class Query implements IteratorAggregate
         return $this;
     }
 
+    /**
+     * Populates or adds parts to current query clauses using an array.
+     * This is handy for passing all query clauses at once. The option array accepts:
+     *
+     * - fields: Maps to the select method
+     * - conditions: Maps to the where method
+     * - order: Maps to the order method
+     * - limit: Maps to the limit method
+     * - offset: Maps to the offset method
+     * - page: Maps to the page method
+     *
+     * ### Example:
+     *
+     * ```
+     * $query->applyOptions([
+     *   'fields' => ['id', 'name'],
+     *   'conditions' => [
+     *     'created >=' => '2013-01-01'
+     *   ],
+     *   'limit' => 10
+     * ]);
+     * ```
+     *
+     * Is equivalent to:
+     *
+     * ```
+     *  $query
+     *  ->select(['id', 'name'])
+     *  ->where(['created >=' => '2013-01-01'])
+     *  ->limit(10)
+     * ```
+     *
+     * @param array $options list of query clauses to apply new parts to.
+     * @return $this
+     */
     public function applyOptions(array $options)
     {
-        $this->_options = $options + $this->_options;
+        $valid = [
+            'fields' => 'select',
+            'conditions' => 'where',
+            'order' => 'order',
+            'limit' => 'limit',
+            'offset' => 'offset',
+            'page' => 'page',
+        ];
+
+        ksort($options);
+        foreach ($options as $option => $values) {
+            if (isset($valid[$option]) && isset($values)) {
+                $this->{$valid[$option]}($values);
+            } else {
+                $this->_options[$option] = $values;
+            }
+        }
+
+        return $this;
     }
 
     protected function _execute()
@@ -359,10 +412,10 @@ class Query implements IteratorAggregate
         if ($this->_parts['limit']) {
             $this->_elasticQuery->setSize($this->_parts['limit']);
         }
-        
+
         if ($this->_parts['offset']) {
-            $this->_elasticQuery->setFrom($this->_parts['offset']);                
-        }              
+            $this->_elasticQuery->setFrom($this->_parts['offset']);
+        }
 
         if ($this->_parts['order']) {
             $this->_elasticQuery->setSort($this->_parts['order']);
@@ -372,6 +425,7 @@ class Query implements IteratorAggregate
 
         if ($this->_parts['query'] !== null) {
             $filteredQuery->setQuery($this->_parts['query']);
+            $this->_elasticQuery->setQuery($filteredQuery);
         }
 
         if ($this->_parts['preFilter'] !== null) {

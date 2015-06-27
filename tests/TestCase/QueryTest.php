@@ -206,6 +206,47 @@ class QueryTest extends TestCase
     }
 
     /**
+     * Tests that calling applyOptions() sets parts of the query
+     *
+     * @return void
+     */
+    public function testApplyOptions()
+    {
+        $type = new Type();
+        $query = new Query($type);
+
+        $query->applyOptions([
+            'fields' => ['id', 'name'],
+            'conditions' => [
+                'created >=' => '2013-01-01'
+            ],
+            'limit' => 10
+        ]);
+
+        $result = [
+            '_source' => ['id', 'name'],
+            'size' => 10,
+            'query' => [
+                'filtered' => [
+                    'filter' => [
+                        'bool' => [
+                            'must' => [[
+                                'range' => [
+                                    'created' => [
+                                        'gte' => '2013-01-01'
+                                    ]
+                                ]
+                            ]]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertSame($result, $query->compileQuery()->toArray());
+    }
+
+    /**
      * Tests that calling order() will populate the sort part of the elastic
      * query.
      *
