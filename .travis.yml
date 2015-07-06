@@ -21,6 +21,7 @@ install:
 
 script:
   - phpunit
+  - vendor/bin/phpcs -p --extensions=php --standard=vendor/cakephp/cakephp-codesniffer/CakePHP ./src ./tests
 
 notifications:
   email: false
