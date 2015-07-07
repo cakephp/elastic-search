@@ -58,7 +58,8 @@ class Query implements IteratorAggregate
         'query' => null,
         'order' => [],
         'limit' => null,
-        'offset' => null
+        'offset' => null,
+        'aggregations' => []
     ];
 
     /**
@@ -298,6 +299,25 @@ class Query implements IteratorAggregate
     }
 
     /**
+     * Add an aggregation to the elastic query object
+     *
+     * @param  array|Elastica\Facet\AbstractAggregation $aggregation One or multiple facets
+     * @return $this
+     */
+    public function aggregate($aggregation)
+    {
+        if (is_array($aggregation)) {
+            foreach ($aggregation as $aggregationItem) {
+                $this->aggregate($aggregationItem);
+            }
+        } else {
+            $this->_parts['aggregations'][] = $aggregation;
+        }
+
+        return $this;
+    }
+
+    /**
      * Auxiliary function used to parse conditions into filters and store them in a _parts
      * variable.
      *
@@ -419,6 +439,12 @@ class Query implements IteratorAggregate
 
         if ($this->_parts['order']) {
             $this->_elasticQuery->setSort($this->_parts['order']);
+        }
+
+        if ($this->_parts['aggregations']) {
+            foreach ($this->_parts['aggregations'] as $aggregation) {
+                $this->_elasticQuery->addAggregation($aggregation);
+            }
         }
 
         $filteredQuery = new FilteredQuery();
