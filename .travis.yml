@@ -8,8 +8,17 @@ php:
 
 sudo: false
 
+env:
+  global:
+    - PHPCS=0
+
 services:
   - elasticsearch
+
+matrix:
+  include:
+    - php: 5.6
+      env: PHPCS=1
 
 before_script:
   - sleep 7 # Work around elasticsearch startup time.
@@ -21,7 +30,7 @@ install:
 
 script:
   - phpunit
-  - vendor/bin/phpcs -p --extensions=php --standard=vendor/cakephp/cakephp-codesniffer/CakePHP ./src ./tests
+  - sh -c "if [ '$PHPCS' = '1' ]; then vendor/bin/phpcs -p --extensions=php --standard=vendor/cakephp/cakephp-codesniffer/CakePHP ./src ./tests; fi"
 
 notifications:
   email: false
