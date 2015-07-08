@@ -21,7 +21,7 @@ And run `php composer.phar update`
 
 After installing, you should tell your application to load the plugin:
 
-``php
+```php
 // in config/bootstrap.php
 Plugin::load('ElasticSearch');
 
