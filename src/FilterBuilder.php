@@ -119,7 +119,7 @@ class FilterBuilder
      * @param string $field The field to compare.
      * @param array|string $location The coordinate from which to compare.
      * @param string $from The initial distance radius.
-     * @param string $top The ending distance radius.
+     * @param string $to The ending distance radius.
      * @return Elastica\Filter\GeoDistanceRange
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-filter.html
      */
@@ -204,7 +204,7 @@ class FilterBuilder
      * @param string $id The ID of the document containing the pre-indexed shape.
      * @param string $type Index type where the pre-indexed shape is.
      * @param string $index Name of the index where the pre-indexed shape is.
-     * @param string The field specified as path containing the pre-indexed shape.
+     * @param string $path The field specified as path containing the pre-indexed shape.
      * @return Elastica\Filter\GeoShapePreIndex
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
      */
@@ -226,7 +226,6 @@ class FilterBuilder
      * @param string $field The field to compare.
      * @param string|array $location Location as coordinates array or geohash string.
      * @param int|string $precision Length of geohash prefix or distance (3, or "50m")
-     * @param string $index Name of the index where the pre-indexed shape is.
      * @param bool $neighbors If true, filters cells next to the given cell.
      * @return Elastica\Filter\GeohashCell
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geohash-cell-filter.html
@@ -335,7 +334,7 @@ class FilterBuilder
     /**
      * Limits the number of documents (per shard) to execute on.
      *
-     * @param integer $limit The maximum number of documents to filter.
+     * @param int $limit The maximum number of documents to filter.
      * @return Elastica\Filter\Limit
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-limit-filter.html
      */

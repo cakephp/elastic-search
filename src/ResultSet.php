@@ -60,6 +60,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      * Decorator's constructor
      *
      * @param \Elastica\ResultSet $resultSet The results from Elastica to wrap
+     * @param \Elastica\Query $query The Elasticsearch Query object
      * @return void
      */
     public function __construct($resultSet, $query)

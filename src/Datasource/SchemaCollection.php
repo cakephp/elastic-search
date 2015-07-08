@@ -19,6 +19,11 @@ namespace Cake\ElasticSearch\Datasource;
  */
 class SchemaCollection
 {
+    /**
+     * Returns an empty array as a shim for fixtures
+     *
+     * @return array An empty array
+     */
     public function listTables()
     {
         return [];

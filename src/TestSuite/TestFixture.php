@@ -16,8 +16,8 @@ namespace Cake\ElasticSearch\TestSuite;
 
 use Cake\ElasticSearch\Datasource\Connection;
 use Elastica\Document as ElasticaDocument;
-use Elastica\Type\Mapping as ElasticaMapping;
 use Elastica\Query\MatchAll;
+use Elastica\Type\Mapping as ElasticaMapping;
 
 /**
  * A Test fixture implementation for elastic search.
@@ -63,7 +63,8 @@ class TestFixture
     /**
      * Create the mapping for the type.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db
+     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
+     *  connection
      * @return void
      */
     public function create(Connection $db)
@@ -86,7 +87,8 @@ class TestFixture
     /**
      * Insert fixture documents.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db
+     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
+     *  connection
      * @return void
      */
     public function insert(Connection $db)
@@ -114,7 +116,8 @@ class TestFixture
     /**
      * Drops a mapping and all its related data.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db
+     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
+     *  connection
      * @return void
      */
     public function drop(Connection $db)
@@ -128,7 +131,8 @@ class TestFixture
     /**
      * Truncate the fixture type.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db
+     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
+     *  connection
      * @return void
      */
     public function truncate(Connection $db)

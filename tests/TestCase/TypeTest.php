@@ -16,8 +16,8 @@ namespace Cake\ElasticSearch\Test;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
-use Cake\ElasticSearch\Type;
 use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Type;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -277,7 +277,8 @@ class TypeTest extends TestCase
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
-            });
+            }
+        );
         $this->type->eventManager()->on(
             'Model.afterSave',
             function ($event, $entity, $options) use ($doc, &$called) {
@@ -286,7 +287,8 @@ class TypeTest extends TestCase
                 $this->assertSame($doc, $entity);
                 $this->assertFalse($doc->isNew(), 'Should not be new');
                 $this->assertFalse($doc->dirty(), 'Should not be dirty');
-            });
+            }
+        );
         $this->type->save($doc);
         $this->assertEquals(2, $called);
     }
@@ -439,14 +441,16 @@ class TypeTest extends TestCase
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
-            });
+            }
+        );
         $this->type->eventManager()->on(
             'Model.afterDelete',
             function ($event, $entity, $options) use ($doc, &$called) {
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
-            });
+            }
+        );
         $this->assertTrue($this->type->delete($doc));
         $this->assertEquals(2, $called);
     }

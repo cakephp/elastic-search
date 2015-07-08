@@ -69,6 +69,11 @@ class Query implements IteratorAggregate
      */
     protected $_dirty = false;
 
+    /**
+     * Query constructor
+     *
+     * @param \Cake\ElasticSearch\Type $repository The type of document.
+     */
     public function __construct(Type $repository)
     {
         $this->repository($repository);
@@ -84,7 +89,7 @@ class Query implements IteratorAggregate
      * If `true` is passed in the second argument, any previous selections
      * will be overwritten with the list passed in the first argument.
      *
-     * @param array $order The list of fields to select from _source.
+     * @param array $fields The list of fields to select from _source.
      * @param bool $overwrite Whether or not to replace previous selections.
      * @return $this
      */
@@ -292,6 +297,12 @@ class Query implements IteratorAggregate
         return $this->_buildFilter('postFilter', $conditions, $overwrite);
     }
 
+    /**
+     * Method to set the query
+     *
+     * @param array $matcher Set the query parts
+     * @return $this
+     */
     public function query($matcher)
     {
         $this->_parts['query'] = $matcher;
@@ -413,6 +424,11 @@ class Query implements IteratorAggregate
         return $this;
     }
 
+    /**
+     * Executes the query.
+     *
+     * @return Cake\ElasticSearch\ResultSet The results of the query
+     */
     protected function _execute()
     {
         $connection = $this->_repository->connection();
@@ -423,6 +439,11 @@ class Query implements IteratorAggregate
         return new ResultSet($type->search($query), $this);
     }
 
+    /**
+     * Compile the Elasticsearch query.
+     *
+     * @return string The Elasticsearch query.
+     */
     public function compileQuery()
     {
         if ($this->_parts['fields']) {

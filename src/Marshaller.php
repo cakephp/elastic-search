@@ -79,8 +79,7 @@ class Marshaller
 
         foreach ($this->type->embedded() as $embed) {
             $property = $embed->property();
-            if (
-                in_array($embed->alias(), $options['associated']) &&
+            if (in_array($embed->alias(), $options['associated']) &&
                 isset($data[$property])
             ) {
                 $data[$property] = $this->newNested($embed, $data[$property]);
@@ -171,6 +170,7 @@ class Marshaller
      *
      * @param array $data A list of entity data you want converted into objects.
      * @param array $options Options
+     * @return array An array of hydrated entities
      */
     public function many(array $data, array $options = [])
     {
@@ -207,8 +207,7 @@ class Marshaller
 
         foreach ($this->type->embedded() as $embed) {
             $property = $embed->property();
-            if (
-                in_array($embed->alias(), $options['associated']) &&
+            if (in_array($embed->alias(), $options['associated']) &&
                 isset($data[$property])
             ) {
                 $data[$property] = $this->mergeNested($embed, $entity->{$property}, $data[$property]);
@@ -243,8 +242,10 @@ class Marshaller
      * * fieldList: A whitelist of fields to be assigned to the entity. If not present,
      *   the accessible fields list in the entity will be used.
      *
+     * @param array $entities An array of Elasticsearch entities
      * @param array $data A list of entity data you want converted into objects.
      * @param array $options Options
+     * @return array An array of merged entities
      */
     public function mergeMany(array $entities, array $data, array $options = [])
     {
