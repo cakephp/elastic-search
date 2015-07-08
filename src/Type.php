@@ -19,8 +19,8 @@ use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
 use Cake\Datasource\RulesAwareTrait;
-use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Association\EmbedMany;
+use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\ElasticSearch\Marshaller;
@@ -44,8 +44,8 @@ use InvalidArgumentException;
 class Type implements RepositoryInterface, EventDispatcherInterface
 {
     use EventManagerTrait;
-    use ValidatorAwareTrait;
     use RulesAwareTrait;
+    use ValidatorAwareTrait;
 
     /**
      * Default validator name.
@@ -221,6 +221,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      *
      * This method is just an alias of name().
      *
+     * @param string $alias The new type name
      * @return string
      */
     public function alias($alias = null)
@@ -250,8 +251,8 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     /**
      * Returns the query as passed
      *
-     * @param \Cake\ElasticSearch\Query $query
-     * @param array $options
+     * @param \Cake\ElasticSearch\Query $query An Elasticsearch query object
+     * @param array $options An array of options to be used for query logic
      * @return \Cake\ElasticSearch\Query
      */
     public function findAll(Query $query, array $options = [])
@@ -265,7 +266,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      *
      * @param string $type name of the finder to be called
      * @param \Cake\ElasticSearch\Query $query The query object to apply the finder options to
-     * @param array $args List of options to pass to the finder
+     * @param array $options List of options to pass to the finder
      * @return \Cake\ElasticSearch\Query
      * @throws \BadMethodCallException
      */
@@ -287,13 +288,16 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      * @{inheritdoc}
      *
      * Any key present in the options array will be translated as a GET argument
-     * when getting the documetn by its id. This is often useful whe you need to
+     * when getting the document by its id. This is often useful whe you need to
      * specify the parent or routing.
      *
      * This method will not trigger the Model.beforeFind callback as it does not use
      * queries for the search, but a faster key lookup to the search index.
      *
+     * @param string $primaryKey The document's primary key
+     * @param array $options An array of options
      * @throws \Elastica\Exception\NotFoundException if no document exist with such id
+     * @return \Cake\ElasticSearch\Document A new Elasticsearch document entity
      */
     public function get($primaryKey, $options = [])
     {
@@ -382,7 +386,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      * conditions.
      *
      * @param array $conditions list of conditions to pass to the query
-     * @return boolean
+     * @return bool
      */
     public function exists($conditions)
     {
@@ -409,9 +413,9 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      *
      * - `checkRules` Defaults to true. Check deletion rules before deleting the record.
      *
-     * @param \Cake\Datasource\EntityInterface the entity to be saved
-     * @param array $options
-     * @return \Cake\Datasource\EntityInterface|boolean
+     * @param \Cake\Datasource\EntityInterface $entity The entity to be saved
+     * @param array $options An array of options to be used for the event
+     * @return \Cake\Datasource\EntityInterface|bool
      */
     public function save(EntityInterface $entity, $options = [])
     {

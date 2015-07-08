@@ -14,8 +14,8 @@
  */
 namespace Cake\ElasticSearch\Datasource;
 
-use Cake\ElasticSearch\Datasource\SchemaCollection;
 use Cake\Database\Log\LoggedQuery;
+use Cake\ElasticSearch\Datasource\SchemaCollection;
 use Elastica\Client;
 use Elastica\Request;
 
@@ -115,7 +115,8 @@ class Connection extends Client
     /**
      * Part of the implicit Connection interface.
      *
-     * @return void
+     * @param bool $enable Whether or not to log queries
+     * @return bool|void
      */
     public function logQueries($enable = null)
     {
@@ -128,7 +129,8 @@ class Connection extends Client
     /**
      * Part of the implicit Connection interface.
      *
-     * @return void
+     * @param callable $callable An anonymous function to be called
+     * @return callable The result of the called function
      */
     public function transactional($callable)
     {

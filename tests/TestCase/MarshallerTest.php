@@ -15,8 +15,8 @@
 namespace Cake\ElasticSearch\Test;
 
 use Cake\Datasource\ConnectionManager;
-use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Type;
 use Cake\TestSuite\TestCase;
 
@@ -172,7 +172,8 @@ class MarshallerTest extends TestCase
                 $called++;
                 $this->assertInstanceOf('ArrayObject', $data);
                 $this->assertInstanceOf('ArrayObject', $options);
-            });
+            }
+        );
         $marshaller = new Marshaller($this->type);
         $marshaller->one($data);
 
@@ -384,7 +385,8 @@ class MarshallerTest extends TestCase
                 $called++;
                 $this->assertInstanceOf('ArrayObject', $data);
                 $this->assertInstanceOf('ArrayObject', $options);
-            });
+            }
+        );
         $marshaller = new Marshaller($this->type);
         $doc = new Document(['title' => 'original', 'body' => 'original']);
         $marshaller->merge($doc, $data);

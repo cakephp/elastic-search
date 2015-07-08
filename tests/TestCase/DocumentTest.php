@@ -26,7 +26,7 @@ class DocumentTest extends TestCase
 {
 
     /**
-     * Tests constructing a document 
+     * Tests constructing a document
      *
      * @return void
      */

@@ -36,6 +36,7 @@ class MappingSchema
     /**
      * Constructor
      *
+     * @param string $name The name of the type of the mapping data
      * @param array $data The mapping data from elasticsearch
      */
     public function __construct($name, array $data)

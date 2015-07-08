@@ -82,7 +82,7 @@ class QueryTest extends TestCase
 
         $internalType->expects($this->once())
             ->method('search')
-            ->will($this->returnCallback(function($query) use ($result) {
+            ->will($this->returnCallback(function ($query) use ($result) {
                 $this->assertEquals(new \Elastica\Query, $query);
                 return $result;
             }));

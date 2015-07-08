@@ -16,8 +16,8 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 define('APP', __DIR__);
 
-use Cake\Core\Configure;
 use Cake\Cache\Cache;
+use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 
 Configure::write('App', [

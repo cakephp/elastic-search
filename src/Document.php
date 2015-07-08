@@ -37,11 +37,13 @@ class Document implements EntityInterface
     protected $_result;
 
     /**
-     * Takes either an array or a Result object form a serach and constructs
+     * Takes either an array or a Result object form a search and constructs
      * a document representing an entity in a elastic search type,
      *
-     * @param array|Elastica\Result $data
-     * @param array $options
+     * @param array|Elastica\Result $data An array or Result object that
+     *  represents an Elasticsearch document
+     * @param array $options An array of options to set the state of the
+     *  document
      */
     public function __construct($data = [], $options = [])
     {

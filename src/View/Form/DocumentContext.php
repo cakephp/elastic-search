@@ -14,16 +14,16 @@
  */
 namespace Cake\ElasticSearch\View\Form;
 
+use Cake\Collection\Collection;
+use Cake\Core\App;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Type;
 use Cake\ElasticSearch\TypeRegistry;
-use Cake\Collection\Collection;
-use Cake\Core\App;
 use Cake\Network\Request;
 use Cake\Utility\Inflector;
 use Cake\View\Form\ContextInterface;
-use Traversable;
 use RuntimeException;
+use Traversable;
 
 /**
  * Provides a context provider for Elasticsearch documents.

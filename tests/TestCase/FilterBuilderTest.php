@@ -520,7 +520,6 @@ class FilterBuilderTest extends TestCase
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
-
     }
 
     /**
