@@ -469,7 +469,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      * Triggers the `Model.beforeDelete` and `Model.afterDelete` events.
      *
      * @param \Cake\Datasource\EntityInterface $entity The entity to remove.
-     * @param array $options The options fo the delete.
+     * @param array $options The options for the delete.
      * @return boolean success
      */
     public function delete(EntityInterface $entity, $options = [])
