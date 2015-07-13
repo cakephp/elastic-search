@@ -1,4 +1,6 @@
 # ElasticSearch Datasource for CakePHP
+
+[![Build Status](https://api.travis-ci.org/cakephp/elastic-search.png)](https://travis-ci.org/cakephp/elastic-search)
 [![License](https://poser.pugx.org/cakephp/elastic-search/license.svg)](https://packagist.org/packages/cakephp/elastic-search)
 
 This is a pre-alpha version of an alternative ORM for CakePHP 3.0 using [Elastic Search](http://www.elasticsearch.org/)
