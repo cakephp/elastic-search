@@ -26,7 +26,7 @@ class ProfilesFixture extends TestFixture
      *
      * @var string
      */
-    public $table = 'profiles';
+    public $name = 'profiles';
 
     /**
      * The mapping data.
