@@ -14,12 +14,13 @@
  */
 namespace Cake\ElasticSearch\Datasource;
 
+use Cake\Datasource\ConnectionInterface;
 use Cake\Database\Log\LoggedQuery;
 use Cake\ElasticSearch\Datasource\SchemaCollection;
 use Elastica\Client;
 use Elastica\Request;
 
-class Connection extends Client
+class Connection extends Client implements ConnectionInterface
 {
     /**
      * Whether or not query logging is enabled.
@@ -62,7 +63,7 @@ class Connection extends Client
      */
     public function schemaCollection()
     {
-        return new SchemaCollection();
+        return new SchemaCollection($this);
     }
 
     /**
@@ -78,45 +79,7 @@ class Connection extends Client
     /**
      * Part of the implicit Connection interface.
      *
-     * @return bool
-     */
-    public function enabled()
-    {
-        return true;
-    }
-
-    /**
-     * Part of the implicit Connection interface.
-     *
      * @return void
-     */
-    public function beginTransaction()
-    {
-    }
-
-    /**
-     * Part of the implicit Connection interface.
-     *
-     * @return void
-     */
-    public function disableForeignKeys()
-    {
-    }
-
-    /**
-     * Part of the implicit Connection interface.
-     *
-     * @return void
-     */
-    public function enableForeignKeys()
-    {
-    }
-
-    /**
-     * Part of the implicit Connection interface.
-     *
-     * @param bool $enable Whether or not to log queries
-     * @return bool|void
      */
     public function logQueries($enable = null)
     {
@@ -129,10 +92,21 @@ class Connection extends Client
     /**
      * Part of the implicit Connection interface.
      *
+     * @param bool $enable Whether or not to log queries
+     * @return bool|void
+     */
+    public function transactional(callable $callable)
+    {
+        return $callable($this);
+    }
+
+    /**
+     * Part of the implicit Connection interface.
+     *
      * @param callable $callable An anonymous function to be called
      * @return callable The result of the called function
      */
-    public function transactional($callable)
+    public function disableConstraints(callable $callable)
     {
         return $callable($this);
     }

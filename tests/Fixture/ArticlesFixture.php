@@ -26,7 +26,7 @@ class ArticlesFixture extends TestFixture
      *
      * @var string
      */
-    public $table = 'articles';
+    public $name = 'articles';
 
     /**
      * The mapping data.

@@ -11,6 +11,8 @@ services:
 before_script:
   - sleep 7 # Work around elasticsearch startup time.
   - phpenv rehash
+    # Make the index.
+  - curl -XPUT 127.0.0.1:9200/cake_test_db
 
 install:
   - composer self-update
