@@ -69,4 +69,5 @@ Assuming you have PHPUnit installed system wide using one of the methods stated
 tests for CakePHP by doing the following:
 
 1. Copy `phpunit.xml.dist` to `phpunit.xml`
-2. Run `phpunit`
+2. Create the test suite index `curl -XPUT 127.0.0.1:9200/cake_test_db`
+3. Run `phpunit`

@@ -104,10 +104,6 @@ class TestFixture implements FixtureInterface
             return;
         }
         $index = $db->getIndex();
-        if (!$index->exists()) {
-            $index->create();
-        }
-
         $type = $index->getType($this->name);
         $mapping = new ElasticaMapping();
         $mapping->setType($type);
