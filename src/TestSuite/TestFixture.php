@@ -82,6 +82,7 @@ class TestFixture
         $mapping->setType($type);
         $mapping->setProperties($this->schema);
         $mapping->send();
+        $this->created[] = $db->configName();
     }
 
     /**
@@ -110,7 +111,6 @@ class TestFixture
         }
         $type->addDocuments($documents);
         $index->refresh();
-        $this->created[] = $db->configName();
     }
 
     /**
