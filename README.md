@@ -25,11 +25,11 @@ After installing, you should tell your application to load the plugin:
 
 ```php
 // in config/bootstrap.php
-Plugin::load('ElasticSearch');
+Plugin::load('Cake/ElasticSearch');
 
 // If you want the plugin to automatically configure the Elastic model provider
 // and FormHelper do the following:
-Plugin::load('ElasticSearch', ['bootstrap' => true]);
+Plugin::load('Cake/ElasticSearch', ['bootstrap' => true]);
 ```
 
 ## Defining a connection
