@@ -680,4 +680,14 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     {
         return 'elastic';
     }
+
+    public function aliasField($field)
+    {
+        return $field;
+    }
+
+    public function primaryKey()
+    {
+        return '_id';
+    }
 }
