@@ -18,7 +18,7 @@ use Cake\Datasource\QueryTrait;
 use Cake\ElasticSearch\ResultSet;
 use Cake\ElasticSearch\Type;
 use Elastica\Filter\AbstractFilter;
-use Elastica\Filter\Bool as BoolFilter;
+use Elastica\Filter\BoolFilter;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\Filtered as FilteredQuery;
 use IteratorAggregate;
