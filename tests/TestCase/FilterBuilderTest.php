@@ -58,7 +58,7 @@ class FilterBuilderTest extends TestCase
     {
         $builder = new FilterBuilder;
         $result = $builder->bool();
-        $this->assertInstanceOf('Elastica\Filter\Bool', $result);
+        $this->assertInstanceOf('Elastica\Filter\BoolFilter', $result);
     }
 
     /**
