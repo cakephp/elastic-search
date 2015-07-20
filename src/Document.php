@@ -28,8 +28,8 @@ class Document implements EntityInterface
     use EntityTrait;
 
     /**
-     * Holds an instance to a Result object is passed in the constructor from
-     * a search query. It can contain extra information about this document
+     * Holds an instance of a Result object that's passed into the constructor
+     * from a search query. It can contain extra information about this document
      * concerning the search operation, such as highlights, score and version.
      *
      * @var \Elastica\Result
