@@ -51,5 +51,20 @@ class DocumentTest extends TestCase
             ->will($this->returnValue($data));
         $document = new Document($result);
         $this->assertSame($data, $document->toArray());
+        $this->assertSame($result, $document->elasticResult());
+    }
+
+    /**
+     * Tests that the result object can be passed in the options array
+     *
+     * @return void
+     */
+    public function testConstructorWithResultAsOption()
+    {
+        $data = ['foo' => 1, 'bar' => 2];
+        $result = $this->getMock('Elastica\Result', [], [[]]);
+        $document = new Document($data, ['result' => $result]);
+        $this->assertSame($data, $document->toArray());
+        $this->assertSame($result, $document->elasticResult());
     }
 }

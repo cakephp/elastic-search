@@ -48,7 +48,7 @@ class Document implements EntityInterface
     public function __construct($data = [], $options = [])
     {
         if ($data instanceof Result) {
-            $this->_result = $data;
+            $options['result'] = $data;
             $id = $data->getId();
             $data = $data->getData();
             if ($id !== []) {
@@ -61,7 +61,8 @@ class Document implements EntityInterface
             'markClean' => false,
             'markNew' => null,
             'guard' => false,
-            'source' => null
+            'source' => null,
+            'result' => null
         ];
         if (!empty($options['source'])) {
             $this->source($options['source']);
@@ -69,6 +70,10 @@ class Document implements EntityInterface
 
         if ($options['markNew'] !== null) {
             $this->isNew($options['markNew']);
+        }
+
+        if ($options['result'] !== null) {
+            $this->_result = $options['result'];
         }
 
         if (!empty($data) && $options['markClean'] && !$options['useSetters']) {
@@ -86,5 +91,16 @@ class Document implements EntityInterface
         if ($options['markClean']) {
             $this->clean();
         }
+    }
+
+    /**
+     * Returns the Elastica\Result object that can be used for getting
+     * extra information about the document, such as the score and highlights.
+     *
+     * @return \Elastica\Result
+     */
+    public function elasticResult()
+    {
+        return $this->_result;
     }
 }

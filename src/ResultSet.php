@@ -235,14 +235,15 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
     public function current()
     {
         $class = $this->entityClass;
+        $result = $this->resultSet->current();
         $options = [
             'markClean' => true,
             'useSetters' => false,
             'markNew' => false,
             'source' => $this->repoName,
+            'result' => $result
         ];
 
-        $result = $this->resultSet->current();
         $data = $result->getData();
         $data['id'] = $result->getId();
 
