@@ -422,4 +422,32 @@ class QueryTest extends TestCase
         $expected = ['term' => ['name.first' => 'jose']];
         $this->assertEquals([$expected], $filter);
     }
+
+    /**
+     * Tests that it is possible to pass a 0 as limit
+     *
+     * @return void
+     */
+    public function testLimitZero()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $this->assertSame($query, $query->limit(0));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(0, $elasticQuery['size']);
+    }
+
+    /**
+     * Tests that it is possible to pass a 0 as offset
+     *
+     * @return void
+     */
+    public function testOffsetZero()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $this->assertSame($query, $query->offset(0));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(0, $elasticQuery['from']);
+    }
 }
