@@ -450,11 +450,11 @@ class Query implements IteratorAggregate
             $this->_elasticQuery->setSource($this->_parts['fields']);
         }
 
-        if ($this->_parts['limit']) {
+        if (isset($this->_parts['limit'])) {
             $this->_elasticQuery->setSize($this->_parts['limit']);
         }
 
-        if ($this->_parts['offset']) {
+        if (isset($this->_parts['offset'])) {
             $this->_elasticQuery->setFrom($this->_parts['offset']);
         }
 
