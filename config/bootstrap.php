@@ -15,6 +15,7 @@
 use Cake\Event\EventManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;
+use Cake\Collection\Collection;
 
 // Attach the TypeRegistry into controllers.
 EventManager::instance()->on(
