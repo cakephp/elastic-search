@@ -13,7 +13,6 @@
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
 use Cake\Collection\Collection;
-use Cake\Collection\Traversable;
 use Cake\Event\EventManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;
