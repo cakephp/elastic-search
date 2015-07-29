@@ -12,10 +12,11 @@
  * @since         0.0.1
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
+use Cake\Collection\Collection;
+use Cake\Collection\Traversable;
 use Cake\Event\EventManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;
-use Cake\Collection\Collection;
 
 // Attach the TypeRegistry into controllers.
 EventManager::instance()->on(
