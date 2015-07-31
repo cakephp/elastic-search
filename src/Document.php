@@ -94,13 +94,67 @@ class Document implements EntityInterface
     }
 
     /**
-     * Returns the Elastica\Result object that can be used for getting
-     * extra information about the document, such as the score and highlights.
+     * Returns the ElasticSearch type name from which this document came from.
      *
-     * @return \Elastica\Result
+     * If this is a new document, this function returns null
+     *
+     * @return string|nulll
      */
-    public function elasticResult()
+    public function type()
     {
-        return $this->_result;
+        if ($this->_result) {
+            return $this->_result->getType();
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the version number of this document as returned by ElasticSearch
+     *
+     * If this is a new document, this function returns 1
+     *
+     * @return int
+     */
+    public function version()
+    {
+        if ($this->_result) {
+            return $this->_result->getVersion();
+        }
+
+        return 1;
+    }
+
+    /**
+     * Returns the highlights array for document as returned by ElasticSearch
+     * for the executed query.
+     *
+     * If this is a new document, or the query used to create it did not ask for
+     * highlights, this function will return an empty array.
+     *
+     * @return array
+     */
+    public function highlights()
+    {
+        if ($this->_result) {
+            return $this->_result->getHighlights();
+        }
+        return [];
+    }
+
+    /**
+     * Returns the explanation array for this document as returned from ElasticSearch.
+     *
+     * If this is a new document, or the query used to create it did not ask for
+     * explanation, this function will return an empty array.
+     *
+     * @return array
+     */
+    public function explanation()
+    {
+        if ($this->_result) {
+            return $this->_result->getExplanation();
+        }
+        return [];
     }
 }

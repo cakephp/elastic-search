@@ -51,7 +51,6 @@ class DocumentTest extends TestCase
             ->will($this->returnValue($data));
         $document = new Document($result);
         $this->assertSame($data, $document->toArray());
-        $this->assertSame($result, $document->elasticResult());
     }
 
     /**
@@ -65,6 +64,63 @@ class DocumentTest extends TestCase
         $result = $this->getMock('Elastica\Result', [], [[]]);
         $document = new Document($data, ['result' => $result]);
         $this->assertSame($data, $document->toArray());
-        $this->assertSame($result, $document->elasticResult());
+    }
+
+    /**
+     * Tests that creating a document without a result object will
+     * make the proxy functions return their default
+     *
+     * @return void
+     */
+    public function testNewWithNoResult()
+    {
+        $document = new Document();
+        $this->assertNull($document->type());
+        $this->assertSame(1, $document->version());
+        $this->assertEquals([], $document->highlights());
+        $this->assertEquals([], $document->explanation());
+    }
+
+    /**
+     * Tests that passing a result object in the constructor makes
+     * the proxy the functions return the right value
+     *
+     * @return void
+     */
+    public function testTypeWithResult()
+    {
+        $result = $this->getMock('Elastica\Result', [], [[]]);
+        $data = ['a' => 'b'];
+
+        $result
+            ->method('getData')
+            ->will($this->returnValue($data));
+
+        $result
+            ->method('getId')
+            ->will($this->returnValue(1));
+
+        $result
+            ->method('getType')
+            ->will($this->returnValue('things'));
+
+        $result
+            ->method('getVersion')
+            ->will($this->returnValue(3));
+
+        $result
+            ->method('getHighlights')
+            ->will($this->returnValue(['highlights array']));
+
+        $result
+            ->method('getExplanation')
+            ->will($this->returnValue(['explanation array']));
+
+        $document = new Document($result);
+        $this->assertSame($data + ['id' => 1], $document->toArray());
+        $this->assertEquals('things', $document->type());
+        $this->assertEquals(3, $document->version());
+        $this->assertEquals(['highlights array'], $document->highlights());
+        $this->assertEquals(['explanation array'], $document->explanation());
     }
 }
