@@ -48,7 +48,7 @@ class Document implements EntityInterface
     public function __construct($data = [], $options = [])
     {
         if ($data instanceof Result) {
-            $this->_result = $data;
+            $options['result'] = $data;
             $id = $data->getId();
             $data = $data->getData();
             if ($id !== []) {
@@ -61,7 +61,8 @@ class Document implements EntityInterface
             'markClean' => false,
             'markNew' => null,
             'guard' => false,
-            'source' => null
+            'source' => null,
+            'result' => null
         ];
         if (!empty($options['source'])) {
             $this->source($options['source']);
@@ -69,6 +70,10 @@ class Document implements EntityInterface
 
         if ($options['markNew'] !== null) {
             $this->isNew($options['markNew']);
+        }
+
+        if ($options['result'] !== null) {
+            $this->_result = $options['result'];
         }
 
         if (!empty($data) && $options['markClean'] && !$options['useSetters']) {
@@ -86,5 +91,70 @@ class Document implements EntityInterface
         if ($options['markClean']) {
             $this->clean();
         }
+    }
+
+    /**
+     * Returns the ElasticSearch type name from which this document came from.
+     *
+     * If this is a new document, this function returns null
+     *
+     * @return string|nulll
+     */
+    public function type()
+    {
+        if ($this->_result) {
+            return $this->_result->getType();
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the version number of this document as returned by ElasticSearch
+     *
+     * If this is a new document, this function returns 1
+     *
+     * @return int
+     */
+    public function version()
+    {
+        if ($this->_result) {
+            return $this->_result->getVersion();
+        }
+
+        return 1;
+    }
+
+    /**
+     * Returns the highlights array for document as returned by ElasticSearch
+     * for the executed query.
+     *
+     * If this is a new document, or the query used to create it did not ask for
+     * highlights, this function will return an empty array.
+     *
+     * @return array
+     */
+    public function highlights()
+    {
+        if ($this->_result) {
+            return $this->_result->getHighlights();
+        }
+        return [];
+    }
+
+    /**
+     * Returns the explanation array for this document as returned from ElasticSearch.
+     *
+     * If this is a new document, or the query used to create it did not ask for
+     * explanation, this function will return an empty array.
+     *
+     * @return array
+     */
+    public function explanation()
+    {
+        if ($this->_result) {
+            return $this->_result->getExplanation();
+        }
+        return [];
     }
 }

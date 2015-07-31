@@ -64,11 +64,13 @@ class ResultSetTest extends TestCase
     {
         list($resultSet, $elasticaSet) = $resultSets;
         $data = ['foo' => 1, 'bar' => 2];
-        $result = $this->getMock('Elastica\Result', ['getId', 'getData'], [[]]);
+        $result = $this->getMock('Elastica\Result', ['getId', 'getData', 'getType'], [[]]);
         $result->method('getData')
             ->will($this->returnValue($data));
         $result->method('getId')
             ->will($this->returnValue(99));
+        $result->method('getType')
+            ->will($this->returnValue('things'));
 
         $elasticaSet->expects($this->once())
             ->method('current')
@@ -79,6 +81,7 @@ class ResultSetTest extends TestCase
         $this->assertSame($data + ['id' => 99], $document->toArray());
         $this->assertFalse($document->dirty());
         $this->assertFalse($document->isNew());
+        $this->assertEquals('things', $document->type());
     }
 
     /**
