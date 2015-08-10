@@ -70,6 +70,14 @@ class Query implements IteratorAggregate
     protected $_dirty = false;
 
     /**
+     * Additional options for Elastica\Type::search()
+     *
+     * @see Elastica\Search::OPTION_SEARCH_* constants
+     * @var array
+     */
+    protected $_searchOptions = [];
+
+    /**
      * Query constructor
      *
      * @param \Cake\ElasticSearch\Type $repository The type of document.
@@ -329,6 +337,21 @@ class Query implements IteratorAggregate
     }
 
     /**
+     * Set or get the search options
+     *
+     * @param  null|array $options
+     * @return void|array
+     */
+    public function searchOptions($options = null)
+    {
+        if ($options === null) {
+            return $this->_searchOptions;
+        }
+
+        $this->_searchOptions = $options;
+    }
+
+    /**
      * Auxiliary function used to parse conditions into filters and store them in a _parts
      * variable.
      *
@@ -436,7 +459,7 @@ class Query implements IteratorAggregate
         $type = $connection->getIndex()->getType($name);
 
         $query = $this->compileQuery();
-        return new ResultSet($type->search($query), $this);
+        return new ResultSet($type->search($query, $this->_searchOptions), $this);
     }
 
     /**
