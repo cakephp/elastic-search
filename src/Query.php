@@ -340,15 +340,16 @@ class Query implements IteratorAggregate
      * Set or get the search options
      *
      * @param  null|array $options
-     * @return void|array
+     * @return $this|array
      */
-    public function searchOptions($options = null)
+    public function searchOptions(array $options = null)
     {
         if ($options === null) {
             return $this->_searchOptions;
         }
 
         $this->_searchOptions = $options;
+        return $this;
     }
 
     /**
