@@ -636,7 +636,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     public function patchEntities($entities, array $data, array $options = [])
     {
         $marshaller = $this->marshaller();
-        return $marshaller->mergeMany($entity, $data, $options);
+        return $marshaller->mergeMany($entities, $data, $options);
     }
 
     /**
