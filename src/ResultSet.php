@@ -108,7 +108,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
     /**
      * Returns whether facets exist
      *
-     * @return boolean Facet existence
+     * @return bool Facet existence
      */
     public function hasFacets()
     {

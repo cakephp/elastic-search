@@ -352,7 +352,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      *
      * @param array $fields A hash of field => new value.
      * @param array $conditions An array of conditions, similar to those used with find()
-     * @return boolean Success Returns true if one or more rows are effected.
+     * @return bool Success Returns true if one or more rows are effected.
      */
     public function updateAll($fields, $conditions)
     {
@@ -368,7 +368,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      * need those first load a collection of records and delete them.
      *
      * @param array $conditions An array of conditions, similar to those used with find()
-     * @return boolean Success Returns true if one or more rows are effected.
+     * @return bool Success Returns true if one or more rows are effected.
      * @see RepositoryInterface::delete()
      */
     public function deleteAll($conditions)
@@ -470,7 +470,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      *
      * @param \Cake\Datasource\EntityInterface $entity The entity to remove.
      * @param array $options The options for the delete.
-     * @return boolean success
+     * @return bool success
      */
     public function delete(EntityInterface $entity, $options = [])
     {
