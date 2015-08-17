@@ -339,7 +339,7 @@ class Query implements IteratorAggregate
     /**
      * Set or get the search options
      *
-     * @param  null|array $options
+     * @param  null|array $options An array of additional search options
      * @return $this|array
      */
     public function searchOptions(array $options = null)
