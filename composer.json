@@ -22,6 +22,7 @@
     },
     "require-dev": {
         "cakephp/cakephp": "dev-master",
+        "cakephp/cakephp-codesniffer": "dev-master",
         "psr/log": "~1.0",
         "phpunit/phpunit": "~4.0"
     },
