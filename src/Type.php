@@ -352,7 +352,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      *
      * @param array $fields A hash of field => new value.
      * @param array $conditions An array of conditions, similar to those used with find()
-     * @return bool Success Returns true if one or more rows are effected.
+     * @return void
      */
     public function updateAll($fields, $conditions)
     {
