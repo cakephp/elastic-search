@@ -604,7 +604,7 @@ class FilterBuilder
      *
      * @return Elastica\Filter\BoolFilter
      */
-    public function and_()
+    protected function _and()
     {
         $filters = func_get_args();
         $bool = $this->bool();
@@ -638,7 +638,7 @@ class FilterBuilder
      *
      * @return Elastica\Filter\BoolOr
      */
-    public function or_()
+    protected function _or()
     {
         $filters = func_get_args();
         $or = new Filter\BoolOr();
@@ -660,7 +660,7 @@ class FilterBuilder
     public function __call($method, $args)
     {
         if (in_array($method, ['and', 'or'])) {
-            return call_user_func_array([$this, $method . '_'], $args);
+            return call_user_func_array([$this, '_' . $method], $args);
         }
         throw new \BadMethodCallException('Cannot build filter ' . $method);
     }
