@@ -604,8 +604,10 @@ class FilterBuilder
      *
      * @return Elastica\Filter\BoolFilter
      */
+    // @codingStandardsIgnoreStart
     public function and_()
     {
+        // @codingStandardsIgnoreEnd
         $filters = func_get_args();
         $bool = $this->bool();
 
@@ -638,8 +640,10 @@ class FilterBuilder
      *
      * @return Elastica\Filter\BoolOr
      */
+    // @codingStandardsIgnoreStart
     public function or_()
     {
+        // @codingStandardsIgnoreEnd
         $filters = func_get_args();
         $or = new Filter\BoolOr();
 
