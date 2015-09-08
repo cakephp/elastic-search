@@ -450,4 +450,31 @@ class QueryTest extends TestCase
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(0, $elasticQuery['from']);
     }
+
+    /**
+     * Test setting highlights.
+     *
+     * @return void
+     */
+    public function testHighlight()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $query->highlight([
+            'pre_tags' => [''],
+            'post_tags' => [''],
+            'fields' => [
+                'contents' => [
+                    'fragment_size' => 100,
+                    'number_of_fragments' => 3
+                ],
+            ],
+        ]);
+
+        $compiled = $query->compileQuery()->toArray();
+        $this->assertArrayHasKey('pre_tags', $compiled['highlight']);
+        $this->assertArrayHasKey('post_tags', $compiled['highlight']);
+        $this->assertArrayHasKey('fields', $compiled['highlight']);
+        $this->assertEquals(100, $compiled['highlight']['fields']['contents']['fragment_size']);
+    }
 }
