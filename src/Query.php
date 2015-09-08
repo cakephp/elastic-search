@@ -53,7 +53,7 @@ class Query implements IteratorAggregate
 
     /**
      * The various query builder parts that will
-     * be transfered to the elastica query.
+     * be transferred to the elastica query.
      *
      * @var array
      */
