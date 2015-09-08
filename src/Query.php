@@ -51,10 +51,17 @@ class Query implements IteratorAggregate
 
     protected $_elasticQuery;
 
+    /**
+     * The various query builder parts that will
+     * be transfered to the elastica query.
+     *
+     * @var array
+     */
     protected $_parts = [
         'fields' => [],
         'preFilter' => null,
         'postFilter' => null,
+        'highlight' => null,
         'query' => null,
         'order' => [],
         'limit' => null,
@@ -449,6 +456,18 @@ class Query implements IteratorAggregate
     }
 
     /**
+     * Set the highlight options for the query.
+     *
+     * @param array $highlight The highlight options to use.
+     * @return $this
+     */
+    public function highlight(array $highlight)
+    {
+        $this->_parts['highlight'] = $highlight;
+        return $this;
+    }
+
+    /**
      * Executes the query.
      *
      * @return Cake\ElasticSearch\ResultSet The results of the query
@@ -484,6 +503,10 @@ class Query implements IteratorAggregate
 
         if ($this->_parts['order']) {
             $this->_elasticQuery->setSort($this->_parts['order']);
+        }
+
+        if ($this->_parts['highlight']) {
+            $this->_elasticQuery->setHighlight($this->_parts['highlight']);
         }
 
         if ($this->_parts['aggregations']) {
