@@ -123,7 +123,7 @@ class DocumentContext implements ContextInterface
             is_array($entity) ||
             $entity instanceof Traversable
         );
-        $alias = $this->_rootName = $type->name();
+        $this->_rootName = $type->name();
         $this->_context['type'] = $type;
     }
 
