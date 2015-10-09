@@ -40,7 +40,7 @@ class Document implements EntityInterface
      * Takes either an array or a Result object form a search and constructs
      * a document representing an entity in a elastic search type,
      *
-     * @param array|Elastica\Result $data An array or Result object that
+     * @param array|\Elastica\Result $data An array or Result object that
      *  represents an Elasticsearch document
      * @param array $options An array of options to set the state of the
      *  document
@@ -98,7 +98,7 @@ class Document implements EntityInterface
      *
      * If this is a new document, this function returns null
      *
-     * @return string|nulll
+     * @return string|null
      */
     public function type()
     {

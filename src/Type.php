@@ -21,10 +21,7 @@ use Cake\Datasource\RepositoryInterface;
 use Cake\Datasource\RulesAwareTrait;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Association\EmbedOne;
-use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Datasource\MappingSchema;
-use Cake\ElasticSearch\Marshaller;
-use Cake\ElasticSearch\Query;
 use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventManager;
 use Cake\Event\EventManagerTrait;
@@ -64,7 +61,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     /**
      * Connection instance
      *
-     * @var Cake\ElasticSearch\Connection
+     * @var \Cake\ElasticSearch\Datasource\Connection
      */
     protected $_connection;
 
@@ -171,7 +168,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     /**
      * Get the event manager for this Table.
      *
-     * @return Cake\Event\EventManager
+     * @return \Cake\Event\EventManager
      */
     public function getEventManager()
     {
@@ -181,8 +178,8 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     /**
      * Returns the connection instance or sets a new one
      *
-     * @param Cake\ElasticSearch\Connection $conn the new connection instance
-     * @return Cake\ElasticSearch\Connection
+     * @param \Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
+     * @return \Cake\ElasticSearch\Datasource\Connection
      */
     public function connection($conn = null)
     {
@@ -240,7 +237,7 @@ class Type implements RepositoryInterface, EventDispatcherInterface
      *
      * @param string $type the type of query to perform
      * @param array $options An array that will be passed to Query::applyOptions
-     * @return Cake\ElasticSearch\Query
+     * @return \Cake\ElasticSearch\Query
      */
     public function find($type = 'all', $options = [])
     {

@@ -1,8 +1,6 @@
 <?php
 namespace Cake\ElasticSearch\Association;
 
-use Cake\ElasticSearch\Association\Embedded;
-
 /**
  * Represents an embedded document that only contains
  * one instance.

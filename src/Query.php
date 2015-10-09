@@ -15,8 +15,6 @@
 namespace Cake\ElasticSearch;
 
 use Cake\Datasource\QueryTrait;
-use Cake\ElasticSearch\ResultSet;
-use Cake\ElasticSearch\Type;
 use Elastica\Filter\AbstractFilter;
 use Elastica\Filter\BoolFilter;
 use Elastica\Query as ElasticaQuery;
@@ -282,10 +280,10 @@ class Query implements IteratorAggregate
      * Finally, you can pass any already built filters as first argument:
      *
      * {{{
-     *   $query->where(new Elastica\Filter\Term('name.first', 'jose'));
+     *   $query->where(new \Elastica\Filter\Term('name.first', 'jose'));
      * }}{
      *
-     * @param array|callable|Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous filters.
      * @return $this
      * @see Cake\ElasticSearch\FilterBuilder
@@ -302,7 +300,7 @@ class Query implements IteratorAggregate
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param array|callable|Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous filters.
      * @return $this
      * @see Cake\ElasticSearch\Query::where()
@@ -327,7 +325,7 @@ class Query implements IteratorAggregate
     /**
      * Add an aggregation to the elastic query object
      *
-     * @param  array|Elastica\Facet\AbstractAggregation $aggregation One or multiple facets
+     * @param  array|\Elastica\Facet\AbstractAggregation $aggregation One or multiple facets
      * @return $this
      */
     public function aggregate($aggregation)
@@ -364,7 +362,7 @@ class Query implements IteratorAggregate
      * variable.
      *
      * @param string $type The name of the part in which the filters will be stored
-     * @param array|callable|Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous filters.
      * @return $this
      */
@@ -470,7 +468,7 @@ class Query implements IteratorAggregate
     /**
      * Executes the query.
      *
-     * @return Cake\ElasticSearch\ResultSet The results of the query
+     * @return \Cake\ElasticSearch\ResultSet The results of the query
      */
     protected function _execute()
     {

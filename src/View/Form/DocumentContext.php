@@ -15,9 +15,7 @@
 namespace Cake\ElasticSearch\View\Form;
 
 use Cake\Collection\Collection;
-use Cake\Core\App;
 use Cake\ElasticSearch\Document;
-use Cake\ElasticSearch\Type;
 use Cake\ElasticSearch\TypeRegistry;
 use Cake\Network\Request;
 use Cake\Utility\Inflector;
@@ -182,7 +180,7 @@ class DocumentContext implements ContextInterface
      * Get the entity that is closest to $path.
      *
      * @param array $path The to get an entity for.
-     * @return Cake\Datasource\EntityInterface|false The entity or false.
+     * @return \Cake\Datasource\EntityInterface|false The entity or false.
      * @throws \RuntimeException when no entity can be found.
      */
     protected function entity($path)
@@ -282,7 +280,7 @@ class DocumentContext implements ContextInterface
     /**
      * Get the validator for the current type.
      *
-     * @return Cake\Validation\Validator The validator for the type.
+     * @return \Cake\Validation\Validator The validator for the type.
      */
     protected function getValidator()
     {
