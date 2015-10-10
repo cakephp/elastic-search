@@ -14,7 +14,8 @@
  */
 namespace Cake\ElasticSearch\TestSuite;
 
-use Cake\ElasticSearch\Datasource\Connection;
+use Cake\Datasource\ConnectionInterface;
+use Cake\Datasource\FixtureInterface;
 use Elastica\Query\MatchAll;
 use Elastica\Type\Mapping as ElasticaMapping;
 
@@ -25,7 +26,7 @@ use Elastica\Type\Mapping as ElasticaMapping;
  *
  * Class extension is temporary as fixtures are missing an interface.
  */
-class TestFixture
+class TestFixture implements FixtureInterface
 {
 
     /**
@@ -70,11 +71,10 @@ class TestFixture
     /**
      * Create the mapping for the type.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
-     *  connection
+     * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
      * @return void
      */
-    public function create(Connection $db)
+    public function create(ConnectionInterface $db)
     {
         if (empty($this->schema)) {
             return;
@@ -95,11 +95,10 @@ class TestFixture
     /**
      * Insert fixture documents.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
-     *  connection
+     * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
      * @return void
      */
-    public function insert(Connection $db)
+    public function insert(ConnectionInterface $db)
     {
         if (empty($this->records)) {
             return;
@@ -123,11 +122,10 @@ class TestFixture
     /**
      * Drops a mapping and all its related data.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
-     *  connection
+     * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
      * @return void
      */
-    public function drop(Connection $db)
+    public function drop(ConnectionInterface $db)
     {
         $index = $db->getIndex();
         $type = $index->getType($this->table);
@@ -138,11 +136,10 @@ class TestFixture
     /**
      * Truncate the fixture type.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
-     *  connection
+     * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
      * @return void
      */
-    public function truncate(Connection $db)
+    public function truncate(ConnectionInterface $db)
     {
         $query = new MatchAll();
         $index = $db->getIndex();
@@ -152,14 +149,29 @@ class TestFixture
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function connection()
+    {
+        return $this->connection;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function sourceName()
+    {
+        return $this->table;
+    }
+
+    /**
      * No-op method needed because of the Fixture interface.
      * Elasticsearch does not deal with foreign key constraints.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
-     *  connection
+     * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
      * @return void
      */
-    public function createConstraints(Connection $db)
+    public function createConstraints(ConnectionInterface $db)
     {
     }
 
@@ -167,11 +179,11 @@ class TestFixture
      * No-op method needed because of the Fixture interface.
      * Elasticsearch does not deal with foreign key constraints.
      *
-     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
+     * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
      *  connection
      * @return void
      */
-    public function dropConstraints(Connection $db)
+    public function dropConstraints(ConnectionInterface $db)
     {
     }
 }

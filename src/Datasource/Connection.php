@@ -15,10 +15,11 @@
 namespace Cake\ElasticSearch\Datasource;
 
 use Cake\Database\Log\LoggedQuery;
+use Cake\Datasource\ConnectionInterface;
 use Elastica\Client;
 use Elastica\Request;
 
-class Connection extends Client
+class Connection extends Client implements ConnectionInterface
 {
     /**
      * Whether or not query logging is enabled.
@@ -52,12 +53,10 @@ class Connection extends Client
     }
 
     /**
-     * Part of the implicit Connection interface.
-     *
      * Returns a SchemaCollection stub until we can add more
      * abstract API's in Connection.
      *
-     * @return bool
+     * @return \Cake\ElasticSearch\Datasource\SchemaCollection
      */
     public function schemaCollection()
     {
@@ -65,9 +64,7 @@ class Connection extends Client
     }
 
     /**
-     * Part of the implicit Connection interface.
-     *
-     * @return bool
+     * {@inheritDoc}
      */
     public function configName()
     {
@@ -75,9 +72,7 @@ class Connection extends Client
     }
 
     /**
-     * Part of the implicit Connection interface.
-     *
-     * @return bool
+     * {@inheritDoc}
      */
     public function enabled()
     {
@@ -85,37 +80,28 @@ class Connection extends Client
     }
 
     /**
-     * Part of the implicit Connection interface.
-     *
-     * @return void
+     * {@inheritDoc}
      */
     public function beginTransaction()
     {
     }
 
     /**
-     * Part of the implicit Connection interface.
-     *
-     * @return void
+     * {@inheritDoc}
      */
     public function disableForeignKeys()
     {
     }
 
     /**
-     * Part of the implicit Connection interface.
-     *
-     * @return void
+     * {@inheritDoc}
      */
     public function enableForeignKeys()
     {
     }
 
     /**
-     * Part of the implicit Connection interface.
-     *
-     * @param bool $enable Whether or not to log queries
-     * @return bool|void
+     * {@inheritDoc}
      */
     public function logQueries($enable = null)
     {
@@ -126,14 +112,22 @@ class Connection extends Client
     }
 
     /**
-     * Part of the implicit Connection interface.
-     *
-     * @param callable $callable An anonymous function to be called
-     * @return callable The result of the called function
+     * {@inheritDoc}
      */
-    public function transactional($callable)
+    public function transactional(callable $callable)
     {
         return $callable($this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Elasticsearch does not deal with the concept of foreign key constraints
+     * This method just triggers the $callback argument.
+     */
+    public function disableConstraints(callable $callback)
+    {
+        return $callback($this);
     }
 
     /**
