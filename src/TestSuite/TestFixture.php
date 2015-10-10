@@ -143,4 +143,28 @@ class TestFixture
         $type->deleteByQuery($query);
         $index->refresh();
     }
+
+    /**
+     * No-op method needed because of the Fixture interface.
+     * Elasticsearch does not deal with foreign key constraints.
+     *
+     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
+     *  connection
+     * @return void
+     */
+    public function createConstraints(Connection $db)
+    {
+    }
+
+    /**
+     * No-op method needed because of the Fixture interface.
+     * Elasticsearch does not deal with foreign key constraints.
+     *
+     * @param \Cake\ElasticSearch\Datasource\Connection $db The Elasticsearch
+     *  connection
+     * @return void
+     */
+    public function dropConstraints(Connection $db)
+    {
+    }
 }
