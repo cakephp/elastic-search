@@ -14,7 +14,6 @@
  */
 namespace Cake\ElasticSearch\Test;
 
-use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\FilterBuilder;
 use Cake\ElasticSearch\Query;
 use Cake\ElasticSearch\Type;

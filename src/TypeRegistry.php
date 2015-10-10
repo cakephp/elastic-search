@@ -16,7 +16,6 @@ namespace Cake\ElasticSearch;
 
 use Cake\Core\App;
 use Cake\Datasource\ConnectionManager;
-use Cake\ElasticSearch\Type;
 use Cake\Utility\Inflector;
 use RuntimeException;
 

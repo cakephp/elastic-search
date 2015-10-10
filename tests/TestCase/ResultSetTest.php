@@ -14,7 +14,6 @@
  */
 namespace Cake\ElasticSearch\Test;
 
-use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\ResultSet;
 use Cake\TestSuite\TestCase;

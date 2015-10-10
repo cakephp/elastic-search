@@ -17,7 +17,7 @@ namespace Cake\ElasticSearch;
 use Cake\Collection\Collection;
 use Cake\Datasource\EntityInterface;
 use Cake\ElasticSearch\Association\Embedded;
-use Cake\ElasticSearch\Type;
+use RuntimeException;
 
 /**
  * Contains logic to convert array data into document objects.
@@ -104,7 +104,7 @@ class Marshaller
      *
      * @param \Cake\ElasticSearch\Association\Embedded $embed The embed definition.
      * @param array $data The data to marshal
-     * @return array|Cake\ElasticSearch\Document Either a document or an array of documents.
+     * @return array|\Cake\ElasticSearch\Document Either a document or an array of documents.
      */
     protected function newNested(Embedded $embed, array $data)
     {
@@ -129,7 +129,7 @@ class Marshaller
      * @param \Cake\ElasticSearch\Association\Embedded $embed The embed definition.
      * @param \Cake\ElasticSearch\Document|array $existing The existing entity or entities.
      * @param array $data The data to marshal
-     * @return array|Cake\ElasticSearch\Document Either a document or an array of documents.
+     * @return array|\Cake\ElasticSearch\Document Either a document or an array of documents.
      */
     protected function mergeNested(Embedded $embed, $existing, array $data)
     {

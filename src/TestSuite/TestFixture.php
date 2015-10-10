@@ -15,7 +15,6 @@
 namespace Cake\ElasticSearch\TestSuite;
 
 use Cake\ElasticSearch\Datasource\Connection;
-use Elastica\Document as ElasticaDocument;
 use Elastica\Query\MatchAll;
 use Elastica\Type\Mapping as ElasticaMapping;
 
@@ -28,6 +27,14 @@ use Elastica\Type\Mapping as ElasticaMapping;
  */
 class TestFixture
 {
+
+    /**
+     * Full Table Name
+     *
+     * @var string
+     */
+    public $table = null;
+
     /**
      * The connection name to use for this fixture.
      *

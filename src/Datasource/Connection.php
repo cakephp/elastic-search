@@ -15,7 +15,6 @@
 namespace Cake\ElasticSearch\Datasource;
 
 use Cake\Database\Log\LoggedQuery;
-use Cake\ElasticSearch\Datasource\SchemaCollection;
 use Elastica\Client;
 use Elastica\Request;
 

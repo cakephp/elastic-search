@@ -140,7 +140,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      *
      * @param string $name the name of the desired aggregation
      * @return array
-     * @throws Exception\InvalidException if an aggregation by the given name cannot be found
+     * @throws \Elastica\Exception\InvalidException if an aggregation by the given name cannot be found
      */
     public function getAggregation($name)
     {
@@ -230,7 +230,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
     /**
      * Returns the current document for the iteration
      *
-     * @return Cake\ElasticSearch\Document
+     * @return \Cake\ElasticSearch\Document
      */
     public function current()
     {
