@@ -14,6 +14,8 @@
  */
 namespace Cake\ElasticSearch\Datasource;
 
+use Elastica\Exception\ResponseException;
+
 /**
  * Temporary shim for fixtures as they know too much about databases.
  */
@@ -43,8 +45,12 @@ class SchemaCollection
      */
     public function listTables()
     {
-        $index = $this->connection->getIndex();
-        $mappings = $index->getMapping();
+        try {
+            $index = $this->connection->getIndex();
+            $mappings = $index->getMapping();
+        } catch (ResponseException $e) {
+            return [];
+        }
         return array_keys($mappings);
     }
 }
