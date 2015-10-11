@@ -20,12 +20,31 @@ namespace Cake\ElasticSearch\Datasource;
 class SchemaCollection
 {
     /**
+     * The connection instance to use.
+     *
+     * @var \Cake\ElasticSearch\Datasource\Connection
+     */
+    protected $connection;
+
+    /**
+     * Constructor
+     *
+     * @param $connection \Cake\ElasticSearch\Datasource\Connection
+     */
+    public function __construct($connection)
+    {
+        $this->connection = $connection;
+    }
+
+    /**
      * Returns an empty array as a shim for fixtures
      *
      * @return array An empty array
      */
     public function listTables()
     {
-        return [];
+        $index = $this->connection->getIndex();
+        $mappings = $index->getMapping();
+        return array_keys($mappings);
     }
 }
