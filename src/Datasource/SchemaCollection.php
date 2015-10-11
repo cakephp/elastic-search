@@ -31,7 +31,7 @@ class SchemaCollection
     /**
      * Constructor
      *
-     * @param $connection \Cake\ElasticSearch\Datasource\Connection
+     * @param \Cake\ElasticSearch\Datasource\Connection $connection The connection instance to use.
      */
     public function __construct($connection)
     {
