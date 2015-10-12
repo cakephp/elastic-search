@@ -60,7 +60,7 @@ class Connection extends Client implements ConnectionInterface
      */
     public function schemaCollection()
     {
-        return new SchemaCollection();
+        return new SchemaCollection($this);
     }
 
     /**

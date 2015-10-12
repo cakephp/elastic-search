@@ -14,11 +14,30 @@
  */
 namespace Cake\ElasticSearch\Datasource;
 
+use Elastica\Exception\ResponseException;
+
 /**
  * Temporary shim for fixtures as they know too much about databases.
  */
 class SchemaCollection
 {
+    /**
+     * The connection instance to use.
+     *
+     * @var \Cake\ElasticSearch\Datasource\Connection
+     */
+    protected $connection;
+
+    /**
+     * Constructor
+     *
+     * @param \Cake\ElasticSearch\Datasource\Connection $connection The connection instance to use.
+     */
+    public function __construct($connection)
+    {
+        $this->connection = $connection;
+    }
+
     /**
      * Returns an empty array as a shim for fixtures
      *
@@ -26,6 +45,12 @@ class SchemaCollection
      */
     public function listTables()
     {
-        return [];
+        try {
+            $index = $this->connection->getIndex();
+            $mappings = $index->getMapping();
+        } catch (ResponseException $e) {
+            return [];
+        }
+        return array_keys($mappings);
     }
 }
