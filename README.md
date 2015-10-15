@@ -7,6 +7,8 @@ This is a pre-alpha version of an alternative ORM for CakePHP 3.0 using [Elastic
 as its backend. It is currently under development and is only being used to test the
 interfaces exposed in CakePHP 3.0.
 
+You can [find the documentation for the plugin in the Cake Book](http://book.cakephp.org/3.0/en/elasticsearch.html).
+
 ## Installing ElasticSearch via composer
 
 You can install ElasticSearch into your project using
