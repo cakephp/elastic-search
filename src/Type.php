@@ -23,8 +23,8 @@ use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\Event\EventDispatcherInterface;
+use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventManager;
-use Cake\Event\EventManagerTrait;
 use Cake\ORM\RulesChecker;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
@@ -40,7 +40,7 @@ use InvalidArgumentException;
  */
 class Type implements RepositoryInterface, EventDispatcherInterface
 {
-    use EventManagerTrait;
+    use EventDispatcherTrait;
     use RulesAwareTrait;
     use ValidatorAwareTrait;
 
