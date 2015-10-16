@@ -325,7 +325,7 @@ class Query implements IteratorAggregate
     /**
      * Add an aggregation to the elastic query object
      *
-     * @param  array|\Elastica\Facet\AbstractAggregation $aggregation One or multiple facets
+     * @param  array|\Elastica\Aggregation\AbstractAggregation $aggregation One or multiple facets
      * @return $this
      */
     public function aggregate($aggregation)

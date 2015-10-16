@@ -205,7 +205,7 @@ class FilterBuilder
      * @param string $type Index type where the pre-indexed shape is.
      * @param string $index Name of the index where the pre-indexed shape is.
      * @param string $path The field specified as path containing the pre-indexed shape.
-     * @return \Elastica\Filter\GeoShapePreIndex
+     * @return \Elastica\Filter\GeoShapePreIndexed
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
      */
     public function geoShapeIndex($field, $id, $type, $index = 'shapes', $path = 'shape')
@@ -411,7 +411,7 @@ class FilterBuilder
      * }}}
      *
      * @param string $path A dot separated string denoting the path to the property to filter.
-     * @param Elastica\Query\AbstractQuery|Elastica\Filter\AbstractFilter $filter The filtering conditions.
+     * @param \Elastica\Query\AbstractQuery|\Elastica\Filter\AbstractFilter $filter The filtering conditions.
      * @return \Elastica\Filter\Nested
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-filter.html
      */
@@ -433,7 +433,7 @@ class FilterBuilder
     /**
      * Returns a BoolNot filter that is typically ussed to negate another filter expression
      *
-     * @param Elastica\Filter\AbstractFilter $filter The filter to negate
+     * @param \Elastica\Filter\AbstractFilter $filter The filter to negate
      * @return \Elastica\Filter\BoolNot
      * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-not-filter.html
      */
