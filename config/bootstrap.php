@@ -20,7 +20,7 @@ use Cake\ElasticSearch\View\Form\DocumentContext;
 // Attach the TypeRegistry into controllers.
 EventManager::instance()->on(
     'Dispatcher.beforeDispatch',
-    ['priority' => 99],
+    ['priority' => 1],
     function ($event) {
         $controller = false;
         if (isset($event->data['controller'])) {
