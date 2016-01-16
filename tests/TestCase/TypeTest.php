@@ -49,6 +49,27 @@ class TypeTest extends TestCase
     }
 
     /**
+     * Tests that calling find will return a query object
+     *
+     * @expectedException \Cake\Datasource\Exception\RecordNotFoundException
+     * @return void
+     */
+    public function testFindAllWithFirstOrFail()
+    {
+        $this->type->find('all')->where(['id' => '999999999'])->firstOrFail();
+    }
+
+    /**
+     * Tests that table() is implemented as QueryTrait relies on.
+     *
+     * @return void
+     */
+    public function testTable()
+    {
+        $this->assertSame('articles', $this->type->table());
+    }
+
+    /**
      * Test the default entityClass.
      *
      * @return void

@@ -227,6 +227,17 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     }
 
     /**
+     * Get/set the type/table name for this type.
+     *
+     * @param string $table The 'table' name for this type.
+     * @return string
+     */
+    public function table($table = null)
+    {
+        return $this->name($table);
+    }
+
+    /**
      * Creates a new Query for this repository and applies some defaults based on the
      * type of search that was selected.
      *
