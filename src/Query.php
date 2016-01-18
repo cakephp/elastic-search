@@ -247,10 +247,8 @@ class Query implements IteratorAggregate
     }
 
     /**
-     * Allow chaining custom finders on the same Query like the ORM
+     * {@inheritDoc}
      *
-     * @param  string $type
-     * @param  array  $options
      * @return \Cake\ElasticSearch\Query
      */
     public function find($type = 'all', $options = [])
