@@ -247,6 +247,16 @@ class Query implements IteratorAggregate
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return \Cake\ElasticSearch\Query
+     */
+    public function find($type = 'all', $options = [])
+    {
+        return $this->_repository->callFinder($type, $this, $options);
+    }
+
+    /**
      * Sets the filter to use in a FilteredQuery object. Filters added using this method
      * will be stacked on a bool filter and applied to the filter part of a filtered query.
      *

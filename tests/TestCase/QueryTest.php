@@ -39,6 +39,18 @@ class QueryTest extends TestCase
     }
 
     /**
+     * Test that chained finders will work
+     *
+     * @return void
+     */
+    public function testChainedFinders()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $query->find()->find();
+    }
+
+    /**
      * Tests that executing a query means executing a search against the associated
      * Type and decorates the internal ResultSet
      *
