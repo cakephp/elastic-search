@@ -120,7 +120,28 @@ class Type implements RepositoryInterface, EventDispatcherInterface
             $eventManager = $config['eventManager'];
         }
         $this->_eventManager = $eventManager ?: new EventManager();
+        $this->initialize($config);
         $this->dispatchEvent('Model.initialize');
+    }
+
+    /**
+     * Initialize a table instance. Called after the constructor.
+     *
+     * You can use this method to define embedded documents,
+     * define validation and do any other initialization logic you need.
+     *
+     * ```
+     *  public function initialize(array $config)
+     *  {
+     *      $this->embedMany('Comments');
+     *  }
+     * ```
+     *
+     * @param array $config Configuration options passed to the constructor
+     * @return void
+     */
+    public function initialize(array $config)
+    {
     }
 
     /**
