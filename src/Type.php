@@ -24,6 +24,7 @@ use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventDispatcherTrait;
+use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
 use Cake\ORM\RulesChecker;
 use Cake\Utility\Inflector;
@@ -38,7 +39,7 @@ use InvalidArgumentException;
  * in a relational datastore. While an index can have multiple types, this ODM maps
  * each type in an index maps to a class.
  */
-class Type implements RepositoryInterface, EventDispatcherInterface
+class Type implements RepositoryInterface, EventListenerInterface, EventDispatcherInterface
 {
     use EventDispatcherTrait;
     use RulesAwareTrait;
@@ -697,6 +698,51 @@ class Type implements RepositoryInterface, EventDispatcherInterface
     {
         $mapping = $this->schema();
         return $mapping->field($field) !== null;
+    }
+
+    /**
+     * Get the callbacks this Type is interested in.
+     *
+     * By implementing the conventional methods a Type class is assumed
+     * to be interested in the related event.
+     *
+     * Override this method if you need to add non-conventional event listeners.
+     * Or if you want you table to listen to non-standard events.
+     *
+     * The conventional method map is:
+     *
+     * - Model.beforeMarshal => beforeMarshal
+     * - Model.beforeFind => beforeFind
+     * - Model.beforeSave => beforeSave
+     * - Model.afterSave => afterSave
+     * - Model.beforeDelete => beforeDelete
+     * - Model.afterDelete => afterDelete
+     * - Model.beforeRules => beforeRules
+     * - Model.afterRules => afterRules
+     *
+     * @return array
+     */
+    public function implementedEvents()
+    {
+        $eventMap = [
+            'Model.beforeMarshal' => 'beforeMarshal',
+            'Model.beforeFind' => 'beforeFind',
+            'Model.beforeSave' => 'beforeSave',
+            'Model.afterSave' => 'afterSave',
+            'Model.beforeDelete' => 'beforeDelete',
+            'Model.afterDelete' => 'afterDelete',
+            'Model.beforeRules' => 'beforeRules',
+            'Model.afterRules' => 'afterRules',
+        ];
+        $events = [];
+
+        foreach ($eventMap as $event => $method) {
+            if (!method_exists($this, $method)) {
+                continue;
+            }
+            $events[$event] = $method;
+        }
+        return $events;
     }
 
     /**
