@@ -613,4 +613,28 @@ class TypeTest extends TestCase
         $this->assertTrue($this->type->hasField('title'));
         $this->assertFalse($this->type->hasField('nope'));
     }
+
+    /**
+     * Test that Type implements the EventListenerInterface and some events.
+     *
+     * @return void
+     */
+    public function testImplementedEvents()
+    {
+        $this->assertInstanceOf('Cake\Event\EventListenerInterface', $this->type);
+
+        $type = $this->getMock(
+            'Cake\ElasticSearch\Type',
+            ['beforeFind', 'beforeSave', 'afterSave', 'beforeDelete', 'afterDelete']
+        );
+        $result = $type->implementedEvents();
+        $expected = [
+            'Model.beforeFind' => 'beforeFind',
+            'Model.beforeSave' => 'beforeSave',
+            'Model.afterSave' => 'afterSave',
+            'Model.beforeDelete' => 'beforeDelete',
+            'Model.afterDelete' => 'afterDelete',
+        ];
+        $this->assertEquals($expected, $result, 'Events do not match.');
+    }
 }
