@@ -553,23 +553,6 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * Tests the query() filter
-     *
-     * @return void
-     */
-    public function testQuery()
-    {
-        $builder = new QueryBuilder;
-        $result = $builder->query(new \Elastica\Query\SimpleQueryString('awesome'));
-        $expected = [
-            'query' => [
-                'simple_query_string' => ['query' => 'awesome']
-            ]
-        ];
-        $this->assertEquals($expected, $result->toArray());
-    }
-
-    /**
      * Tests the range() filter
      *
      * @return void
