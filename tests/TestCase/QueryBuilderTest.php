@@ -14,15 +14,15 @@
  */
 namespace Cake\ElasticSearch\Test;
 
-use Cake\ElasticSearch\FilterBuilder;
+use Cake\ElasticSearch\QueryBuilder;
 use Cake\TestSuite\TestCase;
 use Elastica\Filter;
 
 /**
- * Tests the FilterBuilder class
+ * Tests the QueryBuilder class
  *
  */
-class FilterBuilderTest extends TestCase
+class QueryBuilderTest extends TestCase
 {
 
     /**
@@ -32,7 +32,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testBetween()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->between('price', 10, 100);
         $expected = [
             'range' => ['price' => ['gte' => 10, 'lte' => 100]]
@@ -53,9 +53,9 @@ class FilterBuilderTest extends TestCase
      */
     public function testBool()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->bool();
-        $this->assertInstanceOf('Elastica\Filter\BoolFilter', $result);
+        $this->assertInstanceOf('Elastica\Query\BoolQuery', $result);
     }
 
     /**
@@ -65,7 +65,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testExists()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->exists('comments');
         $expected = [
             'exists' => ['field' => 'comments']
@@ -80,7 +80,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testGeoBoundingBox()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->geoBoundingBox('location', [40.73, -74.1], [40.01, -71.12]);
         $expected = [
             'geo_bounding_box' => [
@@ -100,7 +100,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testGeoDistance()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->geoDistance('location', ['lat' => 40.73, 'lon' => -74.1], '10km');
         $expected = [
             'geo_distance' => [
@@ -127,7 +127,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testGeoDistanceRange()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->geoDistanceRange('location', ['lat' => 40.73, 'lon' => -74.1], '5km', '6km');
         $expected = [
             'geo_distance_range' => [
@@ -156,7 +156,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testGeoPolygon()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->geoPolygon('location', [
             ['lat' => 40, 'lon' => -70],
             ['lat' => 30, 'lon' => -80],
@@ -183,7 +183,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testGeoShape()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->geoShape('location', [
             ['lat' => 40, 'lon' => -70],
             ['lat' => 30, 'lon' => -80],
@@ -191,8 +191,8 @@ class FilterBuilderTest extends TestCase
         $expected = [
             'geo_shape' => [
                 'location' => [
-                    'relation' => 'intersects',
                     'shape' => [
+                        'relation' => 'intersects',
                         'type' => 'linestring',
                         'coordinates' => [
                             ['lat' => 40, 'lon' => -70],
@@ -212,7 +212,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testGeoShapeIndex()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->geoShapeIndex('location', 'DEU', 'countries', 'shapes', 'location');
         $expected = [
             'geo_shape' => [
@@ -237,7 +237,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testGeoHashCell()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->geoHashCell('location', ['lat' => 40.73, 'lon' => -74.1], 3);
         $expected = [
             'geohash_cell' => [
@@ -266,7 +266,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testGt()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->gt('price', 10);
         $expected = [
             'range' => ['price' => ['gt' => 10]]
@@ -287,7 +287,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testGte()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->gte('price', 10);
         $expected = [
             'range' => ['price' => ['gte' => 10]]
@@ -308,12 +308,12 @@ class FilterBuilderTest extends TestCase
      */
     public function testHashChild()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->hasChild($builder->term('user', 'john'), 'comment');
         $expected = [
             'has_child' => [
                 'type' => 'comment',
-                'filter' => ['term' => ['user' => 'john']]
+                'query' => ['term' => ['user' => 'john']]
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
@@ -326,12 +326,12 @@ class FilterBuilderTest extends TestCase
      */
     public function testHashParent()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->hasParent($builder->term('name', 'john'), 'user');
         $expected = [
             'has_parent' => [
                 'type' => 'user',
-                'filter' => ['term' => ['name' => 'john']]
+                'query' => ['term' => ['name' => 'john']]
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
@@ -344,7 +344,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testIds()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->ids([1, 2, 3], 'user');
         $expected = [
             'ids' => [
@@ -362,7 +362,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testIndices()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->indices(
             ['a', 'b'],
             $builder->term('user', 'mark'),
@@ -371,8 +371,8 @@ class FilterBuilderTest extends TestCase
         $expected = [
             'indices' => [
                 'indices' => ['a', 'b'],
-                'filter' => ['term' => ['user' => 'mark']],
-                'no_match_filter' => ['term' => ['tag' => 'wow']]
+                'query' => ['term' => ['user' => 'mark']],
+                'no_match_query' => ['term' => ['tag' => 'wow']]
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
@@ -385,7 +385,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testLimit()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->limit(10);
         $expected = [
             'limit' => ['value' => 10]
@@ -400,7 +400,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testMatchAll()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->matchAll();
         $expected = [
             'match_all' => new \stdClass
@@ -415,7 +415,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testLt()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->lt('price', 10);
         $expected = [
             'range' => ['price' => ['lt' => 10]]
@@ -436,7 +436,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testLte()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->lte('price', 10);
         $expected = [
             'range' => ['price' => ['lte' => 10]]
@@ -457,7 +457,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testMissing()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->missing('comments');
         $expected = [
             'missing' => ['field' => 'comments']
@@ -472,12 +472,12 @@ class FilterBuilderTest extends TestCase
      */
     public function testNested()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->nested('comments', $builder->term('author', 'mark'));
         $expected = [
             'nested' => [
                 'path' => 'comments',
-                'filter' => ['term' => ['author' => 'mark']]]
+                'query' => ['term' => ['author' => 'mark']]]
         ];
         $this->assertEquals($expected, $result->toArray());
     }
@@ -489,7 +489,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testNestedWithQuery()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->nested(
             'comments',
             new \Elastica\Query\SimpleQueryString('great')
@@ -509,11 +509,13 @@ class FilterBuilderTest extends TestCase
      */
     public function testNot()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->not($builder->term('title', 'cake'));
         $expected = [
-            'not' => [
-                'filter' => ['term' => ['title' => 'cake']]
+            'bool' => [
+                'must_not' => [
+                    ['term' => ['title' => 'cake']]
+                ]
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
@@ -526,11 +528,25 @@ class FilterBuilderTest extends TestCase
      */
     public function testPrefix()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->prefix('user', 'ki');
         $expected = [
             'prefix' => [
-                'user' => 'ki'
+                'user' => [
+                    'value' => 'ki',
+                    'boost' => 1.0
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->prefix('user', 'ki', 2.0);
+        $expected = [
+            'prefix' => [
+                'user' => [
+                    'value' => 'ki',
+                    'boost' => 2.0
+                ]
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
@@ -543,7 +559,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testQuery()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->query(new \Elastica\Query\SimpleQueryString('awesome'));
         $expected = [
             'query' => [
@@ -560,7 +576,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testRange()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->range('created', [
             'gte' => '2012-01-01',
             'lte' => 'now',
@@ -585,7 +601,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testRegexp()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->regexp('name.first', 'mar[c|k]', [
             'flags' => 'INTERSECTION|COMPLEMENT|EMPTY',
             'max_determinized_states' => 200
@@ -609,7 +625,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testScript()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->script("doc['foo'] > 2");
         $expected = [
             'script' => ['script' => "doc['foo'] > 2"]
@@ -624,7 +640,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testTerm()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->term('user.name', 'jose');
         $expected = [
             'term' => ['user.name' => 'jose']
@@ -639,7 +655,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testTerms()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->terms('user.name', ['mark', 'jose']);
         $expected = [
             'terms' => ['user.name' => ['mark', 'jose']]
@@ -654,7 +670,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testType()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->type('products');
         $expected = [
             'type' => ['value' => 'products']
@@ -669,11 +685,12 @@ class FilterBuilderTest extends TestCase
      */
     public function testAnd()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->and(
             $builder->term('user', 'jose'),
             $builder->gte('age', 29),
-            $builder->missing('tags')
+            $builder->missing('tags'),
+            $builder->and($builder->missing('missing'))
         );
         $expected = [
             'bool' => [
@@ -681,35 +698,7 @@ class FilterBuilderTest extends TestCase
                     ['term' => ['user' => 'jose']],
                     ['range' => ['age' => ['gte' => 29]]],
                     ['missing' => ['field' => 'tags']],
-                ]
-            ]
-        ];
-        $this->assertEquals($expected, $result->toArray());
-    }
-
-    /**
-     * Tests the and() method with boolean collapsing
-     *
-     * @return void
-     */
-    public function testAndWithCollapsedBoolean()
-    {
-        $builder = new FilterBuilder;
-        $result = $builder->and(
-            $builder->term('user', 'jose'),
-            $builder->gte('age', 29),
-            $builder->and(
-                $builder->missing('tags'),
-                $builder->exists('comments')
-            )
-        );
-        $expected = [
-            'bool' => [
-                'must' => [
-                    ['missing' => ['field' => 'tags']],
-                    ['exists' => ['field' => 'comments']],
-                    ['term' => ['user' => 'jose']],
-                    ['range' => ['age' => ['gte' => 29]]],
+                    ['bool' => ['must' => [['missing' => ['field' => 'missing']]]]]
                 ]
             ]
         ];
@@ -723,17 +712,19 @@ class FilterBuilderTest extends TestCase
      */
     public function testOr()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $result = $builder->or(
             $builder->term('user', 'jose'),
             $builder->gte('age', 29),
             $builder->missing('tags')
         );
         $expected = [
-            'or' => [
-                ['term' => ['user' => 'jose']],
-                ['range' => ['age' => ['gte' => 29]]],
-                ['missing' => ['field' => 'tags']],
+            'bool' => [
+                'should' => [
+                        ['term' => ['user' => 'jose']],
+                        ['range' => ['age' => ['gte' => 29]]],
+                        ['missing' => ['field' => 'tags']],
+                ]
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
@@ -746,7 +737,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testParseSingleArray()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $filter = $builder->parse([
             'name' => 'jose',
             'age >=' => 29,
@@ -785,7 +776,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testParseOr()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $filter = $builder->parse([
             'or' => [
                 'name' => 'jose',
@@ -808,7 +799,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testParseAnd()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $filter = $builder->parse([
             'and' => [
                 'name' => 'jose',
@@ -831,7 +822,7 @@ class FilterBuilderTest extends TestCase
      */
     public function testParseNot()
     {
-        $builder = new FilterBuilder;
+        $builder = new QueryBuilder;
         $filter = $builder->parse([
             'not' => [
                 'name' => 'jose',
