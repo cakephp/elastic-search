@@ -393,8 +393,6 @@ class QueryTest extends TestCase
 
         $compiled = $query->compileQuery()->toArray();
 
-        print_r($compiled);
-
         $filter = $compiled['post_filter']['bool']['must'];
 
         $expected = ['term' => ['name.first' => 'jose']];
