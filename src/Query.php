@@ -15,10 +15,8 @@
 namespace Cake\ElasticSearch;
 
 use Cake\Datasource\QueryTrait;
-use Elastica\Filter\AbstractFilter;
-use Elastica\Filter\BoolFilter;
 use Elastica\Query as ElasticaQuery;
-use Elastica\Query\Filtered as FilteredQuery;
+use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
 
 class Query implements IteratorAggregate
@@ -276,10 +274,10 @@ class Query implements IteratorAggregate
      * }}}
      *
      * You can read about the available operators and how they translate to Elastic Search
-     * filters in the `Cake\ElasticSearch\FilterBuilder::parse()` method documentation.
+     * filters in the `Cake\ElasticSearch\QueryBuilder::parse()` method documentation.
      *
      * Additionally, it is possible to use a closure as first argument. The closure will receive
-     * a FilterBuilder instance, that you can use for creating arbitrary filter combinations:
+     * a QueryBuilder instance, that you can use for creating arbitrary filter combinations:
      *
      * {{{
      *   $query->where(function ($builder) {
@@ -300,7 +298,7 @@ class Query implements IteratorAggregate
      */
     public function where($conditions, $overwrite = false)
     {
-        return $this->_buildFilter('preFilter', $conditions, $overwrite);
+        return $this->_buildBoolMustQuery('preFilter', $conditions, $overwrite);
     }
 
     /**
@@ -317,7 +315,7 @@ class Query implements IteratorAggregate
      */
     public function postFilter($conditions, $overwrite = false)
     {
-        return $this->_buildFilter('postFilter', $conditions, $overwrite);
+        return $this->_buildBoolMustQuery('postFilter', $conditions, $overwrite);
     }
 
     /**
@@ -368,35 +366,35 @@ class Query implements IteratorAggregate
     }
 
     /**
-     * Auxiliary function used to parse conditions into filters and store them in a _parts
+     * Auxiliary function used to parse conditions into boo query and store them in a _parts
      * variable.
      *
-     * @param string $type The name of the part in which the filters will be stored
-     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param string $type The name of the part in which the bool query will be stored
+     * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous filters.
      * @return $this
      */
-    protected function _buildFilter($type, $conditions, $overwrite)
+    protected function _buildBoolMustQuery($type, $conditions, $overwrite)
     {
         if ($this->_parts[$type] === null || $overwrite) {
-            $this->_parts[$type] = new BoolFilter;
+            $this->_parts[$type] = new ElasticaQuery\BoolQuery();
         }
-
-        if ($conditions instanceof AbstractFilter) {
+        
+        if ($conditions instanceof AbstractQuery) {
             $this->_parts[$type]->addMust($conditions);
             return $this;
         }
 
         if (is_callable($conditions)) {
-            $conditions = $conditions(new FilterBuilder, $this->_parts[$type], $this);
+            $conditions = $conditions(new QueryBuilder, $this->_parts[$type], $this);
         }
 
         if ($conditions === null) {
             return $this;
         }
-
+        
         if (is_array($conditions)) {
-            $conditions = (new FilterBuilder)->parse($conditions);
+            $conditions = (new QueryBuilder)->parse($conditions);
             array_map([$this->_parts[$type], 'addMust'], $conditions);
             return $this;
         }
@@ -522,17 +520,17 @@ class Query implements IteratorAggregate
                 $this->_elasticQuery->addAggregation($aggregation);
             }
         }
+        
+        $filteredBoolQuery = new ElasticaQuery\BoolQuery();
 
-        $filteredQuery = new FilteredQuery();
-
-        if ($this->_parts['query'] !== null) {
-            $filteredQuery->setQuery($this->_parts['query']);
-            $this->_elasticQuery->setQuery($filteredQuery);
-        }
+//        if ($this->_parts['query'] !== null) {
+//            $filteredQuery->setQuery($this->_parts['query']);
+//            $this->_elasticQuery->setQuery($filteredQuery);
+//        }
 
         if ($this->_parts['preFilter'] !== null) {
-            $filteredQuery->setFilter($this->_parts['preFilter']);
-            $this->_elasticQuery->setQuery($filteredQuery);
+            $filteredBoolQuery->addFilter($this->_parts['preFilter']);
+            $this->_elasticQuery->setQuery($filteredBoolQuery);
         }
 
         if ($this->_parts['postFilter'] !== null) {
