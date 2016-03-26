@@ -9,10 +9,10 @@ class QueryBuilder
 {
 
     /**
-     * Returns a Range query object setup to filter documents having the field between
+     * Returns a Range query object setup to query documents having the field between
      * a `from` and a `to` value
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param mixed $from The lower bound value.
      * @param mixed $to The upper bound value.
      * @return \Elastica\Query\Range
@@ -39,12 +39,12 @@ class QueryBuilder
     }
 
     /**
-     * Returns an Exists filter object setup to filter documents having a property present
+     * Returns an Exists query object setup to query documents having a property present
      * or not set to null.
      *
      * @param string $field The field to check for existance.
      * @return \Elastica\Filter\Exists
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/2.2/query-dsl-exists-query.html
      */
     public function exists($field)
     {
@@ -249,7 +249,7 @@ class QueryBuilder
     }
 
     /**
-     * Returns a Range query object setup to filter documents having the field
+     * Returns a Range query object setup to query documents having the field
      * greater than or equal the provided value.
      *
      * @param string $field The field to query by.
@@ -354,7 +354,7 @@ class QueryBuilder
     }
 
     /**
-     * Returns a Range query object setup to filter documents having the field
+     * Returns a Range query object setup to query documents having the field
      * smaller than the provided value.
      *
      * @param string $field The field to query by.
@@ -404,7 +404,7 @@ class QueryBuilder
      * }}}
      *
      *
-     * @param string $path A dot separated string denoting the path to the property to filter.
+     * @param string $path A dot separated string denoting the path to the property to query.
      * @param \Elastica\Query\AbstractQuery $query The query conditions.
      * @return \Elastica\Query\Nested
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-query.html
@@ -434,13 +434,13 @@ class QueryBuilder
     }
 
     /**
-     * Returns a Prefix query to filter documents that have fields containing terms with
+     * Returns a Prefix query to query documents that have fields containing terms with
      * a specified prefix
      *
      * @param string $field The field to query by.
      * @param string $prefix The prefix to check for.
      * @param float $boost The optional boost
-     * @return Query\Prefix
+     * @return Elastica\Query\Prefix
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html
      */
     public function prefix($field, $prefix, $boost = 1.0)
@@ -596,7 +596,7 @@ class QueryBuilder
 
 
     /**
-     * Combines all the passed arguments in a single BoolOr filter.
+     * Combines all the passed arguments in a single BoolQuery query using should clause.
      *
      * ### Example:
      *
@@ -607,7 +607,7 @@ class QueryBuilder
      *  );
      * }}}
      *
-     * @return \Elastica\Filter\BoolOr
+     * @return \Elastica\Query\BoolQuery
      */
     // @codingStandardsIgnoreStart
     public function or_()
@@ -635,7 +635,7 @@ class QueryBuilder
         if (in_array($method, ['and', 'or'])) {
             return call_user_func_array([$this, $method . '_'], $args);
         }
-        throw new \BadMethodCallException('Cannot build filter ' . $method);
+        throw new \BadMethodCallException('Cannot build query ' . $method);
     }
 
     /**
@@ -765,7 +765,7 @@ class QueryBuilder
             }
 
             if (!$numericKey) {
-                $result[] = $this->_parseFilter($k, $c);
+                $result[] = $this->_parseQuery($k, $c);
             }
         }
 
@@ -776,10 +776,10 @@ class QueryBuilder
      * Parses a field name containing an operator into a Filter object.
      *
      * @param string $field The filed name containing the operator
-     * @param mixed $value The value to pass to the filter
+     * @param mixed $value The value to pass to the query
      * @return \Elastica\Filter\AbstractFilter
      */
-    protected function _parseFilter($field, $value)
+    protected function _parseQuery($field, $value)
     {
         $operator = '=';
         $parts = explode(' ', trim($field), 2);

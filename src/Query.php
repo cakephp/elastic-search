@@ -182,8 +182,8 @@ class Query implements IteratorAggregate
      * integers. This is summary of the return types for each clause.
      *
      * - fields: array, will return empty array when no fields are set
-     * - preFilter: The filter to use in a FilteredQuery object, returns null when not set
-     * - postFilter: The filter to use in the post_filter object, returns null when not set
+     * - preFilter: The query to use in a BoolQuery filter object, returns null when not set
+     * - postFilter: The query to use in the post_filter object, returns null when not set
      * - query: Raw query (Elastica\Query\AbstractQuery), return null when not set
      * - order: OrderByExpression, returns null when not set
      * - limit: integer, null when not set
@@ -255,14 +255,14 @@ class Query implements IteratorAggregate
     }
 
     /**
-     * Sets the filter to use in a FilteredQuery object. Filters added using this method
-     * will be stacked on a bool filter and applied to the filter part of a filtered query.
+     * Sets the filter to use in a BoolQuery filter object. Queries added using this method
+     * will be stacked on a bool query and applied to the filter part of a filtered query.
      *
      * There are several way in which you can use this method. The easiest one is by passing
      * a simple array of conditions:
      *
      * {{{
-     *   // Generates a {"term": {"name": "jose"}} json filter
+     *   // Generates a {"term": {"name": "jose"}} json query
      *   $query->where(['name' => 'jose']);
      * }}}
      *
@@ -274,10 +274,10 @@ class Query implements IteratorAggregate
      * }}}
      *
      * You can read about the available operators and how they translate to Elastic Search
-     * filters in the `Cake\ElasticSearch\QueryBuilder::parse()` method documentation.
+     * queries in the `Cake\ElasticSearch\QueryBuilder::parse()` method documentation.
      *
      * Additionally, it is possible to use a closure as first argument. The closure will receive
-     * a QueryBuilder instance, that you can use for creating arbitrary filter combinations:
+     * a QueryBuilder instance, that you can use for creating arbitrary queries combinations:
      *
      * {{{
      *   $query->where(function ($builder) {
@@ -285,14 +285,14 @@ class Query implements IteratorAggregate
      *   });
      * }}}
      *
-     * Finally, you can pass any already built filters as first argument:
+     * Finally, you can pass any already built queries as first argument:
      *
      * {{{
      *   $query->where(new \Elastica\Filter\Term('name.first', 'jose'));
      * }}{
      *
      * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
-     * @param bool $overwrite Whether or not to replace previous filters.
+     * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
      * @see Cake\ElasticSearch\FilterBuilder
      */
@@ -302,8 +302,8 @@ class Query implements IteratorAggregate
     }
 
     /**
-     * Sets the filter to use in the post_filter object. Filters added using this method
-     * will be stacked on a bool filter.
+     * Sets the query to use in the post_filter object. Filters added using this method
+     * will be stacked on a BoolQuery.
      *
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
