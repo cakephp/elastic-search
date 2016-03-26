@@ -2,31 +2,8 @@
 
 namespace Cake\ElasticSearch;
 
+use Elastica;
 use Elastica\Query\AbstractQuery;
-use Elastica\Query\BoolQuery;
-use Elastica\Query\Exists;
-use Elastica\Query\GeoBoundingBox;
-use Elastica\Query\GeoDistance;
-use Elastica\Query\GeoDistanceRange;
-use Elastica\Query\GeohashCell;
-use Elastica\Query\GeoPolygon;
-use Elastica\Query\GeoShapePreIndexed;
-use Elastica\Query\GeoShapeProvided;
-use Elastica\Query\HasChild;
-use Elastica\Query\HasParent;
-use Elastica\Query\Ids;
-use Elastica\Query\Indices;
-use Elastica\Query\Limit;
-use Elastica\Query\MatchAll;
-use Elastica\Query\Missing;
-use Elastica\Query\Nested;
-use Elastica\Query\Prefix;
-use Elastica\Query\Range;
-use Elastica\Query\Regexp;
-use Elastica\Query\Script;
-use Elastica\Query\Term;
-use Elastica\Query\Terms;
-use Elastica\Query\Type;
 
 class QueryBuilder
 {
@@ -58,7 +35,7 @@ class QueryBuilder
      */
     public function bool()
     {
-        return new BoolQuery();
+        return new Elastica\Query\BoolQuery();
     }
 
     /**
@@ -71,7 +48,7 @@ class QueryBuilder
      */
     public function exists($field)
     {
-        return new Exists($field);
+        return new Elastica\Query\Exists($field);
     }
 
     /**
@@ -100,7 +77,7 @@ class QueryBuilder
      */
     public function geoBoundingBox($field, $topLeft, $bottomRight)
     {
-        return new GeoBoundingBox($field, [$topLeft, $bottomRight]);
+        return new Elastica\Query\GeoBoundingBox($field, [$topLeft, $bottomRight]);
     }
 
     /**
@@ -123,7 +100,7 @@ class QueryBuilder
      */
     public function geoDistance($field, $location, $distance)
     {
-        return new GeoDistance($field, $location, $distance);
+        return new Elastica\Query\GeoDistance($field, $location, $distance);
     }
 
     /**
@@ -147,7 +124,7 @@ class QueryBuilder
      */
     public function geoDistanceRange($field, $location, $from, $to)
     {
-        return new GeoDistanceRange($field, $location, [
+        return new Elastica\Query\GeoDistanceRange($field, $location, [
             'gte' => $from,
             'lte' => $to
         ]);
@@ -180,7 +157,7 @@ class QueryBuilder
      */
     public function geoPolygon($field, array $geoPoints)
     {
-        return new GeoPolygon($field, $geoPoints);
+        return new Elastica\Query\GeoPolygon($field, $geoPoints);
     }
 
     /**
@@ -209,7 +186,7 @@ class QueryBuilder
      */
     public function geoShape($field, array $geoPoints, $type = 'envelope')
     {
-        return new GeoShapeProvided($field, $geoPoints, $type);
+        return new Elastica\Query\GeoShapeProvided($field, $geoPoints, $type);
     }
 
     /**
@@ -232,7 +209,7 @@ class QueryBuilder
      */
     public function geoShapeIndex($field, $id, $type, $index = 'shapes', $path = 'shape')
     {
-        return new GeoShapePreIndexed($field, $id, $type, $index, $path);
+        return new Elastica\Query\GeoShapePreIndexed($field, $id, $type, $index, $path);
     }
 
     /**
@@ -254,7 +231,7 @@ class QueryBuilder
      */
     public function geoHashCell($field, $location, $precision = -1, $neighbors = false)
     {
-        return new GeohashCell($field, $location, $precision, $neighbors);
+        return new Elastica\Query\GeohashCell($field, $location, $precision, $neighbors);
     }
 
     /**
@@ -296,7 +273,7 @@ class QueryBuilder
      */
     public function hasChild($query, $type)
     {
-        return new HasChild($query, $type);
+        return new Elastica\Query\HasChild($query, $type);
     }
 
     /**
@@ -309,7 +286,7 @@ class QueryBuilder
      */
     public function hasParent($query, $type)
     {
-        return new HasParent($query, $type);
+        return new Elastica\Query\HasParent($query, $type);
     }
 
     /**
@@ -322,7 +299,7 @@ class QueryBuilder
      */
     public function ids(array $ids = [], $type = null)
     {
-        return new Ids($type, $ids);
+        return new Elastica\Query\Ids($type, $ids);
     }
 
     /**
@@ -350,7 +327,7 @@ class QueryBuilder
      */
     public function indices(array $indices, AbstractQuery $query, AbstractQuery $noMatch)
     {
-        return (new Indices($query, $indices))->setNoMatchQuery($noMatch);
+        return (new Elastica\Query\Indices($query, $indices))->setNoMatchQuery($noMatch);
     }
 
     /**
@@ -362,7 +339,7 @@ class QueryBuilder
      */
     public function limit($limit)
     {
-        return new Limit((int)$limit);
+        return new Elastica\Query\Limit((int)$limit);
     }
 
     /**
@@ -373,7 +350,7 @@ class QueryBuilder
      */
     public function matchAll()
     {
-        return new MatchAll();
+        return new Elastica\Query\MatchAll();
     }
 
     /**
@@ -414,7 +391,7 @@ class QueryBuilder
      */
     public function missing($field = '')
     {
-        return new Missing($field);
+        return new Elastica\Query\Missing($field);
     }
 
     /**
@@ -434,7 +411,7 @@ class QueryBuilder
      */
     public function nested($path, $query)
     {
-        $nested = new Nested();
+        $nested = new Elastica\Query\Nested();
         $nested->setPath($path);
 
         $nested->setQuery($query);
@@ -451,7 +428,7 @@ class QueryBuilder
      */
     public function not($query)
     {
-        $boolQuery = new BoolQuery();
+        $boolQuery = new Elastica\Query\BoolQuery();
         $boolQuery->addMustNot($query);
         return $boolQuery;
     }
@@ -463,12 +440,12 @@ class QueryBuilder
      * @param string $field The field to query by.
      * @param string $prefix The prefix to check for.
      * @param float $boost The optional boost
-     * @return Prefix
+     * @return Query\Prefix
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html
      */
     public function prefix($field, $prefix, $boost = 1.0)
     {
-        $prefixQuery = new Prefix;
+        $prefixQuery = new Elastica\Query\Prefix;
         $prefixQuery->setPrefix($field, $prefix, $boost);
         return $prefixQuery;
     }
@@ -491,7 +468,7 @@ class QueryBuilder
      */
     public function range($field, array $args)
     {
-        return new Range($field, $args);
+        return new Elastica\Query\Range($field, $args);
     }
 
     /**
@@ -511,7 +488,7 @@ class QueryBuilder
      */
     public function regexp($field, $regexp, array $options = [])
     {
-        return new Regexp($field, $regexp, $options);
+        return new Elastica\Query\Regexp($field, $regexp, $options);
     }
 
     /**
@@ -529,7 +506,7 @@ class QueryBuilder
      */
     public function script($script)
     {
-        return new Script($script);
+        return new Elastica\Query\Script($script);
     }
 
     /**
@@ -548,7 +525,7 @@ class QueryBuilder
      */
     public function term($field, $value)
     {
-        return new Term([$field => $value]);
+        return new Elastica\Query\Term([$field => $value]);
     }
 
     /**
@@ -567,7 +544,7 @@ class QueryBuilder
      */
     public function terms($field, $values)
     {
-        return new Terms($field, $values);
+        return new Elastica\Query\Terms($field, $values);
     }
 
     /**
@@ -585,7 +562,7 @@ class QueryBuilder
      */
     public function type($type)
     {
-        return new Type($type);
+        return new Elastica\Query\Type($type);
     }
 
     /**
