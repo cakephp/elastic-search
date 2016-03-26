@@ -15,10 +15,8 @@
 namespace Cake\ElasticSearch;
 
 use Cake\Datasource\QueryTrait;
-use Elastica\Filter\AbstractFilter;
-use Elastica\Filter\BoolFilter;
 use Elastica\Query as ElasticaQuery;
-use Elastica\Query\Filtered as FilteredQuery;
+use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
 
 class Query implements IteratorAggregate
@@ -184,8 +182,8 @@ class Query implements IteratorAggregate
      * integers. This is summary of the return types for each clause.
      *
      * - fields: array, will return empty array when no fields are set
-     * - preFilter: The filter to use in a FilteredQuery object, returns null when not set
-     * - postFilter: The filter to use in the post_filter object, returns null when not set
+     * - preFilter: The query to use in a BoolQuery filter object, returns null when not set
+     * - postFilter: The query to use in the post_filter object, returns null when not set
      * - query: Raw query (Elastica\Query\AbstractQuery), return null when not set
      * - order: OrderByExpression, returns null when not set
      * - limit: integer, null when not set
@@ -257,14 +255,14 @@ class Query implements IteratorAggregate
     }
 
     /**
-     * Sets the filter to use in a FilteredQuery object. Filters added using this method
-     * will be stacked on a bool filter and applied to the filter part of a filtered query.
+     * Sets the filter to use in a BoolQuery filter object. Queries added using this method
+     * will be stacked on a bool query and applied to the filter part of a filtered query.
      *
      * There are several way in which you can use this method. The easiest one is by passing
      * a simple array of conditions:
      *
      * {{{
-     *   // Generates a {"term": {"name": "jose"}} json filter
+     *   // Generates a {"term": {"name": "jose"}} json query
      *   $query->where(['name' => 'jose']);
      * }}}
      *
@@ -276,10 +274,10 @@ class Query implements IteratorAggregate
      * }}}
      *
      * You can read about the available operators and how they translate to Elastic Search
-     * filters in the `Cake\ElasticSearch\FilterBuilder::parse()` method documentation.
+     * queries in the `Cake\ElasticSearch\QueryBuilder::parse()` method documentation.
      *
      * Additionally, it is possible to use a closure as first argument. The closure will receive
-     * a FilterBuilder instance, that you can use for creating arbitrary filter combinations:
+     * a QueryBuilder instance, that you can use for creating arbitrary queries combinations:
      *
      * {{{
      *   $query->where(function ($builder) {
@@ -287,25 +285,25 @@ class Query implements IteratorAggregate
      *   });
      * }}}
      *
-     * Finally, you can pass any already built filters as first argument:
+     * Finally, you can pass any already built queries as first argument:
      *
      * {{{
      *   $query->where(new \Elastica\Filter\Term('name.first', 'jose'));
      * }}{
      *
      * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
-     * @param bool $overwrite Whether or not to replace previous filters.
+     * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
      * @see Cake\ElasticSearch\FilterBuilder
      */
     public function where($conditions, $overwrite = false)
     {
-        return $this->_buildFilter('preFilter', $conditions, $overwrite);
+        return $this->_buildBoolMustQuery('preFilter', $conditions, $overwrite);
     }
 
     /**
-     * Sets the filter to use in the post_filter object. Filters added using this method
-     * will be stacked on a bool filter.
+     * Sets the query to use in the post_filter object. Filters added using this method
+     * will be stacked on a BoolQuery.
      *
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
@@ -317,7 +315,7 @@ class Query implements IteratorAggregate
      */
     public function postFilter($conditions, $overwrite = false)
     {
-        return $this->_buildFilter('postFilter', $conditions, $overwrite);
+        return $this->_buildBoolMustQuery('postFilter', $conditions, $overwrite);
     }
 
     /**
@@ -368,35 +366,35 @@ class Query implements IteratorAggregate
     }
 
     /**
-     * Auxiliary function used to parse conditions into filters and store them in a _parts
+     * Auxiliary function used to parse conditions into boo query and store them in a _parts
      * variable.
      *
-     * @param string $type The name of the part in which the filters will be stored
-     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param string $type The name of the part in which the bool query will be stored
+     * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous filters.
      * @return $this
      */
-    protected function _buildFilter($type, $conditions, $overwrite)
+    protected function _buildBoolMustQuery($type, $conditions, $overwrite)
     {
         if ($this->_parts[$type] === null || $overwrite) {
-            $this->_parts[$type] = new BoolFilter;
+            $this->_parts[$type] = new ElasticaQuery\BoolQuery();
         }
-
-        if ($conditions instanceof AbstractFilter) {
+        
+        if ($conditions instanceof AbstractQuery) {
             $this->_parts[$type]->addMust($conditions);
             return $this;
         }
 
         if (is_callable($conditions)) {
-            $conditions = $conditions(new FilterBuilder, $this->_parts[$type], $this);
+            $conditions = $conditions(new QueryBuilder, $this->_parts[$type], $this);
         }
 
         if ($conditions === null) {
             return $this;
         }
-
+        
         if (is_array($conditions)) {
-            $conditions = (new FilterBuilder)->parse($conditions);
+            $conditions = (new QueryBuilder)->parse($conditions);
             array_map([$this->_parts[$type], 'addMust'], $conditions);
             return $this;
         }
@@ -522,17 +520,17 @@ class Query implements IteratorAggregate
                 $this->_elasticQuery->addAggregation($aggregation);
             }
         }
+        
+        $filteredBoolQuery = new ElasticaQuery\BoolQuery();
 
-        $filteredQuery = new FilteredQuery();
-
-        if ($this->_parts['query'] !== null) {
-            $filteredQuery->setQuery($this->_parts['query']);
-            $this->_elasticQuery->setQuery($filteredQuery);
-        }
+//        if ($this->_parts['query'] !== null) {
+//            $filteredQuery->setQuery($this->_parts['query']);
+//            $this->_elasticQuery->setQuery($filteredQuery);
+//        }
 
         if ($this->_parts['preFilter'] !== null) {
-            $filteredQuery->setFilter($this->_parts['preFilter']);
-            $this->_elasticQuery->setQuery($filteredQuery);
+            $filteredBoolQuery->addFilter($this->_parts['preFilter']);
+            $this->_elasticQuery->setQuery($filteredBoolQuery);
         }
 
         if ($this->_parts['postFilter'] !== null) {

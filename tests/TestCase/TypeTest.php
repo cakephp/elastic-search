@@ -556,6 +556,10 @@ class TypeTest extends TestCase
     public function testDeleteAll()
     {
         $result = $this->type->deleteAll(['title' => 'article']);
+
+        //TODO : Not Sure
+        ConnectionManager::get('test')->getIndex()->refresh();
+
         $this->assertTrue($result);
         $this->assertEquals(0, $this->type->find()->count());
     }
@@ -568,6 +572,10 @@ class TypeTest extends TestCase
     public function testDeleteAllOnlySome()
     {
         $result = $this->type->deleteAll(['body' => 'cake']);
+        
+        //TODO : Not Sure
+        ConnectionManager::get('test')->getIndex()->refresh();
+
         $this->assertTrue($result);
         $this->assertEquals(1, $this->type->find()->count());
     }
