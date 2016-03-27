@@ -585,16 +585,12 @@ class QueryBuilderTest extends TestCase
     public function testRegexp()
     {
         $builder = new QueryBuilder;
-        $result = $builder->regexp('name.first', 'mar[c|k]', [
-            'flags' => 'INTERSECTION|COMPLEMENT|EMPTY',
-            'max_determinized_states' => 200
-        ]);
+        $result = $builder->regexp('name.first', 'mar[c|k]', 2.0);
         $expected = [
             'regexp' => [
                 'name.first' => [
                     'value' => 'mar[c|k]',
-                    'flags' => 'INTERSECTION|COMPLEMENT|EMPTY',
-                    'max_determinized_states' => 200
+                    'boost' => 2.0
                 ]
             ]
         ];

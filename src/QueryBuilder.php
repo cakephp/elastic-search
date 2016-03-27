@@ -482,13 +482,13 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param string $regexp The regular expression.
-     * @param array $options Regultar expression flags or options.
+     * @param float $boost Boost
      * @return \Elastica\Query\Regexp
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/2.2/query-dsl-regexp-query.html
      */
-    public function regexp($field, $regexp, array $options = [])
+    public function regexp($field, $regexp, $boost = 1.0)
     {
-        return new Elastica\Query\Regexp($field, $regexp, $options);
+        return new Elastica\Query\Regexp($field, $regexp, $boost);
     }
 
     /**
