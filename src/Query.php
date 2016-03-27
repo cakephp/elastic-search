@@ -53,16 +53,18 @@ class Query implements IteratorAggregate
      *
      * @var array
      */
-    protected $_parts = [
+    protected $_queryParts = [
         'fields' => [],
-        'preFilter' => null,
-        'postFilter' => null,
-        'highlight' => null,
-        'query' => null,
-        'order' => [],
         'limit' => null,
         'offset' => null,
-        'aggregations' => []
+        'order' => [],
+        'highlight' => null,
+        'aggregations' => [],
+
+        'search' => null,
+        'query' => null,
+        'filter' => null,
+        'postFilter' => null,
     ];
 
     /**
@@ -107,9 +109,9 @@ class Query implements IteratorAggregate
     public function select(array $fields, $overwrite = false)
     {
         if (!$overwrite) {
-            $fields = array_merge($this->_parts['fields'], $fields);
+            $fields = array_merge($this->_queryParts['fields'], $fields);
         }
-        $this->_parts['fields'] = $fields;
+        $this->_queryParts['fields'] = $fields;
         return $this;
     }
 
@@ -122,7 +124,7 @@ class Query implements IteratorAggregate
      */
     public function limit($limit)
     {
-        $this->_parts['limit'] = (int)$limit;
+        $this->_queryParts['limit'] = (int)$limit;
         return $this;
     }
 
@@ -135,7 +137,7 @@ class Query implements IteratorAggregate
      */
     public function offset($num)
     {
-        $this->_parts['offset'] = (int)$num;
+        $this->_queryParts['offset'] = (int)$num;
         return $this;
     }
 
@@ -175,14 +177,15 @@ class Query implements IteratorAggregate
      * Returns any data that was stored in the specified clause. This is useful for
      * modifying any internal part of the query and it is used during compiling
      * to transform the query accordingly before it is executed. The valid clauses that
-     * can be retrieved are: fields, preFilter, postFilter, query, order, limit and offset.
+     * can be retrieved are: fields, filter, postFilter, query, order, limit and offset.
      *
      * The return value for each of those parts may vary. Some clauses use QueryExpression
      * to internally store their state, some use arrays and others may use booleans or
      * integers. This is summary of the return types for each clause.
      *
      * - fields: array, will return empty array when no fields are set
-     * - preFilter: The query to use in a BoolQuery filter object, returns null when not set
+     * - search: The query to use in the final BoolQuery must object, returns null when not set
+     * - filter: The query to use in the final BoolQuery filter object, returns null when not set
      * - postFilter: The query to use in the post_filter object, returns null when not set
      * - query: Raw query (Elastica\Query\AbstractQuery), return null when not set
      * - order: OrderByExpression, returns null when not set
@@ -194,7 +197,7 @@ class Query implements IteratorAggregate
      */
     public function clause($name)
     {
-        return $this->_parts[$name];
+        return $this->_queryParts[$name];
     }
 
     /**
@@ -215,10 +218,10 @@ class Query implements IteratorAggregate
         // [['field' => [...]], ['field2' => [...]]]
         if (is_array($order) && is_numeric(key($order))) {
             if ($overwrite) {
-                $this->_parts['order'] = $order;
+                $this->_queryParts['order'] = $order;
                 return $this;
             }
-            $this->_parts['order'] = array_merge($order, $this->_parts['order']);
+            $this->_queryParts['order'] = array_merge($order, $this->_queryParts['order']);
             return $this;
         }
 
@@ -237,10 +240,10 @@ class Query implements IteratorAggregate
         $order = collection($order)->map($normalizer)->toList();
 
         if (!$overwrite) {
-            $order = array_merge($this->_parts['order'], $order);
+            $order = array_merge($this->_queryParts['order'], $order);
         }
 
-        $this->_parts['order'] = $order;
+        $this->_queryParts['order'] = $order;
         return $this;
     }
 
@@ -255,8 +258,8 @@ class Query implements IteratorAggregate
     }
 
     /**
-     * Sets the filter to use in a BoolQuery filter object. Queries added using this method
-     * will be stacked on a bool query and applied to the filter part of a filtered query.
+     * Sets the filter to use in the query object. Queries added using this method
+     * will be stacked on a bool query and applied to the filter part of the final BoolQuery.
      *
      * There are several way in which you can use this method. The easiest one is by passing
      * a simple array of conditions:
@@ -294,11 +297,27 @@ class Query implements IteratorAggregate
      * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
-     * @see Cake\ElasticSearch\FilterBuilder
+     * @see Cake\ElasticSearch\QueryBuilder
      */
     public function where($conditions, $overwrite = false)
     {
-        return $this->_buildBoolMustQuery('preFilter', $conditions, $overwrite);
+        return $this->_buildBoolQuery('filter', $conditions, $overwrite);
+    }
+    
+    /**
+     * Sets the main query to use. Queries added using this method
+     * will be stacked on a bool query and applied to the must part of the final BoolQuery.
+     *
+     * This method can be used in the same way the `where()` method is used. Please refer to
+     * its documentation for more details.
+     *
+     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The lsit of conditions
+     * @param bool $overwrite Whether or not to replace previous queries.
+     * @return Query
+     */
+    public function search($conditions, $overwrite = false)
+    {
+        return $this->_buildBoolQuery('search', $conditions, $overwrite);
     }
 
     /**
@@ -315,18 +334,18 @@ class Query implements IteratorAggregate
      */
     public function postFilter($conditions, $overwrite = false)
     {
-        return $this->_buildBoolMustQuery('postFilter', $conditions, $overwrite);
+        return $this->_buildBoolQuery('postFilter', $conditions, $overwrite);
     }
-
+    
     /**
-     * Method to set the query
+     * Method to set or overwrite the query
      *
-     * @param array $matcher Set the query parts
+     * @param AbstractQuery $query Set the query
      * @return $this
      */
-    public function query($matcher)
+    public function query(AbstractQuery $query)
     {
-        $this->_parts['query'] = $matcher;
+        $this->_queryParts['query'] = $query;
         return $this;
     }
 
@@ -343,7 +362,7 @@ class Query implements IteratorAggregate
                 $this->aggregate($aggregationItem);
             }
         } else {
-            $this->_parts['aggregations'][] = $aggregation;
+            $this->_queryParts['aggregations'][] = $aggregation;
         }
 
         return $this;
@@ -366,27 +385,27 @@ class Query implements IteratorAggregate
     }
 
     /**
-     * Auxiliary function used to parse conditions into boo query and store them in a _parts
+     * Auxiliary function used to parse conditions into bool query and store them in a _queryParts
      * variable.
      *
-     * @param string $type The name of the part in which the bool query will be stored
+     * @param string $partType The name of the part in which the bool query will be stored
      * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
-     * @param bool $overwrite Whether or not to replace previous filters.
+     * @param bool $overwrite Whether or not to replace previous query.
      * @return $this
      */
-    protected function _buildBoolMustQuery($type, $conditions, $overwrite)
+    protected function _buildBoolQuery($partType, $conditions, $overwrite)
     {
-        if ($this->_parts[$type] === null || $overwrite) {
-            $this->_parts[$type] = new ElasticaQuery\BoolQuery();
+        if ($this->_queryParts[$partType] === null || $overwrite) {
+            $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
         }
         
         if ($conditions instanceof AbstractQuery) {
-            $this->_parts[$type]->addMust($conditions);
+            $this->_queryParts[$partType]->addMust($conditions);
             return $this;
         }
 
         if (is_callable($conditions)) {
-            $conditions = $conditions(new QueryBuilder, $this->_parts[$type], $this);
+            $conditions = $conditions(new QueryBuilder, $this->_queryParts[$partType], $this);
         }
 
         if ($conditions === null) {
@@ -395,11 +414,11 @@ class Query implements IteratorAggregate
         
         if (is_array($conditions)) {
             $conditions = (new QueryBuilder)->parse($conditions);
-            array_map([$this->_parts[$type], 'addMust'], $conditions);
+            array_map([$this->_queryParts[$partType], 'addMust'], $conditions);
             return $this;
         }
 
-        $this->_parts[$type]->addMust($conditions);
+        $this->_queryParts[$partType]->addMust($conditions);
         return $this;
     }
 
@@ -469,7 +488,7 @@ class Query implements IteratorAggregate
      */
     public function highlight(array $highlight)
     {
-        $this->_parts['highlight'] = $highlight;
+        $this->_queryParts['highlight'] = $highlight;
         return $this;
     }
 
@@ -495,46 +514,50 @@ class Query implements IteratorAggregate
      */
     public function compileQuery()
     {
-        if ($this->_parts['fields']) {
-            $this->_elasticQuery->setSource($this->_parts['fields']);
+        if ($this->_queryParts['fields']) {
+            $this->_elasticQuery->setSource($this->_queryParts['fields']);
         }
 
-        if (isset($this->_parts['limit'])) {
-            $this->_elasticQuery->setSize($this->_parts['limit']);
+        if (isset($this->_queryParts['limit'])) {
+            $this->_elasticQuery->setSize($this->_queryParts['limit']);
         }
 
-        if (isset($this->_parts['offset'])) {
-            $this->_elasticQuery->setFrom($this->_parts['offset']);
+        if (isset($this->_queryParts['offset'])) {
+            $this->_elasticQuery->setFrom($this->_queryParts['offset']);
         }
 
-        if ($this->_parts['order']) {
-            $this->_elasticQuery->setSort($this->_parts['order']);
+        if ($this->_queryParts['order']) {
+            $this->_elasticQuery->setSort($this->_queryParts['order']);
         }
 
-        if ($this->_parts['highlight']) {
-            $this->_elasticQuery->setHighlight($this->_parts['highlight']);
+        if ($this->_queryParts['highlight']) {
+            $this->_elasticQuery->setHighlight($this->_queryParts['highlight']);
         }
 
-        if ($this->_parts['aggregations']) {
-            foreach ($this->_parts['aggregations'] as $aggregation) {
+        if ($this->_queryParts['aggregations']) {
+            foreach ($this->_queryParts['aggregations'] as $aggregation) {
                 $this->_elasticQuery->addAggregation($aggregation);
             }
         }
         
         $filteredBoolQuery = new ElasticaQuery\BoolQuery();
 
-//        if ($this->_parts['query'] !== null) {
-//            $filteredQuery->setQuery($this->_parts['query']);
-//            $this->_elasticQuery->setQuery($filteredQuery);
-//        }
-
-        if ($this->_parts['preFilter'] !== null) {
-            $filteredBoolQuery->addFilter($this->_parts['preFilter']);
+        if ($this->_queryParts['search'] !== null) {
+            $filteredBoolQuery->addMust($this->_queryParts['search']);
             $this->_elasticQuery->setQuery($filteredBoolQuery);
         }
 
-        if ($this->_parts['postFilter'] !== null) {
-            $this->_elasticQuery->setPostFilter($this->_parts['postFilter']);
+        if ($this->_queryParts['filter'] !== null) {
+            $filteredBoolQuery->addFilter($this->_queryParts['filter']);
+            $this->_elasticQuery->setQuery($filteredBoolQuery);
+        }
+
+        if ($this->_queryParts['query'] !== null) {
+            $this->_elasticQuery->setQuery($this->_queryParts['query']);
+        }
+
+        if ($this->_queryParts['postFilter'] !== null) {
+            $this->_elasticQuery->setPostFilter($this->_queryParts['postFilter']);
         }
 
         return $this->_elasticQuery;
