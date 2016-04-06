@@ -30,9 +30,10 @@ class TypeTest extends TestCase
     public function setUp()
     {
         parent::setUp();
+        $this->connection = ConnectionManager::get('test');
         $this->type = new Type([
             'name' => 'articles',
-            'connection' => ConnectionManager::get('test')
+            'connection' => $this->connection
         ]);
     }
 
@@ -556,6 +557,9 @@ class TypeTest extends TestCase
     public function testDeleteAll()
     {
         $result = $this->type->deleteAll(['title' => 'article']);
+        
+        $this->connection->getIndex()->refresh();
+
         $this->assertTrue($result);
         $this->assertEquals(0, $this->type->find()->count());
     }
@@ -568,6 +572,9 @@ class TypeTest extends TestCase
     public function testDeleteAllOnlySome()
     {
         $result = $this->type->deleteAll(['body' => 'cake']);
+        
+        $this->connection->getIndex()->refresh();
+
         $this->assertTrue($result);
         $this->assertEquals(1, $this->type->find()->count());
     }

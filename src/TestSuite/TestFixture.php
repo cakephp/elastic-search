@@ -69,7 +69,7 @@ class TestFixture implements FixtureInterface
     public $created = [];
 
     /**
-     * Create the mapping for the type.
+     * Create index and mapping for the type.
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
      * @return void
@@ -79,10 +79,12 @@ class TestFixture implements FixtureInterface
         if (empty($this->schema)) {
             return;
         }
+
         $index = $db->getIndex();
-        if (!$index->exists()) {
-            $index->create();
+        if ($index->exists()) {
+            $index->delete();
         }
+        $index->create();
 
         $type = $index->getType($this->table);
         $mapping = new ElasticaMapping();
@@ -120,7 +122,7 @@ class TestFixture implements FixtureInterface
     }
 
     /**
-     * Drops a mapping and all its related data.
+     * Drops the index
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
      * @return void
@@ -128,9 +130,10 @@ class TestFixture implements FixtureInterface
     public function drop(ConnectionInterface $db)
     {
         $index = $db->getIndex();
-        $type = $index->getType($this->table);
-        $type->delete();
-        $index->refresh();
+        
+        if ($index->exists()) {
+            $index->delete();
+        }
     }
 
     /**
