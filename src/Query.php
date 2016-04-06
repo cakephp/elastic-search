@@ -45,6 +45,12 @@ class Query implements IteratorAggregate
      */
     const OVERWRITE = true;
 
+    /**
+     * The Elastica Query object that is to be executed after
+     * being built.
+     *
+     * @var \Elastica\Query
+     */
     protected $_elasticQuery;
 
     /**
@@ -303,7 +309,7 @@ class Query implements IteratorAggregate
     {
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
-    
+
     /**
      * Sets the main query to use. Queries added using this method
      * will be stacked on a bool query and applied to the must part of the final BoolQuery.
@@ -336,7 +342,7 @@ class Query implements IteratorAggregate
     {
         return $this->_buildBoolQuery('postFilter', $conditions, $overwrite);
     }
-    
+
     /**
      * Method to set or overwrite the query
      *
@@ -398,7 +404,7 @@ class Query implements IteratorAggregate
         if ($this->_queryParts[$partType] === null || $overwrite) {
             $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
         }
-        
+
         if ($conditions instanceof AbstractQuery) {
             $this->_queryParts[$partType]->addMust($conditions);
             return $this;
@@ -411,7 +417,7 @@ class Query implements IteratorAggregate
         if ($conditions === null) {
             return $this;
         }
-        
+
         if (is_array($conditions)) {
             $conditions = (new QueryBuilder)->parse($conditions);
             array_map([$this->_queryParts[$partType], 'addMust'], $conditions);
@@ -539,7 +545,7 @@ class Query implements IteratorAggregate
                 $this->_elasticQuery->addAggregation($aggregation);
             }
         }
-        
+
         $filteredBoolQuery = new ElasticaQuery\BoolQuery();
 
         if ($this->_queryParts['search'] !== null) {
