@@ -188,12 +188,9 @@ class Query implements IteratorAggregate
      * integers. This is summary of the return types for each clause.
      *
      * - fields: array, will return empty array when no fields are set
-     * - must: The list of queries to be added to the "must" part of the BoolQuery
-     * - should: The list of queries to be added to the "should" part of the BoolQuery
-     * - mustNot: The list of queries to be added to the "must_not" part of the BoolQuery
+     * - query: The final BoolQuery to be used in the query (with scoring) part.
      * - filter: The query to use in the final BoolQuery filter object, returns null when not set
      * - postFilter: The query to use in the post_filter object, returns null when not set
-     * - query: Raw query (Elastica\Query\AbstractQuery), return null when not set
      * - order: OrderByExpression, returns null when not set
      * - limit: integer, null when not set
      * - offset: integer, null when not set
@@ -266,6 +263,9 @@ class Query implements IteratorAggregate
     /**
      * Sets the filter to use in the query object. Queries added using this method
      * will be stacked on a bool query and applied to the filter part of the final BoolQuery.
+     *
+     * Filters added with this method will have no effect in the final score of the documents,
+     * and the documents that do not match the specified filters will be left out.
      *
      * There are several way in which you can use this method. The easiest one is by passing
      * a simple array of conditions:
