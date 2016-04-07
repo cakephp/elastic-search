@@ -51,60 +51,6 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Tests that executing a query means executing a search against the associated
-     * Type and decorates the internal ResultSet
-     *
-     * @return void
-     */
-    public function testAll()
-    {
-        $connection = $this->getMock(
-            'Cake\ElasticSearch\Datasource\Connection',
-            ['getIndex']
-        );
-        $type = new Type([
-            'name' => 'foo',
-            'connection' => $connection
-        ]);
-
-        $index = $this->getMockBuilder('Elastica\Index')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $internalType = $this->getMockBuilder('Elastica\Type')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $connection->expects($this->once())
-            ->method('getIndex')
-            ->will($this->returnValue($index));
-
-        $index->expects($this->once())
-            ->method('getType')
-            ->will($this->returnValue($internalType));
-
-        $result = $this->getMockBuilder('Elastica\ResultSet')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $internalQuery = $this->getMockBuilder('Elastica\Query')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $internalType->expects($this->once())
-            ->method('search')
-            ->will($this->returnCallback(function ($query) use ($result) {
-                $this->assertEquals(new \Elastica\Query, $query);
-                return $result;
-            }));
-
-        $query = new Query($type);
-        $resultSet = $query->all();
-        $this->assertInstanceOf('Cake\ElasticSearch\ResultSet', $resultSet);
-        $this->assertSame($result, $resultSet->getInnerIterator());
-    }
-
-    /**
      * Test that query overwrite any query
      */
     public function testQuery()
@@ -414,7 +360,7 @@ class QueryTest extends TestCase
 
         $compiled = $query->compileQuery()->toArray();
 
-        $must = $compiled['query']['bool']['must'][0]['bool']['must'];
+        $must = $compiled['query']['bool']['must'];
 
         $expected = ['term' => ['name.first' => 'jose']];
         $this->assertEquals($expected, $must[0]);
@@ -442,7 +388,7 @@ class QueryTest extends TestCase
         });
 
         $compiled = $query->compileQuery()->toArray();
-        $must = $compiled['query']['bool']['must'][0]['bool']['must'];
+        $must = $compiled['query']['bool']['must'];
         $must = $must[3]['bool']['must'];
         $expected = [
             ['term' => ['another.thing' => 'value']],
@@ -452,7 +398,7 @@ class QueryTest extends TestCase
 
         $query->search(['name.first' => 'jose'], true);
         $compiled = $query->compileQuery()->toArray();
-        $must = $compiled['query']['bool']['must'][0]['bool']['must'];
+        $must = $compiled['query']['bool']['must'];
         $expected = ['term' => ['name.first' => 'jose']];
         $this->assertEquals([$expected], $must);
     }
