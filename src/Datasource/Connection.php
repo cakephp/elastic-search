@@ -49,6 +49,9 @@ class Connection extends Client implements ConnectionInterface
         if (isset($config['name'])) {
             $this->configName = $config['name'];
         }
+        if (isset($config['log'])) {
+            $this->logQueries((bool)$config['log']);
+        }
         parent::__construct($config, $callback);
     }
 

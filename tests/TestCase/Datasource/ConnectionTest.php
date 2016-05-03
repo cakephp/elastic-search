@@ -47,4 +47,19 @@ class ConnectionTest extends TestCase
         $index = $connection->getIndex('baz');
         $this->assertEquals('baz', $index->getName());
     }
+
+    /**
+     * Ensure the log option works via the constructor
+     *
+     * @return void
+     */
+    public function testConstructLogOption()
+    {
+        $connection = new Connection();
+        $this->assertFalse($connection->logQueries());
+
+        $opts = ['log' => true];
+        $connection = new Connection($opts);
+        $this->assertTrue($connection->logQueries());
+    }
 }
