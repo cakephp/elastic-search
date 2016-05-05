@@ -16,7 +16,9 @@ namespace Cake\ElasticSearch\Datasource;
 
 use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionInterface;
+use Cake\Log\Log;
 use Elastica\Client;
+use Elastica\Log as ElasticaLog;
 use Elastica\Request;
 
 class Connection extends Client implements ConnectionInterface
@@ -181,6 +183,9 @@ class Connection extends Client implements ConnectionInterface
         if (!$this->logQueries) {
             return;
         }
+        if (!isset($this->_logger)) {
+            $this->_logger = Log::engine('elasticsearch') ?: new ElasticaLog();
+        }
 
         if ($context instanceof Request) {
             $data = $context->toArray();
@@ -196,6 +201,6 @@ class Connection extends Client implements ConnectionInterface
         $data = json_encode($logData, JSON_PRETTY_PRINT);
         $loggedQuery = new LoggedQuery();
         $loggedQuery->query = $data;
-        $this->_logger->log($loggedQuery);
+        $this->_logger->log('debug', $loggedQuery);
     }
 }
