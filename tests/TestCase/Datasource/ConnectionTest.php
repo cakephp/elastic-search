@@ -15,6 +15,8 @@
 namespace Cake\ElasticSearch\Test\Datasource;
 
 use Cake\ElasticSearch\Datasource\Connection;
+use Cake\Datasource\ConnectionManager;
+use Cake\Log\Log;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -61,5 +63,24 @@ class ConnectionTest extends TestCase
         $opts = ['log' => true];
         $connection = new Connection($opts);
         $this->assertTrue($connection->logQueries());
+    }
+
+    /**
+     * Ensure that logging queries works.
+     *
+     * @return void
+     */
+    public function testQueryLogging()
+    {
+        $logger = $this->getMock('Cake\Log\Engine\BaseLog', ['log']);
+        $logger->expects($this->once())->method('log');
+        Log::config('elasticsearch', $logger);
+
+        $connection = ConnectionManager::get('test');
+        $connection->logQueries(true);
+        $result = $connection->request('_stats');
+        $connection->logQueries(false);
+
+        $this->assertNotEmpty($result);
     }
 }
