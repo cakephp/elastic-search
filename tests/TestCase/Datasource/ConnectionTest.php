@@ -14,8 +14,8 @@
  */
 namespace Cake\ElasticSearch\Test\Datasource;
 
-use Cake\ElasticSearch\Datasource\Connection;
 use Cake\Datasource\ConnectionManager;
+use Cake\ElasticSearch\Datasource\Connection;
 use Cake\Log\Log;
 use Cake\TestSuite\TestCase;
 
