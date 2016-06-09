@@ -201,6 +201,11 @@ class Connection extends Client implements ConnectionInterface
         $data = json_encode($logData, JSON_PRETTY_PRINT);
         $loggedQuery = new LoggedQuery();
         $loggedQuery->query = $data;
-        $this->_logger->log($loggedQuery);
+        
+        if ($this->_logger instanceof \Psr\Log\LoggerInterface) {
+            $this->_logger->log('debug', $loggedQuery);
+        } else {
+            $this->_logger->log($loggedQuery);
+        }
     }
 }
