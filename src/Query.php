@@ -321,7 +321,7 @@ class Query implements IteratorAggregate
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return Query
      */
-    public function query($conditions, $overwrite = false)
+    public function queryMust($conditions, $overwrite = false)
     {
         return $this->_buildBoolQuery('query', $conditions, $overwrite);
     }
