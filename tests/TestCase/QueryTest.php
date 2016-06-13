@@ -53,14 +53,14 @@ class QueryTest extends TestCase
     /**
      * Test that query overwrite any query
      */
-    public function testQuery()
+    public function testSetFullQuery()
     {
         $type = new Type();
         $query = new Query($type);
 
         $query
             ->where(['name' => 'test'])
-            ->query(new \Elastica\Query\Term(['name' => 'cake']));
+            ->setFullQuery(new \Elastica\Query\Term(['name' => 'cake']));
 
         $expected = ['query' => [
             'term' => [
@@ -345,11 +345,11 @@ class QueryTest extends TestCase
      *
      * @return void
      */
-    public function testQuery()
+    public function testQueryMust()
     {
         $type = new Type();
         $query = new Query($type);
-        $query->query([
+        $query->queryMust([
             'name.first' => 'jose',
             'age >' => 29,
             'or' => [
@@ -380,7 +380,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $must[2]['bool']['should'][1]);
 
-        $query->query(function (QueryBuilder $builder) {
+        $query->queryMust(function (QueryBuilder $builder) {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
                 $builder->exists('stuff')
@@ -396,7 +396,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $must);
 
-        $query->query(['name.first' => 'jose'], true);
+        $query->queryMust(['name.first' => 'jose'], true);
         $compiled = $query->compileQuery()->toArray();
         $must = $compiled['query']['bool']['must'];
         $expected = ['term' => ['name.first' => 'jose']];
