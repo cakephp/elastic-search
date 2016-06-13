@@ -66,8 +66,6 @@ class Query implements IteratorAggregate
         'order' => [],
         'highlight' => null,
         'aggregations' => [],
-
-        'search' => null,
         'query' => null,
         'filter' => null,
         'postFilter' => null,
@@ -190,10 +188,9 @@ class Query implements IteratorAggregate
      * integers. This is summary of the return types for each clause.
      *
      * - fields: array, will return empty array when no fields are set
-     * - search: The query to use in the final BoolQuery must object, returns null when not set
+     * - query: The final BoolQuery to be used in the query (with scoring) part.
      * - filter: The query to use in the final BoolQuery filter object, returns null when not set
      * - postFilter: The query to use in the post_filter object, returns null when not set
-     * - query: Raw query (Elastica\Query\AbstractQuery), return null when not set
      * - order: OrderByExpression, returns null when not set
      * - limit: integer, null when not set
      * - offset: integer, null when not set
@@ -267,6 +264,9 @@ class Query implements IteratorAggregate
      * Sets the filter to use in the query object. Queries added using this method
      * will be stacked on a bool query and applied to the filter part of the final BoolQuery.
      *
+     * Filters added with this method will have no effect in the final score of the documents,
+     * and the documents that do not match the specified filters will be left out.
+     *
      * There are several way in which you can use this method. The easiest one is by passing
      * a simple array of conditions:
      *
@@ -311,19 +311,19 @@ class Query implements IteratorAggregate
     }
 
     /**
-     * Sets the main query to use. Queries added using this method
+     * Modifies the query part, taking scores in account. Queries added using this method
      * will be stacked on a bool query and applied to the must part of the final BoolQuery.
      *
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The lsit of conditions
+     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return Query
      */
-    public function search($conditions, $overwrite = false)
+    public function queryMust($conditions, $overwrite = false)
     {
-        return $this->_buildBoolQuery('search', $conditions, $overwrite);
+        return $this->_buildBoolQuery('query', $conditions, $overwrite);
     }
 
     /**
@@ -349,7 +349,7 @@ class Query implements IteratorAggregate
      * @param AbstractQuery $query Set the query
      * @return $this
      */
-    public function query(AbstractQuery $query)
+    public function setFullQuery(AbstractQuery $query)
     {
         $this->_queryParts['query'] = $query;
         return $this;
@@ -397,16 +397,17 @@ class Query implements IteratorAggregate
      * @param string $partType The name of the part in which the bool query will be stored
      * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous query.
+     * @param string $type The method to use for appending the conditions to the Query
      * @return $this
      */
-    protected function _buildBoolQuery($partType, $conditions, $overwrite)
+    protected function _buildBoolQuery($partType, $conditions, $overwrite, $type = 'addMust')
     {
         if ($this->_queryParts[$partType] === null || $overwrite) {
             $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
         }
 
         if ($conditions instanceof AbstractQuery) {
-            $this->_queryParts[$partType]->addMust($conditions);
+            $this->_queryParts[$partType]->{$type}($conditions);
             return $this;
         }
 
@@ -420,11 +421,11 @@ class Query implements IteratorAggregate
 
         if (is_array($conditions)) {
             $conditions = (new QueryBuilder)->parse($conditions);
-            array_map([$this->_queryParts[$partType], 'addMust'], $conditions);
+            array_map([$this->_queryParts[$partType], $type], $conditions);
             return $this;
         }
 
-        $this->_queryParts[$partType]->addMust($conditions);
+        $this->_queryParts[$partType]->{$type}($conditions);
         return $this;
     }
 
@@ -546,26 +547,21 @@ class Query implements IteratorAggregate
             }
         }
 
-        $filteredBoolQuery = new ElasticaQuery\BoolQuery();
-
-        if ($this->_queryParts['search'] !== null) {
-            $filteredBoolQuery->addMust($this->_queryParts['search']);
-            $this->_elasticQuery->setQuery($filteredBoolQuery);
+        if ($this->_queryParts['query'] === null) {
+            $this->_queryParts['query'] = new ElasticaQuery\BoolQuery();
         }
 
-        if ($this->_queryParts['filter'] !== null) {
-            $filteredBoolQuery->addFilter($this->_queryParts['filter']);
-            $this->_elasticQuery->setQuery($filteredBoolQuery);
-        }
+        $query = clone $this->_queryParts['query'];
 
-        if ($this->_queryParts['query'] !== null) {
-            $this->_elasticQuery->setQuery($this->_queryParts['query']);
+        if ($query instanceof ElasticaQuery\BoolQuery && $this->_queryParts['filter'] !== null) {
+            $query->addFilter($this->_queryParts['filter']);
         }
 
         if ($this->_queryParts['postFilter'] !== null) {
             $this->_elasticQuery->setPostFilter($this->_queryParts['postFilter']);
         }
 
+        $this->_elasticQuery->setQuery($query);
         return $this->_elasticQuery;
     }
 }
