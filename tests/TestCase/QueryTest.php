@@ -341,15 +341,15 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Tests the search() method
+     * Tests the query() method
      *
      * @return void
      */
-    public function testSearch()
+    public function testQuery()
     {
         $type = new Type();
         $query = new Query($type);
-        $query->search([
+        $query->query([
             'name.first' => 'jose',
             'age >' => 29,
             'or' => [
@@ -380,7 +380,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $must[2]['bool']['should'][1]);
 
-        $query->search(function (QueryBuilder $builder) {
+        $query->query(function (QueryBuilder $builder) {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
                 $builder->exists('stuff')
@@ -396,7 +396,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $must);
 
-        $query->search(['name.first' => 'jose'], true);
+        $query->query(['name.first' => 'jose'], true);
         $compiled = $query->compileQuery()->toArray();
         $must = $compiled['query']['bool']['must'];
         $expected = ['term' => ['name.first' => 'jose']];
