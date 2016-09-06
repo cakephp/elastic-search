@@ -418,6 +418,26 @@ class TypeTest extends TestCase
     }
 
     /**
+     * Test to make sure double save works correctly
+     *
+     * @return void
+     */
+    public function testDoubleSave()
+    {
+        $doc = new Document([
+            'title' => 'A brand new article',
+            'body' => 'Some new content'
+        ], ['markNew' => true]);
+        $this->assertSame($doc, $this->type->save($doc));
+        $this->assertNotEmpty($doc->id, 'Should get an id');
+        $this->assertNotEmpty($doc->_version, 'Should get a version');
+
+        $this->assertSame($doc, $this->type->save($doc));
+        $this->assertNotEmpty($doc->id, 'Should get an id');
+        $this->assertNotEmpty($doc->_version, 'Should get a version');
+    }
+
+    /**
      * Test deleting a document.
      *
      * @return void

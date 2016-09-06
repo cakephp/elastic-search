@@ -53,6 +53,11 @@ a connection:
     ]
 ```
 
+You can enable request logging by setting the `log` config option to true. By
+default, `Elastica\Log` will be used, which logs via `error_log`. You can also
+define an `elasticsearch` log profile in `Cake\Log\Log` to customize where
+elasticsearch query logs will go. Query logging is done at a 'debug' level.
+
 ## Getting a Type object
 
 Type objects are the equivalent of `ORM\Table` instances in elastic search. You can

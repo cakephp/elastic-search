@@ -188,6 +188,7 @@ class Marshaller
      *
      * * fieldList: A whitelist of fields to be assigned to the entity. If not present
      *   the accessible fields list in the entity will be used.
+     * * associated: A list of embedded documents you want to marshal.
      *
      * @param \Cake\Datasource\EntityInterface $entity the entity that will get the
      * data merged in
@@ -197,6 +198,7 @@ class Marshaller
      */
     public function merge(EntityInterface $entity, array $data, array $options = [])
     {
+        $options += ['associated' => []];
         list($data, $options) = $this->_prepareDataAndOptions($data, $options);
         $errors = $this->_validate($data, $options, $entity->isNew());
         $entity->errors($errors);

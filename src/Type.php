@@ -470,7 +470,8 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         $id = $entity->id ?: null;
 
         $data = $entity->toArray();
-        unset($data[$id]);
+        unset($data['id'], $data['_version']);
+
         $doc = new ElasticaDocument($id, $data);
         $doc->setAutoPopulate(true);
 
