@@ -139,6 +139,7 @@ class DocumentContext implements ContextInterface
     public function isPrimaryKey($field)
     {
         $parts = explode('.', $field);
+
         return array_pop($parts) === 'id';
     }
 
@@ -154,6 +155,7 @@ class DocumentContext implements ContextInterface
         if ($entity instanceof Document) {
             return $entity->isNew() !== false;
         }
+
         return true;
     }
 
@@ -250,6 +252,7 @@ class DocumentContext implements ContextInterface
                     return $val;
                 }
             }
+
             return false;
         }
     }
@@ -274,6 +277,7 @@ class DocumentContext implements ContextInterface
         if ($this->type($field) !== 'boolean') {
             return $validator->isEmptyAllowed($field, $isNew) === false;
         }
+
         return false;
     }
 
@@ -293,6 +297,7 @@ class DocumentContext implements ContextInterface
     public function fieldNames()
     {
         $schema = $this->_context['type']->schema();
+
         return $schema->fields();
     }
 
@@ -302,6 +307,7 @@ class DocumentContext implements ContextInterface
     public function type($field)
     {
         $schema = $this->_context['type']->schema();
+
         return $schema->fieldType($field);
     }
 
@@ -332,6 +338,7 @@ class DocumentContext implements ContextInterface
         if ($entity instanceof Document) {
             return $entity->errors(array_pop($parts));
         }
+
         return [];
     }
 }

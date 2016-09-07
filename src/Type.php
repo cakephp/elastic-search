@@ -208,6 +208,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         if ($conn === null) {
             return $this->_connection;
         }
+
         return $this->_connection = $conn;
     }
 
@@ -275,6 +276,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     public function find($type = 'all', $options = [])
     {
         $query = $this->query();
+
         return $this->callFinder($type, $query, $options);
     }
 
@@ -407,6 +409,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         $query->where($conditions);
         $type = $this->connection()->getIndex()->getType($this->name());
         $response = $type->deleteByQuery($query->compileQuery());
+
         return $response->isOk();
     }
 
@@ -428,6 +431,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             $query->where($conditions);
         }
         $type = $this->connection()->getIndex()->getType($this->name());
+
         return $type->count($query->compileQuery()) > 0;
     }
 
@@ -487,6 +491,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             'entity' => $entity,
             'options' => $options
         ]);
+
         return $entity;
     }
 
@@ -533,6 +538,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             'entity' => $entity,
             'options' => $options
         ]);
+
         return $result->isOk();
     }
 
@@ -558,8 +564,10 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     {
         if ($data === null) {
             $class = $this->entityClass();
+
             return new $class([], ['source' => $this->name()]);
         }
+
         return $this->marshaller()->one($data, $options);
     }
 
@@ -642,6 +650,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     public function patchEntity(EntityInterface $entity, array $data, array $options = [])
     {
         $marshaller = $this->marshaller();
+
         return $marshaller->merge($entity, $data, $options);
     }
 
@@ -666,6 +675,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     public function patchEntities($entities, array $data, array $options = [])
     {
         $marshaller = $this->marshaller();
+
         return $marshaller->mergeMany($entities, $data, $options);
     }
 
@@ -686,6 +696,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         $name = $this->name();
         $type = $this->connection()->getIndex()->getType($name);
         $this->schema = new MappingSchema($name, $type->getMapping());
+
         return $this->schema;
     }
 
@@ -698,6 +709,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     public function hasField($field)
     {
         $mapping = $this->schema();
+
         return $mapping->field($field) !== null;
     }
 
@@ -743,6 +755,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             }
             $events[$event] = $method;
         }
+
         return $events;
     }
 

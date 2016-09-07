@@ -427,6 +427,7 @@ class FilterBuilder
         if ($filter instanceof AbstractQuery) {
             $nested->setQuery($filter);
         }
+
         return $nested;
     }
 

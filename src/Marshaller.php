@@ -88,6 +88,7 @@ class Marshaller
 
         if (!isset($options['fieldList'])) {
             $entity->set($data);
+
             return $entity;
         }
 
@@ -96,6 +97,7 @@ class Marshaller
                 $entity->set($field, $data[$field]);
             }
         }
+
         return $entity;
     }
 
@@ -119,6 +121,7 @@ class Marshaller
                     $children[] = new $class($row);
                 }
             }
+
             return $children;
         }
     }
@@ -139,6 +142,7 @@ class Marshaller
                 $existing = new $class();
             }
             $existing->set($data);
+
             return $existing;
         }
         if ($embed->type() === Embedded::ONE_TO_MANY) {
@@ -155,6 +159,7 @@ class Marshaller
                     $existing[] = $new;
                 }
             }
+
             return $existing;
         }
     }
@@ -178,6 +183,7 @@ class Marshaller
         foreach ($data as $record) {
             $output[] = $this->one($record, $options);
         }
+
         return $output;
     }
 
@@ -218,6 +224,7 @@ class Marshaller
 
         if (!isset($options['fieldList'])) {
             $entity->set($data);
+
             return $entity;
         }
 
@@ -226,6 +233,7 @@ class Marshaller
                 $entity->set($field, $data[$field]);
             }
         }
+
         return $entity;
     }
 
@@ -277,6 +285,7 @@ class Marshaller
         foreach ($new as $newRecord) {
             $output[] = $this->one($newRecord, $options);
         }
+
         return $output;
     }
 

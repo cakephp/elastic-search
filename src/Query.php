@@ -112,6 +112,7 @@ class Query implements IteratorAggregate
             $fields = array_merge($this->_parts['fields'], $fields);
         }
         $this->_parts['fields'] = $fields;
+
         return $this;
     }
 
@@ -125,6 +126,7 @@ class Query implements IteratorAggregate
     public function limit($limit)
     {
         $this->_parts['limit'] = (int)$limit;
+
         return $this;
     }
 
@@ -138,6 +140,7 @@ class Query implements IteratorAggregate
     public function offset($num)
     {
         $this->_parts['offset'] = (int)$num;
+
         return $this;
     }
 
@@ -170,6 +173,7 @@ class Query implements IteratorAggregate
             $offset = PHP_INT_MAX;
         }
         $this->offset((int)$offset);
+
         return $this;
     }
 
@@ -218,9 +222,11 @@ class Query implements IteratorAggregate
         if (is_array($order) && is_numeric(key($order))) {
             if ($overwrite) {
                 $this->_parts['order'] = $order;
+
                 return $this;
             }
             $this->_parts['order'] = array_merge($order, $this->_parts['order']);
+
             return $this;
         }
 
@@ -233,6 +239,7 @@ class Query implements IteratorAggregate
             if (is_string($order)) {
                 return [$key => ['order' => $order]];
             }
+
             return [$key => $order];
         };
 
@@ -243,6 +250,7 @@ class Query implements IteratorAggregate
         }
 
         $this->_parts['order'] = $order;
+
         return $this;
     }
 
@@ -329,6 +337,7 @@ class Query implements IteratorAggregate
     public function query($matcher)
     {
         $this->_parts['query'] = $matcher;
+
         return $this;
     }
 
@@ -364,6 +373,7 @@ class Query implements IteratorAggregate
         }
 
         $this->_searchOptions = $options;
+
         return $this;
     }
 
@@ -384,6 +394,7 @@ class Query implements IteratorAggregate
 
         if ($conditions instanceof AbstractFilter) {
             $this->_parts[$type]->addMust($conditions);
+
             return $this;
         }
 
@@ -398,10 +409,12 @@ class Query implements IteratorAggregate
         if (is_array($conditions)) {
             $conditions = (new FilterBuilder)->parse($conditions);
             array_map([$this->_parts[$type], 'addMust'], $conditions);
+
             return $this;
         }
 
         $this->_parts[$type]->addMust($conditions);
+
         return $this;
     }
 
@@ -472,6 +485,7 @@ class Query implements IteratorAggregate
     public function highlight(array $highlight)
     {
         $this->_parts['highlight'] = $highlight;
+
         return $this;
     }
 
@@ -487,6 +501,7 @@ class Query implements IteratorAggregate
         $type = $connection->getIndex()->getType($name);
 
         $query = $this->compileQuery();
+
         return new ResultSet($type->search($query, $this->_searchOptions), $this);
     }
 

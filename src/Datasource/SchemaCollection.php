@@ -51,6 +51,7 @@ class SchemaCollection
         } catch (ResponseException $e) {
             return [];
         }
+
         return array_keys($mappings);
     }
 }
