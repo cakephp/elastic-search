@@ -44,7 +44,7 @@ class QueryBuilder
      *
      * @param string $field The field to check for existance.
      * @return \Elastica\Filter\Exists
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/2.2/query-dsl-exists-query.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html
      */
     public function exists($field)
     {
@@ -87,7 +87,7 @@ class QueryBuilder
      * ### Example:
      *
      * {{{
-     *    $query = $builder->geoDistance('location', [40.73, -74.1], '10km');
+     *    $query = $builder->geoDistance('location', ['lat' => 40.73, 'lon' => -74.1], '10km');
      *
      *    $query = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km');
      * }}}
@@ -110,7 +110,7 @@ class QueryBuilder
      * ### Example:
      *
      * {{{
-     *    $query = $builder->geoDistanceRange('location', [40.73, -74.1], '10km', '20km');
+     *    $query = $builder->geoDistanceRange('location', ['lat' => 40.73, 'lon' => -74.1], '10km', '20km');
      *
      *    $query = $builder->geoDistanceRange('location', 'dr5r9ydj2y73', '5km', '10km');
      * }}}
@@ -464,7 +464,7 @@ class QueryBuilder
      * @param string $field The field to query by.
      * @param array $args An array describing the search range
      * @return \Elastica\Query\Range
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/2.2/query-dsl-range-query.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function range($field, array $args)
     {
@@ -484,7 +484,7 @@ class QueryBuilder
      * @param string $regexp The regular expression.
      * @param float $boost Boost
      * @return \Elastica\Query\Regexp
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/2.2/query-dsl-regexp-query.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html
      */
     public function regexp($field, $regexp, $boost = 1.0)
     {
@@ -502,11 +502,29 @@ class QueryBuilder
      *
      * @param array|string|\Elastica\Script\AbstractScript $script The script.
      * @return \Elastica\Query\Script
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/2.2/query-dsl-script-query.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-query.html
      */
     public function script($script)
     {
         return new Elastica\Query\Script($script);
+    }
+
+    /**
+     * Returns a SimpleQueryString object that allows to query based on a search string.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->simpleQueryString(['body'], '"fried eggs" +(eggplant | potato) -frittata');
+     * }}}
+     *
+     * @param array|string The fields to search within
+     * @return \Elastica\Query\SimpleQueryString
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html
+     */
+    public function simpleQueryString($fields, $string)
+    {
+        return new Elastica\Query\SimpleQueryString($string, (array)$fields);
     }
 
     /**
@@ -521,7 +539,7 @@ class QueryBuilder
      * @param string $field The field to query by.
      * @param string $value The term to find in field.
      * @return \Elastica\Query\Term
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/2.2/query-dsl-term-query.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
      */
     public function term($field, $value)
     {
@@ -540,7 +558,7 @@ class QueryBuilder
      * @param string $field The field to query by.
      * @param array $values The list of terms to find in field.
      * @return \Elastica\Query\Terms
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/2.2/query-dsl-terms-query.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html
      */
     public function terms($field, $values)
     {
@@ -558,7 +576,7 @@ class QueryBuilder
      *
      * @param string $type The type name
      * @return \Elastica\Query\Type
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/2.2/query-dsl-type-query.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
      */
     public function type($type)
     {

@@ -520,4 +520,18 @@ class QueryTest extends TestCase
         $this->assertArrayHasKey('fields', $compiled['highlight']);
         $this->assertEquals(100, $compiled['highlight']['fields']['contents']['fragment_size']);
     }
+
+    /**
+     * Tests that it is possible to pass a min score
+     *
+     * @return void
+     */
+    public function testMinScore()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $this->assertSame($query, $query->withMinScore(1));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(1, $elasticQuery['min_score']);
+    }
 }

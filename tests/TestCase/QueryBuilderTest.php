@@ -348,7 +348,7 @@ class QueryBuilderTest extends TestCase
         $result = $builder->ids([1, 2, 3], 'user');
         $expected = [
             'ids' => [
-                'type' => 'user',
+                'type' => ['user'],
                 'values' => [1, 2, 3]
             ]
         ];
@@ -608,6 +608,21 @@ class QueryBuilderTest extends TestCase
         $result = $builder->script("doc['foo'] > 2");
         $expected = [
             'script' => ['script' => "doc['foo'] > 2"]
+        ];
+        $this->assertEquals($expected, $result->toArray());
+    }
+
+    /**
+     * Tests the simpleQueryString() filter
+     *
+     * @return void
+     */
+    public function testSimpleQueryString()
+    {
+        $builder = new QueryBuilder;
+        $result = $builder->simpleQueryString('name', 'hello world');
+        $expected = [
+            'simple_query_string' => ['query' => 'hello world', 'fields' => ['name']]
         ];
         $this->assertEquals($expected, $result->toArray());
     }

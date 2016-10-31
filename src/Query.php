@@ -500,6 +500,19 @@ class Query implements IteratorAggregate
     }
 
     /**
+     * Sets the minim score the results should have in order to be
+     * returned in the resultset
+     *
+     * @param float $score The minimum score to observe
+     * @return $this
+     */
+    public function withMinScore($score)
+    {
+        $this->_elasticQuery->setMinScore($score);
+        return $this;
+    }
+
+    /**
      * Executes the query.
      *
      * @return \Cake\ElasticSearch\ResultSet The results of the query
