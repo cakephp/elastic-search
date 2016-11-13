@@ -17,22 +17,22 @@ use Cake\Event\EventManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 
-// Attach the TypeRegistry into controllers.
-EventManager::instance()->on(
-    'Dispatcher.beforeDispatch',
-    ['priority' => 99],
-    function ($event) {
-        $controller = false;
-        if (isset($event->data['controller'])) {
-            $controller = $event->data['controller'];
-        }
-        if ($controller) {
-            $callback = ['Cake\ElasticSearch\TypeRegistry', 'get'];
-            $controller->modelFactory('ElasticSearch', $callback);
-            $controller->modelFactory('Elastic', $callback);
-        }
+$listener = function ($event) {
+    $controller = false;
+    if (isset($event->data['controller'])) {
+        $controller = $event->data['controller'];
     }
-);
+    if ($controller) {
+        $callback = ['Cake\ElasticSearch\TypeRegistry', 'get'];
+        $controller->modelFactory('ElasticSearch', $callback);
+        $controller->modelFactory('Elastic', $callback);
+    }
+};
+
+// Attach the TypeRegistry into controllers.
+EventManager::instance()->on('Dispatcher.invokeController', $listener);
+EventManager::instance()->on('Dispatcher.beforeDispatch', ['priority' => 99], $listener);
+unset($listener);
 
 // Attach the document context into FormHelper.
 EventManager::instance()->on('View.beforeRender', function ($event) {
