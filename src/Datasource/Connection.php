@@ -20,6 +20,7 @@ use Cake\Log\Log;
 use Elastica\Client;
 use Elastica\Log as ElasticaLog;
 use Elastica\Request;
+use Psr\Log\NullLogger;
 
 class Connection extends Client implements ConnectionInterface
 {
@@ -183,25 +184,27 @@ class Connection extends Client implements ConnectionInterface
         if (!$this->logQueries) {
             return;
         }
-        if (!isset($this->_logger)) {
+        if (!isset($this->_logger) || $this->_logger instanceof NullLogger) {
             $this->_logger = Log::engine('elasticsearch') ?: new ElasticaLog();
         }
 
         if ($context instanceof Request) {
-            $data = $context->toArray();
+            $contextArray = $context->toArray();
+            $logData = [
+                'method' => $contextArray['method'],
+                'path' => $contextArray['path'],
+                'data' => $contextArray['data']
+            ];
+        } else if ($context instanceof \Exception) {
+            $logData = ['message' => $context->getMessage()];
         } else {
-            $data = ['message' => $context];
+            $logData = ['message' => 'Unknown'];
         }
-        $logData = [
-            'method' => $data['method'],
-            'path' => $data['path'],
-            'data' => $data['data'],
-        ];
 
         $data = json_encode($logData, JSON_PRETTY_PRINT);
         $loggedQuery = new LoggedQuery();
         $loggedQuery->query = $data;
-        
+
         if ($this->_logger instanceof \Psr\Log\LoggerInterface) {
             $this->_logger->log('debug', $loggedQuery);
         } else {
