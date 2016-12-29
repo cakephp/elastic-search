@@ -69,6 +69,12 @@ use Cake\ElasticSearch\TypeRegistry;
 $comments = TypeRegistry::get('Comments');
 ```
 
+## Delete by Query Plugin (ElasticSearch 1.x => 2.x)
+
+To be able to delete records via criteria other than `_id` you need the ElasticSearch [delete-by-query plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/2.2/plugins-delete-by-query.html). 
+
+_NOTE: Without the plugin you will get at least 2 test failures_
+
 ## Running tests
 
 Assuming you have PHPUnit installed system wide using one of the methods stated
