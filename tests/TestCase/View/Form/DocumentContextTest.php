@@ -50,6 +50,14 @@ class DocumentContextTest extends TestCase
     ];
 
     /**
+     * A request object (initialised in setUp method)
+     *
+     * @var Request
+     */
+
+    private $request;
+
+    /**
      * setup method.
      *
      * @return void
@@ -196,7 +204,7 @@ class DocumentContextTest extends TestCase
     }
 
     /**
-     * Test reading data from embeddded docs.
+     * Test reading data from embedded docs.
      *
      * @return void
      */
@@ -281,7 +289,7 @@ class DocumentContextTest extends TestCase
      *
      * @return void
      */
-    public function testIsRequriredAlternateValidator()
+    public function testIsRequiredAlternateValidator()
     {
         $articles = $this->setupType();
         $entity = new Document(['title' => 'test']);
@@ -306,7 +314,7 @@ class DocumentContextTest extends TestCase
     {
         $context = new DocumentContext($this->request, [
             'entity' => $collection,
-            'tyupe' => 'articles',
+            'type' => 'articles',
         ]);
 
         $this->assertTrue($context->hasError('0.title'));
