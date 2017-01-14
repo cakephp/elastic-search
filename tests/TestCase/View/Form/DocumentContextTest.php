@@ -407,7 +407,7 @@ class DocumentContextTest extends TestCase
         $articles = $this->setupType();
         $context = new DocumentContext($this->request, [
             'entity' => new Document([]),
-            'type' => 'articles',
+            'type' => $articles,
         ]);
         $result = $context->fieldNames();
         $this->assertContains('title', $result);

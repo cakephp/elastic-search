@@ -41,7 +41,7 @@ class TestFixture implements FixtureInterface
      *
      * @var string
      */
-    public $connection = 'test';
+    public $connection = 'elastic';
 
     /**
      * The Elastic search type definition for this type.
