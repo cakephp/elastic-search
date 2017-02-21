@@ -14,12 +14,13 @@
  */
 namespace Cake\ElasticSearch;
 
+use Cake\Datasource\QueryInterface;
 use Cake\Datasource\QueryTrait;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
 
-class Query implements IteratorAggregate
+class Query implements IteratorAggregate, QueryInterface
 {
 
     use QueryTrait;
@@ -255,7 +256,7 @@ class Query implements IteratorAggregate
      *
      * @return \Cake\ElasticSearch\Query
      */
-    public function find($type = 'all', $options = [])
+    public function find($type = 'all', array $options = [])
     {
         return $this->_repository->callFinder($type, $this, $options);
     }
@@ -300,13 +301,18 @@ class Query implements IteratorAggregate
      *   $query->where(new \Elastica\Filter\Term('name.first', 'jose'));
      * }}{
      *
-     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param array|null|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param array $types Not used, required to comply with QueryInterface.
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
      * @see Cake\ElasticSearch\QueryBuilder
      */
-    public function where($conditions, $overwrite = false)
+    public function where($conditions = null, $types = [], $overwrite = false)
     {
+        if (is_bool($types)) {
+            $overwrite = $types;
+        }
+
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
 
@@ -592,5 +598,43 @@ class Query implements IteratorAggregate
 
         $this->_elasticQuery->setQuery($query);
         return $this->_elasticQuery;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return array
+     */
+    public function aliasField($field, $alias = null)
+    {
+        return [$field => $field];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return array
+     */
+    public function aliasFields($fields, $defaultAlias = null)
+    {
+        return array_map([$this, 'aliasField', $fields]);
+    }
+
+    /**
+     * Returns the total amount of hits for the query
+     *
+     * @return int
+     */
+    public function count()
+    {
+        $connection = $this->_repository->connection();
+        $name = $this->_repository->name();
+        $type = $connection->getIndex()->getType($name);
+
+        $query = clone $this->compileQuery();
+        $query->setSize(0);
+        $query->setSource(false);
+
+        return $type->search($query)->getTotalHits();
     }
 }
