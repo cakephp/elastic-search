@@ -1,7 +1,6 @@
 language: php
 
 php:
-  - 5.5
   - 5.6
   - 7.0
 
@@ -14,13 +13,6 @@ env:
 
 services:
   - elasticsearch
-
-addons:
-  apt:
-    sources:
-      - elasticsearch-2.1
-    packages:
-      - elasticsearch
 
 matrix:
   include:
