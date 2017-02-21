@@ -58,6 +58,7 @@ class DocumentContextTest extends TestCase
     {
         parent::setUp();
         $this->request = new Request();
+        $this->textField = version_compare(getenv('ELASTIC_VERSION') ?: '5.0', '3.0', '<=') ? 'string' : 'text';
     }
 
     /**
@@ -425,8 +426,8 @@ class DocumentContextTest extends TestCase
             'type' => $articles,
         ]);
 
-        $this->assertEquals('string', $context->type('title'));
-        $this->assertEquals('string', $context->type('body'));
+        $this->assertEquals($this->textField, $context->type('title'));
+        $this->assertEquals($this->textField, $context->type('body'));
         $this->assertEquals('integer', $context->type('user_id'));
         $this->assertNull($context->type('nope'));
     }
@@ -449,8 +450,8 @@ class DocumentContextTest extends TestCase
             'type' => $profiles,
         ]);
 
-        $this->assertEquals('string', $context->type('username'));
-        $this->assertEquals('string', $context->type('address.city'));
+        $this->assertEquals($this->textField, $context->type('username'));
+        $this->assertEquals($this->textField, $context->type('address.city'));
         $this->assertNull($context->type('nope'));
     }
 
