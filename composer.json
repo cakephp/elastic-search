@@ -18,13 +18,13 @@
         "source": "https://github.com/cakephp/elastic-search"
     },
     "require": {
-        "ruflin/elastica": "~3.1",
-        "cakephp/cakephp": "~3.2"
+        "ruflin/elastica": "~3.1"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "dev-master",
         "psr/log": "~1.0",
-        "phpunit/phpunit": "~4.0"
+        "phpunit/phpunit": "~4.0",
+        "cakephp/cakephp": "3.3.*"
     },
     "autoload": {
         "psr-4": {
