@@ -403,6 +403,64 @@ class QueryTest extends TestCase
         $this->assertEquals([$expected], $must);
     }
 
+    public function testQueryShould()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $query->queryShould([
+            'name.first' => 'jose',
+            'age >' => 29,
+            'or' => [
+                'tags in' => ['cake', 'php'],
+                'interests not in' => ['c#', 'java']
+            ]
+        ]);
+
+        $compiled = $query->compileQuery()->toArray();
+
+        $should = $compiled['query']['bool']['should'];
+
+        $expected = ['term' => ['name.first' => 'jose']];
+        $this->assertEquals($expected, $should[0]);
+
+        $expected = ['range' => ['age' => ['gt' => 29]]];
+        $this->assertEquals($expected, $should[1]);
+
+        $expected = ['terms' => ['tags' => ['cake', 'php']]];
+        $this->assertEquals($expected, $should[2]['bool']['should'][0]);
+
+        $expected = [
+            'bool' => [
+                'must_not' => [
+                    ['terms' => ['interests' => ['c#', 'java']]]
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $should[2]['bool']['should'][1]);
+
+        $query->queryShould(function (QueryBuilder $builder) {
+            return $builder->and(
+                $builder->term('another.thing', 'value'),
+                $builder->exists('stuff')
+            );
+        });
+
+        $compiled = $query->compileQuery()->toArray();
+        $should = $compiled['query']['bool']['should'];
+        $should = $should[3]['bool']['must'];
+        $expected = [
+            ['term' => ['another.thing' => 'value']],
+            ['exists' => ['field' => 'stuff']],
+        ];
+        $this->assertEquals($expected, $should);
+
+        $query->queryShould(['name.first' => 'jose'], true);
+        $compiled = $query->compileQuery()->toArray();
+        $should = $compiled['query']['bool']['should'];
+        $expected = ['term' => ['name.first' => 'jose']];
+        $this->assertEquals([$expected], $should);
+    }
+
     /**
      * Tests the postFilter() method
      *

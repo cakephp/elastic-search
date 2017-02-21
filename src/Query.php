@@ -312,7 +312,7 @@ class Query implements IteratorAggregate
 
     /**
      * Modifies the query part, taking scores in account. Queries added using this method
-     * will be stacked on a bool query and applied to the must part of the final BoolQuery.
+     * will be stacked on a bool query and applied to the `must` part of the final BoolQuery.
      *
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
@@ -324,6 +324,22 @@ class Query implements IteratorAggregate
     public function queryMust($conditions, $overwrite = false)
     {
         return $this->_buildBoolQuery('query', $conditions, $overwrite);
+    }
+
+    /**
+     * Modifies the query part, taking scores in account. Queries added using this method
+     * will be stacked on a bool query and applied to the `should` part of the final BoolQuery.
+     *
+     * This method can be used in the same way the `where()` method is used. Please refer to
+     * its documentation for more details.
+     *
+     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions
+     * @param bool $overwrite Whether or not to replace previous queries.
+     * @return Query
+     */
+    public function queryShould($conditions, $overwrite = false)
+    {
+        return $this->_buildBoolQuery('query', $conditions, $overwrite, 'addShould');
     }
 
     /**
