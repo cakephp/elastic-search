@@ -11,9 +11,6 @@ env:
     - PHPCS=0
     - RUN_TESTS=1
 
-services:
-  - elasticsearch
-
 matrix:
   include:
     - php: 5.6
