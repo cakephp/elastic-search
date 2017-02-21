@@ -13,26 +13,14 @@
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
 use Cake\Collection\Collection;
-use Cake\Event\EventManager;
+use Cake\Datasource\FactoryLocator;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;
+use Cake\Event\EventManager;
 
-// Attach the TypeRegistry into controllers.
-EventManager::instance()->on(
-    'Dispatcher.beforeDispatch',
-    ['priority' => 99],
-    function ($event) {
-        $controller = false;
-        if (isset($event->data['controller'])) {
-            $controller = $event->data['controller'];
-        }
-        if ($controller) {
-            $callback = ['Cake\ElasticSearch\TypeRegistry', 'get'];
-            $controller->modelFactory('ElasticSearch', $callback);
-            $controller->modelFactory('Elastic', $callback);
-        }
-    }
-);
+$callback = ['Cake\ElasticSearch\TypeRegistry', 'get'];
+FactoryLocator::add('Elastic', $callback);
+FactoryLocator::add('ElasticSearch', $callback);
 
 // Attach the document context into FormHelper.
 EventManager::instance()->on('View.beforeRender', function ($event) {
