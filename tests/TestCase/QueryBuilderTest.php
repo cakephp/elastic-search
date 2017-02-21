@@ -348,7 +348,7 @@ class QueryBuilderTest extends TestCase
         $result = $builder->ids([1, 2, 3], 'user');
         $expected = [
             'ids' => [
-                'type' => 'user',
+                'type' => ['user'],
                 'values' => [1, 2, 3]
             ]
         ];

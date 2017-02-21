@@ -576,8 +576,9 @@ class TypeTest extends TestCase
      */
     public function testDeleteAll()
     {
+        $this->skipIf(true, 'This can only work with a plugin that is only available for elastic 2.x');
         $result = $this->type->deleteAll(['title' => 'article']);
-        
+
         $this->connection->getIndex()->refresh();
 
         $this->assertTrue($result);
@@ -591,8 +592,9 @@ class TypeTest extends TestCase
      */
     public function testDeleteAllOnlySome()
     {
+        $this->skipIf(true, 'This can only work with a plugin that is only available for elastic 2.x');
         $result = $this->type->deleteAll(['body' => 'cake']);
-        
+
         $this->connection->getIndex()->refresh();
 
         $this->assertTrue($result);

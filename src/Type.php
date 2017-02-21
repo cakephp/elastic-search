@@ -428,7 +428,10 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             $query->where($conditions);
         }
         $type = $this->connection()->getIndex()->getType($this->name());
-        return $type->count($query->compileQuery()) > 0;
+        $query = $query->compileQuery();
+        $query->setSize(0);
+        $query->setSource(false);
+        return $type->search($query)->getTotalHits() > 0;
     }
 
     /**
