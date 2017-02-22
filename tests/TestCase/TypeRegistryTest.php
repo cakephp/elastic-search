@@ -265,7 +265,7 @@ class TypeRegistryTest extends TestCase
      */
     public function testSet()
     {
-        $mock = $this->getMock('Cake\ElasticSearch\Type');
+        $mock = $this->getMockBuilder('Cake\ElasticSearch\Type')->getMock();
         $this->assertSame($mock, TypeRegistry::set('Articles', $mock));
         $this->assertSame($mock, TypeRegistry::get('Articles'));
     }
@@ -279,7 +279,7 @@ class TypeRegistryTest extends TestCase
     {
         Plugin::load('TestPlugin');
 
-        $mock = $this->getMock('TestPlugin\Model\Type\CommentsType');
+        $mock = $this->getMockBuilder('TestPlugin\Model\Type\CommentsType')->getMock();
 
         $this->assertSame($mock, TypeRegistry::set('TestPlugin.Comments', $mock));
         $this->assertSame($mock, TypeRegistry::get('TestPlugin.Comments'));
