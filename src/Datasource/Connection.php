@@ -42,7 +42,7 @@ class Connection extends Client implements ConnectionInterface
      * is `_all`
      *
      * @param array $config config options
-     * @param callback $callback Callback function which can be used to be notified
+     * @param callable $callback Callback function which can be used to be notified
      * about errors (for example connection down)
      */
     public function __construct(array $config = [], $callback = null)
