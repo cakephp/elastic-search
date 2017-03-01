@@ -31,7 +31,6 @@ class ProtectedArticle extends Document
     ];
 }
 
-
 /**
  * Test case for the marshaller.
  */

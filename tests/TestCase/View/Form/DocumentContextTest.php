@@ -155,7 +155,6 @@ class DocumentContextTest extends TestCase
         ];
     }
 
-
     /**
      * Test isCreate on a collection.
      *
