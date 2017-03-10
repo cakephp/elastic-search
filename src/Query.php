@@ -14,12 +14,13 @@
  */
 namespace Cake\ElasticSearch;
 
+use Cake\Datasource\QueryInterface;
 use Cake\Datasource\QueryTrait;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
 
-class Query implements IteratorAggregate
+class Query implements IteratorAggregate, QueryInterface
 {
 
     use QueryTrait;
@@ -255,7 +256,7 @@ class Query implements IteratorAggregate
      *
      * @return \Cake\ElasticSearch\Query
      */
-    public function find($type = 'all', $options = [])
+    public function find($finder, array $options = [])
     {
         return $this->_repository->callFinder($type, $this, $options);
     }
@@ -305,8 +306,12 @@ class Query implements IteratorAggregate
      * @return $this
      * @see Cake\ElasticSearch\QueryBuilder
      */
-    public function where($conditions, $overwrite = false)
+    public function where($conditions = null, $types = [], $overwrite = false)
     {
+        if (!is_array($types)) {
+            $overwrite = $types;
+        }
+
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
 
@@ -576,5 +581,15 @@ class Query implements IteratorAggregate
 
         $this->_elasticQuery->setQuery($query);
         return $this->_elasticQuery;
+    }
+
+    /**
+     * Returns the total amount of results for the query.
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return $this->_execute()->getTotalHits();
     }
 }
