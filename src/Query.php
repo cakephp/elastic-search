@@ -258,7 +258,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function find($finder, array $options = [])
     {
-        return $this->_repository->callFinder($type, $this, $options);
+        return $this->_repository->callFinder($finder, $this, $options);
     }
 
     /**
