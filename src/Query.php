@@ -556,4 +556,19 @@ class Query implements IteratorAggregate
 
         return $this->_elasticQuery;
     }
+
+    public function aliasField($field)
+    {
+        return [$field];
+    }
+
+    public function alias()
+    {
+        return $this->_repository->alias();
+    }
+
+    public function find($type, $options)
+    {
+        return $this->_repository->find($type, $options);
+    }
 }
