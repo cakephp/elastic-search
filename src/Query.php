@@ -356,6 +356,16 @@ class Query implements IteratorAggregate
     }
 
     /**
+     * Return the current Elastica query
+     *
+     * @return \Elastica\Query
+     */
+    public function getElasticQuery()
+    {
+        return $this->_elasticQuery;
+    }
+
+    /**
      * Add an aggregation to the elastic query object
      *
      * @param  array|\Elastica\Aggregation\AbstractAggregation $aggregation One or multiple facets

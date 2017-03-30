@@ -18,6 +18,7 @@ use Cake\ElasticSearch\Query;
 use Cake\ElasticSearch\QueryBuilder;
 use Cake\ElasticSearch\Type;
 use Cake\TestSuite\TestCase;
+use Elastica\Query as ElasticaQuery;
 
 /**
  * Tests the Query class
@@ -69,6 +70,17 @@ class QueryTest extends TestCase
         ]];
 
         $this->assertSame($expected, $query->compileQuery()->toArray());
+    }
+
+    /**
+     * Test we get instance of elastica query
+     */
+    public function testGetElasticQuery()
+    {
+        $type = new Type();
+        $query = new Query($type);
+
+        $this->assertInstanceOf(ElasticaQuery::class, $query->getElasticQuery());
     }
 
     /**
