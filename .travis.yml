@@ -1,26 +1,15 @@
 language: php
 
 php:
-  - 5.5
   - 5.6
   - 7.0
 
-sudo: false
+sudo: true
 
 env:
   global:
     - PHPCS=0
     - RUN_TESTS=1
-
-services:
-  - elasticsearch
-
-addons:
-  apt:
-    sources:
-      - elasticsearch-2.1
-    packages:
-      - elasticsearch
 
 matrix:
   include:
@@ -30,6 +19,9 @@ matrix:
 before_script:
   - sleep 7 # Work around elasticsearch startup time.
   - phpenv rehash
+
+before_install:
+  - curl -O https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.0/elasticsearch-2.3.0.deb && sudo dpkg -i --force-confnew elasticsearch-2.3.0.deb && sudo service elasticsearch restart
 
 install:
   - composer self-update

@@ -130,7 +130,7 @@ class TestFixture implements FixtureInterface
     public function drop(ConnectionInterface $db)
     {
         $index = $db->getIndex();
-        
+
         if ($index->exists()) {
             $index->delete();
         }

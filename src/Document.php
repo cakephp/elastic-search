@@ -78,6 +78,7 @@ class Document implements EntityInterface
 
         if (!empty($data) && $options['markClean'] && !$options['useSetters']) {
             $this->_properties = $data;
+
             return;
         }
 
@@ -139,6 +140,7 @@ class Document implements EntityInterface
         if ($this->_result) {
             return $this->_result->getHighlights();
         }
+
         return [];
     }
 
@@ -155,6 +157,7 @@ class Document implements EntityInterface
         if ($this->_result) {
             return $this->_result->getExplanation();
         }
+
         return [];
     }
 }

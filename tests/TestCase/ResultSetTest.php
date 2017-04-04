@@ -39,8 +39,10 @@ class ResultSetTest extends TestCase
         $elasticaSet = $this->getMockBuilder('Elastica\ResultSet')
             ->disableOriginalConstructor()
             ->getMock();
-        $type = $this->getMock('Cake\ElasticSearch\Type');
-        $query = $this->getMock('Cake\ElasticSearch\Query', [], [$type]);
+        $type = $this->getMockBuilder('Cake\ElasticSearch\Type')->getMock();
+        $query = $this->getMockBuilder('Cake\ElasticSearch\Query')
+            ->setConstructorArgs([$type])
+            ->getMock();
         $query->expects($this->once())->method('repository')
             ->will($this->returnValue($type));
 
@@ -49,6 +51,7 @@ class ResultSetTest extends TestCase
             ->will($this->returnValue(__NAMESPACE__ . '\MyTestDocument'));
         $type->method('embedded')
             ->will($this->returnValue([]));
+
         return [new ResultSet($elasticaSet, $query), $elasticaSet];
     }
 
@@ -63,7 +66,10 @@ class ResultSetTest extends TestCase
     {
         list($resultSet, $elasticaSet) = $resultSets;
         $data = ['foo' => 1, 'bar' => 2];
-        $result = $this->getMock('Elastica\Result', ['getId', 'getData', 'getType'], [[]]);
+        $result = $this->getMockBuilder('Elastica\Result')
+            ->setMethods(['getId', 'getData', 'getType'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $result->method('getData')
             ->will($this->returnValue($data));
         $result->method('getId')
@@ -101,10 +107,13 @@ class ResultSetTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods($methods)
             ->getMock();
-        $type = $this->getMock('Cake\ElasticSearch\Type');
+        $type = $this->getMockBuilder('Cake\ElasticSearch\Type')->getMock();
         $type->method('embedded')
             ->will($this->returnValue([]));
-        $query = $this->getMock('Cake\ElasticSearch\Query', [], [$type]);
+        $query = $this->getMockBuilder('Cake\ElasticSearch\Query')
+            ->setConstructorArgs([$type])
+            ->getMock();
+
         $query->expects($this->once())->method('repository')
             ->will($this->returnValue($type));
 

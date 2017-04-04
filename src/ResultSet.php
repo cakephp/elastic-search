@@ -252,6 +252,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
             }
         }
         $document = new $class($data, $options);
+
         return $document;
     }
 

@@ -58,7 +58,8 @@ class DocumentContextTest extends TestCase
     {
         parent::setUp();
         $this->request = new Request();
-        $this->textField = version_compare(getenv('ELASTIC_VERSION') ?: '5.0', '3.0', '<=') ? 'string' : 'text';
+        $elasticVersion = getenv('ELASTIC_VERSION') ?: '2.0';
+        $this->textField = version_compare($elasticVersion, '5.0', '<') ? 'string' : 'text';
     }
 
     /**
@@ -155,7 +156,6 @@ class DocumentContextTest extends TestCase
             'collection' => [new Collection([$one, $two])],
         ];
     }
-
 
     /**
      * Test isCreate on a collection.

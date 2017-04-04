@@ -14,12 +14,13 @@
  */
 namespace Cake\ElasticSearch;
 
+use Cake\Datasource\QueryInterface;
 use Cake\Datasource\QueryTrait;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
 
-class Query implements IteratorAggregate
+class Query implements IteratorAggregate, QueryInterface
 {
 
     use QueryTrait;
@@ -116,6 +117,7 @@ class Query implements IteratorAggregate
             $fields = array_merge($this->_queryParts['fields'], $fields);
         }
         $this->_queryParts['fields'] = $fields;
+
         return $this;
     }
 
@@ -129,6 +131,7 @@ class Query implements IteratorAggregate
     public function limit($limit)
     {
         $this->_queryParts['limit'] = (int)$limit;
+
         return $this;
     }
 
@@ -142,6 +145,7 @@ class Query implements IteratorAggregate
     public function offset($num)
     {
         $this->_queryParts['offset'] = (int)$num;
+
         return $this;
     }
 
@@ -174,6 +178,7 @@ class Query implements IteratorAggregate
             $offset = PHP_INT_MAX;
         }
         $this->offset((int)$offset);
+
         return $this;
     }
 
@@ -222,9 +227,11 @@ class Query implements IteratorAggregate
         if (is_array($order) && is_numeric(key($order))) {
             if ($overwrite) {
                 $this->_queryParts['order'] = $order;
+
                 return $this;
             }
             $this->_queryParts['order'] = array_merge($order, $this->_queryParts['order']);
+
             return $this;
         }
 
@@ -237,6 +244,7 @@ class Query implements IteratorAggregate
             if (is_string($order)) {
                 return [$key => ['order' => $order]];
             }
+
             return [$key => $order];
         };
 
@@ -247,6 +255,7 @@ class Query implements IteratorAggregate
         }
 
         $this->_queryParts['order'] = $order;
+
         return $this;
     }
 
@@ -255,7 +264,7 @@ class Query implements IteratorAggregate
      *
      * @return \Cake\ElasticSearch\Query
      */
-    public function find($type = 'all', $options = [])
+    public function find($type = 'all', array $options = [])
     {
         return $this->_repository->callFinder($type, $this, $options);
     }
@@ -300,19 +309,24 @@ class Query implements IteratorAggregate
      *   $query->where(new \Elastica\Filter\Term('name.first', 'jose'));
      * }}{
      *
-     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param array|null|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param array $types Not used, required to comply with QueryInterface.
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
      * @see Cake\ElasticSearch\QueryBuilder
      */
-    public function where($conditions, $overwrite = false)
+    public function where($conditions = null, $types = [], $overwrite = false)
     {
+        if (is_bool($types)) {
+            $overwrite = $types;
+        }
+
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
 
     /**
      * Modifies the query part, taking scores in account. Queries added using this method
-     * will be stacked on a bool query and applied to the must part of the final BoolQuery.
+     * will be stacked on a bool query and applied to the `must` part of the final BoolQuery.
      *
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
@@ -324,6 +338,22 @@ class Query implements IteratorAggregate
     public function queryMust($conditions, $overwrite = false)
     {
         return $this->_buildBoolQuery('query', $conditions, $overwrite);
+    }
+
+    /**
+     * Modifies the query part, taking scores in account. Queries added using this method
+     * will be stacked on a bool query and applied to the `should` part of the final BoolQuery.
+     *
+     * This method can be used in the same way the `where()` method is used. Please refer to
+     * its documentation for more details.
+     *
+     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions
+     * @param bool $overwrite Whether or not to replace previous queries.
+     * @return Query
+     */
+    public function queryShould($conditions, $overwrite = false)
+    {
+        return $this->_buildBoolQuery('query', $conditions, $overwrite, 'addShould');
     }
 
     /**
@@ -352,6 +382,7 @@ class Query implements IteratorAggregate
     public function setFullQuery(AbstractQuery $query)
     {
         $this->_queryParts['query'] = $query;
+
         return $this;
     }
 
@@ -387,6 +418,7 @@ class Query implements IteratorAggregate
         }
 
         $this->_searchOptions = $options;
+
         return $this;
     }
 
@@ -408,6 +440,7 @@ class Query implements IteratorAggregate
 
         if ($conditions instanceof AbstractQuery) {
             $this->_queryParts[$partType]->{$type}($conditions);
+
             return $this;
         }
 
@@ -422,10 +455,12 @@ class Query implements IteratorAggregate
         if (is_array($conditions)) {
             $conditions = (new QueryBuilder)->parse($conditions);
             array_map([$this->_queryParts[$partType], $type], $conditions);
+
             return $this;
         }
 
         $this->_queryParts[$partType]->{$type}($conditions);
+
         return $this;
     }
 
@@ -496,6 +531,7 @@ class Query implements IteratorAggregate
     public function highlight(array $highlight)
     {
         $this->_queryParts['highlight'] = $highlight;
+
         return $this;
     }
 
@@ -509,6 +545,7 @@ class Query implements IteratorAggregate
     public function withMinScore($score)
     {
         $this->_elasticQuery->setMinScore($score);
+
         return $this;
     }
 
@@ -524,6 +561,7 @@ class Query implements IteratorAggregate
         $type = $connection->getIndex()->getType($name);
 
         $query = $this->compileQuery();
+
         return new ResultSet($type->search($query, $this->_searchOptions), $this);
     }
 
@@ -575,6 +613,45 @@ class Query implements IteratorAggregate
         }
 
         $this->_elasticQuery->setQuery($query);
+
         return $this->_elasticQuery;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return array
+     */
+    public function aliasField($field, $alias = null)
+    {
+        return [$field => $field];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return array
+     */
+    public function aliasFields($fields, $defaultAlias = null)
+    {
+        return array_map([$this, 'aliasField', $fields]);
+    }
+
+    /**
+     * Returns the total amount of hits for the query
+     *
+     * @return int
+     */
+    public function count()
+    {
+        $connection = $this->_repository->connection();
+        $name = $this->_repository->name();
+        $type = $connection->getIndex()->getType($name);
+
+        $query = clone $this->compileQuery();
+        $query->setSize(0);
+        $query->setSource(false);
+
+        return $type->search($query)->getTotalHits();
     }
 }

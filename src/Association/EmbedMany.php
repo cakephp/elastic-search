@@ -23,6 +23,7 @@ class EmbedMany extends Embedded
                 $out[] = new $class($row, $options);
             }
         }
+
         return $out;
     }
 

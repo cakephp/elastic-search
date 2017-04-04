@@ -82,6 +82,7 @@ abstract class Embedded
             if (!$this->property) {
                 $this->property = Inflector::underscore($this->alias);
             }
+
             return $this->property;
         }
         $this->property = $name;
@@ -115,6 +116,7 @@ abstract class Embedded
             $class = App::className($name, 'Model/Document');
             $this->entityClass = $class;
         }
+
         return $this->entityClass;
     }
 
