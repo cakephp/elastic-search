@@ -306,6 +306,7 @@ class DocumentContext implements ContextInterface
     public function fieldNames()
     {
         $schema = $this->_context['type']->schema();
+
         return $schema->fields();
     }
 

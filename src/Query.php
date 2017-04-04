@@ -227,6 +227,7 @@ class Query implements IteratorAggregate, QueryInterface
         if (is_array($order) && is_numeric(key($order))) {
             if ($overwrite) {
                 $this->_queryParts['order'] = $order;
+
                 return $this;
             }
             $this->_queryParts['order'] = array_merge($order, $this->_queryParts['order']);
@@ -381,6 +382,7 @@ class Query implements IteratorAggregate, QueryInterface
     public function setFullQuery(AbstractQuery $query)
     {
         $this->_queryParts['query'] = $query;
+
         return $this;
     }
 

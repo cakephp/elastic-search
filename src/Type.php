@@ -569,6 +569,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     {
         if ($data === null) {
             $class = $this->entityClass();
+
             return new $class([], ['source' => $this->name()]);
         }
 

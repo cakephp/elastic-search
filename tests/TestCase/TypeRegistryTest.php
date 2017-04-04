@@ -34,7 +34,6 @@ class MyUsersType extends Type
     protected $_name = 'users';
 }
 
-
 /**
  * Test case for TypeRegistry
  */

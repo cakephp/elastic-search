@@ -615,7 +615,6 @@ class QueryBuilder
         return $bool;
     }
 
-
     /**
      * Combines all the passed arguments in a single BoolQuery query using should clause.
      *
