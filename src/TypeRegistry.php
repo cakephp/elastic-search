@@ -62,6 +62,7 @@ class TypeRegistry
                     $alias
                 ));
             }
+
             return static::$instances[$alias];
         }
 

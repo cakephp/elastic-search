@@ -72,6 +72,7 @@ class MappingSchema
             if (isset($this->data[$name])) {
                 return $this->data[$name];
             }
+
             return null;
         }
         $parts = explode('.', $name);
@@ -100,6 +101,7 @@ class MappingSchema
         if (!$field) {
             return null;
         }
+
         return $field['type'];
     }
 

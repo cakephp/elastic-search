@@ -51,6 +51,7 @@ class ResultSetTest extends TestCase
             ->will($this->returnValue(__NAMESPACE__ . '\MyTestDocument'));
         $type->method('embedded')
             ->will($this->returnValue([]));
+
         return [new ResultSet($elasticaSet, $query), $elasticaSet];
     }
 

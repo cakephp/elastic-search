@@ -430,6 +430,7 @@ class QueryBuilder
     {
         $boolQuery = new Elastica\Query\BoolQuery();
         $boolQuery->addMustNot($query);
+
         return $boolQuery;
     }
 
@@ -447,6 +448,7 @@ class QueryBuilder
     {
         $prefixQuery = new Elastica\Query\Prefix;
         $prefixQuery->setPrefix($field, $prefix, $boost);
+
         return $prefixQuery;
     }
 
@@ -518,7 +520,8 @@ class QueryBuilder
      *  $builder->simpleQueryString(['body'], '"fried eggs" +(eggplant | potato) -frittata');
      * }}}
      *
-     * @param array|string The fields to search within
+     * @param array|string $fields The fields to search within
+     * @param string $string The pattern to find in the fields
      * @return \Elastica\Query\SimpleQueryString
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html
      */

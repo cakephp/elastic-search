@@ -88,6 +88,7 @@ class Marshaller
 
         if (!isset($options['fieldList'])) {
             $entity->set($data);
+
             return $entity;
         }
 
@@ -96,6 +97,7 @@ class Marshaller
                 $entity->set($field, $data[$field]);
             }
         }
+
         return $entity;
     }
 
@@ -112,6 +114,7 @@ class Marshaller
         if ($embed->type() === Embedded::ONE_TO_ONE) {
             return new $class($data);
         }
+
         if ($embed->type() === Embedded::ONE_TO_MANY) {
             $children = [];
             foreach ($data as $row) {
@@ -119,6 +122,7 @@ class Marshaller
                     $children[] = new $class($row);
                 }
             }
+
             return $children;
         }
     }
@@ -139,8 +143,10 @@ class Marshaller
                 $existing = new $class();
             }
             $existing->set($data);
+
             return $existing;
         }
+
         if ($embed->type() === Embedded::ONE_TO_MANY) {
             foreach ($existing as $i => $row) {
                 if (isset($data[$i])) {
@@ -155,6 +161,7 @@ class Marshaller
                     $existing[] = $new;
                 }
             }
+
             return $existing;
         }
     }
@@ -178,6 +185,7 @@ class Marshaller
         foreach ($data as $record) {
             $output[] = $this->one($record, $options);
         }
+
         return $output;
     }
 
@@ -218,6 +226,7 @@ class Marshaller
 
         if (!isset($options['fieldList'])) {
             $entity->set($data);
+
             return $entity;
         }
 
@@ -226,6 +235,7 @@ class Marshaller
                 $entity->set($field, $data[$field]);
             }
         }
+
         return $entity;
     }
 
@@ -277,6 +287,7 @@ class Marshaller
         foreach ($new as $newRecord) {
             $output[] = $this->one($newRecord, $options);
         }
+
         return $output;
     }
 
@@ -294,6 +305,7 @@ class Marshaller
         if (!$options['validate']) {
             return [];
         }
+
         if ($options['validate'] === true) {
             $options['validate'] = $this->type->validator('default');
         }

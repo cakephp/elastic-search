@@ -324,6 +324,7 @@ class TypeTest extends TestCase
         $doc->title = 'new title';
         $this->type->eventManager()->on('Model.beforeSave', function ($event, $entity, $options) use ($doc) {
             $event->stopPropagation();
+
             return 'kaboom';
         });
         $this->type->eventManager()->on('Model.afterSave', function () {
@@ -505,6 +506,7 @@ class TypeTest extends TestCase
         $doc = $this->type->get(1);
         $this->type->eventManager()->on('Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
             $event->stopPropagation();
+
             return 'kaboom';
         });
         $this->type->eventManager()->on('Model.afterDelete', function () {

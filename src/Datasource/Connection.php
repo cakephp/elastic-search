@@ -184,6 +184,7 @@ class Connection extends Client implements ConnectionInterface
         if (!$this->logQueries) {
             return;
         }
+
         if (!isset($this->_logger) || $this->_logger instanceof NullLogger) {
             $this->_logger = Log::engine('elasticsearch') ?: new ElasticaLog();
         }
@@ -195,7 +196,7 @@ class Connection extends Client implements ConnectionInterface
                 'path' => $contextArray['path'],
                 'data' => $contextArray['data']
             ];
-        } else if ($context instanceof \Exception) {
+        } elseif ($context instanceof \Exception) {
             $logData = ['message' => $context->getMessage()];
         } else {
             $logData = ['message' => 'Unknown'];
