@@ -666,4 +666,18 @@ class TypeTest extends TestCase
         ];
         $this->assertEquals($expected, $result, 'Events do not match.');
     }
+
+    /**
+     * Test that type listen's to it's own events..
+     *
+     * @return void
+     */
+    public function testOwnEvents()
+    {
+        $type = $this->getMockBuilder('Cake\ElasticSearch\Type')
+            ->setMethods(['beforeSave'])
+            ->getMock();
+
+        $this->assertCount(1, $type->eventManager()->listeners('Model.beforeSave'));
+    }
 }

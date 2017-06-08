@@ -122,6 +122,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         }
         $this->_eventManager = $eventManager ?: new EventManager();
         $this->initialize($config);
+        $this->_eventManager->on($this);
         $this->dispatchEvent('Model.initialize');
     }
 
