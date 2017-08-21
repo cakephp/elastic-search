@@ -60,6 +60,13 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     const VALIDATOR_PROVIDER_NAME = 'collection';
 
     /**
+     * The name of the event dispatched when a validator has been built.
+     *
+     * @var string
+     */
+    const BUILD_VALIDATOR_EVENT = 'Model.buildValidator';
+
+    /**
      * Connection instance
      *
      * @var \Cake\ElasticSearch\Datasource\Connection
@@ -242,12 +249,36 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
      *
      * This method is just an alias of name().
      *
+     * @deprecated Use getAlias() and setAlias() instead
      * @param string $alias The new type name
      * @return string
      */
     public function alias($alias = null)
     {
         return $this->name($alias);
+    }
+
+    /**
+     * Sets the type name / alias.
+     *
+     * @param string $alias Table alias
+     * @return $this
+     */
+    public function setAlias($alias)
+    {
+        $this->name($alias);
+
+        return $this;
+    }
+
+    /**
+     * Returns the type name / alias.
+     *
+     * @return string
+     */
+    public function getAlias()
+    {
+        return $this->name();
     }
 
     /**
