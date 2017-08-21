@@ -443,7 +443,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
      * ## Options
      * - `checkRules` Defaults to true. Check deletion rules before deleting the record.
      *
-     * @param array An array of entities
+     * @param array $entities An array of entities
      * @param array $options An array of options to be used for the event
      * @return bool
      */
@@ -463,12 +463,12 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
                 ));
             }
 
-            $this->dispatchEvent('Model.beforeSave', [
+            $event = $this->dispatchEvent('Model.beforeSave', [
                 'entity' => $entity,
                 'options' => $options
             ]);
 
-            if ($entity->errors()) {
+            if ($event->isStopped() || $entity->errors()) {
                 return false;
             }
 
