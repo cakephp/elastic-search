@@ -54,7 +54,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     protected $_elasticQuery;
 
-     /**
+    /**
      * The various query builder parts that will
      * be transferred to the elastica query.
      *
