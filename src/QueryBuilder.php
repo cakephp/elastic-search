@@ -2,22 +2,21 @@
 
 namespace Cake\ElasticSearch;
 
-use Elastica\Filter;
-use Elastica\Filter\AbstractFilter;
+use Elastica;
 use Elastica\Query\AbstractQuery;
 
-class FilterBuilder
+class QueryBuilder
 {
 
     /**
-     * Returns a Range filter object setup to filter documents having the field between
+     * Returns a Range query object setup to query documents having the field between
      * a `from` and a `to` value
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param mixed $from The lower bound value.
      * @param mixed $to The upper bound value.
-     * @return \Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @return \Elastica\Query\Range
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function between($field, $from, $to)
     {
@@ -28,123 +27,123 @@ class FilterBuilder
     }
 
     /**
-     * Returns a bool filter that can be chained with the `addMust()`, `addShould()`
-     * and `addMustNot()` methods.
+     * Returns a bool query that can be chained with the `addMust()`, `addShould()`,
+     * `addFilter` and `addMustNot()` methods.
      *
-     * @return \Elastica\Filter\BoolFilter
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-filter.html
+     * @return \Elastica\Query\BoolQuery
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
      */
     public function bool()
     {
-        return new Filter\BoolFilter();
+        return new Elastica\Query\BoolQuery();
     }
 
     /**
-     * Returns an Exists filter object setup to filter documents having a property present
+     * Returns an Exists query object setup to query documents having a property present
      * or not set to null.
      *
      * @param string $field The field to check for existance.
      * @return \Elastica\Filter\Exists
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html
      */
     public function exists($field)
     {
-        return new Filter\Exists($field);
+        return new Elastica\Query\Exists($field);
     }
 
     /**
-     * Returns a GeoBoundingBox filter object setup to filter documents having a property
+     * Returns a GeoBoundingBox query object setup to query documents having a property
      * bound by two coordinates.
      *
      * ### Example:
      *
      * {{{
-     *    $filter = $builder->geoBoundingBox('location', [40.73, -74.1], [40.01, -71.12]);
+     *    $query = $builder->geoBoundingBox('location', [40.73, -74.1], [40.01, -71.12]);
      *
-     *    $filter = $builder->geoBoundingBox(
+     *    $query = $builder->geoBoundingBox(
      *        'location',
      *        ['lat => 40.73, 'lon' => -74.1],
      *        ['lat => 40.01, 'lon' => -71.12]
      *    );
      *
-     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', 'drj7teegpus6');
+     *    $query = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', 'drj7teegpus6');
      * }}}
      *
      * @param string $field The field to compare.
      * @param array|string $topLeft The top left coordinate.
      * @param array|string $bottomRight The bottom right coordinate.
-     * @return \Elastica\Filter\GeoBoundingBox
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-bounding-box-filter.html
+     * @return \Elastica\Query\GeoBoundingBox
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-bounding-box-query.html
      */
     public function geoBoundingBox($field, $topLeft, $bottomRight)
     {
-        return new Filter\GeoBoundingBox($field, [$topLeft, $bottomRight]);
+        return new Elastica\Query\GeoBoundingBox($field, [$topLeft, $bottomRight]);
     }
 
     /**
-     * Returns an GeoDistance filter object setup to filter documents having a property
+     * Returns an GeoDistance query object setup to query documents having a property
      * in the radius distance of a coordinate.
      *
      * ### Example:
      *
      * {{{
-     *    $filter = $builder->geoDistance('location', [40.73, -74.1], '10km');
+     *    $query = $builder->geoDistance('location', ['lat' => 40.73, 'lon' => -74.1], '10km');
      *
-     *    $filter = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km');
+     *    $query = $builder->geoBoundingBox('location', 'dr5r9ydj2y73', '5km');
      * }}}
      *
      * @param string $field The field to compare.
      * @param array|string $location The coordinate from which to compare.
      * @param string $distance The distance radius.
-     * @return \Elastica\Filter\GeoDistance
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-range-filter.html
+     * @return \Elastica\Query\GeoDistance
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-query.html
      */
     public function geoDistance($field, $location, $distance)
     {
-        return new Filter\GeoDistance($field, $location, $distance);
+        return new Elastica\Query\GeoDistance($field, $location, $distance);
     }
 
     /**
-     * Returns an GeoDistanceRange filter object setup to filter documents having a property
+     * Returns an GeoDistanceRange query object setup to query documents having a property
      * in between two distance radius from a location coordinate.
      *
      * ### Example:
      *
      * {{{
-     *    $filter = $builder->geoDistanceRange('location', [40.73, -74.1], '10km', '20km');
+     *    $query = $builder->geoDistanceRange('location', ['lat' => 40.73, 'lon' => -74.1], '10km', '20km');
      *
-     *    $filter = $builder->geoDistanceRange('location', 'dr5r9ydj2y73', '5km', '10km');
+     *    $query = $builder->geoDistanceRange('location', 'dr5r9ydj2y73', '5km', '10km');
      * }}}
      *
      * @param string $field The field to compare.
      * @param array|string $location The coordinate from which to compare.
      * @param string $from The initial distance radius.
      * @param string $to The ending distance radius.
-     * @return \Elastica\Filter\GeoDistanceRange
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-filter.html
+     * @return \Elastica\Query\GeoDistanceRange
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-range-query.html
      */
     public function geoDistanceRange($field, $location, $from, $to)
     {
-        return new Filter\GeoDistanceRange($field, $location, [
+        return new Elastica\Query\GeoDistanceRange($field, $location, [
             'gte' => $from,
             'lte' => $to
         ]);
     }
 
     /**
-     * Returns an GeoPolygon filter object setup to filter documents having a property
+     * Returns an GeoPolygon query object setup to query documents having a property
      * enclosed in the polygon induced by the passed geo points.
      *
      * ### Example:
      *
      * {{{
-     *    $filter = $builder->geoPolygon('location', [
+     *    $query= $builder->geoPolygon('location', [
      *        ['lat' => 40, 'lon' => -70],
      *        ['lat' => 30, 'lon' => -80],
      *        ['lat' => 20, 'lon' => -90],
      *    ]);
      *
-     *    $filter = $builder->geoPolygon('location', [
+     *    $query = $builder->geoPolygon('location', [
      *        'drn5x1g8cu2y',
      *        ['lat' => 30, 'lon' => -80],
      *        '20, -90',
@@ -153,51 +152,51 @@ class FilterBuilder
      *
      * @param string $field The field to compare.
      * @param array $geoPoints List of geo points that form the polygon
-     * @return \Elastica\Filter\GeoPolygon
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-filter.html
+     * @return \Elastica\Query\GeoPolygon
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-query.html
      */
     public function geoPolygon($field, array $geoPoints)
     {
-        return new Filter\GeoPolygon($field, $geoPoints);
+        return new Elastica\Query\GeoPolygon($field, $geoPoints);
     }
 
     /**
-     * Returns an GeoShapeProvided filter object setup to filter documents having a property
+     * Returns an GeoShapeProvided query object setup to query documents having a property
      * enclosed in the specified geometrical shape type.
      *
      * ### Example:
      *
      * {{{
-     *    $filter = $builder->geoShape('location', [[13.0, 53.0], [14.0, 52.0]], 'envelope');
+     *    $query = $builder->geoShape('location', [[13.0, 53.0], [14.0, 52.0]], 'envelope');
      *
-     *    $filter = $builder->geoShape('location', [
+     *    $query = $builder->geoShape('location', [
      *        [[-77.03653, 38.897676], [-77.009051, 38.889939]],
      *        'linestring'
      *    ]);
      * }}}
      *
      * You can read about the supported shapes and how they are created here:
-     * http://www.elastic.co/guide/en/elasticsearch/reference/1.x/mapping-geo-shape-type.html
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-shape.html
      *
      * @param string $field The field to compare.
      * @param array $geoPoints List of geo points that form the shape.
      * @param string $type The shape type to use (envelope, linestring, polygon, multipolygon...)
-     * @return \Elastica\Filter\GeoShapeProvided
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
+     * @return \Elastica\Query\GeoShapeProvided
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
     public function geoShape($field, array $geoPoints, $type = 'envelope')
     {
-        return new Filter\GeoShapeProvided($field, $geoPoints, $type);
+        return new Elastica\Query\GeoShapeProvided($field, $geoPoints, $type);
     }
 
     /**
-     * Returns an GeoShapePreIndex filter object setup to filter documents having a property
+     * Returns an GeoShapePreIndex query object setup to query documents having a property
      * enclosed in the specified geometrical shape type.
      *
      * ### Example:
      *
      * {{{
-     *    $filter = $builder->geoShapeIndex('location', 'DEU', 'countries', 'shapes', 'location');
+     *    $query = $builder->geoShapeIndex('location', 'DEU', 'countries', 'shapes', 'location');
      * }}}
      *
      * @param string $field The field to compare.
@@ -205,44 +204,44 @@ class FilterBuilder
      * @param string $type Index type where the pre-indexed shape is.
      * @param string $index Name of the index where the pre-indexed shape is.
      * @param string $path The field specified as path containing the pre-indexed shape.
-     * @return \Elastica\Filter\GeoShapePreIndexed
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
+     * @return \Elastica\Query\GeoShapePreIndexed
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
     public function geoShapeIndex($field, $id, $type, $index = 'shapes', $path = 'shape')
     {
-        return new Filter\GeoShapePreIndexed($field, $id, $type, $index, $path);
+        return new Elastica\Query\GeoShapePreIndexed($field, $id, $type, $index, $path);
     }
 
     /**
-     * Returns an GeohashCell filter object setup to filter documents having a property
+     * Returns an GeohashCell query object setup to query documents having a property
      * enclosed inside the specified geohash in teh give precision.
      *
      * ### Example:
      *
      * {{{
-     *    $filter = $builder->geoHashCell('location', [40, -70], 3);
+     *    $query = $builder->geoHashCell('location', [40, -70], 3);
      * }}}
      *
      * @param string $field The field to compare.
      * @param string|array $location Location as coordinates array or geohash string.
      * @param int|string $precision Length of geohash prefix or distance (3, or "50m")
-     * @param bool $neighbors If true, filters cells next to the given cell.
-     * @return \Elastica\Filter\GeohashCell
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geohash-cell-filter.html
+     * @param bool $neighbors If true, query cells next to the given cell.
+     * @return \Elastica\Query\GeohashCell
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geohash-cell-query.html
      */
     public function geoHashCell($field, $location, $precision = -1, $neighbors = false)
     {
-        return new Filter\GeohashCell($field, $location, $precision, $neighbors);
+        return new Elastica\Query\GeohashCell($field, $location, $precision, $neighbors);
     }
 
     /**
-     * Returns a Range filter object setup to filter documents having the field
+     * Returns a Range query object setup to query documents having the field
      * greater than the provided value.
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param mixed $value The value to compare with.
-     * @return \Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @return \Elastica\Query\Range
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function gt($field, $value)
     {
@@ -250,13 +249,13 @@ class FilterBuilder
     }
 
     /**
-     * Returns a Range filter object setup to filter documents having the field
+     * Returns a Range query object setup to query documents having the field
      * greater than or equal the provided value.
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param mixed $value The value to compare with.
-     * @return \Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @return \Elastica\Query\Range
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function gte($field, $value)
     {
@@ -267,46 +266,46 @@ class FilterBuilder
      * Accepts a query and the child type to run against, and results in parent
      * documents that have child docs matching the query.
      *
-     * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
+     * @param string|\Elastica\Query|\Elastica\Query\AbstractQuery $query The query.
      * @param string $type The child type to query against.
-     * @return \Elastica\Filter\HasChild
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-filter.html
+     * @return \Elastica\Query\HasChild
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-query.html
      */
     public function hasChild($query, $type)
     {
-        return new Filter\HasChild($query, $type);
+        return new Elastica\Query\HasChild($query, $type);
     }
 
     /**
-     * Filters by child documents having parent documents matching the query
+     * Query by child documents having parent documents matching the query
      *
-     * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
+     * @param string|\Elastica\Query|\Elastica\Query\AbstractQuery $query The query.
      * @param string $type The parent type to query against.
      * @return \Elastica\Filter\HasParent
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-query.html
      */
     public function hasParent($query, $type)
     {
-        return new Filter\HasParent($query, $type);
+        return new Elastica\Query\HasParent($query, $type);
     }
 
     /**
-     * Filters documents that only have the provided ids.
+     * Query documents that only have the provided ids.
      *
-     * @param array $ids The list of ids to filter by.
+     * @param array $ids The list of ids to query by.
      * @param string|array $type A single or multiple types in which the ids should be searched.
-     * @return \Elastica\Filter\Ids
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-filter.html
+     * @return \Elastica\Query\Ids
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-query.html
      */
     public function ids(array $ids = [], $type = null)
     {
-        return new Filter\Ids($type, $ids);
+        return new Elastica\Query\Ids($type, $ids);
     }
 
     /**
-     * The indices filter can be used when executed across multiple indices, allowing you to have a filter
+     * The indices query can be used when executed across multiple indices, allowing you to have a query
      * that is only applied when executed on an index matching a specific list of indices, and another
-     * filter that executes when it is executed on an index that does not match the listed indices.
+     * query that executes when it is executed on an index that does not match the listed indices.
      *
      * ### Example:
      *
@@ -318,50 +317,50 @@ class FilterBuilder
      *    );
      * }}}
      *
-     * @param array $indices The indices where to apply the filter.
-     * @param \Elastica\Filter\AbstractFilter $match Filter which will be applied to docs
+     * @param array $indices The indices where to apply the query.
+     * @param \Elastica\Query\AbstractQuery $query Query which will be applied to docs
      * in the specified indices.
-     * @param \Elastica\Filter\AbstractFilter $noMatch Filter to apply to documents not present
+     * @param \Elastica\Query\AbstractQuery $noMatch Query to apply to documents not present
      * in the specified indices.
      * @return \Elastica\Filter\Indices
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-indices-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-indices-query.html
      */
-    public function indices(array $indices, AbstractFilter $match, AbstractFilter $noMatch)
+    public function indices(array $indices, AbstractQuery $query, AbstractQuery $noMatch)
     {
-        return (new Filter\Indices($match, $indices))->setNoMatchFilter($noMatch);
+        return (new Elastica\Query\Indices($query, $indices))->setNoMatchQuery($noMatch);
     }
 
     /**
      * Limits the number of documents (per shard) to execute on.
      *
-     * @param int $limit The maximum number of documents to filter.
-     * @return \Elastica\Filter\Limit
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-limit-filter.html
+     * @param int $limit The maximum number of documents to query.
+     * @return \Elastica\Query\Limit
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-limit-query.html
      */
     public function limit($limit)
     {
-        return new Filter\Limit((int)$limit);
+        return new Elastica\Query\Limit((int)$limit);
     }
 
     /**
-     * A filter that returns all documents.
+     * A query that returns all documents.
      *
-     * @return \Elastica\Filter\MatchAll
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-filter.html
+     * @return \Elastica\Query\MatchAll
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html
      */
     public function matchAll()
     {
-        return new Filter\MatchAll();
+        return new Elastica\Query\MatchAll();
     }
 
     /**
-     * Returns a Range filter object setup to filter documents having the field
+     * Returns a Range query object setup to query documents having the field
      * smaller than the provided value.
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param mixed $value The value to compare with.
-     * @return \Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @return \Elastica\Query\Range
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function lt($field, $value)
     {
@@ -369,13 +368,13 @@ class FilterBuilder
     }
 
     /**
-     * Returns a Range filter object setup to filter documents having the field
+     * Returns a Range query object setup to query documents having the field
      * smaller or equals than the provided value.
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param mixed $value The value to compare with.
-     * @return \Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @return \Elastica\Query\Range
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function lte($field, $value)
     {
@@ -383,20 +382,20 @@ class FilterBuilder
     }
 
     /**
-     * Returns a Missing filter object setup to filter documents not having a property present or
+     * Returns a Missing query object setup to query documents not having a property present or
      * not null.
      *
      * @param string $field The field to check for existance.
-     * @return \Elastica\Filter\Missing
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
+     * @return \Elastica\Query\Missing
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-missing-query.html
      */
     public function missing($field = '')
     {
-        return new Filter\Missing($field);
+        return new Elastica\Query\Missing($field);
     }
 
     /**
-     * Returns a Nested filter object setup to filter sub documents by a path.
+     * Returns a Nested query object setup to query sub documents by a path.
      *
      * ### Example:
      *
@@ -404,79 +403,57 @@ class FilterBuilder
      *    $builder->nested('comments', $builder->term('author', 'mark'));
      * }}}
      *
-     * Or using a query as filter:
      *
-     * {{{
-     *    $builder->nested('comments', new \Elastica\Query\SimpleQueryString('awesome'));
-     * }}}
-     *
-     * @param string $path A dot separated string denoting the path to the property to filter.
-     * @param \Elastica\Query\AbstractQuery|\Elastica\Filter\AbstractFilter $filter The filtering conditions.
-     * @return \Elastica\Filter\Nested
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-filter.html
+     * @param string $path A dot separated string denoting the path to the property to query.
+     * @param \Elastica\Query\AbstractQuery $query The query conditions.
+     * @return \Elastica\Query\Nested
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-query.html
      */
-    public function nested($path, $filter)
+    public function nested($path, $query)
     {
-        $nested = new Filter\Nested();
+        $nested = new Elastica\Query\Nested();
         $nested->setPath($path);
 
-        if ($filter instanceof AbstractFilter) {
-            $nested->setFilter($filter);
-        }
-
-        if ($filter instanceof AbstractQuery) {
-            $nested->setQuery($filter);
-        }
+        $nested->setQuery($query);
 
         return $nested;
     }
 
     /**
-     * Returns a BoolNot filter that is typically ussed to negate another filter expression
+     * Returns a BoolQuery query with must_not field that is typically ussed to negate another query expression
      *
-     * @param \Elastica\Filter\AbstractFilter $filter The filter to negate
-     * @return \Elastica\Filter\BoolNot
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-not-filter.html
+     * @param \Elastica\Query\AbstractQuery|array $query The query to negate
+     * @return \Elastica\Query\BoolQuery
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
      */
-    public function not($filter)
+    public function not($query)
     {
-        return new Filter\BoolNot($filter);
+        $boolQuery = new Elastica\Query\BoolQuery();
+        $boolQuery->addMustNot($query);
+
+        return $boolQuery;
     }
 
     /**
-     * Returns a Prefix filter to filter documents that have fields containing terms with
+     * Returns a Prefix query to query documents that have fields containing terms with
      * a specified prefix
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param string $prefix The prefix to check for.
-     * @return \Elastica\Filter\Prefix
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-filter.html
+     * @param float $boost The optional boost
+     * @return Elastica\Query\Prefix
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html
      */
-    public function prefix($field, $prefix)
+    public function prefix($field, $prefix, $boost = 1.0)
     {
-        return new Filter\Prefix($field, $prefix);
+        $prefixQuery = new Elastica\Query\Prefix;
+        $prefixQuery->setPrefix($field, $prefix, $boost);
+
+        return $prefixQuery;
     }
 
     /**
-     * Returns a Query filter that Wraps any query to be used as a filter.
-     *
-     * ### Example:
-     *
-     * {{{
-     *  $builder->query(new \Elastica\Query\SimpleQueryString('awesome OR great'));
-     * }}}
-     *
-     * @param array|\Elastica\Query\AbstractQuery $query The Query to wrap as a filter
-     * @return \Elastica\Filter\Query
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-filter.html
-     */
-    public function query($query)
-    {
-        return new Filter\Query($query);
-    }
-
-    /**
-     * Returns a Range filter object setup to filter documents having the field
+     * Returns a Range query object setup to query documents having the field
      * greater than the provided values.
      *
      * The $args array accepts the following keys:
@@ -486,18 +463,18 @@ class FilterBuilder
      * - lte: less than or equal
      * - lt: less than
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param array $args An array describing the search range
-     * @return \Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @return \Elastica\Query\Range
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function range($field, array $args)
     {
-        return new Filter\Range($field, $args);
+        return new Elastica\Query\Range($field, $args);
     }
 
     /**
-     * Returns a Regexp filter to filter documents based on a regular expression.
+     * Returns a Regexp query to query documents based on a regular expression.
      *
      * ### Example:
      *
@@ -505,19 +482,19 @@ class FilterBuilder
      *  $builder->regexp('name.first', 'ma.*');
      * }}}
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param string $regexp The regular expression.
-     * @param array $options Regultar expression flags or options.
-     * @return \Elastica\Filter\Regexp
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
+     * @param float $boost Boost
+     * @return \Elastica\Query\Regexp
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html
      */
-    public function regexp($field, $regexp, array $options = [])
+    public function regexp($field, $regexp, $boost = 1.0)
     {
-        return new Filter\Regexp($field, $regexp, $options);
+        return new Elastica\Query\Regexp($field, $regexp, $boost);
     }
 
     /**
-     * Returns a Script filter object that allows to filter based on the return value of a script.
+     * Returns a Script query object that allows to query based on the return value of a script.
      *
      * ### Example:
      *
@@ -525,17 +502,36 @@ class FilterBuilder
      *  $builder->script("doc['price'].value > 1");
      * }}}
      *
-     * @param string $script The script.
-     * @return \Elastica\Filter\Regexp
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
+     * @param array|string|\Elastica\Script\AbstractScript $script The script.
+     * @return \Elastica\Query\Script
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-query.html
      */
     public function script($script)
     {
-        return new Filter\Script($script);
+        return new Elastica\Query\Script($script);
     }
 
     /**
-     * Returns a Term filter object that filters documents that have fields containing a term.
+     * Returns a SimpleQueryString object that allows to query based on a search string.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->simpleQueryString(['body'], '"fried eggs" +(eggplant | potato) -frittata');
+     * }}}
+     *
+     * @param array|string $fields The fields to search within
+     * @param string $string The pattern to find in the fields
+     * @return \Elastica\Query\SimpleQueryString
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html
+     */
+    public function simpleQueryString($fields, $string)
+    {
+        return new Elastica\Query\SimpleQueryString($string, (array)$fields);
+    }
+
+    /**
+     * Returns a Term query object that query documents that have fields containing a term.
      *
      * ### Example:
      *
@@ -543,18 +539,18 @@ class FilterBuilder
      *  $builder->term('user.name', 'jose');
      * }}}
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param string $value The term to find in field.
-     * @return \Elastica\Filter\Term
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-filter.html
+     * @return \Elastica\Query\Term
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
      */
     public function term($field, $value)
     {
-        return new Filter\Term([$field => $value]);
+        return new Elastica\Query\Term([$field => $value]);
     }
 
     /**
-     * Returns a Terms filter object that filters documents that have fields containing some terms.
+     * Returns a Terms query object that query documents that have fields containing some terms.
      *
      * ### Example:
      *
@@ -562,18 +558,18 @@ class FilterBuilder
      *  $builder->terms('user.name', ['jose', 'mark']);
      * }}}
      *
-     * @param string $field The field to filter by.
+     * @param string $field The field to query by.
      * @param array $values The list of terms to find in field.
-     * @return \Elastica\Filter\Terms
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-filter.html
+     * @return \Elastica\Query\Terms
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html
      */
     public function terms($field, $values)
     {
-        return new Filter\Terms($field, $values);
+        return new Elastica\Query\Terms($field, $values);
     }
 
     /**
-     * Returns a Type filter object that filters documents matching the provided document/mapping type.
+     * Returns a Type query object that query documents matching the provided document/mapping type.
      *
      * ### Example:
      *
@@ -582,16 +578,16 @@ class FilterBuilder
      * }}}
      *
      * @param string $type The type name
-     * @return \Elastica\Filter\Type
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-filter.html
+     * @return \Elastica\Query\Type
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
      */
     public function type($type)
     {
-        return new Filter\Type($type);
+        return new Elastica\Query\Type($type);
     }
 
     /**
-     * Combines all the passed arguments in a single boolean filter
+     * Combines all the passed arguments in a single bool query
      * using the "must" clause.
      *
      * ### Example:
@@ -603,32 +599,24 @@ class FilterBuilder
      *  );
      * }}}
      *
-     * @return \Elastica\Filter\BoolFilter
+     * @return \Elastica\Query\BoolQuery
      */
     // @codingStandardsIgnoreStart
     public function and_()
     {
         // @codingStandardsIgnoreEnd
-        $filters = func_get_args();
+        $queries = func_get_args();
         $bool = $this->bool();
 
-        foreach ($filters as $k => $filter) {
-            if ($filter instanceof Filter\BoolFilter) {
-                $bool = $filter;
-                unset($filters[$k]);
-                break;
-            }
-        }
-
-        foreach ($filters as $filter) {
-            $bool->addMust($filter);
+        foreach ($queries as $query) {
+            $bool->addMust($query);
         }
 
         return $bool;
     }
 
     /**
-     * Combines all the passed arguments in a single BoolOr filter.
+     * Combines all the passed arguments in a single BoolQuery query using should clause.
      *
      * ### Example:
      *
@@ -639,20 +627,20 @@ class FilterBuilder
      *  );
      * }}}
      *
-     * @return \Elastica\Filter\BoolOr
+     * @return \Elastica\Query\BoolQuery
      */
     // @codingStandardsIgnoreStart
     public function or_()
     {
         // @codingStandardsIgnoreEnd
-        $filters = func_get_args();
-        $or = new Filter\BoolOr();
+        $queries = func_get_args();
+        $bool = $this->bool();
 
-        foreach ($filters as $filter) {
-            $or->addFilter($filter);
+        foreach ($queries as $query) {
+            $bool->addShould($query);
         }
 
-        return $or;
+        return $bool;
     }
 
     /**
@@ -667,22 +655,22 @@ class FilterBuilder
         if (in_array($method, ['and', 'or'])) {
             return call_user_func_array([$this, $method . '_'], $args);
         }
-        throw new \BadMethodCallException('Cannot build filter ' . $method);
+        throw new \BadMethodCallException('Cannot build query ' . $method);
     }
 
     /**
-     * Converts an array into a single array of filter objects
+     * Converts an array into a single array of query objects
      *
      * ### Parsing a single array:
      *
      *   {{{
-     *       $filter = $builder->parse([
+     *       $query = $builder->parse([
      *           'name' => 'mark',
      *           'age <=' => 35
      *       ]);
      *
      *       // Equivalent to:
-     *       $filter = [
+     *       $query = [
      *           $builder->term('name', 'mark'),
      *           $builder->lte('age', 35)
      *       ];
@@ -691,7 +679,7 @@ class FilterBuilder
      * ### Creating "or" conditions:
      *
      * {{{
-     *  $filter = $builder->parse([
+     *  $query = $builder->parse([
      *      'or' => [
      *          'name' => 'mark',
      *          'age <=' => 35
@@ -699,7 +687,7 @@ class FilterBuilder
      *  ]);
      *
      *  // Equivalent to:
-     *  $filter = [$builder->or(
+     *  $query = [$builder->or(
      *      $builder->term('name', 'mark'),
      *      $builder->lte('age', 35)
      *  )];
@@ -708,7 +696,7 @@ class FilterBuilder
      * ### Negating conditions:
      *
      * {{{
-     *  $filter = $builder->parse([
+     *  $query = $builder->parse([
      *      'not' => [
      *          'name' => 'mark',
      *          'age <=' => 35
@@ -716,7 +704,7 @@ class FilterBuilder
      *  ]);
      *
      *  // Equivalent to:
-     *  $filter = [$builder->not(
+     *  $query = [$builder->not(
      *      $builder->and(
      *          $builder->term('name', 'mark'),
      *          $builder->lte('age', 35)
@@ -726,13 +714,13 @@ class FilterBuilder
      *
      * ### Checking for field existance
      * {{{
-     *       $filter = $builder->parse([
+     *       $query = $builder->parse([
      *           'name is' => null,
      *           'age is not' => null
      *       ]);
      *
      *       // Equivalent to:
-     *       $filter = [
+     *       $query = [
      *           $builder->missing('name'),
      *           $builder->exists('age')
      *       ];
@@ -741,24 +729,24 @@ class FilterBuilder
      * ### Checking if a value is in a list of terms
      *
      * {{{
-     *       $filter = $builder->parse([
+     *       $query = $builder->parse([
      *           'name in' => ['jose', 'mark']
      *       ]);
      *
      *       // Equivalent to:
-     *       $filter = [$builder->terms('name', ['jose', 'mark'])]
+     *       $query = [$builder->terms('name', ['jose', 'mark'])]
      * }}}
      *
      * The list of supported operators is:
      *
      * `<`, `>`, `<=`, `>=`, `in`, `not in`, `is`, `is not`, `!=`
      *
-     * @param array|\Elastica\Filter\AbstractFilter $conditions The list of conditions to parse.
+     * @param array|\Elastica\Query\AbstractQuery $conditions The list of conditions to parse.
      * @return array
      */
     public function parse($conditions)
     {
-        if ($conditions instanceof AbstractFilter) {
+        if ($conditions instanceof AbstractQuery) {
             return $conditions;
         }
 
@@ -791,13 +779,13 @@ class FilterBuilder
                 continue;
             }
 
-            if ($c instanceof AbstractFilter) {
+            if ($c instanceof AbstractQuery) {
                 $result[] = $c;
                 continue;
             }
 
             if (!$numericKey) {
-                $result[] = $this->_parseFilter($k, $c);
+                $result[] = $this->_parseQuery($k, $c);
             }
         }
 
@@ -808,10 +796,10 @@ class FilterBuilder
      * Parses a field name containing an operator into a Filter object.
      *
      * @param string $field The filed name containing the operator
-     * @param mixed $value The value to pass to the filter
+     * @param mixed $value The value to pass to the query
      * @return \Elastica\Filter\AbstractFilter
      */
-    protected function _parseFilter($field, $value)
+    protected function _parseQuery($field, $value)
     {
         $operator = '=';
         $parts = explode(' ', trim($field), 2);

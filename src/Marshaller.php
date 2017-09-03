@@ -114,6 +114,7 @@ class Marshaller
         if ($embed->type() === Embedded::ONE_TO_ONE) {
             return new $class($data);
         }
+
         if ($embed->type() === Embedded::ONE_TO_MANY) {
             $children = [];
             foreach ($data as $row) {
@@ -145,6 +146,7 @@ class Marshaller
 
             return $existing;
         }
+
         if ($embed->type() === Embedded::ONE_TO_MANY) {
             foreach ($existing as $i => $row) {
                 if (isset($data[$i])) {
@@ -303,6 +305,7 @@ class Marshaller
         if (!$options['validate']) {
             return [];
         }
+
         if ($options['validate'] === true) {
             $options['validate'] = $this->type->validator('default');
         }

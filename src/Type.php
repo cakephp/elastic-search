@@ -60,6 +60,13 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     const VALIDATOR_PROVIDER_NAME = 'collection';
 
     /**
+     * The name of the event dispatched when a validator has been built.
+     *
+     * @var string
+     */
+    const BUILD_VALIDATOR_EVENT = 'Model.buildValidator';
+
+    /**
      * Connection instance
      *
      * @var \Cake\ElasticSearch\Datasource\Connection
@@ -122,6 +129,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         }
         $this->_eventManager = $eventManager ?: new EventManager();
         $this->initialize($config);
+        $this->_eventManager->on($this);
         $this->dispatchEvent('Model.initialize');
     }
 
@@ -241,12 +249,36 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
      *
      * This method is just an alias of name().
      *
+     * @deprecated Use getAlias() and setAlias() instead
      * @param string $alias The new type name
      * @return string
      */
     public function alias($alias = null)
     {
         return $this->name($alias);
+    }
+
+    /**
+     * Sets the type name / alias.
+     *
+     * @param string $alias Table alias
+     * @return $this
+     */
+    public function setAlias($alias)
+    {
+        $this->name($alias);
+
+        return $this;
+    }
+
+    /**
+     * Returns the type name / alias.
+     *
+     * @return string
+     */
+    public function getAlias()
+    {
+        return $this->name();
     }
 
     /**
@@ -307,6 +339,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         $query->applyOptions($options);
         $options = $query->getOptions();
         $finder = 'find' . ucfirst($type);
+
         if (method_exists($this, $finder)) {
             return $this->{$finder}($query, $options);
         }
@@ -430,9 +463,8 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         } else {
             $query->where($conditions);
         }
-        $type = $this->connection()->getIndex()->getType($this->name());
 
-        return $type->count($query->compileQuery()) > 0;
+        return $query->count() > 0;
     }
 
     /**
@@ -530,14 +562,17 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             'entity' => $entity,
             'options' => $options
         ]);
+
         if ($event->isStopped()) {
             return $event->result;
         }
+
         if ($entity->errors()) {
             return false;
         }
 
         $mode = $entity->isNew() ? RulesChecker::CREATE : RulesChecker::UPDATE;
+
         if ($options['checkRules'] && !$this->checkRules($entity, $mode, $options)) {
             return false;
         }
@@ -591,9 +626,11 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             'entity' => $entity,
             'options' => $options
         ]);
+
         if ($event->isStopped()) {
             return $event->result;
         }
+
         if (!$this->checkRules($entity, RulesChecker::DELETE, $options)) {
             return false;
         }
@@ -780,9 +817,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
      */
     public function hasField($field)
     {
-        $mapping = $this->schema();
-
-        return $mapping->field($field) !== null;
+        return $this->schema()->field($field) !== null;
     }
 
     /**

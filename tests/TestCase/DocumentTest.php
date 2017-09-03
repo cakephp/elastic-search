@@ -45,7 +45,10 @@ class DocumentTest extends TestCase
     public function testConstructorWithResult()
     {
         $data = ['foo' => 1, 'bar' => 2];
-        $result = $this->getMock('Elastica\Result', ['getData'], [[]]);
+        $result = $this->getMockBuilder('Elastica\Result')
+            ->setMethods(['getData'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $result->expects($this->once())->method('getData')
             ->will($this->returnValue($data));
         $document = new Document($result);
@@ -60,7 +63,10 @@ class DocumentTest extends TestCase
     public function testConstructorWithResultAsOption()
     {
         $data = ['foo' => 1, 'bar' => 2];
-        $result = $this->getMock('Elastica\Result', [], [[]]);
+        $result = $this->getMockBuilder('Elastica\Result')
+            ->setMethods(['getData'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $document = new Document($data, ['result' => $result]);
         $this->assertSame($data, $document->toArray());
     }
@@ -88,7 +94,10 @@ class DocumentTest extends TestCase
      */
     public function testTypeWithResult()
     {
-        $result = $this->getMock('Elastica\Result', [], [[]]);
+        $result = $this->getMockBuilder('Elastica\Result')
+            ->setMethods(['getData', 'getId', 'getType', 'getVersion', 'getHighlights', 'getExplanation'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $data = ['a' => 'b'];
 
         $result

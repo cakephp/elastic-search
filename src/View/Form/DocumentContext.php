@@ -168,11 +168,14 @@ class DocumentContext implements ContextInterface
         if ($val !== null) {
             return $val;
         }
+
         if (empty($this->_context['entity'])) {
             return null;
         }
+
         $parts = explode('.', $field);
         $entity = $this->entity($parts);
+
         if ($entity instanceof Document) {
             return $entity->get(array_pop($parts));
         }
@@ -195,6 +198,7 @@ class DocumentContext implements ContextInterface
         if ($oneElement && $this->_isCollection) {
             return false;
         }
+
         $entity = $this->_context['entity'];
         if ($oneElement) {
             return $entity;
@@ -220,11 +224,13 @@ class DocumentContext implements ContextInterface
                 $next instanceof Traversable ||
                 $next instanceof Document
             );
+
             if ($isLast || !$isTraversable) {
                 return $entity;
             }
             $entity = $next;
         }
+
         throw new RuntimeException(sprintf(
             'Unable to fetch property "%s"',
             implode(".", $path)
@@ -243,9 +249,11 @@ class DocumentContext implements ContextInterface
         if (is_array($target) && isset($target[$field])) {
             return $target[$field];
         }
+
         if ($target instanceof Document) {
             return $target->get($field);
         }
+
         if ($target instanceof Traversable) {
             foreach ($target as $i => $val) {
                 if ($i == $field) {
@@ -274,6 +282,7 @@ class DocumentContext implements ContextInterface
         if (!$validator->hasField($field)) {
             return false;
         }
+
         if ($this->type($field) !== 'boolean') {
             return $validator->isEmptyAllowed($field, $isNew) === false;
         }

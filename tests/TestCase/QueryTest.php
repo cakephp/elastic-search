@@ -14,8 +14,8 @@
  */
 namespace Cake\ElasticSearch\Test;
 
-use Cake\ElasticSearch\FilterBuilder;
 use Cake\ElasticSearch\Query;
+use Cake\ElasticSearch\QueryBuilder;
 use Cake\ElasticSearch\Type;
 use Cake\TestSuite\TestCase;
 
@@ -51,58 +51,24 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Tests that executing a query means executing a search against the associated
-     * Type and decorates the internal ResultSet
-     *
-     * @return void
+     * Test that query overwrite any query
      */
-    public function testAll()
+    public function testSetFullQuery()
     {
-        $connection = $this->getMock(
-            'Cake\ElasticSearch\Datasource\Connection',
-            ['getIndex']
-        );
-        $type = new Type([
-            'name' => 'foo',
-            'connection' => $connection
-        ]);
-
-        $index = $this->getMockBuilder('Elastica\Index')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $internalType = $this->getMockBuilder('Elastica\Type')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $connection->expects($this->once())
-            ->method('getIndex')
-            ->will($this->returnValue($index));
-
-        $index->expects($this->once())
-            ->method('getType')
-            ->will($this->returnValue($internalType));
-
-        $result = $this->getMockBuilder('Elastica\ResultSet')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $internalQuery = $this->getMockBuilder('Elastica\Query')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $internalType->expects($this->once())
-            ->method('search')
-            ->will($this->returnCallback(function ($query) use ($result) {
-                $this->assertEquals(new \Elastica\Query, $query);
-
-                return $result;
-            }));
-
+        $type = new Type();
         $query = new Query($type);
-        $resultSet = $query->all();
-        $this->assertInstanceOf('Cake\ElasticSearch\ResultSet', $resultSet);
-        $this->assertSame($result, $resultSet->getInnerIterator());
+
+        $query
+            ->where(['name' => 'test'])
+            ->setFullQuery(new \Elastica\Query\Term(['name' => 'cake']));
+
+        $expected = ['query' => [
+            'term' => [
+                'name' => 'cake'
+            ]
+        ]];
+
+        $this->assertSame($expected, $query->compileQuery()->toArray());
     }
 
     /**
@@ -239,9 +205,9 @@ class QueryTest extends TestCase
             '_source' => ['id', 'name'],
             'size' => 10,
             'query' => [
-                'filtered' => [
+                'bool' => [
                     'filter' => [
-                        'bool' => [
+                        ['bool' => [
                             'must' => [[
                                 'range' => [
                                     'created' => [
@@ -249,7 +215,7 @@ class QueryTest extends TestCase
                                     ]
                                 ]
                             ]]
-                        ]
+                        ]]
                     ]
                 ]
             ]
@@ -330,7 +296,8 @@ class QueryTest extends TestCase
         ]);
 
         $compiled = $query->compileQuery()->toArray();
-        $filter = $compiled['query']['filtered']['filter']['bool']['must'];
+
+        $filter = $compiled['query']['bool']['filter'][0]['bool']['must'];
 
         $expected = ['term' => ['name.first' => 'jose']];
         $this->assertEquals($expected, $filter[0]);
@@ -339,18 +306,18 @@ class QueryTest extends TestCase
         $this->assertEquals($expected, $filter[1]);
 
         $expected = ['terms' => ['tags' => ['cake', 'php']]];
-        $this->assertEquals($expected, $filter[2]['or'][0]);
+        $this->assertEquals($expected, $filter[2]['bool']['should'][0]);
 
         $expected = [
-            'not' => [
-                'filter' => [
-                    'terms' => ['interests' => ['c#', 'java']]
+            'bool' => [
+                'must_not' => [
+                    ['terms' => ['interests' => ['c#', 'java']]]
                 ]
             ]
         ];
-        $this->assertEquals($expected, $filter[2]['or'][1]);
+        $this->assertEquals($expected, $filter[2]['bool']['should'][1]);
 
-        $query->where(function (FilterBuilder $builder) {
+        $query->where(function (QueryBuilder $builder) {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
                 $builder->exists('stuff')
@@ -358,7 +325,7 @@ class QueryTest extends TestCase
         });
 
         $compiled = $query->compileQuery()->toArray();
-        $filter = $compiled['query']['filtered']['filter']['bool']['must'];
+        $filter = $compiled['query']['bool']['filter'][0]['bool']['must'];
         $filter = $filter[3]['bool']['must'];
         $expected = [
             ['term' => ['another.thing' => 'value']],
@@ -368,9 +335,130 @@ class QueryTest extends TestCase
 
         $query->where(['name.first' => 'jose'], true);
         $compiled = $query->compileQuery()->toArray();
-        $filter = $compiled['query']['filtered']['filter']['bool']['must'];
+        $filter = $compiled['query']['bool']['filter'][0]['bool']['must'];
         $expected = ['term' => ['name.first' => 'jose']];
         $this->assertEquals([$expected], $filter);
+    }
+
+    /**
+     * Tests the query() method
+     *
+     * @return void
+     */
+    public function testQueryMust()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $query->queryMust([
+            'name.first' => 'jose',
+            'age >' => 29,
+            'or' => [
+                'tags in' => ['cake', 'php'],
+                'interests not in' => ['c#', 'java']
+            ]
+        ]);
+
+        $compiled = $query->compileQuery()->toArray();
+
+        $must = $compiled['query']['bool']['must'];
+
+        $expected = ['term' => ['name.first' => 'jose']];
+        $this->assertEquals($expected, $must[0]);
+
+        $expected = ['range' => ['age' => ['gt' => 29]]];
+        $this->assertEquals($expected, $must[1]);
+
+        $expected = ['terms' => ['tags' => ['cake', 'php']]];
+        $this->assertEquals($expected, $must[2]['bool']['should'][0]);
+
+        $expected = [
+            'bool' => [
+                'must_not' => [
+                    ['terms' => ['interests' => ['c#', 'java']]]
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $must[2]['bool']['should'][1]);
+
+        $query->queryMust(function (QueryBuilder $builder) {
+            return $builder->and(
+                $builder->term('another.thing', 'value'),
+                $builder->exists('stuff')
+            );
+        });
+
+        $compiled = $query->compileQuery()->toArray();
+        $must = $compiled['query']['bool']['must'];
+        $must = $must[3]['bool']['must'];
+        $expected = [
+            ['term' => ['another.thing' => 'value']],
+            ['exists' => ['field' => 'stuff']],
+        ];
+        $this->assertEquals($expected, $must);
+
+        $query->queryMust(['name.first' => 'jose'], true);
+        $compiled = $query->compileQuery()->toArray();
+        $must = $compiled['query']['bool']['must'];
+        $expected = ['term' => ['name.first' => 'jose']];
+        $this->assertEquals([$expected], $must);
+    }
+
+    public function testQueryShould()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $query->queryShould([
+            'name.first' => 'jose',
+            'age >' => 29,
+            'or' => [
+                'tags in' => ['cake', 'php'],
+                'interests not in' => ['c#', 'java']
+            ]
+        ]);
+
+        $compiled = $query->compileQuery()->toArray();
+
+        $should = $compiled['query']['bool']['should'];
+
+        $expected = ['term' => ['name.first' => 'jose']];
+        $this->assertEquals($expected, $should[0]);
+
+        $expected = ['range' => ['age' => ['gt' => 29]]];
+        $this->assertEquals($expected, $should[1]);
+
+        $expected = ['terms' => ['tags' => ['cake', 'php']]];
+        $this->assertEquals($expected, $should[2]['bool']['should'][0]);
+
+        $expected = [
+            'bool' => [
+                'must_not' => [
+                    ['terms' => ['interests' => ['c#', 'java']]]
+                ]
+            ]
+        ];
+        $this->assertEquals($expected, $should[2]['bool']['should'][1]);
+
+        $query->queryShould(function (QueryBuilder $builder) {
+            return $builder->and(
+                $builder->term('another.thing', 'value'),
+                $builder->exists('stuff')
+            );
+        });
+
+        $compiled = $query->compileQuery()->toArray();
+        $should = $compiled['query']['bool']['should'];
+        $should = $should[3]['bool']['must'];
+        $expected = [
+            ['term' => ['another.thing' => 'value']],
+            ['exists' => ['field' => 'stuff']],
+        ];
+        $this->assertEquals($expected, $should);
+
+        $query->queryShould(['name.first' => 'jose'], true);
+        $compiled = $query->compileQuery()->toArray();
+        $should = $compiled['query']['bool']['should'];
+        $expected = ['term' => ['name.first' => 'jose']];
+        $this->assertEquals([$expected], $should);
     }
 
     /**
@@ -392,6 +480,7 @@ class QueryTest extends TestCase
         ]);
 
         $compiled = $query->compileQuery()->toArray();
+
         $filter = $compiled['post_filter']['bool']['must'];
 
         $expected = ['term' => ['name.first' => 'jose']];
@@ -401,18 +490,18 @@ class QueryTest extends TestCase
         $this->assertEquals($expected, $filter[1]);
 
         $expected = ['terms' => ['tags' => ['cake', 'php']]];
-        $this->assertEquals($expected, $filter[2]['or'][0]);
+        $this->assertEquals($expected, $filter[2]['bool']['should'][0]);
 
         $expected = [
-            'not' => [
-                'filter' => [
-                    'terms' => ['interests' => ['c#', 'java']]
+            'bool' => [
+                'must_not' => [
+                        ['terms' => ['interests' => ['c#', 'java']]]
                 ]
             ]
         ];
-        $this->assertEquals($expected, $filter[2]['or'][1]);
+        $this->assertEquals($expected, $filter[2]['bool']['should'][1]);
 
-        $query->postFilter(function (FilterBuilder $builder) {
+        $query->postFilter(function (QueryBuilder $builder) {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
                 $builder->exists('stuff')
@@ -488,5 +577,19 @@ class QueryTest extends TestCase
         $this->assertArrayHasKey('post_tags', $compiled['highlight']);
         $this->assertArrayHasKey('fields', $compiled['highlight']);
         $this->assertEquals(100, $compiled['highlight']['fields']['contents']['fragment_size']);
+    }
+
+    /**
+     * Tests that it is possible to pass a min score
+     *
+     * @return void
+     */
+    public function testMinScore()
+    {
+        $type = new Type();
+        $query = new Query($type);
+        $this->assertSame($query, $query->withMinScore(1));
+        $elasticQuery = $query->compileQuery()->toArray();
+        $this->assertSame(1, $elasticQuery['min_score']);
     }
 }

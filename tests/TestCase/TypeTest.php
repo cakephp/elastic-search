@@ -30,9 +30,10 @@ class TypeTest extends TestCase
     public function setUp()
     {
         parent::setUp();
+        $this->connection = ConnectionManager::get('test');
         $this->type = new Type([
             'name' => 'articles',
-            'connection' => ConnectionManager::get('test')
+            'connection' => $this->connection
         ]);
     }
 
@@ -122,10 +123,9 @@ class TypeTest extends TestCase
      */
     public function testGet()
     {
-        $connection = $this->getMock(
-            'Cake\ElasticSearch\Datasource\Connection',
-            ['getIndex']
-        );
+        $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
+            ->setMethods(['getIndex'])
+            ->getMock();
         $type = new Type([
             'name' => 'foo',
             'connection' => $connection
@@ -147,7 +147,9 @@ class TypeTest extends TestCase
             ->method('getType')
             ->will($this->returnValue($internalType));
 
-        $document = $this->getMock('Elastica\Document', ['getId', 'getData']);
+        $document = $this->getMockBuilder('Elastica\Document')
+            ->setMethods(['getId', 'getData'])
+            ->getMock();
         $internalType->expects($this->once())
             ->method('getDocument')
             ->with('foo', ['bar' => 'baz'])
@@ -175,10 +177,9 @@ class TypeTest extends TestCase
      */
     public function testNewEntity()
     {
-        $connection = $this->getMock(
-            'Cake\ElasticSearch\Datasource\Connection',
-            ['getIndex']
-        );
+        $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
+            ->setMethods(['getIndex'])
+            ->getMock();
         $type = new Type([
             'name' => 'articles',
             'connection' => $connection
@@ -199,10 +200,9 @@ class TypeTest extends TestCase
      */
     public function testNewEntities()
     {
-        $connection = $this->getMock(
-            'Cake\ElasticSearch\Datasource\Connection',
-            ['getIndex']
-        );
+        $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
+            ->setMethods(['getIndex'])
+            ->getMock();
         $type = new Type([
             'name' => 'articles',
             'connection' => $connection
@@ -603,7 +603,11 @@ class TypeTest extends TestCase
      */
     public function testDeleteAll()
     {
+        $this->skipIf(true, 'This can only work with a plugin that is only available for elastic 2.x');
         $result = $this->type->deleteAll(['title' => 'article']);
+
+        $this->connection->getIndex()->refresh();
+
         $this->assertTrue($result);
         $this->assertEquals(0, $this->type->find()->count());
     }
@@ -615,7 +619,11 @@ class TypeTest extends TestCase
      */
     public function testDeleteAllOnlySome()
     {
+        $this->skipIf(true, 'This can only work with a plugin that is only available for elastic 2.x');
         $result = $this->type->deleteAll(['body' => 'cake']);
+
+        $this->connection->getIndex()->refresh();
+
         $this->assertTrue($result);
         $this->assertEquals(1, $this->type->find()->count());
     }
@@ -671,10 +679,9 @@ class TypeTest extends TestCase
     {
         $this->assertInstanceOf('Cake\Event\EventListenerInterface', $this->type);
 
-        $type = $this->getMock(
-            'Cake\ElasticSearch\Type',
-            ['beforeFind', 'beforeSave', 'afterSave', 'beforeDelete', 'afterDelete']
-        );
+        $type = $this->getMockBuilder('Cake\ElasticSearch\Type')
+            ->setMethods(['beforeFind', 'beforeSave', 'afterSave', 'beforeDelete', 'afterDelete'])
+            ->getMock();
         $result = $type->implementedEvents();
         $expected = [
             'Model.beforeFind' => 'beforeFind',
@@ -684,5 +691,19 @@ class TypeTest extends TestCase
             'Model.afterDelete' => 'afterDelete',
         ];
         $this->assertEquals($expected, $result, 'Events do not match.');
+    }
+
+    /**
+     * Test that type listen's to it's own events..
+     *
+     * @return void
+     */
+    public function testOwnEvents()
+    {
+        $type = $this->getMockBuilder('Cake\ElasticSearch\Type')
+            ->setMethods(['beforeSave'])
+            ->getMock();
+
+        $this->assertCount(1, $type->eventManager()->listeners('Model.beforeSave'));
     }
 }
