@@ -48,7 +48,6 @@ class Connection extends Client implements ConnectionInterface
      */
     public function __construct(array $config = [], $callback = null)
     {
-        $config += ['index' => '_all'];
         if (isset($config['name'])) {
             $this->configName = $config['name'];
         }

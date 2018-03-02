@@ -46,10 +46,10 @@ class MappingSchemaTest extends TestCase
                 'type' => 'integer'
             ],
             'title' => [
-                'type' => 'string'
+                'type' => 'text'
             ],
             'body' => [
-                'type' => 'string'
+                'type' => 'text'
             ]
         ];
         $mapping = new MappingSchema('articles', $data);
@@ -69,11 +69,11 @@ class MappingSchemaTest extends TestCase
                 'type' => 'integer'
             ],
             'title' => [
-                'type' => 'string',
+                'type' => 'text',
                 'null_value' => 'na',
             ],
             'body' => [
-                'type' => 'string'
+                'type' => 'text'
             ]
         ];
         $mapping = new MappingSchema('articles', $data);
@@ -96,12 +96,12 @@ class MappingSchemaTest extends TestCase
             'address' => [
                 'type' => 'nested',
                 'properties' => [
-                    'street' => ['type' => 'string'],
+                    'street' => ['type' => 'text'],
                 ]
             ],
         ];
         $mapping = new MappingSchema('articles', $data);
-        $this->assertEquals(['type' => 'string'], $mapping->field('address.street'));
+        $this->assertEquals(['type' => 'text'], $mapping->field('address.street'));
         $this->assertNull($mapping->field('address.nope'));
     }
 
@@ -119,13 +119,13 @@ class MappingSchemaTest extends TestCase
             'address' => [
                 'type' => 'nested',
                 'properties' => [
-                    'street' => ['type' => 'string'],
+                    'street' => ['type' => 'text'],
                 ]
             ],
         ];
         $mapping = new MappingSchema('articles', $data);
         $this->assertEquals('integer', $mapping->fieldType('user_id'));
-        $this->assertEquals('string', $mapping->fieldType('address.street'));
+        $this->assertEquals('text', $mapping->fieldType('address.street'));
         $this->assertNull($mapping->fieldType('address.nope'));
     }
 }

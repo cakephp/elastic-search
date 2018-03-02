@@ -18,7 +18,7 @@ use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Event\EventManager;
 
-$callback = ['Cake\ElasticSearch\TypeRegistry', 'get'];
+$callback = ['Cake\ElasticSearch\IndexRegistry', 'get'];
 FactoryLocator::add('Elastic', $callback);
 FactoryLocator::add('ElasticSearch', $callback);
 

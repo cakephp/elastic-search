@@ -39,7 +39,7 @@ class ResultSetTest extends TestCase
         $elasticaSet = $this->getMockBuilder('Elastica\ResultSet')
             ->disableOriginalConstructor()
             ->getMock();
-        $type = $this->getMockBuilder('Cake\ElasticSearch\Type')->getMock();
+        $type = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
         $query = $this->getMockBuilder('Cake\ElasticSearch\Query')
             ->setConstructorArgs([$type])
             ->getMock();
@@ -107,7 +107,7 @@ class ResultSetTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods($methods)
             ->getMock();
-        $type = $this->getMockBuilder('Cake\ElasticSearch\Type')->getMock();
+        $type = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
         $type->method('embedded')
             ->will($this->returnValue([]));
         $query = $this->getMockBuilder('Cake\ElasticSearch\Query')

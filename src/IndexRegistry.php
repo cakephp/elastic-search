@@ -20,14 +20,14 @@ use Cake\Utility\Inflector;
 use RuntimeException;
 
 /**
- * Factory/Registry class for Type objects.
+ * Factory/Registry class for Index objects.
  *
- * Handles ensuring only one instance of each type is
+ * Handles ensuring only one instance of each index is
  * created and that the correct connection is injected in.
  *
  * Provides an interface similar to Cake\ORM\TableRegistry.
  */
-class TypeRegistry
+class IndexRegistry
 {
     /**
      * The map of instances in the registry.
@@ -51,7 +51,7 @@ class TypeRegistry
      *
      * @param string $alias The name of the alias to get.
      * @param array $options Configuration options for the type constructor.
-     * @return \Cake\ElasticSearch\Type
+     * @return \Cake\ElasticSearch\Index
      */
     public static function get($alias, array $options = [])
     {
@@ -73,7 +73,7 @@ class TypeRegistry
         if (empty($options['className'])) {
             $options['className'] = Inflector::camelize($alias);
         }
-        $className = App::className($options['className'], 'Model/Type', 'Type');
+        $className = App::className($options['className'], 'Model/Index', 'Index');
         if ($className) {
             $options['className'] = $className;
         } else {
@@ -81,7 +81,7 @@ class TypeRegistry
                 list(, $name) = pluginSplit($options['className']);
                 $options['name'] = Inflector::underscore($name);
             }
-            $options['className'] = 'Cake\ElasticSearch\Type';
+            $options['className'] = 'Cake\ElasticSearch\Index';
         }
 
         if (empty($options['connection'])) {
@@ -108,10 +108,10 @@ class TypeRegistry
      * Set an instance.
      *
      * @param string $alias The alias to set.
-     * @param \Cake\ElasticSearch\Type $object The type to set.
-     * @return \Cake\ElasticSearch\Type
+     * @param \Cake\ElasticSearch\Index $object The type to set.
+     * @return \Cake\ElasticSearch\Index
      */
-    public static function set($alias, Type $object)
+    public static function set($alias, Index $object)
     {
         return static::$instances[$alias] = $object;
     }

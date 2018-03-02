@@ -35,9 +35,9 @@ class ArticlesFixture extends TestFixture
      */
     public $schema = [
         'id' => ['type' => 'integer'],
-        'title' => ['type' => 'string'],
+        'title' => ['type' => 'text'],
         'user_id' => ['type' => 'integer'],
-        'body' => ['type' => 'string'],
+        'body' => ['type' => 'text'],
         'created' => ['type' => 'date'],
     ];
 

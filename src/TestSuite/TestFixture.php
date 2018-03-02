@@ -44,7 +44,7 @@ class TestFixture implements FixtureInterface
     public $connection = 'test';
 
     /**
-     * The Elastic search type definition for this type.
+     * The Elastic search type mapping definition for this type.
      *
      * The schema defined here should be compatible with ElasticSearch's
      * mapping API and Elastica
@@ -80,7 +80,7 @@ class TestFixture implements FixtureInterface
             return;
         }
 
-        $index = $db->getIndex();
+        $index = $db->getIndex($this->table);
         if ($index->exists()) {
             $index->delete();
         }
@@ -90,8 +90,23 @@ class TestFixture implements FixtureInterface
         $mapping = new ElasticaMapping();
         $mapping->setType($type);
         $mapping->setProperties($this->schema);
-        $mapping->send();
+
+        $response = $mapping->send();
+        if (!$response->isOk()) {
+            $msg = sprintf(
+                'Fixture creation for "%s" failed "%s"',
+                $this->table,
+                $response->getError()
+            );
+            Log::error($msg);
+            trigger_error($msg, E_USER_WARNING);
+
+            return false;
+        }
+
         $this->created[] = $db->configName();
+
+        return true;
     }
 
     /**
@@ -106,7 +121,7 @@ class TestFixture implements FixtureInterface
             return;
         }
         $documents = [];
-        $index = $db->getIndex();
+        $index = $db->getIndex($this->table);
         $type = $index->getType($this->table);
 
         foreach ($this->records as $data) {
@@ -129,7 +144,7 @@ class TestFixture implements FixtureInterface
      */
     public function drop(ConnectionInterface $db)
     {
-        $index = $db->getIndex();
+        $index = $db->getIndex($this->table);
 
         if ($index->exists()) {
             $index->delete();
@@ -145,7 +160,7 @@ class TestFixture implements FixtureInterface
     public function truncate(ConnectionInterface $db)
     {
         $query = new MatchAll();
-        $index = $db->getIndex();
+        $index = $db->getIndex($this->table);
         $type = $index->getType($this->table);
         $type->deleteByQuery($query);
         $index->refresh();

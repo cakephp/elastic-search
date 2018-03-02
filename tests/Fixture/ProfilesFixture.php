@@ -35,14 +35,14 @@ class ProfilesFixture extends TestFixture
      */
     public $schema = [
         'id' => ['type' => 'integer'],
-        'username' => ['type' => 'string'],
+        'username' => ['type' => 'text'],
         'address' => [
             'type' => 'nested',
             'properties' => [
-                'street' => ['type' => 'string'],
-                'city' => ['type' => 'string'],
-                'province' => ['type' => 'string'],
-                'country' => ['type' => 'string'],
+                'street' => ['type' => 'text'],
+                'city' => ['type' => 'text'],
+                'province' => ['type' => 'text'],
+                'country' => ['type' => 'text'],
             ]
         ],
     ];

@@ -15,7 +15,7 @@
 namespace Cake\ElasticSearch\Test;
 
 use Cake\Datasource\ConnectionManager;
-use Cake\ElasticSearch\Type;
+use Cake\ElasticSearch\Index;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -29,7 +29,7 @@ class EmbeddedDocumentTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->type = new Type([
+        $this->type = new Index([
             'name' => 'profiles',
             'connection' => ConnectionManager::get('test')
         ]);

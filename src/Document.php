@@ -19,7 +19,7 @@ use Cake\Datasource\EntityTrait;
 use Elastica\Result;
 
 /**
- * Represents a document stored in a Elastic Search Type
+ * Represents a document stored in a Elastic Search Index
  *
  */
 class Document implements EntityInterface
