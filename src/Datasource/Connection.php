@@ -39,8 +39,7 @@ class Connection extends Client implements ConnectionInterface
     protected $configName = '';
 
     /**
-     * Constructor. Appends the default index name to the config array, which by default
-     * is `_all`
+     * Constructor.
      *
      * @param array $config config options
      * @param callable $callback Callback function which can be used to be notified

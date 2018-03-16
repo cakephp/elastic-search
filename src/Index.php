@@ -73,14 +73,14 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     protected $_connection;
 
     /**
-     * The name of the Elastic Search index this class represents
+     * The name of the Elasticsearch index this class represents
      *
      * @var string
      */
     protected $_name;
 
     /**
-     * The name of the Elastic Search mapping type which this class represents
+     * The name of the Elasticsearch mapping type which this class represents
      *
      * For default, the mapping type is equal to index name for easy use.
      *
@@ -879,7 +879,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     /**
      * Get the mapping data from the index type.
      *
-     * This will fetch the schema from ElasticSearch the first
+     * This will fetch the schema from Elasticsearch the first
      * time this method is called.
      *
      *

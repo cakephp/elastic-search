@@ -46,7 +46,7 @@ class TestFixture implements FixtureInterface
     /**
      * The Elastic search type mapping definition for this type.
      *
-     * The schema defined here should be compatible with ElasticSearch's
+     * The schema defined here should be compatible with Elasticsearch's
      * mapping API and Elastica
      *
      * @var array
