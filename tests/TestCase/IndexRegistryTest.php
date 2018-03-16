@@ -21,20 +21,6 @@ use Cake\ElasticSearch\IndexRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
- * Used to test correct class is instantiated when using IndexRegistry::get();
- */
-class MyUsersIndex extends Index
-{
-
-    /**
-     * Overrides default table name
-     *
-     * @var string
-     */
-    protected $_name = 'users';
-}
-
-/**
  * Test case for IndexRegistry
  */
 class IndexRegistryTest extends TestCase
@@ -161,8 +147,8 @@ class IndexRegistryTest extends TestCase
      */
     public function testGetWithSameOption()
     {
-        $result = IndexRegistry::get('Users', ['className' => __NAMESPACE__ . '\MyUsersIndex']);
-        $result2 = IndexRegistry::get('Users', ['className' => __NAMESPACE__ . '\MyUsersIndex']);
+        $result = IndexRegistry::get('Users', ['className' => MyUsersIndex::class]);
+        $result2 = IndexRegistry::get('Users', ['className' => MyUsersIndex::class]);
         $this->assertEquals($result, $result2);
     }
 
