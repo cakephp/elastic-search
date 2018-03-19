@@ -33,7 +33,7 @@ class ConnectionTest extends TestCase
      */
     public function testGetEmptyIndex()
     {
-        $this->expectException(\Elastica\Exception\InvalidException::class);
+        $this->expectException(\ArgumentCountError::class);
 
         $connection = new Connection();
         $index = $connection->getIndex();
@@ -48,13 +48,8 @@ class ConnectionTest extends TestCase
     public function testGetIndex()
     {
         $connection = new Connection();
-        $connection->setConfigValue('index', 'something_else,another');
-        $index = $connection->getIndex();
+        $index = $connection->getIndex('something_else,another');
         $this->assertEquals('something_else,another', $index->getName());
-
-        $connection = new Connection(['index' => 'foobar']);
-        $index = $connection->getIndex();
-        $this->assertEquals('foobar', $index->getName());
 
         $index = $connection->getIndex('baz');
         $this->assertEquals('baz', $index->getName());

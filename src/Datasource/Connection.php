@@ -145,18 +145,6 @@ class Connection extends Client implements ConnectionInterface
     }
 
     /**
-     * Returns the index for the given connection
-     *
-     * @param  string $name Index name to create connection to, if no value is passed
-     * it will use the default index name for the connection.
-     * @return \Elastica\Index Index for the given name
-     */
-    public function getIndex($name = null)
-    {
-        return parent::getIndex($name ?: $this->getConfig('index'));
-    }
-
-    /**
      * Sets the logger object instance. When called with no arguments
      * it returns the currently setup logger instance.
      *
