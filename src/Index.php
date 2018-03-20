@@ -132,7 +132,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $this->setName($config['name']);
         }
         if (!empty($config['type'])) {
-            $this->setName($config['type']);
+            $this->setType($config['type']);
         }
         $eventManager = null;
         if (isset($config['eventManager'])) {

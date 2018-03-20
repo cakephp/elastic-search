@@ -68,7 +68,7 @@ class IndexRegistry
 
         static::$options[$alias] = $options;
         list(, $classAlias) = pluginSplit($alias);
-        $options = $options + ['name' => Inflector::underscore($classAlias)];
+        $options += ['name' => Inflector::underscore($classAlias)];
 
         if (empty($options['className'])) {
             $options['className'] = Inflector::camelize($alias);
