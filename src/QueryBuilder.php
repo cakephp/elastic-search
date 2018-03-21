@@ -104,33 +104,6 @@ class QueryBuilder
     }
 
     /**
-     * Returns an GeoDistanceRange query object setup to query documents having a property
-     * in between two distance radius from a location coordinate.
-     *
-     * ### Example:
-     *
-     * {{{
-     *    $query = $builder->geoDistanceRange('location', ['lat' => 40.73, 'lon' => -74.1], '10km', '20km');
-     *
-     *    $query = $builder->geoDistanceRange('location', 'dr5r9ydj2y73', '5km', '10km');
-     * }}}
-     *
-     * @param string $field The field to compare.
-     * @param array|string $location The coordinate from which to compare.
-     * @param string $from The initial distance radius.
-     * @param string $to The ending distance radius.
-     * @return \Elastica\Query\GeoDistanceRange
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-range-query.html
-     */
-    public function geoDistanceRange($field, $location, $from, $to)
-    {
-        return new Elastica\Query\GeoDistanceRange($field, $location, [
-            'gte' => $from,
-            'lte' => $to
-        ]);
-    }
-
-    /**
      * Returns an GeoPolygon query object setup to query documents having a property
      * enclosed in the polygon induced by the passed geo points.
      *
@@ -184,7 +157,7 @@ class QueryBuilder
      * @return \Elastica\Query\GeoShapeProvided
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
-    public function geoShape($field, array $geoPoints, $type = 'envelope')
+    public function geoShape($field, array $geoPoints, $type = Elastica\Query\GeoShapeProvided::TYPE_ENVELOPE)
     {
         return new Elastica\Query\GeoShapeProvided($field, $geoPoints, $type);
     }
@@ -210,28 +183,6 @@ class QueryBuilder
     public function geoShapeIndex($field, $id, $type, $index = 'shapes', $path = 'shape')
     {
         return new Elastica\Query\GeoShapePreIndexed($field, $id, $type, $index, $path);
-    }
-
-    /**
-     * Returns an GeohashCell query object setup to query documents having a property
-     * enclosed inside the specified geohash in teh give precision.
-     *
-     * ### Example:
-     *
-     * {{{
-     *    $query = $builder->geoHashCell('location', [40, -70], 3);
-     * }}}
-     *
-     * @param string $field The field to compare.
-     * @param string|array $location Location as coordinates array or geohash string.
-     * @param int|string $precision Length of geohash prefix or distance (3, or "50m")
-     * @param bool $neighbors If true, query cells next to the given cell.
-     * @return \Elastica\Query\GeohashCell
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geohash-cell-query.html
-     */
-    public function geoHashCell($field, $location, $precision = -1, $neighbors = false)
-    {
-        return new Elastica\Query\GeohashCell($field, $location, $precision, $neighbors);
     }
 
     /**
@@ -293,41 +244,12 @@ class QueryBuilder
      * Query documents that only have the provided ids.
      *
      * @param array $ids The list of ids to query by.
-     * @param string|array $type A single or multiple types in which the ids should be searched.
      * @return \Elastica\Query\Ids
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-query.html
      */
-    public function ids(array $ids = [], $type = null)
+    public function ids(array $ids = [])
     {
-        return new Elastica\Query\Ids($type, $ids);
-    }
-
-    /**
-     * The indices query can be used when executed across multiple indices, allowing you to have a query
-     * that is only applied when executed on an index matching a specific list of indices, and another
-     * query that executes when it is executed on an index that does not match the listed indices.
-     *
-     * ### Example:
-     *
-     * {{{
-     *    $builder->indices(
-     *       ['index1', 'index2'],
-     *       $builder->term('user', 'jhon'),
-     *       $builder->term('tag', 'wow')
-     *    );
-     * }}}
-     *
-     * @param array $indices The indices where to apply the query.
-     * @param \Elastica\Query\AbstractQuery $query Query which will be applied to docs
-     * in the specified indices.
-     * @param \Elastica\Query\AbstractQuery $noMatch Query to apply to documents not present
-     * in the specified indices.
-     * @return \Elastica\Filter\Indices
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-indices-query.html
-     */
-    public function indices(array $indices, AbstractQuery $query, AbstractQuery $noMatch)
-    {
-        return (new Elastica\Query\Indices($query, $indices))->setNoMatchQuery($noMatch);
+        return new Elastica\Query\Ids($ids);
     }
 
     /**
@@ -379,19 +301,6 @@ class QueryBuilder
     public function lte($field, $value)
     {
         return $this->range($field, ['lte' => $value]);
-    }
-
-    /**
-     * Returns a Missing query object setup to query documents not having a property present or
-     * not null.
-     *
-     * @param string $field The field to check for existance.
-     * @return \Elastica\Query\Missing
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-missing-query.html
-     */
-    public function missing($field = '')
-    {
-        return new Elastica\Query\Missing($field);
     }
 
     /**
@@ -622,7 +531,7 @@ class QueryBuilder
      *
      * {{{
      *  $bool = $builder->or(
-     *     $builder->missing('tags'),
+     *     $builder->not($builder->exists('tags')),
      *     $builder->exists('comments')
      *  );
      * }}}
@@ -721,7 +630,7 @@ class QueryBuilder
      *
      *       // Equivalent to:
      *       $query = [
-     *           $builder->missing('name'),
+     *           $builder->not($builder->exists('name')),
      *           $builder->exists('age')
      *       ];
      * }}}
@@ -839,7 +748,7 @@ class QueryBuilder
         }
 
         if ($operator === 'is' && $value === null) {
-            return $this->missing($field);
+            return $this->not($this->exists($field));
         }
 
         if ($operator === 'is not' && $value === null) {

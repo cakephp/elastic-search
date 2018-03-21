@@ -16,8 +16,8 @@ namespace Cake\ElasticSearch\Test;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Marshaller;
-use Cake\ElasticSearch\Type;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -52,7 +52,7 @@ class MarshallerTest extends TestCase
     {
         parent::setUp();
         $connection = ConnectionManager::get('test');
-        $this->type = new Type([
+        $this->type = new Index([
             'connection' => $connection,
             'name' => 'articles',
         ]);
@@ -678,7 +678,7 @@ class MarshallerTest extends TestCase
     public function testMergeManyBadEntityData()
     {
         $doc = $this->type->get(1);
-        $entities = ['string', ['herp' => 'derp']];
+        $entities = ['text', ['herp' => 'derp']];
 
         $data = [
             [

@@ -19,7 +19,7 @@ use Cake\Datasource\EntityTrait;
 use Elastica\Result;
 
 /**
- * Represents a document stored in a Elastic Search Type
+ * Represents a document stored in a Elastic Search Index
  *
  */
 class Document implements EntityInterface
@@ -64,6 +64,7 @@ class Document implements EntityInterface
             'source' => null,
             'result' => null
         ];
+
         if (!empty($options['source'])) {
             $this->source($options['source']);
         }
@@ -95,7 +96,7 @@ class Document implements EntityInterface
     }
 
     /**
-     * Returns the ElasticSearch type name from which this document came from.
+     * Returns the Elasticsearch type name from which this document came from.
      *
      * If this is a new document, this function returns null
      *
@@ -111,7 +112,7 @@ class Document implements EntityInterface
     }
 
     /**
-     * Returns the version number of this document as returned by ElasticSearch
+     * Returns the version number of this document as returned by Elasticsearch
      *
      * If this is a new document, this function returns 1
      *
@@ -127,7 +128,7 @@ class Document implements EntityInterface
     }
 
     /**
-     * Returns the highlights array for document as returned by ElasticSearch
+     * Returns the highlights array for document as returned by Elasticsearch
      * for the executed query.
      *
      * If this is a new document, or the query used to create it did not ask for
@@ -145,7 +146,7 @@ class Document implements EntityInterface
     }
 
     /**
-     * Returns the explanation array for this document as returned from ElasticSearch.
+     * Returns the explanation array for this document as returned from Elasticsearch.
      *
      * If this is a new document, or the query used to create it did not ask for
      * explanation, this function will return an empty array.

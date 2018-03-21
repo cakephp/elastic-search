@@ -16,7 +16,7 @@ namespace Cake\ElasticSearch\View\Form;
 
 use Cake\Collection\Collection;
 use Cake\ElasticSearch\Document;
-use Cake\ElasticSearch\TypeRegistry;
+use Cake\ElasticSearch\IndexRegistry;
 use Cake\Network\Request;
 use Cake\Utility\Inflector;
 use Cake\View\Form\ContextInterface;
@@ -79,7 +79,7 @@ class DocumentContext implements ContextInterface
      * Prepare some additional data from the context.
      *
      * If the table option was provided to the constructor and it
-     * was a string, TypeRegistry will be used to get the correct table instance.
+     * was a string, IndexRegistry will be used to get the correct table instance.
      *
      * If an object is provided as the type option, it will be used as is.
      *
@@ -109,7 +109,7 @@ class DocumentContext implements ContextInterface
             }
         }
         if (is_string($type)) {
-            $type = TypeRegistry::get($type);
+            $type = IndexRegistry::get($type);
         }
 
         if (!is_object($type)) {

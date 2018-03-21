@@ -16,14 +16,14 @@ namespace Cake\ElasticSearch\Test;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
-use Cake\ElasticSearch\Type;
+use Cake\ElasticSearch\Index;
 use Cake\TestSuite\TestCase;
 
 /**
- * Tests the Type class
+ * Tests the Index class
  *
  */
-class TypeTest extends TestCase
+class IndexTest extends TestCase
 {
     public $fixtures = ['plugin.cake/elastic_search.articles'];
 
@@ -31,7 +31,7 @@ class TypeTest extends TestCase
     {
         parent::setUp();
         $this->connection = ConnectionManager::get('test');
-        $this->type = new Type([
+        $this->index = new Index([
             'name' => 'articles',
             'connection' => $this->connection
         ]);
@@ -44,9 +44,9 @@ class TypeTest extends TestCase
      */
     public function testFindAll()
     {
-        $query = $this->type->find('all');
+        $query = $this->index->find('all');
         $this->assertInstanceOf('Cake\ElasticSearch\Query', $query);
-        $this->assertSame($this->type, $query->repository());
+        $this->assertSame($this->index, $query->repository());
     }
 
     /**
@@ -57,7 +57,7 @@ class TypeTest extends TestCase
      */
     public function testFindAllWithFirstOrFail()
     {
-        $this->type->find('all')->where(['id' => '999999999'])->firstOrFail();
+        $this->index->find('all')->where(['id' => '999999999'])->firstOrFail();
     }
 
     /**
@@ -67,7 +67,7 @@ class TypeTest extends TestCase
      */
     public function testTable()
     {
-        $this->assertSame('articles', $this->type->table());
+        $this->assertSame('articles', $this->index->table());
     }
 
     /**
@@ -77,7 +77,7 @@ class TypeTest extends TestCase
      */
     public function testEntityClassDefault()
     {
-        $this->assertEquals('\Cake\ElasticSearch\Document', $this->type->entityClass());
+        $this->assertEquals('\Cake\ElasticSearch\Document', $this->index->entityClass());
     }
 
     /**
@@ -91,10 +91,10 @@ class TypeTest extends TestCase
         $class = $this->getMockClass('Cake\ElasticSearch\Document');
         class_alias($class, 'App\Model\Document\TestUser');
 
-        $type = new Type();
+        $index = new Index();
         $this->assertEquals(
             'App\Model\Document\TestUser',
-            $type->entityClass('TestUser')
+            $index->entityClass('TestUser')
         );
     }
 
@@ -109,10 +109,10 @@ class TypeTest extends TestCase
         $class = $this->getMockClass('\Cake\ElasticSearch\Document');
         class_alias($class, 'MyPlugin\Model\Document\SuperUser');
 
-        $type = new Type();
+        $index = new Index();
         $this->assertEquals(
             'MyPlugin\Model\Document\SuperUser',
-            $type->entityClass('MyPlugin.SuperUser')
+            $index->entityClass('MyPlugin.SuperUser')
         );
     }
 
@@ -126,12 +126,13 @@ class TypeTest extends TestCase
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
             ->setMethods(['getIndex'])
             ->getMock();
-        $type = new Type([
+
+        $index = new Index([
             'name' => 'foo',
             'connection' => $connection
         ]);
 
-        $index = $this->getMockBuilder('Elastica\Index')
+        $internalIndex = $this->getMockBuilder('Elastica\Index')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -141,9 +142,9 @@ class TypeTest extends TestCase
 
         $connection->expects($this->once())
             ->method('getIndex')
-            ->will($this->returnValue($index));
+            ->will($this->returnValue($internalIndex));
 
-        $index->expects($this->once())
+        $internalIndex->expects($this->once())
             ->method('getType')
             ->will($this->returnValue($internalType));
 
@@ -162,7 +163,7 @@ class TypeTest extends TestCase
             ->method('getId')
             ->will($this->returnValue('foo'));
 
-        $result = $type->get('foo', ['bar' => 'baz']);
+        $result = $index->get('foo', ['bar' => 'baz']);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
         $this->assertEquals(['a' => 'b', 'id' => 'foo'], $result->toArray());
         $this->assertFalse($result->dirty());
@@ -180,14 +181,14 @@ class TypeTest extends TestCase
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
             ->setMethods(['getIndex'])
             ->getMock();
-        $type = new Type([
+        $index = new Index([
             'name' => 'articles',
             'connection' => $connection
         ]);
         $data = [
             'title' => 'A newer title'
         ];
-        $result = $type->newEntity($data);
+        $result = $index->newEntity($data);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
         $this->assertSame($data, $result->toArray());
         $this->assertEquals('articles', $result->source());
@@ -203,7 +204,7 @@ class TypeTest extends TestCase
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
             ->setMethods(['getIndex'])
             ->getMock();
-        $type = new Type([
+        $index = new Index([
             'name' => 'articles',
             'connection' => $connection
         ]);
@@ -215,7 +216,7 @@ class TypeTest extends TestCase
                 'title' => 'A second title'
             ],
         ];
-        $result = $type->newEntities($data);
+        $result = $index->newEntities($data);
         $this->assertCount(2, $result);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[1]);
@@ -245,7 +246,7 @@ class TypeTest extends TestCase
             ])
         ];
 
-        $result = $this->type->saveMany($entities);
+        $result = $this->index->saveMany($entities);
         $this->assertTrue($result);
     }
 
@@ -260,13 +261,13 @@ class TypeTest extends TestCase
             'title' => 'A brand new article',
             'body' => 'Some new content'
         ], ['markNew' => true]);
-        $this->assertSame($doc, $this->type->save($doc));
+        $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
         $this->assertNotEmpty($doc->_version, 'Should get a version');
         $this->assertFalse($doc->isNew(), 'Not new anymore.');
         $this->assertFalse($doc->dirty(), 'Not dirty anymore.');
 
-        $result = $this->type->get($doc->id);
+        $result = $this->index->get($doc->id);
         $this->assertEquals($doc->title, $result->title);
         $this->assertEquals($doc->body, $result->body);
         $this->assertEquals('articles', $result->source());
@@ -284,7 +285,7 @@ class TypeTest extends TestCase
             'title' => 'A brand new article',
             'body' => 'Some new content'
         ], ['markNew' => false]);
-        $this->assertSame($doc, $this->type->save($doc));
+        $this->assertSame($doc, $this->index->save($doc));
         $this->assertFalse($doc->isNew(), 'Not new.');
         $this->assertFalse($doc->dirty(), 'Not dirty anymore.');
         $this->assertEquals('articles', $doc->source());
@@ -303,7 +304,7 @@ class TypeTest extends TestCase
             'body' => 'Some new content'
         ], ['markNew' => false]);
         $doc->errors(['title' => ['bad news']]);
-        $this->assertFalse($this->type->save($doc), 'Should not save.');
+        $this->assertFalse($this->index->save($doc), 'Should not save.');
     }
 
     /**
@@ -313,11 +314,11 @@ class TypeTest extends TestCase
      */
     public function testSaveEvents()
     {
-        $doc = $this->type->get(1);
+        $doc = $this->index->get(1);
         $doc->title = 'A new title';
 
         $called = 0;
-        $this->type->eventManager()->on(
+        $this->index->eventManager()->on(
             'Model.beforeSave',
             function ($event, $entity, $options) use ($doc, &$called) {
                 $called++;
@@ -325,7 +326,7 @@ class TypeTest extends TestCase
                 $this->assertInstanceOf('ArrayObject', $options);
             }
         );
-        $this->type->eventManager()->on(
+        $this->index->eventManager()->on(
             'Model.afterSave',
             function ($event, $entity, $options) use ($doc, &$called) {
                 $called++;
@@ -335,7 +336,7 @@ class TypeTest extends TestCase
                 $this->assertFalse($doc->dirty(), 'Should not be dirty');
             }
         );
-        $this->type->save($doc);
+        $this->index->save($doc);
         $this->assertEquals(2, $called);
     }
 
@@ -346,17 +347,17 @@ class TypeTest extends TestCase
      */
     public function testSaveBeforeSaveAbort()
     {
-        $doc = $this->type->get(1);
+        $doc = $this->index->get(1);
         $doc->title = 'new title';
-        $this->type->eventManager()->on('Model.beforeSave', function ($event, $entity, $options) use ($doc) {
+        $this->index->eventManager()->on('Model.beforeSave', function ($event, $entity, $options) use ($doc) {
             $event->stopPropagation();
 
             return 'kaboom';
         });
-        $this->type->eventManager()->on('Model.afterSave', function () {
+        $this->index->eventManager()->on('Model.afterSave', function () {
             $this->fail('Should not be fired');
         });
-        $this->assertSame('kaboom', $this->type->save($doc));
+        $this->assertSame('kaboom', $this->index->save($doc));
     }
 
     /**
@@ -371,10 +372,10 @@ class TypeTest extends TestCase
             'body' => 'Some new content',
             'user' => new Document(['username' => 'sarah'])
         ]);
-        $this->type->embedOne('User');
-        $this->type->save($entity);
+        $this->index->embedOne('User');
+        $this->index->save($entity);
 
-        $compare = $this->type->get($entity->id);
+        $compare = $this->index->get($entity->id);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->user);
         $this->assertEquals('sarah', $compare->user->username);
     }
@@ -394,10 +395,10 @@ class TypeTest extends TestCase
                 new Document(['comment' => 'Awesome!']),
             ]
         ]);
-        $this->type->embedMany('Comments');
-        $this->type->save($entity);
+        $this->index->embedMany('Comments');
+        $this->index->save($entity);
 
-        $compare = $this->type->get($entity->id);
+        $compare = $this->index->get($entity->id);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->comments[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->comments[1]);
         $this->assertEquals('Nice post', $compare->comments[0]->comment);
@@ -411,19 +412,19 @@ class TypeTest extends TestCase
      */
     public function testSaveWithRulesCreate()
     {
-        $this->type->eventManager()->on('Model.buildRules', function ($event, $rules) {
+        $this->index->eventManager()->on('Model.buildRules', function ($event, $rules) {
             $rules->addCreate(function ($doc) {
                 return 'Did not work';
             }, ['errorField' => 'name']);
         });
 
         $doc = new Document(['title' => 'rules are checked']);
-        $this->assertFalse($this->type->save($doc), 'Save should fail');
+        $this->assertFalse($this->index->save($doc), 'Save should fail');
 
         $doc->clean();
         $doc->id = 12345;
         $doc->isNew(false);
-        $this->assertSame($doc, $this->type->save($doc), 'Save should pass, not new anymore.');
+        $this->assertSame($doc, $this->index->save($doc), 'Save should pass, not new anymore.');
     }
 
     /**
@@ -433,14 +434,14 @@ class TypeTest extends TestCase
      */
     public function testSaveWithRulesUpdate()
     {
-        $this->type->eventManager()->on('Model.buildRules', function ($event, $rules) {
+        $this->index->eventManager()->on('Model.buildRules', function ($event, $rules) {
             $rules->addUpdate(function ($doc) {
                 return 'Did not work';
             }, ['errorField' => 'name']);
         });
 
         $doc = new Document(['title' => 'update rules'], ['markNew' => false]);
-        $this->assertFalse($this->type->save($doc), 'Save should fail');
+        $this->assertFalse($this->index->save($doc), 'Save should fail');
     }
 
     /**
@@ -454,11 +455,11 @@ class TypeTest extends TestCase
             'title' => 'A brand new article',
             'body' => 'Some new content'
         ], ['markNew' => true]);
-        $this->assertSame($doc, $this->type->save($doc));
+        $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
         $this->assertNotEmpty($doc->_version, 'Should get a version');
 
-        $this->assertSame($doc, $this->type->save($doc));
+        $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
         $this->assertNotEmpty($doc->_version, 'Should get a version');
     }
@@ -470,10 +471,10 @@ class TypeTest extends TestCase
      */
     public function testDeleteBasic()
     {
-        $doc = $this->type->get(1);
-        $this->assertTrue($this->type->delete($doc));
+        $doc = $this->index->get(1);
+        $this->assertTrue($this->index->delete($doc));
 
-        $dead = $this->type->find()->where(['id' => 1])->first();
+        $dead = $this->index->find()->where(['id' => 1])->first();
         $this->assertNull($dead, 'No record.');
     }
 
@@ -484,12 +485,12 @@ class TypeTest extends TestCase
      */
     public function testDeleteRules()
     {
-        $this->type->rulesChecker()->addDelete(function () {
+        $this->index->rulesChecker()->addDelete(function () {
             return 'not good';
         }, ['errorField' => 'title']);
-        $doc = $this->type->get(1);
+        $doc = $this->index->get(1);
 
-        $this->assertFalse($this->type->delete($doc));
+        $this->assertFalse($this->index->delete($doc));
         $this->assertNotEmpty($doc->errors('title'));
     }
 
@@ -501,8 +502,8 @@ class TypeTest extends TestCase
     public function testDeleteEvents()
     {
         $called = 0;
-        $doc = $this->type->get(1);
-        $this->type->eventManager()->on(
+        $doc = $this->index->get(1);
+        $this->index->eventManager()->on(
             'Model.beforeDelete',
             function ($event, $entity, $options) use ($doc, &$called) {
                 $called++;
@@ -510,7 +511,7 @@ class TypeTest extends TestCase
                 $this->assertInstanceOf('ArrayObject', $options);
             }
         );
-        $this->type->eventManager()->on(
+        $this->index->eventManager()->on(
             'Model.afterDelete',
             function ($event, $entity, $options) use ($doc, &$called) {
                 $called++;
@@ -518,7 +519,7 @@ class TypeTest extends TestCase
                 $this->assertInstanceOf('ArrayObject', $options);
             }
         );
-        $this->assertTrue($this->type->delete($doc));
+        $this->assertTrue($this->index->delete($doc));
         $this->assertEquals(2, $called);
     }
 
@@ -529,16 +530,16 @@ class TypeTest extends TestCase
      */
     public function testDeleteBeforeDeleteAbort()
     {
-        $doc = $this->type->get(1);
-        $this->type->eventManager()->on('Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
+        $doc = $this->index->get(1);
+        $this->index->eventManager()->on('Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
             $event->stopPropagation();
 
             return 'kaboom';
         });
-        $this->type->eventManager()->on('Model.afterDelete', function () {
+        $this->index->eventManager()->on('Model.afterDelete', function () {
             $this->fail('Should not be fired');
         });
-        $this->assertSame('kaboom', $this->type->delete($doc));
+        $this->assertSame('kaboom', $this->index->delete($doc));
     }
 
     /**
@@ -551,7 +552,7 @@ class TypeTest extends TestCase
     public function testDeleteMissing()
     {
         $doc = new Document(['title' => 'not there.']);
-        $this->type->delete($doc);
+        $this->index->delete($doc);
     }
 
     /**
@@ -561,11 +562,11 @@ class TypeTest extends TestCase
      */
     public function testValidatorSetAndGet()
     {
-        $result = $this->type->validator();
+        $result = $this->index->validator();
 
         $this->assertInstanceOf('Cake\Validation\Validator', $result);
-        $this->assertSame($result, $this->type->validator(), 'validator instances are persistent');
-        $this->assertSame($this->type, $result->provider('collection'), 'type bound as provider');
+        $this->assertSame($result, $this->index->validator(), 'validator instances are persistent');
+        $this->assertSame($this->index, $result->provider('collection'), 'index bound as provider');
     }
 
     /**
@@ -576,12 +577,12 @@ class TypeTest extends TestCase
     public function testValidatorTriggerEvent()
     {
         $called = 0;
-        $this->type->eventManager()->on('Model.buildValidator', function ($event, $validator, $name) use (&$called) {
+        $this->index->eventManager()->on('Model.buildValidator', function ($event, $validator, $name) use (&$called) {
             $called++;
             $this->assertInstanceOf('Cake\Validation\Validator', $validator);
             $this->assertEquals('default', $name);
         });
-        $this->type->validator();
+        $this->index->validator();
         $this->assertEquals(1, $called, 'Event not triggered');
     }
 
@@ -592,8 +593,8 @@ class TypeTest extends TestCase
      */
     public function testExists()
     {
-        $this->assertFalse($this->type->exists(['id' => '999999']));
-        $this->assertTrue($this->type->exists(['id' => '1']));
+        $this->assertFalse($this->index->exists(['id' => '999999']));
+        $this->assertTrue($this->index->exists(['id' => '1']));
     }
 
     /**
@@ -603,13 +604,12 @@ class TypeTest extends TestCase
      */
     public function testDeleteAll()
     {
-        $this->skipIf(true, 'This can only work with a plugin that is only available for elastic 2.x');
-        $result = $this->type->deleteAll(['title' => 'article']);
+        $result = $this->index->deleteAll(['title' => 'article']);
 
-        $this->connection->getIndex()->refresh();
+        $this->connection->getIndex($this->index->getName())->refresh();
 
         $this->assertTrue($result);
-        $this->assertEquals(0, $this->type->find()->count());
+        $this->assertEquals(0, $this->index->find()->count());
     }
 
     /**
@@ -619,28 +619,27 @@ class TypeTest extends TestCase
      */
     public function testDeleteAllOnlySome()
     {
-        $this->skipIf(true, 'This can only work with a plugin that is only available for elastic 2.x');
-        $result = $this->type->deleteAll(['body' => 'cake']);
+        $result = $this->index->deleteAll(['body' => 'cake']);
 
-        $this->connection->getIndex()->refresh();
+        $this->connection->getIndex($this->index->getName())->refresh();
 
         $this->assertTrue($result);
-        $this->assertEquals(1, $this->type->find()->count());
+        $this->assertEquals(1, $this->index->find()->count());
     }
 
     /**
-     * Test the rules builder types
+     * Test the rules builder indexes
      *
      * @return void
      */
     public function testAddRules()
     {
-        $this->type->eventManager()->on('Model.buildRules', function ($event, $rules) {
+        $this->index->eventManager()->on('Model.buildRules', function ($event, $rules) {
             $rules->add(function ($doc) {
                 return false;
             });
         });
-        $rules = $this->type->rulesChecker();
+        $rules = $this->index->rulesChecker();
         $this->assertInstanceOf('Cake\Datasource\RulesChecker', $rules);
 
         $doc = new Document();
@@ -655,8 +654,8 @@ class TypeTest extends TestCase
      */
     public function testAlias()
     {
-        $this->assertEquals($this->type->name(), $this->type->alias());
-        $this->assertEquals('articles', $this->type->alias());
+        $this->assertEquals($this->index->name(), $this->index->alias());
+        $this->assertEquals('articles', $this->index->alias());
     }
 
     /**
@@ -666,23 +665,23 @@ class TypeTest extends TestCase
      */
     public function testHasField()
     {
-        $this->assertTrue($this->type->hasField('title'));
-        $this->assertFalse($this->type->hasField('nope'));
+        $this->assertTrue($this->index->hasField('title'));
+        $this->assertFalse($this->index->hasField('nope'));
     }
 
     /**
-     * Test that Type implements the EventListenerInterface and some events.
+     * Test that Index implements the EventListenerInterface and some events.
      *
      * @return void
      */
     public function testImplementedEvents()
     {
-        $this->assertInstanceOf('Cake\Event\EventListenerInterface', $this->type);
+        $this->assertInstanceOf('Cake\Event\EventListenerInterface', $this->index);
 
-        $type = $this->getMockBuilder('Cake\ElasticSearch\Type')
+        $index = $this->getMockBuilder('Cake\ElasticSearch\Index')
             ->setMethods(['beforeFind', 'beforeSave', 'afterSave', 'beforeDelete', 'afterDelete'])
             ->getMock();
-        $result = $type->implementedEvents();
+        $result = $index->implementedEvents();
         $expected = [
             'Model.beforeFind' => 'beforeFind',
             'Model.beforeSave' => 'beforeSave',
@@ -694,16 +693,16 @@ class TypeTest extends TestCase
     }
 
     /**
-     * Test that type listen's to it's own events..
+     * Test that index listen's to it's own events..
      *
      * @return void
      */
     public function testOwnEvents()
     {
-        $type = $this->getMockBuilder('Cake\ElasticSearch\Type')
+        $index = $this->getMockBuilder('Cake\ElasticSearch\Index')
             ->setMethods(['beforeSave'])
             ->getMock();
 
-        $this->assertCount(1, $type->eventManager()->listeners('Model.beforeSave'));
+        $this->assertCount(1, $index->eventManager()->listeners('Model.beforeSave'));
     }
 }
