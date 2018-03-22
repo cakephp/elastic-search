@@ -372,7 +372,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     public function getType()
     {
         if ($this->_type === null) {
-            $this->_type = $this->getName();
+            $this->_type = Inflector::singularize($this->getName());
         }
 
         return $this->_type;
@@ -613,7 +613,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $entities[$key]->id = $doc->getId();
             $entities[$key]->_version = $doc->getVersion();
             $entities[$key]->isNew(false);
-            $entities[$key]->source($this->getType());
+            $entities[$key]->source($this->getName());
             $entities[$key]->clean();
 
             $this->dispatchEvent('Model.afterSave', [
@@ -677,7 +677,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
-        $entity->source($this->getType());
+        $entity->source($this->getName());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [

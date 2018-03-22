@@ -16,6 +16,7 @@ namespace Cake\ElasticSearch\TestSuite;
 
 use Cake\Datasource\ConnectionInterface;
 use Cake\Datasource\FixtureInterface;
+use Cake\Utility\Inflector;
 use Elastica\Query\MatchAll;
 use Elastica\Type\Mapping as ElasticaMapping;
 
@@ -86,7 +87,7 @@ class TestFixture implements FixtureInterface
         }
         $index->create();
 
-        $type = $index->getType($this->table);
+        $type = $index->getType(Inflector::singularize($this->table));
         $mapping = new ElasticaMapping();
         $mapping->setType($type);
         $mapping->setProperties($this->schema);
@@ -122,7 +123,7 @@ class TestFixture implements FixtureInterface
         }
         $documents = [];
         $index = $db->getIndex($this->table);
-        $type = $index->getType($this->table);
+        $type = $index->getType(Inflector::singularize($this->table));
 
         foreach ($this->records as $data) {
             $id = '';
@@ -161,7 +162,7 @@ class TestFixture implements FixtureInterface
     {
         $query = new MatchAll();
         $index = $db->getIndex($this->table);
-        $type = $index->getType($this->table);
+        $type = $index->getType(Inflector::singularize($this->table));
         $type->deleteByQuery($query);
         $index->refresh();
     }
