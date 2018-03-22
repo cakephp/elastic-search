@@ -70,7 +70,7 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
             $this->embeds[$embed->property()] = $embed;
         }
         $this->entityClass = $repo->entityClass();
-        $this->repoName = $repo->name();
+        $this->repoName = $repo->getName();
         parent::__construct($resultSet);
     }
 
