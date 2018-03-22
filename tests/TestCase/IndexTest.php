@@ -654,8 +654,8 @@ class IndexTest extends TestCase
      */
     public function testAlias()
     {
-        $this->assertEquals($this->index->name(), $this->index->alias());
-        $this->assertEquals('articles', $this->index->alias());
+        $this->assertEquals($this->index->getName(), $this->index->getAlias());
+        $this->assertEquals('articles', $this->index->getAlias());
     }
 
     /**

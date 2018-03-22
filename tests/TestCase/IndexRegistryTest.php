@@ -71,7 +71,7 @@ class IndexRegistryTest extends TestCase
         $this->assertFalse(IndexRegistry::exists('Comments'));
         $this->assertFalse(IndexRegistry::exists('TestPlugin.Comments'));
 
-        IndexRegistry::get('TestPlugin.Comments', ['type' => 'comments']);
+        IndexRegistry::get('TestPlugin.Comments', ['name' => 'comments']);
         $this->assertFalse(IndexRegistry::exists('Comments'), 'The Comments key should not be populated');
         $this->assertTrue(IndexRegistry::exists('TestPlugin.Comments'), 'The plugin.alias key should now be populated');
     }
