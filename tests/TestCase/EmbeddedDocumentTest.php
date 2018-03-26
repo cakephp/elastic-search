@@ -29,7 +29,7 @@ class EmbeddedDocumentTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->type = new Index([
+        $this->index = new Index([
             'name' => 'profiles',
             'connection' => ConnectionManager::get('test')
         ]);
@@ -42,8 +42,8 @@ class EmbeddedDocumentTest extends TestCase
      */
     public function testEmbedOne()
     {
-        $this->assertNull($this->type->embedOne('Address'));
-        $assocs = $this->type->embedded();
+        $this->assertNull($this->index->embedOne('Address'));
+        $assocs = $this->index->embedded();
         $this->assertCount(1, $assocs);
         $this->assertEquals('\Cake\ElasticSearch\Document', $assocs[0]->entityClass());
         $this->assertEquals('address', $assocs[0]->property());
@@ -56,8 +56,8 @@ class EmbeddedDocumentTest extends TestCase
      */
     public function testGetWithEmbedOne()
     {
-        $this->type->embedOne('Address');
-        $result = $this->type->get(1);
+        $this->index->embedOne('Address');
+        $result = $this->index->get(1);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address);
         $this->assertEquals('123 street', $result->address->street);
     }
@@ -69,8 +69,8 @@ class EmbeddedDocumentTest extends TestCase
      */
     public function testFindWithEmbedOne()
     {
-        $this->type->embedOne('Address');
-        $result = $this->type->find()->where(['username' => 'mark']);
+        $this->index->embedOne('Address');
+        $result = $this->index->find()->where(['username' => 'mark']);
         $rows = $result->toArray();
         $this->assertCount(1, $rows);
     }
@@ -82,8 +82,8 @@ class EmbeddedDocumentTest extends TestCase
      */
     public function testGetWithEmbedMany()
     {
-        $this->type->embedMany('Address');
-        $result = $this->type->get(3);
+        $this->index->embedMany('Address');
+        $result = $this->index->get(3);
         $this->assertInternalType('array', $result->address);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address[1]);
@@ -96,8 +96,8 @@ class EmbeddedDocumentTest extends TestCase
      */
     public function testFindWithEmbedMany()
     {
-        $this->type->embedMany('Address');
-        $result = $this->type->find()->where(['username' => 'sara']);
+        $this->index->embedMany('Address');
+        $result = $this->index->find()->where(['username' => 'sara']);
         $rows = $result->toArray();
 
         $this->assertCount(1, $rows);

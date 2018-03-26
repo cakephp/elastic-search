@@ -311,7 +311,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function table()
     {
-        return $this->name();
+        return $this->getName();
     }
 
     /**
@@ -336,9 +336,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function setAlias($alias)
     {
-        $this->name($alias);
-
-        return $this;
+        return $this->setName($alias);
     }
 
     /**
@@ -348,7 +346,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getAlias()
     {
-        return $this->name();
+        return $this->getName();
     }
 
     /**
@@ -374,7 +372,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     public function getType()
     {
         if ($this->_type === null) {
-            $this->_type = $this->getName();
+            $this->_type = Inflector::singularize($this->getName());
         }
 
         return $this->_type;
@@ -454,7 +452,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function get($primaryKey, $options = [])
     {
-        $type = $this->connection()->getIndex($this->getName())->getType($this->getType());
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $result = $type->getDocument($primaryKey, $options);
         $class = $this->entityClass();
 
@@ -462,7 +460,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             'markNew' => false,
             'markClean' => true,
             'useSetters' => false,
-            'source' => $this->name(),
+            'source' => $this->getName(),
         ];
         $data = $result->getData();
         $data['id'] = $result->getId();
@@ -528,7 +526,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $query = $this->query();
         $query->where($conditions);
-        $type = $this->connection()->getIndex($this->getName())->getType($this->getType());
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $response = $type->deleteByQuery($query->compileQuery());
 
         return $response->isOk();
@@ -608,14 +606,14 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $documents[$key] = $doc;
         }
 
-        $type = $this->connection()->getIndex($this->getName())->getType($this->getType());
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $type->addDocuments($documents);
 
         foreach ($documents as $key => $document) {
             $entities[$key]->id = $doc->getId();
             $entities[$key]->_version = $doc->getVersion();
             $entities[$key]->isNew(false);
-            $entities[$key]->source($this->getType());
+            $entities[$key]->source($this->getName());
             $entities[$key]->clean();
 
             $this->dispatchEvent('Model.afterSave', [
@@ -665,7 +663,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return false;
         }
 
-        $type = $this->connection()->getIndex($this->getName())->getType($this->getType());
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $id = $entity->id ?: null;
 
         $data = $entity->toArray();
@@ -679,7 +677,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
-        $entity->source($this->getType());
+        $entity->source($this->getName());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [
@@ -728,7 +726,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $doc = new ElasticaDocument($entity->id, $data);
 
-        $type = $this->connection()->getIndex($this->getName())->getType($this->getType());
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $result = $type->deleteDocument($doc);
 
         $this->dispatchEvent('Model.afterDelete', [
@@ -762,7 +760,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         if ($data === null) {
             $class = $this->entityClass();
 
-            return new $class([], ['source' => $this->name()]);
+            return new $class([], ['source' => $this->getName()]);
         }
 
         return $this->marshaller()->one($data, $options);
@@ -891,7 +889,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return $this->schema;
         }
         $index = $this->getName();
-        $type = $this->connection()->getIndex($index)->getType($this->getType());
+        $type = $this->getConnection()->getIndex($index)->getType($this->getType());
         $this->schema = new MappingSchema($this->getType(), $type->getMapping());
 
         return $this->schema;

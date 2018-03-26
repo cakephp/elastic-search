@@ -33,9 +33,9 @@ class QueryTest extends TestCase
      */
     public function testConstruct()
     {
-        $type = new Index();
-        $query = new Query($type);
-        $this->assertSame($type, $query->repository());
+        $index = new Index();
+        $query = new Query($index);
+        $this->assertSame($index, $query->repository());
     }
 
     /**
@@ -45,8 +45,8 @@ class QueryTest extends TestCase
      */
     public function testChainedFinders()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
 
         $finder = $query->find()->find();
         $this->assertInstanceOf(\Cake\ElasticSearch\Query::class, $finder);
@@ -57,8 +57,8 @@ class QueryTest extends TestCase
      */
     public function testSetFullQuery()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
 
         $query
             ->where(['name' => 'test'])
@@ -80,8 +80,8 @@ class QueryTest extends TestCase
      */
     public function testSelect()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $this->assertSame($query, $query->select(['a', 'b']));
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertEquals(['a', 'b'], $elasticQuery['_source']);
@@ -102,8 +102,8 @@ class QueryTest extends TestCase
      */
     public function testLimit()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $this->assertSame($query, $query->limit(10));
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(10, $elasticQuery['size']);
@@ -120,8 +120,8 @@ class QueryTest extends TestCase
      */
     public function testOffset()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $this->assertSame($query, $query->offset(10));
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(10, $elasticQuery['from']);
@@ -138,8 +138,8 @@ class QueryTest extends TestCase
      */
     public function testPage()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $this->assertSame($query, $query->page(10));
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(225, $elasticQuery['from']);
@@ -164,8 +164,8 @@ class QueryTest extends TestCase
      */
     public function testClause()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
 
         $query->page(10);
         $this->assertSame(25, $query->clause('limit'));
@@ -192,8 +192,8 @@ class QueryTest extends TestCase
      */
     public function testApplyOptions()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
 
         $query->applyOptions([
             'fields' => ['id', 'name'],
@@ -234,8 +234,8 @@ class QueryTest extends TestCase
      */
     public function testOrder()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $this->assertSame($query, $query->order('price'));
 
         $elasticQuery = $query->compileQuery()->toArray();
@@ -286,8 +286,8 @@ class QueryTest extends TestCase
      */
     public function testWhere()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $query->where([
             'name.first' => 'jose',
             'age >' => 29,
@@ -349,8 +349,8 @@ class QueryTest extends TestCase
      */
     public function testQueryMust()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $query->queryMust([
             'name.first' => 'jose',
             'age >' => 29,
@@ -407,8 +407,8 @@ class QueryTest extends TestCase
 
     public function testQueryShould()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $query->queryShould([
             'name.first' => 'jose',
             'age >' => 29,
@@ -470,8 +470,8 @@ class QueryTest extends TestCase
      */
     public function testPostFilter()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $query->postFilter([
             'name.first' => 'jose',
             'age >' => 29,
@@ -533,8 +533,8 @@ class QueryTest extends TestCase
      */
     public function testLimitZero()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $this->assertSame($query, $query->limit(0));
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(0, $elasticQuery['size']);
@@ -547,8 +547,8 @@ class QueryTest extends TestCase
      */
     public function testOffsetZero()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $this->assertSame($query, $query->offset(0));
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(0, $elasticQuery['from']);
@@ -561,8 +561,8 @@ class QueryTest extends TestCase
      */
     public function testHighlight()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $query->highlight([
             'pre_tags' => [''],
             'post_tags' => [''],
@@ -588,8 +588,8 @@ class QueryTest extends TestCase
      */
     public function testMinScore()
     {
-        $type = new Index();
-        $query = new Query($type);
+        $index = new Index();
+        $query = new Query($index);
         $this->assertSame($query, $query->withMinScore(1));
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(1, $elasticQuery['min_score']);

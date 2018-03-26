@@ -61,7 +61,7 @@ class Marshaller
     {
         $entityClass = $this->index->entityClass();
         $entity = new $entityClass();
-        $entity->source($this->index->name());
+        $entity->source($this->index->getName());
         $options += ['associated' => []];
 
         list($data, $options) = $this->_prepareDataAndOptions($data, $options);

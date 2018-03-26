@@ -238,7 +238,7 @@ class DocumentContextTest extends TestCase
     {
         $context = new DocumentContext($this->request, [
             'entity' => $collection,
-            'type' => 'articles',
+            'index' => 'articles',
         ]);
 
         $result = $context->val('0.title');
@@ -269,7 +269,7 @@ class DocumentContextTest extends TestCase
 
         $context = new DocumentContext($this->request, [
             'entity' => $entity,
-            'type' => $articles,
+            'index' => $articles,
         ]);
         $this->assertTrue($context->isRequired('title'));
         $this->assertFalse($context->isRequired('body'));
@@ -288,7 +288,7 @@ class DocumentContextTest extends TestCase
 
         $context = new DocumentContext($this->request, [
             'entity' => $entity,
-            'type' => $articles,
+            'index' => $articles,
             'validator' => 'alternate'
         ]);
         $this->assertFalse($context->isRequired('title'));
@@ -342,7 +342,7 @@ class DocumentContextTest extends TestCase
 
         $context = new DocumentContext($this->request, [
             'entity' => $row,
-            'type' => $articles,
+            'index' => $articles,
         ]);
 
         $this->assertEquals([], $context->error('title'));
@@ -399,7 +399,7 @@ class DocumentContextTest extends TestCase
         $articles = $this->setupIndex();
         $context = new DocumentContext($this->request, [
             'entity' => new Document([]),
-            'type' => 'articles',
+            'index' => 'articles',
         ]);
         $result = $context->fieldNames();
         $this->assertContains('title', $result);
@@ -422,7 +422,7 @@ class DocumentContextTest extends TestCase
         ]);
         $context = new DocumentContext($this->request, [
             'entity' => $row,
-            'type' => $articles,
+            'index' => $articles,
         ]);
 
         $this->assertEquals($this->textField, $context->type('title'));
@@ -446,7 +446,7 @@ class DocumentContextTest extends TestCase
         $row = new Document([]);
         $context = new DocumentContext($this->request, [
             'entity' => $row,
-            'type' => $profiles,
+            'index' => $profiles,
         ]);
 
         $this->assertEquals($this->textField, $context->type('username'));
