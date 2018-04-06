@@ -457,7 +457,7 @@ class QueryBuilder
     {
         return new Elastica\Query\Match($field, $value);
     }
-    
+
     /**
      * Returns a Term query object that query documents that have fields containing a term.
      *
