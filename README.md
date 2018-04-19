@@ -84,16 +84,22 @@ class CommentsIndex extends Index
     /**
      * The name of index in Elasticsearch
      *
-     * @type string
+     * @return  string
      */
-    public $name = 'comments';
+    public function getName()
+    {
+        return 'comments';
+    }
 
     /**
      * The name of mapping type in Elasticsearch
      *
-     * @type string
+     * @return  string
      */
-    public $type = 'comments';
+    public function getType()
+    {
+        return 'comments';
+    }
 }
 ```
 
