@@ -653,7 +653,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return $event->result;
         }
 
-        if ($entity->errors()) {
+        if ($entity->getErrors()) {
             return false;
         }
 
@@ -677,7 +677,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
-        $entity->source($this->getName());
+        $entity->setSource($this->getName());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [
