@@ -209,7 +209,7 @@ class Marshaller
         $options += ['associated' => []];
         list($data, $options) = $this->_prepareDataAndOptions($data, $options);
         $errors = $this->_validate($data, $options, $entity->isNew());
-        $entity->errors($errors);
+        $entity->setErrors($errors);
 
         foreach (array_keys($errors) as $badKey) {
             unset($data[$badKey]);
@@ -307,7 +307,7 @@ class Marshaller
         }
 
         if ($options['validate'] === true) {
-            $options['validate'] = $this->index->validator('default');
+            $options['validate'] = $this->index->getValidator('default');
         }
         if (is_string($options['validate'])) {
             $options['validate'] = $this->index->validator($options['validate']);
