@@ -65,7 +65,7 @@ class Document implements EntityInterface
             'result' => null
         ];
         if (!empty($options['source'])) {
-            $this->source($options['source']);
+            $this->setSource($options['source']);
         }
 
         if ($options['markNew'] !== null) {
