@@ -24,7 +24,7 @@ FactoryLocator::add('ElasticSearch', $callback);
 
 // Attach the document context into FormHelper.
 EventManager::instance()->on('View.beforeRender', function ($event) {
-    $view = $event->subject();
+    $view = $event->getSubject();
     $view->Form->addContextProvider('elastic', function ($request, $data) {
         $first = null;
         if (is_array($data['entity']) || $data['entity'] instanceof Traversable) {

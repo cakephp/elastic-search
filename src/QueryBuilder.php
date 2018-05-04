@@ -548,6 +548,25 @@ class QueryBuilder
     {
         return new Elastica\Query\Match($field, $value);
     }
+
+    /**
+     * Returns a Match query object that query documents that have fields containing a match.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $builder->match('user.name', 'jose');
+     * }}}
+     *
+     * @param string $field The field to query by.
+     * @param string $value The match to find in field.
+     * @return \Elastica\Query\Match
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html
+     */
+    public function match($field, $value)
+    {
+        return new Elastica\Query\Match($field, $value);
+    }
     
     /**
      * Returns a Term query object that query documents that have fields containing a term.

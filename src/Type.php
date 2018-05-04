@@ -495,7 +495,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             return $event->result;
         }
 
-        if ($entity->errors()) {
+        if ($entity->getErrors()) {
             return false;
         }
 
