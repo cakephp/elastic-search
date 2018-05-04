@@ -529,7 +529,7 @@ class QueryBuilder
     {
         return new Elastica\Query\SimpleQueryString($string, (array)$fields);
     }
-    
+
     /**
      * Returns a Match query object that query documents that have fields containing a match.
      *
