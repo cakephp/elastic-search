@@ -653,7 +653,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return $event->result;
         }
 
-        if ($entity->errors()) {
+        if ($entity->getErrors()) {
             return false;
         }
 
