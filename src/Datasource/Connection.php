@@ -150,7 +150,7 @@ class Connection extends Client implements ConnectionInterface
      *
      * @param object $instance logger object instance
      * @return object logger instance
-     * @deprecated 2.0 Will be replaced by setLogger()
+     * @deprecated 2.0 Will be replaced by getLogger()/setLogger()
      */
     public function logger($instance = null)
     {
