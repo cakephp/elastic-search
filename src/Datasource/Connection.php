@@ -154,22 +154,31 @@ class Connection extends Client implements ConnectionInterface
      */
     public function logger($instance = null)
     {
-        $this->setLogger($instance);
-    }
-
-    /**
-     * Sets the logger object instance. When called with no arguments
-     * it returns the currently setup logger instance.
-     *
-     * @param object $instance logger object instance
-     * @return object logger instance
-     */
-    public function setLogger($instance = null)
-    {
         if ($instance === null) {
             return $this->_logger;
         }
         $this->_logger = $instance;
+    }
+
+    /**
+     * Sets the logger object instance.
+     *
+     * @param object $instance logger object instance
+     * @return void
+     */
+    public function setLogger($instance)
+    {
+        $this->_logger = $instance;
+    }
+
+    /**
+     * Get the logger object instance.
+     *
+     * @return object logger instance
+     */
+    public function getLogger()
+    {
+        return $this->_logger;
     }
 
     /**
