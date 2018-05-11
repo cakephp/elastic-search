@@ -89,6 +89,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     protected $_type;
 
     /**
+     * Registry key used to create this index object
+     *
+     * @var string
+     */
+    protected $_registryAlias;
+
+    /**
      * The name of the class that represent a single document for this type
      *
      * @var string
@@ -125,6 +132,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function __construct(array $config = [])
     {
+        if (!empty($config['registryAlias'])) {
+            $this->setRegistryAlias($config['registryAlias']);
+        }
         if (!empty($config['connection'])) {
             $this->setConnection($config['connection']);
         }
@@ -253,6 +263,33 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
 
         return $this->getConnection();
+    }
+
+    /**
+     * Sets the index registry key used to create this table instance.
+     *
+     * @param string $registryAlias The key used to access this object.
+     * @return $this
+     */
+    public function setRegistryAlias($registryAlias)
+    {
+        $this->_registryAlias = $registryAlias;
+
+        return $this;
+    }
+
+    /**
+     * Returns the index registry key used to create this table instance.
+     *
+     * @return string
+     */
+    public function getRegistryAlias()
+    {
+        if ($this->_registryAlias === null) {
+            $this->_registryAlias = $this->getAlias();
+        }
+
+        return $this->_registryAlias;
     }
 
     /**
@@ -460,7 +497,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             'markNew' => false,
             'markClean' => true,
             'useSetters' => false,
-            'source' => $this->getName(),
+            'source' => $this->getRegistryAlias(),
         ];
         $data = $result->getData();
         $data['id'] = $result->getId();
@@ -613,7 +650,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $entities[$key]->id = $doc->getId();
             $entities[$key]->_version = $doc->getVersion();
             $entities[$key]->isNew(false);
-            $entities[$key]->source($this->getName());
+            $entities[$key]->source($this->getRegistryAlias());
             $entities[$key]->clean();
 
             $this->dispatchEvent('Model.afterSave', [
@@ -677,7 +714,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
-        $entity->source($this->getName());
+        $entity->source($this->getRegistryAlias());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [
@@ -760,7 +797,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         if ($data === null) {
             $class = $this->entityClass();
 
-            return new $class([], ['source' => $this->getName()]);
+            return new $class([], ['source' => $this->getRegistryAlias()]);
         }
 
         return $this->marshaller()->one($data, $options);
@@ -806,7 +843,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
                 return $this->_documentClass = $default;
             }
 
-            $alias = Inflector::singularize(substr(array_pop($parts), 0, -4));
+            $alias = Inflector::singularize(substr(array_pop($parts), 0, -5));
             $name = implode('\\', array_slice($parts, 0, -1)) . '\Document\\' . $alias;
             if (!class_exists($name)) {
                 return $this->_documentClass = $default;
