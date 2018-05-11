@@ -672,6 +672,19 @@ class IndexTest extends TestCase
     }
 
     /**
+     * Test the alias method.
+     *
+     * @return void
+     */
+    public function testRegistryAlias()
+    {
+        $index = IndexRegistry::get('TestPlugin.Comments');
+
+        $this->assertEquals('articles', $this->index->getRegistryAlias());
+        $this->assertEquals('TestPlugin.Comments', $index->getRegistryAlias());
+    }
+
+    /**
      * Test hasField()
      *
      * @return void
