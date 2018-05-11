@@ -17,6 +17,7 @@ namespace Cake\ElasticSearch\Test;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
+use Cake\ElasticSearch\IndexRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -78,6 +79,18 @@ class IndexTest extends TestCase
     public function testEntityClassDefault()
     {
         $this->assertEquals('\Cake\ElasticSearch\Document', $this->index->entityClass());
+    }
+
+    /**
+     * Test a custom entityClass.
+     *
+     * @return void
+     */
+    public function testEntityClassCustom()
+    {
+        $index = IndexRegistry::get('TestPlugin.Comments');
+
+        $this->assertEquals('TestPlugin\Model\Document\Comment', $index->entityClass());
     }
 
     /**

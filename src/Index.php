@@ -806,7 +806,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
                 return $this->_documentClass = $default;
             }
 
-            $alias = Inflector::singularize(substr(array_pop($parts), 0, -4));
+            $alias = Inflector::singularize(substr(array_pop($parts), 0, -5));
             $name = implode('\\', array_slice($parts, 0, -1)) . '\Document\\' . $alias;
             if (!class_exists($name)) {
                 return $this->_documentClass = $default;
