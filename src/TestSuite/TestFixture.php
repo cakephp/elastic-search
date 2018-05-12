@@ -77,7 +77,6 @@ class TestFixture implements FixtureInterface
      */
     public function create(ConnectionInterface $db)
     {
-        debug($db);
         if (empty($this->schema)) {
             return;
         }

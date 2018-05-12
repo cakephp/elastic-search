@@ -16,6 +16,7 @@ namespace Cake\ElasticSearch;
 
 use Cake\Collection\Collection;
 use Cake\Core\BasePlugin;
+use Cake\Core\PluginApplicationInterface;
 use Cake\Datasource\FactoryLocator;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;

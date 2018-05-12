@@ -16,7 +16,7 @@ You can install Elasticsearch into your project using
 following to your `composer.json` file:
 
     "require": {
-        "cakephp/elastic-search": "^1.0"
+        "cakephp/elastic-search": "^2.0-beta"
     }
 
 And run `php composer.phar update`
@@ -61,6 +61,7 @@ a connection:
 As an alternative you could use a link format if you like to use enviroment variables for example.
 
 ```php
+// in config/app.php
     'Datasources' => [
         // other datasources
         'elastic' => [
@@ -86,6 +87,23 @@ use the `IndexRegistry` factory to get instances, much like `TableRegistry`:
 use Cake\ElasticSearch\IndexRegistry;
 
 $comments = IndexRegistry::get('Comments');
+```
+
+If you have loaded the plugin with bootstrap enabled you could load indexes using the model factory in your controllers
+```php
+class SomeController extends AppController
+{
+    public function initialize()
+    {
+        $this->loadModel('Comments', 'elastic');
+    }
+
+    public function index()
+    {
+        $comments = $this->Comments->find();
+    }
+
+    ...
 ```
 
 Each `Index` object need a correspondent Elasticsearch _index_, just like most of `ORM\Table` needs a database _table_.
