@@ -150,45 +150,13 @@ class Connection extends Client implements ConnectionInterface
      *
      * @param object $instance logger object instance
      * @return object logger instance
-     * @deprecated use setLogger()/getLogger instead
      */
     public function logger($instance = null)
     {
-        deprecationWarning(
-            'Connection::logger() is deprecated. ' .
-            'Use Connection::setLogger()/getLogger() instead.'
-        );
-
         if ($instance === null) {
             return $this->_logger;
         }
         $this->_logger = $instance;
-    }
-
-    /**
-     * Sets the logger object instance.
-     *
-     * @param object $instance logger object instance
-     * @return void
-     */
-    public function setLogger($instance)
-    {
-        $this->_logger = $instance;
-    }
-
-    /**
-     * Get the logger object instance.
-
-     * @param object $instance logger object instance
-     * @return object logger instance
-     */
-    public function getLogger($instance = null)
-    {
-        if ($instance === null) {
-            $this->_logger = Log::engine('elasticsearch') ?: new ElasticaLog();
-        }
-
-        return $this->_logger;
     }
 
     /**
@@ -201,6 +169,10 @@ class Connection extends Client implements ConnectionInterface
     {
         if (!$this->logQueries) {
             return;
+        }
+
+        if (!isset($this->_logger) || $this->_logger instanceof NullLogger) {
+            $this->_logger = Log::engine('elasticsearch') ?: new ElasticaLog();
         }
 
         if ($context instanceof Request) {
@@ -220,12 +192,10 @@ class Connection extends Client implements ConnectionInterface
         $loggedQuery = new LoggedQuery();
         $loggedQuery->query = $data;
 
-        $logger = $this->getLogger();
-
-        if ($logger instanceof \Psr\Log\LoggerInterface) {
-            $logger->log('debug', $loggedQuery);
+        if ($this->_logger instanceof \Psr\Log\LoggerInterface) {
+            $this->_logger->log('debug', $loggedQuery);
         } else {
-            $logger->log($loggedQuery);
+            $this->_logger->log($loggedQuery);
         }
     }
 }
