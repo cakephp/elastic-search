@@ -26,12 +26,19 @@ And run `php composer.phar update`
 After installing, you should tell your application to load the plugin:
 
 ```php
-// in config/bootstrap.php
-Plugin::load('Cake/ElasticSearch');
+use Cake\ElasticSearch\Plugin as ElasticSearchPlugin;
 
-// If you want the plugin to automatically configure the Elastic model provider
-// and FormHelper do the following:
-Plugin::load('Cake/ElasticSearch', ['bootstrap' => true]);
+class Application extends BaseApplication
+{
+    public function bootstrap()
+    {
+        $this->addPlugin(ElasticSearchPlugin::class);
+
+        // If you want the plugin to automatically configure the Elastic model provider
+        // and FormHelper do the following:
+        // $this->addPlugin(ElasticSearchPlugin::class, [ 'bootstrap' => true ]);
+    }
+}
 ```
 
 ## Defining a connection
@@ -50,6 +57,19 @@ a connection:
             'port' => 9200
         ],
     ]
+```
+As an alternative you could use a link format if you like to use enviroment variables for example.
+
+```php
+    'Datasources' => [
+        // other datasources
+        'elastic' => [
+            'url' => env('ELASTIC_URL', null)
+        ]
+    ]
+
+    // and make sure the folowing env variable is available:
+    // ELASTIC_URL="Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection"
 ```
 
 You can enable request logging by setting the `log` config option to true. By
