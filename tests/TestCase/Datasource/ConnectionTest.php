@@ -79,7 +79,7 @@ class ConnectionTest extends TestCase
     {
         $logger = $this->getMockBuilder('Cake\Log\Engine\BaseLog')->setMethods(['log'])->getMock();
         $logger->expects($this->once())->method('log');
-        Log::config('elasticsearch', $logger);
+        Log::setConfig('elasticsearch', $logger);
 
         $connection = ConnectionManager::get('test');
         $connection->logQueries(true);

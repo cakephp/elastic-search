@@ -47,7 +47,7 @@ class IndexTest extends TestCase
     {
         $query = $this->index->find('all');
         $this->assertInstanceOf('Cake\ElasticSearch\Query', $query);
-        $this->assertSame($this->index, $query->repository());
+        $this->assertSame($this->index, $query->getRepository());
     }
 
     /**
@@ -68,7 +68,7 @@ class IndexTest extends TestCase
      */
     public function testTable()
     {
-        $this->assertSame('articles', $this->index->table());
+        $this->assertSame('articles', $this->index->getTable());
     }
 
     /**
@@ -179,9 +179,9 @@ class IndexTest extends TestCase
         $result = $index->get('foo', ['bar' => 'baz']);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
         $this->assertEquals(['a' => 'b', 'id' => 'foo'], $result->toArray());
-        $this->assertFalse($result->dirty());
+        $this->assertFalse($result->isDirty());
         $this->assertFalse($result->isNew());
-        $this->assertEquals('foo', $result->source());
+        $this->assertEquals('foo', $result->getSource());
     }
 
     /**
@@ -204,7 +204,7 @@ class IndexTest extends TestCase
         $result = $index->newEntity($data);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
         $this->assertSame($data, $result->toArray());
-        $this->assertEquals('articles', $result->source());
+        $this->assertEquals('articles', $result->getSource());
     }
 
     /**
@@ -278,12 +278,12 @@ class IndexTest extends TestCase
         $this->assertNotEmpty($doc->id, 'Should get an id');
         $this->assertNotEmpty($doc->_version, 'Should get a version');
         $this->assertFalse($doc->isNew(), 'Not new anymore.');
-        $this->assertFalse($doc->dirty(), 'Not dirty anymore.');
+        $this->assertFalse($doc->isDirty(), 'Not dirty anymore.');
 
         $result = $this->index->get($doc->id);
         $this->assertEquals($doc->title, $result->title);
         $this->assertEquals($doc->body, $result->body);
-        $this->assertEquals('articles', $result->source());
+        $this->assertEquals('articles', $result->getSource());
     }
 
     /**
@@ -300,8 +300,8 @@ class IndexTest extends TestCase
         ], ['markNew' => false]);
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertFalse($doc->isNew(), 'Not new.');
-        $this->assertFalse($doc->dirty(), 'Not dirty anymore.');
-        $this->assertEquals('articles', $doc->source());
+        $this->assertFalse($doc->isDirty(), 'Not dirty anymore.');
+        $this->assertEquals('articles', $doc->getSource());
     }
 
     /**
@@ -316,7 +316,7 @@ class IndexTest extends TestCase
             'title' => 'A brand new article',
             'body' => 'Some new content'
         ], ['markNew' => false]);
-        $doc->errors(['title' => ['bad news']]);
+        $doc->setErrors(['title' => ['bad news']]);
         $this->assertFalse($this->index->save($doc), 'Should not save.');
     }
 
@@ -331,7 +331,7 @@ class IndexTest extends TestCase
         $doc->title = 'A new title';
 
         $called = 0;
-        $this->index->eventManager()->on(
+        $this->index->getEventManager()->on(
             'Model.beforeSave',
             function ($event, $entity, $options) use ($doc, &$called) {
                 $called++;
@@ -339,14 +339,14 @@ class IndexTest extends TestCase
                 $this->assertInstanceOf('ArrayObject', $options);
             }
         );
-        $this->index->eventManager()->on(
+        $this->index->getEventManager()->on(
             'Model.afterSave',
             function ($event, $entity, $options) use ($doc, &$called) {
                 $called++;
                 $this->assertInstanceOf('ArrayObject', $options);
                 $this->assertSame($doc, $entity);
                 $this->assertFalse($doc->isNew(), 'Should not be new');
-                $this->assertFalse($doc->dirty(), 'Should not be dirty');
+                $this->assertFalse($doc->isDirty(), 'Should not be dirty');
             }
         );
         $this->index->save($doc);
@@ -362,12 +362,12 @@ class IndexTest extends TestCase
     {
         $doc = $this->index->get(1);
         $doc->title = 'new title';
-        $this->index->eventManager()->on('Model.beforeSave', function ($event, $entity, $options) use ($doc) {
+        $this->index->getEventManager()->on('Model.beforeSave', function ($event, $entity, $options) use ($doc) {
             $event->stopPropagation();
 
             return 'kaboom';
         });
-        $this->index->eventManager()->on('Model.afterSave', function () {
+        $this->index->getEventManager()->on('Model.afterSave', function () {
             $this->fail('Should not be fired');
         });
         $this->assertSame('kaboom', $this->index->save($doc));
@@ -425,7 +425,7 @@ class IndexTest extends TestCase
      */
     public function testSaveWithRulesCreate()
     {
-        $this->index->eventManager()->on('Model.buildRules', function ($event, $rules) {
+        $this->index->getEventManager()->on('Model.buildRules', function ($event, $rules) {
             $rules->addCreate(function ($doc) {
                 return 'Did not work';
             }, ['errorField' => 'name']);
@@ -447,7 +447,7 @@ class IndexTest extends TestCase
      */
     public function testSaveWithRulesUpdate()
     {
-        $this->index->eventManager()->on('Model.buildRules', function ($event, $rules) {
+        $this->index->getEventManager()->on('Model.buildRules', function ($event, $rules) {
             $rules->addUpdate(function ($doc) {
                 return 'Did not work';
             }, ['errorField' => 'name']);
@@ -504,7 +504,7 @@ class IndexTest extends TestCase
         $doc = $this->index->get(1);
 
         $this->assertFalse($this->index->delete($doc));
-        $this->assertNotEmpty($doc->errors('title'));
+        $this->assertNotEmpty($doc->getError('title'));
     }
 
     /**
@@ -516,7 +516,7 @@ class IndexTest extends TestCase
     {
         $called = 0;
         $doc = $this->index->get(1);
-        $this->index->eventManager()->on(
+        $this->index->getEventManager()->on(
             'Model.beforeDelete',
             function ($event, $entity, $options) use ($doc, &$called) {
                 $called++;
@@ -524,7 +524,7 @@ class IndexTest extends TestCase
                 $this->assertInstanceOf('ArrayObject', $options);
             }
         );
-        $this->index->eventManager()->on(
+        $this->index->getEventManager()->on(
             'Model.afterDelete',
             function ($event, $entity, $options) use ($doc, &$called) {
                 $called++;
@@ -544,12 +544,12 @@ class IndexTest extends TestCase
     public function testDeleteBeforeDeleteAbort()
     {
         $doc = $this->index->get(1);
-        $this->index->eventManager()->on('Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
+        $this->index->getEventManager()->on('Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
             $event->stopPropagation();
 
             return 'kaboom';
         });
-        $this->index->eventManager()->on('Model.afterDelete', function () {
+        $this->index->getEventManager()->on('Model.afterDelete', function () {
             $this->fail('Should not be fired');
         });
         $this->assertSame('kaboom', $this->index->delete($doc));
@@ -575,11 +575,11 @@ class IndexTest extends TestCase
      */
     public function testValidatorSetAndGet()
     {
-        $result = $this->index->validator();
+        $result = $this->index->getValidator();
 
         $this->assertInstanceOf('Cake\Validation\Validator', $result);
-        $this->assertSame($result, $this->index->validator(), 'validator instances are persistent');
-        $this->assertSame($this->index, $result->provider('collection'), 'index bound as provider');
+        $this->assertSame($result, $this->index->getValidator(), 'validator instances are persistent');
+        $this->assertSame($this->index, $result->getProvider('collection'), 'index bound as provider');
     }
 
     /**
@@ -590,12 +590,12 @@ class IndexTest extends TestCase
     public function testValidatorTriggerEvent()
     {
         $called = 0;
-        $this->index->eventManager()->on('Model.buildValidator', function ($event, $validator, $name) use (&$called) {
+        $this->index->getEventManager()->on('Model.buildValidator', function ($event, $validator, $name) use (&$called) {
             $called++;
             $this->assertInstanceOf('Cake\Validation\Validator', $validator);
             $this->assertEquals('default', $name);
         });
-        $this->index->validator();
+        $this->index->getValidator();
         $this->assertEquals(1, $called, 'Event not triggered');
     }
 
@@ -647,7 +647,7 @@ class IndexTest extends TestCase
      */
     public function testAddRules()
     {
-        $this->index->eventManager()->on('Model.buildRules', function ($event, $rules) {
+        $this->index->getEventManager()->on('Model.buildRules', function ($event, $rules) {
             $rules->add(function ($doc) {
                 return false;
             });
@@ -729,6 +729,6 @@ class IndexTest extends TestCase
             ->setMethods(['beforeSave'])
             ->getMock();
 
-        $this->assertCount(1, $index->eventManager()->listeners('Model.beforeSave'));
+        $this->assertCount(1, $index->getEventManager()->listeners('Model.beforeSave'));
     }
 }

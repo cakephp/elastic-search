@@ -22,7 +22,7 @@ use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\ElasticSearch\View\Form\DocumentContext;
-use Cake\Network\Request;
+use Cake\Http\ServerRequest;
 use Cake\TestSuite\TestCase;
 use Cake\Validation\Validator;
 
@@ -57,7 +57,7 @@ class DocumentContextTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->request = new Request();
+        $this->request = new ServerRequest();
         $this->textField = 'text';
     }
 
@@ -139,14 +139,14 @@ class DocumentContextTest extends TestCase
             'body' => 'Stuff',
             'user' => new Document(['username' => 'mark'])
         ]);
-        $one->errors('title', 'Required field');
+        $one->setError('title', 'Required field');
 
         $two = new Article([
             'title' => 'Second post',
             'body' => 'Some text',
             'user' => new Document(['username' => 'jose'])
         ]);
-        $two->errors('body', 'Not long enough');
+        $two->setError('body', 'Not long enough');
 
         return [
             'array' => [[$one, $two]],
@@ -334,11 +334,11 @@ class DocumentContextTest extends TestCase
             'title' => 'My title',
             'user' => new Document(['username' => 'Mark']),
         ]);
-        $row->errors('title', []);
-        $row->errors('body', 'Gotta have one');
-        $row->errors('user_id', ['Required field']);
+        $row->setError('title', []);
+        $row->setError('body', 'Gotta have one');
+        $row->setError('user_id', ['Required field']);
 
-        $row->user->errors('username', ['Required']);
+        $row->user->setError('username', ['Required']);
 
         $context = new DocumentContext($this->request, [
             'entity' => $row,
@@ -370,8 +370,8 @@ class DocumentContextTest extends TestCase
                 new Document(['comment' => 'Second comment']),
             ]
         ]);
-        $row->comments[0]->errors('comment', ['Is required']);
-        $row->comments[0]->errors('article_id', ['Is required']);
+        $row->comments[0]->setError('comment', ['Is required']);
+        $row->comments[0]->setError('article_id', ['Is required']);
 
         $context = new DocumentContext($this->request, [
             'entity' => $row,
@@ -465,7 +465,7 @@ class DocumentContextTest extends TestCase
         $articles->embedOne('User');
         $articles->embedMany('Comments');
 
-        $articles->validator()->add('title', 'notblank', [
+        $articles->getValidator()->add('title', 'notblank', [
             'rule' => 'notBlank'
         ]);
 
@@ -473,7 +473,7 @@ class DocumentContextTest extends TestCase
         $validator->add('body', 'notblank', [
             'rule' => 'notBlank'
         ]);
-        $articles->validator('alternate', $validator);
+        $articles->setValidator('alternate', $validator);
 
         return $articles;
     }

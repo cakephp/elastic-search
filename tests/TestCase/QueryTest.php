@@ -35,7 +35,7 @@ class QueryTest extends TestCase
     {
         $index = new Index();
         $query = new Query($index);
-        $this->assertSame($index, $query->repository());
+        $this->assertSame($index, $query->getRepository());
     }
 
     /**

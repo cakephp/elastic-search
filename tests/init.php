@@ -31,7 +31,7 @@ Configure::write('App', [
     ]
 ]);
 
-Cache::config('_cake_core_', [
+Cache::setConfig('_cake_core_', [
     'className' => 'File',
     'path' => sys_get_temp_dir(),
 ]);
@@ -40,5 +40,5 @@ if (!getenv('db_dsn')) {
     putenv('db_dsn=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection');
 }
 
-ConnectionManager::config('test', ['url' => getenv('db_dsn')]);
-ConnectionManager::config('test_elastic', ['url' => getenv('db_dsn')]);
+ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
+ConnectionManager::setConfig('test_elastic', ['url' => getenv('db_dsn')]);

@@ -91,7 +91,7 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->index->validator()
+        $this->index->getValidator()
             ->add('title', 'numbery', ['rule' => 'numeric']);
 
         $marshaller = new Marshaller($this->index);
@@ -101,7 +101,7 @@ class MarshallerTest extends TestCase
         $this->assertNull($result->title, 'Invalid fields are not set.');
         $this->assertSame($data['body'], $result->body);
         $this->assertSame($data['user_id'], $result->user_id);
-        $this->assertNotEmpty($result->errors('title'), 'Should have an error.');
+        $this->assertNotEmpty($result->getErrors('title'), 'Should have an error.');
     }
 
     /**
@@ -165,7 +165,7 @@ class MarshallerTest extends TestCase
             'user_id' => 1,
         ];
         $called = 0;
-        $this->index->eventManager()->on(
+        $this->index->getEventManager()->on(
             'Model.beforeMarshal',
             function ($event, $data, $options) use (&$called) {
                 $called++;
@@ -191,7 +191,7 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->index->eventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
+        $this->index->getEventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
             $data['title'] = 'Mutated';
         });
         $marshaller = new Marshaller($this->index);
@@ -311,9 +311,9 @@ class MarshallerTest extends TestCase
         $this->assertSame($result, $doc, 'Object should be the same.');
         $this->assertSame($data['title'], $doc->title, 'title should be the same.');
         $this->assertSame($data['body'], $doc->body, 'body should be the same.');
-        $this->assertTrue($doc->dirty('title'));
-        $this->assertTrue($doc->dirty('body'));
-        $this->assertFalse($doc->dirty('user_id'));
+        $this->assertTrue($doc->isDirty('title'));
+        $this->assertTrue($doc->isDirty('body'));
+        $this->assertFalse($doc->isDirty('user_id'));
         $this->assertFalse($doc->isNew(), 'Should not end up new');
     }
 
@@ -329,7 +329,7 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->index->validator()
+        $this->index->getValidator()
             ->add('title', 'numbery', ['rule' => 'numeric']);
         $doc = $this->index->get(1);
 
@@ -338,7 +338,7 @@ class MarshallerTest extends TestCase
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
         $this->assertSame('First article', $result->title, 'Invalid fields are not modified.');
-        $this->assertNotEmpty($result->errors('title'), 'Should have an error.');
+        $this->assertNotEmpty($result->getErrors('title'), 'Should have an error.');
     }
 
     /**
@@ -349,7 +349,7 @@ class MarshallerTest extends TestCase
     public function testMergeFieldList()
     {
         $doc = $this->index->get(1);
-        $doc->accessible('*', false);
+        $doc->setAccess('*', false);
 
         $data = [
             'title' => 'New title',
@@ -361,8 +361,8 @@ class MarshallerTest extends TestCase
         $this->assertSame($result, $doc, 'Object should be the same.');
         $this->assertSame($data['title'], $doc->title, 'title should be the same.');
         $this->assertNotEquals($data['body'], $doc->body, 'body should be the same.');
-        $this->assertTrue($doc->dirty('title'));
-        $this->assertFalse($doc->dirty('body'));
+        $this->assertTrue($doc->isDirty('title'));
+        $this->assertFalse($doc->isDirty('body'));
     }
 
     /**
@@ -378,7 +378,7 @@ class MarshallerTest extends TestCase
             'user_id' => 1,
         ];
         $called = 0;
-        $this->index->eventManager()->on(
+        $this->index->getEventManager()->on(
             'Model.beforeMarshal',
             function ($event, $data, $options) use (&$called) {
                 $called++;
@@ -405,7 +405,7 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->index->eventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
+        $this->index->getEventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
             $data['title'] = 'Mutated';
         });
         $marshaller = new Marshaller($this->index);
@@ -628,12 +628,12 @@ class MarshallerTest extends TestCase
         $this->assertCount(2, $result);
         $this->assertEquals($data[0]['title'], $result[0]->title);
         $this->assertFalse($result[0]->isNew());
-        $this->assertTrue($result[0]->dirty());
-        $this->assertTrue($result[0]->dirty('title'));
+        $this->assertTrue($result[0]->isDirty());
+        $this->assertTrue($result[0]->isDirty('title'));
 
         $this->assertTrue($result[1]->isNew());
-        $this->assertTrue($result[1]->dirty());
-        $this->assertTrue($result[1]->dirty('title'));
+        $this->assertTrue($result[1]->isDirty());
+        $this->assertTrue($result[1]->isDirty('title'));
     }
 
     /**
@@ -661,13 +661,13 @@ class MarshallerTest extends TestCase
         $this->assertCount(2, $result);
         $this->assertEquals($data[0], $result[0]->toArray());
         $this->assertTrue($result[0]->isNew());
-        $this->assertTrue($result[0]->dirty());
-        $this->assertTrue($result[0]->dirty('title'));
+        $this->assertTrue($result[0]->isDirty());
+        $this->assertTrue($result[0]->isDirty('title'));
 
         $this->assertEquals($data[1], $result[1]->toArray());
         $this->assertTrue($result[1]->isNew());
-        $this->assertTrue($result[1]->dirty());
-        $this->assertTrue($result[1]->dirty('title'));
+        $this->assertTrue($result[1]->isDirty());
+        $this->assertTrue($result[1]->isDirty('title'));
     }
 
     /**

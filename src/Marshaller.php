@@ -61,25 +61,25 @@ class Marshaller
     {
         $entityClass = $this->index->entityClass();
         $entity = new $entityClass();
-        $entity->source($this->index->getName());
+        $entity->setSource($this->index->getRegistryAlias());
         $options += ['associated' => []];
 
         list($data, $options) = $this->_prepareDataAndOptions($data, $options);
 
         if (isset($options['accessibleFields'])) {
             foreach ((array)$options['accessibleFields'] as $key => $value) {
-                $entity->accessible($key, $value);
+                $entity->setAccess($key, $value);
             }
         }
         $errors = $this->_validate($data, $options, true);
-        $entity->errors($errors);
+        $entity->setErrors($errors);
         foreach (array_keys($errors) as $badKey) {
             unset($data[$badKey]);
         }
 
         foreach ($this->index->embedded() as $embed) {
             $property = $embed->property();
-            if (in_array($embed->alias(), $options['associated']) &&
+            if (in_array($embed->getAlias(), $options['associated']) &&
                 isset($data[$property])
             ) {
                 $data[$property] = $this->newNested($embed, $data[$property]);
@@ -209,7 +209,7 @@ class Marshaller
         $options += ['associated' => []];
         list($data, $options) = $this->_prepareDataAndOptions($data, $options);
         $errors = $this->_validate($data, $options, $entity->isNew());
-        $entity->errors($errors);
+        $entity->setErrors($errors);
 
         foreach (array_keys($errors) as $badKey) {
             unset($data[$badKey]);
@@ -217,7 +217,7 @@ class Marshaller
 
         foreach ($this->index->embedded() as $embed) {
             $property = $embed->property();
-            if (in_array($embed->alias(), $options['associated']) &&
+            if (in_array($embed->getAlias(), $options['associated']) &&
                 isset($data[$property])
             ) {
                 $data[$property] = $this->mergeNested($embed, $entity->{$property}, $data[$property]);
@@ -307,10 +307,10 @@ class Marshaller
         }
 
         if ($options['validate'] === true) {
-            $options['validate'] = $this->index->validator('default');
+            $options['validate'] = $this->index->getValidator('default');
         }
         if (is_string($options['validate'])) {
-            $options['validate'] = $this->index->validator($options['validate']);
+            $options['validate'] = $this->index->getValidator($options['validate']);
         }
         if (!is_object($options['validate'])) {
             throw new RuntimeException(

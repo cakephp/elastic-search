@@ -258,6 +258,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function connection($conn = null)
     {
+        deprecationWarning(
+            'Index::connection() is deprecated. ' .
+            'Use Index::setConnection()/getConnection() instead.'
+        );
+
         if ($conn !== null) {
             return $this->setConnection($conn);
         }
@@ -279,7 +284,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Returns the index registry key used to create this table instance.
+     * Returns the index registry key used to create this instance.
      *
      * @return string
      */
@@ -332,6 +337,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function name($name = null)
     {
+        deprecationWarning(
+            'Index::name() is deprecated. ' .
+            'Use Index::setName()/getName() instead.'
+        );
+
         if ($name !== null) {
             $this->setName($name);
         }
@@ -346,8 +356,26 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
+    public function getTable()
+    {
+        return $this->getName();
+    }
+
+    /**
+     * Get the index name, as required by QueryTrait
+     *
+     * This method is just an alias of name().
+     *
+     * @return string
+     * @deprecated Use getTable() instead
+     */
     public function table()
     {
+        deprecationWarning(
+            'Index::table() is deprecated. ' .
+            'Use Index::getTable() instead.'
+        );
+
         return $this->getName();
     }
 
@@ -362,7 +390,12 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function alias($alias = null)
     {
-        return $this->name($alias);
+        deprecationWarning(
+            'Index::table() is deprecated. ' .
+            'Use Index::setAlias()/getAlias() instead.'
+        );
+
+        return $this->getName($alias);
     }
 
     /**
@@ -623,7 +656,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
                 'options' => $options
             ]);
 
-            if ($event->isStopped() || $entity->errors()) {
+            if ($event->isStopped() || $entity->getErrors()) {
                 return false;
             }
 
@@ -650,7 +683,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $entities[$key]->id = $doc->getId();
             $entities[$key]->_version = $doc->getVersion();
             $entities[$key]->isNew(false);
-            $entities[$key]->source($this->getRegistryAlias());
+            $entities[$key]->setSource($this->getRegistryAlias());
             $entities[$key]->clean();
 
             $this->dispatchEvent('Model.afterSave', [
@@ -690,7 +723,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return $event->result;
         }
 
-        if ($entity->errors()) {
+        if ($entity->getErrors()) {
             return false;
         }
 
@@ -714,7 +747,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
-        $entity->source($this->getRegistryAlias());
+        $entity->setSource($this->getRegistryAlias());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [

@@ -43,7 +43,7 @@ class ResultSetTest extends TestCase
         $query = $this->getMockBuilder('Cake\ElasticSearch\Query')
             ->setConstructorArgs([$type])
             ->getMock();
-        $query->expects($this->once())->method('repository')
+        $query->expects($this->once())->method('getRepository')
             ->will($this->returnValue($type));
 
         $type->expects($this->once())
@@ -84,7 +84,7 @@ class ResultSetTest extends TestCase
         $document = $resultSet->current();
         $this->assertInstanceOf(__NAMESPACE__ . '\MyTestDocument', $document);
         $this->assertSame($data + ['id' => 99], $document->toArray());
-        $this->assertFalse($document->dirty());
+        $this->assertFalse($document->isDirty());
         $this->assertFalse($document->isNew());
         $this->assertEquals('things', $document->type());
     }
@@ -114,7 +114,7 @@ class ResultSetTest extends TestCase
             ->setConstructorArgs([$type])
             ->getMock();
 
-        $query->expects($this->once())->method('repository')
+        $query->expects($this->once())->method('getRepository')
             ->will($this->returnValue($type));
 
         $requireParam = ['getAggregation' => 'foo'];

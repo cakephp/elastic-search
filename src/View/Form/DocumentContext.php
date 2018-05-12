@@ -17,7 +17,7 @@ namespace Cake\ElasticSearch\View\Form;
 use Cake\Collection\Collection;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\IndexRegistry;
-use Cake\Network\Request;
+use Cake\Http\ServerRequest;
 use Cake\Utility\Inflector;
 use Cake\View\Form\ContextInterface;
 use RuntimeException;
@@ -31,7 +31,7 @@ class DocumentContext implements ContextInterface
     /**
      * The request object.
      *
-     * @var \Cake\Network\Request
+     * @var \Cake\Http\ServerRequest
      */
     protected $_request;
 
@@ -60,10 +60,10 @@ class DocumentContext implements ContextInterface
     /**
      * Constructor.
      *
-     * @param \Cake\Network\Request $request The request object.
+     * @param \Cake\Http\ServerRequest $request The request object.
      * @param array $context Context info.
      */
-    public function __construct(Request $request, array $context)
+    public function __construct(ServerRequest $request, array $context)
     {
         $this->_request = $request;
         $context += [
@@ -101,7 +101,7 @@ class DocumentContext implements ContextInterface
             $isDocument = $entity instanceof Document;
 
             if ($isDocument) {
-                $index = $entity->source();
+                $index = $entity->getSource();
             }
             if (!$index && $isDocument && get_class($entity) !== 'Cake\ElasticSearch\Document') {
                 list(, $entityClass) = namespaceSplit(get_class($entity));
@@ -164,7 +164,7 @@ class DocumentContext implements ContextInterface
      */
     public function val($field)
     {
-        $val = $this->_request->data($field);
+        $val = $this->_request->getData($field);
         if ($val !== null) {
             return $val;
         }
@@ -297,7 +297,7 @@ class DocumentContext implements ContextInterface
      */
     protected function getValidator()
     {
-        return $this->_context['index']->validator($this->_context['validator']);
+        return $this->_context['index']->getValidator($this->_context['validator']);
     }
 
     /**
@@ -345,7 +345,7 @@ class DocumentContext implements ContextInterface
         $entity = $this->entity($parts);
 
         if ($entity instanceof Document) {
-            return $entity->errors(array_pop($parts));
+            return $entity->getError(array_pop($parts));
         }
 
         return [];

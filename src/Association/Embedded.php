@@ -127,6 +127,21 @@ abstract class Embedded
      */
     public function alias()
     {
+        deprecationWarning(
+            'Embedded::alias() is deprecated. ' .
+            'Use Embedded::getAlias() instead.'
+        );
+
+        return $this->alias;
+    }
+
+    /**
+     * Get the alias for this embed.
+     *
+     * @return string
+     */
+    public function getAlias()
+    {
         return $this->alias;
     }
 
