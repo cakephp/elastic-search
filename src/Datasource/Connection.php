@@ -16,13 +16,14 @@ namespace Cake\ElasticSearch\Datasource;
 
 use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionInterface;
+use Cake\ElasticSearch\Datasource\Log\QueryLoggerAdapter;
 use Cake\Log\Log;
-use Elastica\Client;
+use Elastica\Client as ElasticaClient;
 use Elastica\Log as ElasticaLog;
 use Elastica\Request;
 use Psr\Log\NullLogger;
 
-class Connection extends Client implements ConnectionInterface
+class Connection implements ConnectionInterface
 {
     /**
      * Whether or not query logging is enabled.
@@ -39,6 +40,27 @@ class Connection extends Client implements ConnectionInterface
     protected $configName = '';
 
     /**
+     * Elastica client instance
+     *
+     * @var \Elastica\Client;
+     */
+    protected $_client;
+
+    /**
+     * Logger object instance.
+     *
+     * @var \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
+     * NullLooger object instance
+     *
+     * @var \Psr\Log\NullLogger
+     */
+    protected $_nullLogger;
+
+    /**
      * Constructor.
      *
      * @param array $config config options
@@ -53,7 +75,25 @@ class Connection extends Client implements ConnectionInterface
         if (isset($config['log'])) {
             $this->logQueries((bool)$config['log']);
         }
-        parent::__construct($config, $callback);
+
+        $this->_client = new ElasticaClient($config, $callback, $this->getLogger());
+    }
+
+    /**
+     * Pass remaining methods to the elastica client (if they exist)
+     * And set the current logger based on current logQueries value
+     *
+     * @param string $name Method name
+     * @param array $attributes Method attributes
+     * @return mixed
+     */
+    public function __call($name, $attributes)
+    {
+        if (method_exists($this->_client, $name)) {
+            $this->_client->setLogger($this->getLogger());
+
+            return call_user_func_array([$this->_client, $name], $attributes);
+        }
     }
 
     /**
@@ -112,6 +152,7 @@ class Connection extends Client implements ConnectionInterface
         if ($enable === null) {
             return $this->logQueries;
         }
+
         $this->logQueries = $enable;
     }
 
@@ -141,61 +182,74 @@ class Connection extends Client implements ConnectionInterface
      */
     public function config()
     {
-        return $this->_config;
+        return $this->_client->getConfig();
     }
 
     /**
-     * Sets the logger object instance. When called with no arguments
-     * it returns the currently setup logger instance.
+     * Sets a logger
      *
-     * @param object $instance logger object instance
-     * @return object logger instance
+     * @param \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface $logger Logger instance
+     * @return $this
      */
-    public function logger($instance = null)
+    public function setLogger($logger)
     {
-        if ($instance === null) {
-            return $this->_logger;
+        $this->_logger = $logger;
+
+        if ($this->_logger instanceof \Cake\Database\Log\QueryLogger) {
+            $this->_logger = new QueryLoggerAdapter($this->_logger);
         }
-        $this->_logger = $instance;
+
+        return $this;
     }
 
     /**
-     * Log requests to Elastic Search.
+     * Get the logger object
      *
-     * @param Request|array $context The context of the request made.
-     * @return void
+     * @return \Cake\Database\Log\QueryLogger logger instance
      */
-    protected function _log($context)
+    public function getLogger()
     {
-        if (!$this->logQueries) {
-            return;
+        if (!$this->logQueries()) {
+            return $this->getNullLogger();
         }
 
-        if (!isset($this->_logger) || $this->_logger instanceof NullLogger) {
+        if ($this->_logger === null) {
             $this->_logger = Log::engine('elasticsearch') ?: new ElasticaLog();
         }
 
-        if ($context instanceof Request) {
-            $contextArray = $context->toArray();
-            $logData = [
-                'method' => $contextArray['method'],
-                'path' => $contextArray['path'],
-                'data' => $contextArray['data']
-            ];
-        } elseif ($context instanceof \Exception) {
-            $logData = ['message' => $context->getMessage()];
-        } else {
-            $logData = ['message' => 'Unknown'];
+        return $this->_logger;
+    }
+
+    /**
+     * Return instance of the NullLogger
+     *
+     * @return \Psr\Log\NullLogger
+     */
+    public function getNullLogger()
+    {
+        if (!$this->_nullLogger) {
+            $this->_nullLogger = new NullLogger;
         }
 
-        $data = json_encode($logData, JSON_PRETTY_PRINT);
-        $loggedQuery = new LoggedQuery();
-        $loggedQuery->query = $data;
+        return $this->_nullLogger;
+    }
 
-        if ($this->_logger instanceof \Psr\Log\LoggerInterface) {
-            $this->_logger->log('debug', $loggedQuery);
-        } else {
-            $this->_logger->log($loggedQuery);
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated Use getLogger() and setLogger() instead.
+     */
+    public function logger($instance = null)
+    {
+        deprecationWarning(
+            'Connection::logger() is deprecated. ' .
+            'Use Connection::setLogger()/getLogger() instead.'
+        );
+
+        if ($instance === null) {
+            return $this->getLogger();
         }
+
+        $this->setLogger($instance);
     }
 }

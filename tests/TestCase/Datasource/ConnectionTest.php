@@ -75,13 +75,33 @@ class ConnectionTest extends TestCase
      *
      * @return void
      */
-    public function testQueryLogging()
+    public function testQueryLoggingWithBaseLog()
     {
         $logger = $this->getMockBuilder('Cake\Log\Engine\BaseLog')->setMethods(['log'])->getMock();
         $logger->expects($this->once())->method('log');
+
         Log::setConfig('elasticsearch', $logger);
 
         $connection = ConnectionManager::get('test');
+        $connection->logQueries(true);
+        $result = $connection->request('_stats');
+        $connection->logQueries(false);
+
+        $this->assertNotEmpty($result);
+    }
+
+    /**
+     * Ensure that logging queries works.
+     *
+     * @return void
+     */
+    public function testQueryLogger()
+    {
+        $logger = $this->getMockBuilder('Cake\Database\Log\QueryLogger')->setMethods(['log'])->getMock();
+        $logger->expects($this->once())->method('log');
+
+        $connection = ConnectionManager::get('test');
+        $connection->setLogger($logger);
         $connection->logQueries(true);
         $result = $connection->request('_stats');
         $connection->logQueries(false);
