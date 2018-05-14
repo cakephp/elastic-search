@@ -34,9 +34,9 @@ class Application extends BaseApplication
     {
         $this->addPlugin(ElasticSearchPlugin::class);
 
-        // If you want the plugin to automatically configure the Elastic model provider
+        // If you want to disable to automatically configure the Elastic model provider
         // and FormHelper do the following:
-        // $this->addPlugin(ElasticSearchPlugin::class, [ 'bootstrap' => true ]);
+        // $this->addPlugin(ElasticSearchPlugin::class, [ 'bootstrap' => false ]);
     }
 }
 ```
