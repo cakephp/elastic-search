@@ -27,13 +27,13 @@ class QueryLoggerAdapter extends AbstractLogger
     /**
      * Holds the QueryLogger instance
      *
-     * @var \Cake\Database\Log\LoggedQuery
+     * @var \Cake\Database\Log\QueryLogger
      */
     protected $_queryLogger;
 
     /**
      * Constructor, set the QueryLogger instance
-     * @param \Cake\Database\Log\LoggedQuery $logger Instance of the QueryLogger
+     * @param \Cake\Database\Log\QueryLogger $logger Instance of the QueryLogger
      */
     public function __construct(QueryLogger $logger)
     {
