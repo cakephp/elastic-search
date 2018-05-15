@@ -16,7 +16,7 @@ namespace Cake\ElasticSearch\View\Form;
 
 use Cake\Collection\Collection;
 use Cake\ElasticSearch\Document;
-use Cake\ElasticSearch\TypeRegistry;
+use Cake\ElasticSearch\IndexRegistry;
 use Cake\Network\Request;
 use Cake\Utility\Inflector;
 use Cake\View\Form\ContextInterface;
@@ -43,7 +43,7 @@ class DocumentContext implements ContextInterface
     protected $_context;
 
     /**
-     * The name of the top level entity/type object.
+     * The name of the top level entity/index object.
      *
      * @var string
      */
@@ -68,7 +68,7 @@ class DocumentContext implements ContextInterface
         $this->_request = $request;
         $context += [
             'entity' => null,
-            'type' => null,
+            'index' => null,
             'validator' => 'default',
         ];
         $this->_context = $context;
@@ -79,11 +79,11 @@ class DocumentContext implements ContextInterface
      * Prepare some additional data from the context.
      *
      * If the table option was provided to the constructor and it
-     * was a string, TypeRegistry will be used to get the correct table instance.
+     * was a string, IndexRegistry will be used to get the correct table instance.
      *
-     * If an object is provided as the type option, it will be used as is.
+     * If an object is provided as the index option, it will be used as is.
      *
-     * If no type option is provided, the type name will be derived based on
+     * If no index option is provided, the index name will be derived based on
      * naming conventions. This inference will work with a number of common objects
      * like arrays, Collection objects and ResultSets.
      *
@@ -92,37 +92,37 @@ class DocumentContext implements ContextInterface
      */
     protected function _prepare()
     {
-        $type = $this->_context['type'];
+        $index = $this->_context['index'];
         $entity = $this->_context['entity'];
-        if (empty($type)) {
+        if (empty($index)) {
             if (is_array($entity) || $entity instanceof Traversable) {
                 $entity = (new Collection($entity))->first();
             }
             $isDocument = $entity instanceof Document;
 
             if ($isDocument) {
-                $type = $entity->source();
+                $index = $entity->source();
             }
-            if (!$type && $isDocument && get_class($entity) !== 'Cake\ElasticSearch\Document') {
+            if (!$index && $isDocument && get_class($entity) !== 'Cake\ElasticSearch\Document') {
                 list(, $entityClass) = namespaceSplit(get_class($entity));
-                $type = Inflector::pluralize($entityClass);
+                $index = Inflector::pluralize($entityClass);
             }
         }
-        if (is_string($type)) {
-            $type = TypeRegistry::get($type);
+        if (is_string($index)) {
+            $index = IndexRegistry::get($index);
         }
 
-        if (!is_object($type)) {
+        if (!is_object($index)) {
             throw new RuntimeException(
-                'Unable to find type class for current entity'
+                'Unable to find index class for current entity'
             );
         }
         $this->_isCollection = (
             is_array($entity) ||
             $entity instanceof Traversable
         );
-        $this->_rootName = $type->name();
-        $this->_context['type'] = $type;
+        $this->_rootName = $index->getName();
+        $this->_context['index'] = $index;
     }
 
     /**
@@ -291,13 +291,13 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * Get the validator for the current type.
+     * Get the validator for the current index.
      *
-     * @return \Cake\Validation\Validator The validator for the type.
+     * @return \Cake\Validation\Validator The validator for the index.
      */
     protected function getValidator()
     {
-        return $this->_context['type']->validator($this->_context['validator']);
+        return $this->_context['index']->validator($this->_context['validator']);
     }
 
     /**
@@ -305,7 +305,7 @@ class DocumentContext implements ContextInterface
      */
     public function fieldNames()
     {
-        $schema = $this->_context['type']->schema();
+        $schema = $this->_context['index']->schema();
 
         return $schema->fields();
     }
@@ -315,7 +315,7 @@ class DocumentContext implements ContextInterface
      */
     public function type($field)
     {
-        $schema = $this->_context['type']->schema();
+        $schema = $this->_context['index']->schema();
 
         return $schema->fieldType($field);
     }

@@ -16,8 +16,8 @@ namespace Cake\ElasticSearch\Test;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Marshaller;
-use Cake\ElasticSearch\Type;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -52,7 +52,7 @@ class MarshallerTest extends TestCase
     {
         parent::setUp();
         $connection = ConnectionManager::get('test');
-        $this->type = new Type([
+        $this->index = new Index([
             'connection' => $connection,
             'name' => 'articles',
         ]);
@@ -70,7 +70,7 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -91,10 +91,10 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->type->validator()
+        $this->index->validator()
             ->add('title', 'numbery', ['rule' => 'numeric']);
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -116,7 +116,7 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data, ['fieldList' => ['title']]);
 
         $this->assertSame($data['title'], $result->title);
@@ -136,9 +136,9 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->type->entityClass(__NAMESPACE__ . '\ProtectedArticle');
+        $this->index->entityClass(__NAMESPACE__ . '\ProtectedArticle');
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
 
         $this->assertSame($data['title'], $result->title);
@@ -165,7 +165,7 @@ class MarshallerTest extends TestCase
             'user_id' => 1,
         ];
         $called = 0;
-        $this->type->eventManager()->on(
+        $this->index->eventManager()->on(
             'Model.beforeMarshal',
             function ($event, $data, $options) use (&$called) {
                 $called++;
@@ -173,7 +173,7 @@ class MarshallerTest extends TestCase
                 $this->assertInstanceOf('ArrayObject', $options);
             }
         );
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $marshaller->one($data);
 
         $this->assertEquals(1, $called, 'method should be called');
@@ -191,10 +191,10 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->type->eventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
+        $this->index->eventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
             $data['title'] = 'Mutated';
         });
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
         $this->assertEquals('Mutated', $result->title);
     }
@@ -213,9 +213,9 @@ class MarshallerTest extends TestCase
                 'username' => 'mark',
             ],
         ];
-        $this->type->embedOne('User');
+        $this->index->embedOne('User');
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data, ['associated' => ['User']]);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -224,7 +224,7 @@ class MarshallerTest extends TestCase
         $this->assertSame($data['body'], $result->body);
         $this->assertSame($data['user']['username'], $result->user->username);
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -250,9 +250,9 @@ class MarshallerTest extends TestCase
                 'bad' => 'data'
             ],
         ];
-        $this->type->embedMany('Comments');
+        $this->index->embedMany('Comments');
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data, ['associated' => ['Comments']]);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -283,7 +283,7 @@ class MarshallerTest extends TestCase
                 'user_id' => 2,
             ]
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->many($data);
 
         $this->assertCount(2, $result);
@@ -300,12 +300,12 @@ class MarshallerTest extends TestCase
      */
     public function testMerge()
     {
-        $doc = $this->type->get(1);
+        $doc = $this->index->get(1);
         $data = [
             'title' => 'New title',
             'body' => 'Updated',
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($doc, $data);
 
         $this->assertSame($result, $doc, 'Object should be the same.');
@@ -329,11 +329,11 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->type->validator()
+        $this->index->validator()
             ->add('title', 'numbery', ['rule' => 'numeric']);
-        $doc = $this->type->get(1);
+        $doc = $this->index->get(1);
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($doc, $data);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -348,14 +348,14 @@ class MarshallerTest extends TestCase
      */
     public function testMergeFieldList()
     {
-        $doc = $this->type->get(1);
+        $doc = $this->index->get(1);
         $doc->accessible('*', false);
 
         $data = [
             'title' => 'New title',
             'body' => 'Updated',
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($doc, $data, ['fieldList' => ['title']]);
 
         $this->assertSame($result, $doc, 'Object should be the same.');
@@ -378,7 +378,7 @@ class MarshallerTest extends TestCase
             'user_id' => 1,
         ];
         $called = 0;
-        $this->type->eventManager()->on(
+        $this->index->eventManager()->on(
             'Model.beforeMarshal',
             function ($event, $data, $options) use (&$called) {
                 $called++;
@@ -386,7 +386,7 @@ class MarshallerTest extends TestCase
                 $this->assertInstanceOf('ArrayObject', $options);
             }
         );
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $doc = new Document(['title' => 'original', 'body' => 'original']);
         $marshaller->merge($doc, $data);
 
@@ -405,10 +405,10 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->type->eventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
+        $this->index->eventManager()->on('Model.beforeMarshal', function ($event, $data, $options) {
             $data['title'] = 'Mutated';
         });
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $doc = new Document(['title' => 'original', 'body' => 'original']);
         $result = $marshaller->merge($doc, $data);
         $this->assertEquals('Mutated', $result->title);
@@ -421,7 +421,7 @@ class MarshallerTest extends TestCase
      */
     public function testMergeEmbeddedOneExisting()
     {
-        $this->type->embedOne('User');
+        $this->index->embedOne('User');
         $data = [
             'title' => 'Testing',
             'body' => 'Elastic text',
@@ -434,7 +434,7 @@ class MarshallerTest extends TestCase
             'user' => new Document(['username' => 'old'], ['markNew' => false])
         ], ['markNew' => false]);
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($entity, $data, ['associated' => ['User']]);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -453,7 +453,7 @@ class MarshallerTest extends TestCase
      */
     public function testMergeEmbeddedOneMissing()
     {
-        $this->type->embedOne('User');
+        $this->index->embedOne('User');
         $data = [
             'title' => 'Testing',
             'body' => 'Elastic text',
@@ -465,7 +465,7 @@ class MarshallerTest extends TestCase
             'title' => 'Old',
         ], ['markNew' => false]);
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($entity, $data, ['associated' => ['User']]);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -492,7 +492,7 @@ class MarshallerTest extends TestCase
                 'bad' => 'data'
             ],
         ];
-        $this->type->embedMany('Comments');
+        $this->index->embedMany('Comments');
 
         $entity = new Document([
             'title' => 'old',
@@ -502,7 +502,7 @@ class MarshallerTest extends TestCase
             ]
         ], ['markNew' => false]);
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($entity, $data, ['associated' => ['Comments']]);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -536,9 +536,9 @@ class MarshallerTest extends TestCase
             ]
         ], ['markNew' => false]);
 
-        $this->type->embedMany('Comments');
+        $this->index->embedMany('Comments');
 
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($entity, $data, ['associated' => ['Comments']]);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -569,7 +569,7 @@ class MarshallerTest extends TestCase
                 'title' => 'New second',
             ],
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->mergeMany($entities, $data);
 
         $this->assertCount(2, $result);
@@ -595,7 +595,7 @@ class MarshallerTest extends TestCase
                 'body' => 'Nope',
             ],
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->mergeMany($entities, $data, ['fieldList' => ['title']]);
 
         $this->assertCount(2, $result);
@@ -610,7 +610,7 @@ class MarshallerTest extends TestCase
      */
     public function testMergeManySomeNew()
     {
-        $doc = $this->type->get(1);
+        $doc = $this->index->get(1);
         $entities = [$doc];
 
         $data = [
@@ -622,7 +622,7 @@ class MarshallerTest extends TestCase
                 'title' => 'New second',
             ],
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->mergeMany($entities, $data);
 
         $this->assertCount(2, $result);
@@ -643,7 +643,7 @@ class MarshallerTest extends TestCase
      */
     public function testMergeManyDropsUnknownEntities()
     {
-        $doc = $this->type->get(1);
+        $doc = $this->index->get(1);
         $entities = [$doc];
 
         $data = [
@@ -655,7 +655,7 @@ class MarshallerTest extends TestCase
                 'title' => 'New third',
             ],
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->mergeMany($entities, $data);
 
         $this->assertCount(2, $result);
@@ -677,15 +677,15 @@ class MarshallerTest extends TestCase
      */
     public function testMergeManyBadEntityData()
     {
-        $doc = $this->type->get(1);
-        $entities = ['string', ['herp' => 'derp']];
+        $doc = $this->index->get(1);
+        $entities = ['text', ['herp' => 'derp']];
 
         $data = [
             [
                 'title' => 'New first',
             ],
         ];
-        $marshaller = new Marshaller($this->type);
+        $marshaller = new Marshaller($this->index);
         $result = $marshaller->mergeMany($entities, $data);
 
         $this->assertCount(1, $result);

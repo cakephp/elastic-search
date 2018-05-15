@@ -121,35 +121,6 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * Tests the geoDistanceRange() filter
-     *
-     * @return void
-     */
-    public function testGeoDistanceRange()
-    {
-        $builder = new QueryBuilder;
-        $result = $builder->geoDistanceRange('location', ['lat' => 40.73, 'lon' => -74.1], '5km', '6km');
-        $expected = [
-            'geo_distance_range' => [
-                'location' => ['lat' => 40.73, 'lon' => -74.1],
-                'gte' => '5km',
-                'lte' => '6km',
-            ]
-        ];
-        $this->assertEquals($expected, $result->toArray());
-
-        $result = $builder->geoDistanceRange('location', 'dr5r9ydj2y73', '10km', '15km');
-        $expected = [
-            'geo_distance_range' => [
-                'location' => 'dr5r9ydj2y73',
-                'gte' => '10km',
-                'lte' => '15km',
-            ]
-        ];
-        $this->assertEquals($expected, $result->toArray());
-    }
-
-    /**
      * Tests the geoPolygon() filter
      *
      * @return void
@@ -192,13 +163,13 @@ class QueryBuilderTest extends TestCase
             'geo_shape' => [
                 'location' => [
                     'shape' => [
-                        'relation' => 'intersects',
                         'type' => 'linestring',
                         'coordinates' => [
                             ['lat' => 40, 'lon' => -70],
                             ['lat' => 30, 'lon' => -80],
                         ]
-                    ]
+                    ],
+                    'relation' => 'intersects'
                 ]
             ]
         ];
@@ -225,35 +196,6 @@ class QueryBuilderTest extends TestCase
                         'path' => 'location'
                     ]
                 ]
-            ]
-        ];
-        $this->assertEquals($expected, $result->toArray());
-    }
-
-    /**
-     * Tests the geoHashCell() filter
-     *
-     * @return void
-     */
-    public function testGeoHashCell()
-    {
-        $builder = new QueryBuilder;
-        $result = $builder->geoHashCell('location', ['lat' => 40.73, 'lon' => -74.1], 3);
-        $expected = [
-            'geohash_cell' => [
-                'location' => ['lat' => 40.73, 'lon' => -74.1],
-                'precision' => 3,
-                'neighbors' => false,
-            ]
-        ];
-        $this->assertEquals($expected, $result->toArray());
-
-        $result = $builder->geoHashCell('location', 'dr5r9ydj2y73', '50m', true);
-        $expected = [
-            'geohash_cell' => [
-                'location' => 'dr5r9ydj2y73',
-                'precision' => '50m',
-                'neighbors' => true,
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
@@ -330,7 +272,7 @@ class QueryBuilderTest extends TestCase
         $result = $builder->hasParent($builder->term('name', 'john'), 'user');
         $expected = [
             'has_parent' => [
-                'type' => 'user',
+                'parent_type' => 'user',
                 'query' => ['term' => ['name' => 'john']]
             ]
         ];
@@ -345,34 +287,10 @@ class QueryBuilderTest extends TestCase
     public function testIds()
     {
         $builder = new QueryBuilder;
-        $result = $builder->ids([1, 2, 3], 'user');
+        $result = $builder->ids([1, 2, 3]);
         $expected = [
             'ids' => [
-                'type' => ['user'],
                 'values' => [1, 2, 3]
-            ]
-        ];
-        $this->assertEquals($expected, $result->toArray());
-    }
-
-    /**
-     * Tests the indices() filter
-     *
-     * @return void
-     */
-    public function testIndices()
-    {
-        $builder = new QueryBuilder;
-        $result = $builder->indices(
-            ['a', 'b'],
-            $builder->term('user', 'mark'),
-            $builder->term('tag', 'wow')
-        );
-        $expected = [
-            'indices' => [
-                'indices' => ['a', 'b'],
-                'query' => ['term' => ['user' => 'mark']],
-                'no_match_query' => ['term' => ['tag' => 'wow']]
             ]
         ];
         $this->assertEquals($expected, $result->toArray());
@@ -446,21 +364,6 @@ class QueryBuilderTest extends TestCase
         $result = $builder->lte('year', '2014');
         $expected = [
             'range' => ['year' => ['lte' => '2014']]
-        ];
-        $this->assertEquals($expected, $result->toArray());
-    }
-
-    /**
-     * Tests the missing() filter
-     *
-     * @return void
-     */
-    public function testMissing()
-    {
-        $builder = new QueryBuilder;
-        $result = $builder->missing('comments');
-        $expected = [
-            'missing' => ['field' => 'comments']
         ];
         $this->assertEquals($expected, $result->toArray());
     }
@@ -607,7 +510,7 @@ class QueryBuilderTest extends TestCase
         $builder = new QueryBuilder;
         $result = $builder->script("doc['foo'] > 2");
         $expected = [
-            'script' => ['script' => "doc['foo'] > 2"]
+            'script' => ['script' => ['inline' => "doc['foo'] > 2"]]
         ];
         $this->assertEquals($expected, $result->toArray());
     }
@@ -683,16 +586,14 @@ class QueryBuilderTest extends TestCase
         $result = $builder->and(
             $builder->term('user', 'jose'),
             $builder->gte('age', 29),
-            $builder->missing('tags'),
-            $builder->and($builder->missing('missing'))
+            $builder->and($builder->term('user', 'maria'))
         );
         $expected = [
             'bool' => [
                 'must' => [
                     ['term' => ['user' => 'jose']],
                     ['range' => ['age' => ['gte' => 29]]],
-                    ['missing' => ['field' => 'tags']],
-                    ['bool' => ['must' => [['missing' => ['field' => 'missing']]]]]
+                    ['bool' => ['must' => [['term' => ['user' => 'maria']]]]]
                 ]
             ]
         ];
@@ -709,15 +610,13 @@ class QueryBuilderTest extends TestCase
         $builder = new QueryBuilder;
         $result = $builder->or(
             $builder->term('user', 'jose'),
-            $builder->gte('age', 29),
-            $builder->missing('tags')
+            $builder->gte('age', 29)
         );
         $expected = [
             'bool' => [
                 'should' => [
                         ['term' => ['user' => 'jose']],
-                        ['range' => ['age' => ['gte' => 29]]],
-                        ['missing' => ['field' => 'tags']],
+                        ['range' => ['age' => ['gte' => 29]]]
                 ]
             ]
         ];
@@ -754,7 +653,7 @@ class QueryBuilderTest extends TestCase
             $builder->lt('salary', 60),
             $builder->terms('interests', ['cakephp', 'food']),
             $builder->not($builder->terms('interests', ['boring stuff', 'c#'])),
-            $builder->missing('profile'),
+            $builder->not($builder->exists('profile')),
             $builder->exists('tags'),
             $builder->term('address', 'something'),
             $builder->not($builder->term('address', 'something else')),

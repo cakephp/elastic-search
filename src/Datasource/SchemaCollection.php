@@ -46,12 +46,11 @@ class SchemaCollection
     public function listTables()
     {
         try {
-            $index = $this->connection->getIndex();
-            $mappings = $index->getMapping();
+            $indexes = $this->connection->getStatus()->getIndexNames();
         } catch (ResponseException $e) {
             return [];
         }
 
-        return array_keys($mappings);
+        return $indexes;
     }
 }

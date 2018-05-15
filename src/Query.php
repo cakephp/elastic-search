@@ -90,9 +90,9 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Query constructor
      *
-     * @param \Cake\ElasticSearch\Type $repository The type of document.
+     * @param \Cake\ElasticSearch\Index $repository The type of document.
      */
-    public function __construct(Type $repository)
+    public function __construct(Index $repository)
     {
         $this->repository($repository);
         $this->_elasticQuery = new ElasticaQuery;
@@ -557,8 +557,8 @@ class Query implements IteratorAggregate, QueryInterface
     protected function _execute()
     {
         $connection = $this->_repository->connection();
-        $name = $this->_repository->name();
-        $type = $connection->getIndex()->getType($name);
+        $index = $this->_repository->name();
+        $type = $connection->getIndex($index)->getType($this->_repository->getType());
 
         $query = $this->compileQuery();
 
@@ -645,8 +645,8 @@ class Query implements IteratorAggregate, QueryInterface
     public function count()
     {
         $connection = $this->_repository->connection();
-        $name = $this->_repository->name();
-        $type = $connection->getIndex()->getType($name);
+        $index = $this->_repository->name();
+        $type = $connection->getIndex($index)->getType($this->_repository->getType());
 
         $query = clone $this->compileQuery();
         $query->setSize(0);

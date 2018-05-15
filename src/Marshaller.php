@@ -27,20 +27,20 @@ use RuntimeException;
 class Marshaller
 {
     /**
-     * Type instance this marshaller is for.
+     * Index instance this marshaller is for.
      *
-     * @var \Cake\ElasticSearch\Type
+     * @var \Cake\ElasticSearch\Index
      */
-    protected $type;
+    protected $index;
 
     /**
      * Constructor
      *
-     * @param \Cake\ElasticSearch\Type $type The type instance this marshaller is for.
+     * @param \Cake\ElasticSearch\Index $index The index instance this marshaller is for.
      */
-    public function __construct(Type $type)
+    public function __construct(Index $index)
     {
-        $this->type = $type;
+        $this->index = $index;
     }
 
     /**
@@ -59,9 +59,9 @@ class Marshaller
      */
     public function one(array $data, array $options = [])
     {
-        $entityClass = $this->type->entityClass();
+        $entityClass = $this->index->entityClass();
         $entity = new $entityClass();
-        $entity->source($this->type->name());
+        $entity->source($this->index->getName());
         $options += ['associated' => []];
 
         list($data, $options) = $this->_prepareDataAndOptions($data, $options);
@@ -77,7 +77,7 @@ class Marshaller
             unset($data[$badKey]);
         }
 
-        foreach ($this->type->embedded() as $embed) {
+        foreach ($this->index->embedded() as $embed) {
             $property = $embed->property();
             if (in_array($embed->alias(), $options['associated']) &&
                 isset($data[$property])
@@ -215,7 +215,7 @@ class Marshaller
             unset($data[$badKey]);
         }
 
-        foreach ($this->type->embedded() as $embed) {
+        foreach ($this->index->embedded() as $embed) {
             $property = $embed->property();
             if (in_array($embed->alias(), $options['associated']) &&
                 isset($data[$property])
@@ -307,10 +307,10 @@ class Marshaller
         }
 
         if ($options['validate'] === true) {
-            $options['validate'] = $this->type->validator('default');
+            $options['validate'] = $this->index->validator('default');
         }
         if (is_string($options['validate'])) {
-            $options['validate'] = $this->type->validator($options['validate']);
+            $options['validate'] = $this->index->validator($options['validate']);
         }
         if (!is_object($options['validate'])) {
             throw new RuntimeException(
@@ -333,7 +333,7 @@ class Marshaller
         $options += ['validate' => true];
         $data = new \ArrayObject($data);
         $options = new \ArrayObject($options);
-        $this->type->dispatchEvent('Model.beforeMarshal', compact('data', 'options'));
+        $this->index->dispatchEvent('Model.beforeMarshal', compact('data', 'options'));
 
         return [(array)$data, (array)$options];
     }

@@ -19,8 +19,8 @@ use ArrayObject;
 use Cake\Collection\Collection;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
-use Cake\ElasticSearch\Type;
-use Cake\ElasticSearch\TypeRegistry;
+use Cake\ElasticSearch\Index;
+use Cake\ElasticSearch\IndexRegistry;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Network\Request;
 use Cake\TestSuite\TestCase;
@@ -58,8 +58,7 @@ class DocumentContextTest extends TestCase
     {
         parent::setUp();
         $this->request = new Request();
-        $elasticVersion = getenv('ELASTIC_VERSION') ?: '2.0';
-        $this->textField = version_compare($elasticVersion, '5.0', '<') ? 'string' : 'text';
+        $this->textField = 'text';
     }
 
     /**
@@ -70,7 +69,7 @@ class DocumentContextTest extends TestCase
     public function tearDown()
     {
         parent::tearDown();
-        TypeRegistry::clear();
+        IndexRegistry::clear();
     }
 
     /**
@@ -239,7 +238,7 @@ class DocumentContextTest extends TestCase
     {
         $context = new DocumentContext($this->request, [
             'entity' => $collection,
-            'type' => 'articles',
+            'index' => 'articles',
         ]);
 
         $result = $context->val('0.title');
@@ -265,12 +264,12 @@ class DocumentContextTest extends TestCase
      */
     public function testIsRequrired()
     {
-        $articles = $this->setupType();
+        $articles = $this->setupIndex();
         $entity = new Document(['title' => 'test']);
 
         $context = new DocumentContext($this->request, [
             'entity' => $entity,
-            'type' => $articles,
+            'index' => $articles,
         ]);
         $this->assertTrue($context->isRequired('title'));
         $this->assertFalse($context->isRequired('body'));
@@ -284,12 +283,12 @@ class DocumentContextTest extends TestCase
      */
     public function testIsRequriredAlternateValidator()
     {
-        $articles = $this->setupType();
+        $articles = $this->setupIndex();
         $entity = new Document(['title' => 'test']);
 
         $context = new DocumentContext($this->request, [
             'entity' => $entity,
-            'type' => $articles,
+            'index' => $articles,
             'validator' => 'alternate'
         ]);
         $this->assertFalse($context->isRequired('title'));
@@ -329,7 +328,7 @@ class DocumentContextTest extends TestCase
      */
     public function testError()
     {
-        $articles = $this->setupType();
+        $articles = $this->setupIndex();
 
         $row = new Article([
             'title' => 'My title',
@@ -343,7 +342,7 @@ class DocumentContextTest extends TestCase
 
         $context = new DocumentContext($this->request, [
             'entity' => $row,
-            'type' => $articles,
+            'index' => $articles,
         ]);
 
         $this->assertEquals([], $context->error('title'));
@@ -362,7 +361,7 @@ class DocumentContextTest extends TestCase
      */
     public function testErrorAssociatedHasMany()
     {
-        $articles = $this->setupType();
+        $articles = $this->setupIndex();
 
         $row = new Article([
             'title' => 'My title',
@@ -397,10 +396,10 @@ class DocumentContextTest extends TestCase
      */
     public function testFieldNames()
     {
-        $articles = $this->setupType();
+        $articles = $this->setupIndex();
         $context = new DocumentContext($this->request, [
             'entity' => new Document([]),
-            'type' => 'articles',
+            'index' => 'articles',
         ]);
         $result = $context->fieldNames();
         $this->assertContains('title', $result);
@@ -413,9 +412,9 @@ class DocumentContextTest extends TestCase
      *
      * @return void
      */
-    public function testType()
+    public function testIndex()
     {
-        $articles = $this->setupType();
+        $articles = $this->setupIndex();
 
         $row = new Article([
             'title' => 'My title',
@@ -423,7 +422,7 @@ class DocumentContextTest extends TestCase
         ]);
         $context = new DocumentContext($this->request, [
             'entity' => $row,
-            'type' => $articles,
+            'index' => $articles,
         ]);
 
         $this->assertEquals($this->textField, $context->type('title'));
@@ -437,9 +436,9 @@ class DocumentContextTest extends TestCase
      *
      * @return void
      */
-    public function testTypeNestedFields()
+    public function testIndexNestedFields()
     {
-        $profiles = new Type([
+        $profiles = new Index([
             'connection' => ConnectionManager::get('test'),
             'name' => 'profiles',
         ]);
@@ -447,7 +446,7 @@ class DocumentContextTest extends TestCase
         $row = new Document([]);
         $context = new DocumentContext($this->request, [
             'entity' => $row,
-            'type' => $profiles,
+            'index' => $profiles,
         ]);
 
         $this->assertEquals($this->textField, $context->type('username'));
@@ -458,11 +457,11 @@ class DocumentContextTest extends TestCase
     /**
      * Setup an articles type for testing against.
      *
-     * @return \Cake\ElasticSearch\Type
+     * @return \Cake\ElasticSearch\Index
      */
-    protected function setupType()
+    protected function setupIndex()
     {
-        $articles = TypeRegistry::get('Articles');
+        $articles = IndexRegistry::get('Articles');
         $articles->embedOne('User');
         $articles->embedMany('Comments');
 

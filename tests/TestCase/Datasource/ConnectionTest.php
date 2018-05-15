@@ -25,26 +25,31 @@ use Cake\TestSuite\TestCase;
  */
 class ConnectionTest extends TestCase
 {
+    /**
+     * Tests the getIndex method that calling it with no arguments,
+     * which is not supported
+     *
+     * @return void
+     */
+    public function testGetEmptyIndex()
+    {
+        $this->expectException(\ArgumentCountError::class);
+
+        $connection = new Connection();
+        $index = $connection->getIndex();
+    }
 
     /**
-     * Tests the getIndex method, in particular, that calling it with no arguments
-     * will use the default index for the connection
+     * Tests the getIndex method when defining a index name from different
+     * ways
      *
      * @return void
      */
     public function testGetIndex()
     {
         $connection = new Connection();
-        $index = $connection->getIndex();
-        $this->assertEquals('_all', $index->getName());
-
-        $connection->setConfigValue('index', 'something_else,another');
-        $index = $connection->getIndex();
+        $index = $connection->getIndex('something_else,another');
         $this->assertEquals('something_else,another', $index->getName());
-
-        $connection = new Connection(['index' => 'foobar']);
-        $index = $connection->getIndex();
-        $this->assertEquals('foobar', $index->getName());
 
         $index = $connection->getIndex('baz');
         $this->assertEquals('baz', $index->getName());

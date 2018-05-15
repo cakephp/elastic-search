@@ -18,13 +18,13 @@ use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Event\EventManager;
 
-$callback = ['Cake\ElasticSearch\TypeRegistry', 'get'];
+$callback = ['Cake\ElasticSearch\IndexRegistry', 'get'];
 FactoryLocator::add('Elastic', $callback);
 FactoryLocator::add('ElasticSearch', $callback);
 
 // Attach the document context into FormHelper.
 EventManager::instance()->on('View.beforeRender', function ($event) {
-    $view = $event->subject();
+    $view = $event->getSubject();
     $view->Form->addContextProvider('elastic', function ($request, $data) {
         $first = null;
         if (is_array($data['entity']) || $data['entity'] instanceof Traversable) {

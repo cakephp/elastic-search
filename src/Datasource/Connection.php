@@ -39,16 +39,14 @@ class Connection extends Client implements ConnectionInterface
     protected $configName = '';
 
     /**
-     * Constructor. Appends the default index name to the config array, which by default
-     * is `_all`
+     * Constructor.
      *
      * @param array $config config options
-     * @param callback $callback Callback function which can be used to be notified
+     * @param callable $callback Callback function which can be used to be notified
      * about errors (for example connection down)
      */
     public function __construct(array $config = [], $callback = null)
     {
-        $config += ['index' => '_all'];
         if (isset($config['name'])) {
             $this->configName = $config['name'];
         }
@@ -156,18 +154,6 @@ class Connection extends Client implements ConnectionInterface
     public function config()
     {
         return $this->_config;
-    }
-
-    /**
-     * Returns the index for the given connection
-     *
-     * @param  string $name Index name to create connection to, if no value is passed
-     * it will use the default index name for the connection.
-     * @return \Elastica\Index Index for the given name
-     */
-    public function getIndex($name = null)
-    {
-        return parent::getIndex($name ?: $this->getConfig('index'));
     }
 
     /**

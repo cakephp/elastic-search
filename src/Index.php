@@ -33,13 +33,12 @@ use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 
 /**
- * Base class for mapping types in indexes.
+ * Base class for index.
  *
- * A type in elastic search is approximately equivalent to a table or collection
- * in a relational datastore. While an index can have multiple types, this ODM maps
- * each type in an index maps to a class.
+ * A index in elastic search is approximately equivalent to a table or collection
+ * in a relational datastore. This ODM maps each index to a class.
  */
-class Type implements RepositoryInterface, EventListenerInterface, EventDispatcherInterface
+class Index implements RepositoryInterface, EventListenerInterface, EventDispatcherInterface
 {
     use EventDispatcherTrait;
     use RulesAwareTrait;
@@ -74,11 +73,20 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     protected $_connection;
 
     /**
-     * The name of the Elastic Search type this class represents
+     * The name of the Elasticsearch index this class represents
      *
      * @var string
      */
     protected $_name;
+
+    /**
+     * The name of the Elasticsearch mapping type which this class represents
+     *
+     * For default, the mapping type is equal to index name for easy use.
+     *
+     * @var string
+     */
+    protected $_type;
 
     /**
      * The name of the class that represent a single document for this type
@@ -106,9 +114,10 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
      *
      * ### Options
      *
-     * - `connection` The Elastica instance.
-     * - `name` The name of the type. If this isn't set the name will be inferred from the class name.
-     * - `eventManager` Used to inject a specific eventmanager.
+     * - connection: The Elastica instance.
+     * - name: The name of the index. If this isn't set the name will be inferred from the class name.
+     * - type: The name of type mapping used. If this ins't set, the type will be equal to 'name'.
+     * - eventManager: Used to inject a specific eventmanager.
      *
      * At the end of the constructor the `Model.initialize` event will be triggered.
      *
@@ -117,11 +126,13 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     public function __construct(array $config = [])
     {
         if (!empty($config['connection'])) {
-            $this->connection($config['connection']);
+            $this->setConnection($config['connection']);
         }
-
         if (!empty($config['name'])) {
-            $this->name($config['name']);
+            $this->setName($config['name']);
+        }
+        if (!empty($config['type'])) {
+            $this->setType($config['type']);
         }
         $eventManager = null;
         if (isset($config['eventManager'])) {
@@ -206,38 +217,69 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     }
 
     /**
+     * Sets the connection instance
+     *
+     * @param Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
+     * @return $this
+     */
+    public function setConnection($conn)
+    {
+        $this->_connection = $conn;
+
+        return $this;
+    }
+
+    /**
+     * Returns the connection instance
+     *
+     * @return \Cake\ElasticSearch\Datasource\Connection
+     */
+    public function getConnection()
+    {
+        return $this->_connection;
+    }
+
+    /**
      * Returns the connection instance or sets a new one
      *
+     * @deprecated Use getConnection() and setConnection() instead
      * @param \Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
      * @return \Cake\ElasticSearch\Datasource\Connection
      */
     public function connection($conn = null)
     {
-        if ($conn === null) {
-            return $this->_connection;
+        if ($conn !== null) {
+            return $this->setConnection($conn);
         }
 
-        return $this->_connection = $conn;
+        return $this->getConnection();
     }
 
     /**
-     * Returns the type name name or sets a new one
+     * Sets the index name
      *
-     * @param string $name the new type name
+     * @param string $name Index name
+     * @return $this
+     */
+    public function setName($name)
+    {
+        $this->_name = $name;
+
+        return $this;
+    }
+
+    /**
+     * Returns the index name
+     *
+     * If this isn't set the name will be inferred from the class name
+     *
      * @return string
      */
-    public function name($name = null)
+    public function getName()
     {
-        if ($name !== null) {
-            $this->_name = $name;
-        }
-
         if ($this->_name === null) {
             $name = namespaceSplit(get_class($this));
-            $name = substr(end($name), 0, -4);
-            if (empty($name)) {
-                $name = '*';
-            }
+            $name = substr(end($name), 0, -5);
             $this->_name = Inflector::underscore($name);
         }
 
@@ -245,12 +287,40 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     }
 
     /**
-     * Get the alias for this Type.
+     * Returns the index name or sets a new one
+     *
+     * @deprecated Use getName() and setName() instead
+     * @param string $name the new index name
+     * @return string
+     */
+    public function name($name = null)
+    {
+        if ($name !== null) {
+            $this->setName($name);
+        }
+
+        return $this->getName();
+    }
+
+    /**
+     * Get the index name, as required by QueryTrait
+     *
+     * This method is just an alias of name().
+     *
+     * @return string
+     */
+    public function table()
+    {
+        return $this->getName();
+    }
+
+    /**
+     * Get the alias for this Index.
      *
      * This method is just an alias of name().
      *
      * @deprecated Use getAlias() and setAlias() instead
-     * @param string $alias The new type name
+     * @param string $alias The new index name
      * @return string
      */
     public function alias($alias = null)
@@ -259,37 +329,53 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     }
 
     /**
-     * Sets the type name / alias.
+     * Sets the index alias.
      *
-     * @param string $alias Table alias
+     * @param string $alias Index alias
      * @return $this
      */
     public function setAlias($alias)
     {
-        $this->name($alias);
-
-        return $this;
+        return $this->setName($alias);
     }
 
     /**
-     * Returns the type name / alias.
+     * Returns the type name.
      *
      * @return string
      */
     public function getAlias()
     {
-        return $this->name();
+        return $this->getName();
     }
 
     /**
-     * Get/set the type/table name for this type.
+     * Sets the mapping type name
      *
-     * @param string $table The 'table' name for this type.
+     * @param string $type Mapping type name
+     * @return $this
+     */
+    public function setType($type)
+    {
+        $this->_type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Returns the mapping type name
+     *
+     * If not defined, use the same as index name
+     *
      * @return string
      */
-    public function table($table = null)
+    public function getType()
     {
-        return $this->name($table);
+        if ($this->_type === null) {
+            $this->_type = Inflector::singularize($this->getName());
+        }
+
+        return $this->_type;
     }
 
     /**
@@ -366,7 +452,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
      */
     public function get($primaryKey, $options = [])
     {
-        $type = $this->connection()->getIndex()->getType($this->name());
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $result = $type->getDocument($primaryKey, $options);
         $class = $this->entityClass();
 
@@ -374,7 +460,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             'markNew' => false,
             'markClean' => true,
             'useSetters' => false,
-            'source' => $this->name(),
+            'source' => $this->getName(),
         ];
         $data = $result->getData();
         $data['id'] = $result->getId();
@@ -399,7 +485,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     }
 
     /**
-     * Get a marshaller for this Type instance.
+     * Get a marshaller for this Index instance.
      *
      * @return \Cake\ElasticSearch\Marshaller
      */
@@ -440,7 +526,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     {
         $query = $this->query();
         $query->where($conditions);
-        $type = $this->connection()->getIndex()->getType($this->name());
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $response = $type->deleteByQuery($query->compileQuery());
 
         return $response->isOk();
@@ -465,6 +551,78 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         }
 
         return $query->count() > 0;
+    }
+
+    /**
+     * Persists a list of entities based on the fields that are marked as dirty and
+     * returns the same entity after a successful save or false in case
+     * of any error.
+     * Triggers the `Model.beforeSave` and `Model.afterSave` events.
+     * ## Options
+     * - `checkRules` Defaults to true. Check deletion rules before deleting the record.
+     *
+     * @param array $entities An array of entities
+     * @param array $options An array of options to be used for the event
+     * @return bool
+     */
+    public function saveMany($entities, $options = [])
+    {
+        $options += ['checkRules' => true];
+        $options = new ArrayObject($options);
+
+        $documents = [];
+
+        foreach ($entities as $key => $entity) {
+            if (!$entity instanceof EntityInterface) {
+                throw new RuntimeException(sprintf(
+                    'Invalid items in the list. Found `%s` but expected `%s`',
+                    is_object($entity) ? get_class($entity) : gettype($entity),
+                    EntityInterface::class
+                ));
+            }
+
+            $event = $this->dispatchEvent('Model.beforeSave', [
+                'entity' => $entity,
+                'options' => $options
+            ]);
+
+            if ($event->isStopped() || $entity->errors()) {
+                return false;
+            }
+
+            $mode = $entity->isNew() ? RulesChecker::CREATE : RulesChecker::UPDATE;
+            if ($options['checkRules'] && !$this->checkRules($entity, $mode, $options)) {
+                return false;
+            }
+
+            $id = $entity->id ?: null;
+
+            $data = $entity->toArray();
+            unset($data['id'], $data['_version']);
+
+            $doc = new ElasticaDocument($id, $data);
+            $doc->setAutoPopulate(true);
+
+            $documents[$key] = $doc;
+        }
+
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
+        $type->addDocuments($documents);
+
+        foreach ($documents as $key => $document) {
+            $entities[$key]->id = $doc->getId();
+            $entities[$key]->_version = $doc->getVersion();
+            $entities[$key]->isNew(false);
+            $entities[$key]->source($this->getName());
+            $entities[$key]->clean();
+
+            $this->dispatchEvent('Model.afterSave', [
+                'entity' => $entities[$key],
+                'options' => $options
+            ]);
+        }
+
+        return true;
     }
 
     /**
@@ -495,7 +653,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             return $event->result;
         }
 
-        if ($entity->errors()) {
+        if ($entity->getErrors()) {
             return false;
         }
 
@@ -505,7 +663,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             return false;
         }
 
-        $type = $this->connection()->getIndex()->getType($this->name());
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $id = $entity->id ?: null;
 
         $data = $entity->toArray();
@@ -519,7 +677,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
-        $entity->source($this->name());
+        $entity->source($this->getName());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [
@@ -568,7 +726,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
 
         $doc = new ElasticaDocument($entity->id, $data);
 
-        $type = $this->connection()->getIndex()->getType($this->name());
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $result = $type->deleteDocument($doc);
 
         $this->dispatchEvent('Model.afterDelete', [
@@ -602,7 +760,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         if ($data === null) {
             $class = $this->entityClass();
 
-            return new $class([], ['source' => $this->name()]);
+            return new $class([], ['source' => $this->getName()]);
         }
 
         return $this->marshaller()->one($data, $options);
@@ -719,7 +877,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     /**
      * Get the mapping data from the index type.
      *
-     * This will fetch the schema from ElasticSearch the first
+     * This will fetch the schema from Elasticsearch the first
      * time this method is called.
      *
      *
@@ -730,9 +888,9 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         if ($this->schema !== null) {
             return $this->schema;
         }
-        $name = $this->name();
-        $type = $this->connection()->getIndex()->getType($name);
-        $this->schema = new MappingSchema($name, $type->getMapping());
+        $index = $this->getName();
+        $type = $this->getConnection()->getIndex($index)->getType($this->getType());
+        $this->schema = new MappingSchema($this->getType(), $type->getMapping());
 
         return $this->schema;
     }
@@ -749,9 +907,9 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
     }
 
     /**
-     * Get the callbacks this Type is interested in.
+     * Get the callbacks this Index is interested in.
      *
-     * By implementing the conventional methods a Type class is assumed
+     * By implementing the conventional methods a Index class is assumed
      * to be interested in the related event.
      *
      * Override this method if you need to add non-conventional event listeners.
