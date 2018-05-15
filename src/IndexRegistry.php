@@ -88,6 +88,7 @@ class IndexRegistry
             $connectionName = $options['className']::defaultConnectionName();
             $options['connection'] = ConnectionManager::get($connectionName);
         }
+        $options['registryAlias'] = $alias;
         static::$instances[$alias] = new $options['className']($options);
 
         return static::$instances[$alias];

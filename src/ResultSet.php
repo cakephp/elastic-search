@@ -65,12 +65,12 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
     public function __construct($resultSet, $query)
     {
         $this->resultSet = $resultSet;
-        $repo = $query->repository();
+        $repo = $query->getRepository();
         foreach ($repo->embedded() as $embed) {
             $this->embeds[$embed->property()] = $embed;
         }
         $this->entityClass = $repo->entityClass();
-        $this->repoName = $repo->getName();
+        $this->repoName = $repo->getRegistryAlias();
         parent::__construct($resultSet);
     }
 

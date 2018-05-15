@@ -14,6 +14,7 @@
  */
 namespace Cake\ElasticSearch\Test\Datasource;
 
+use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\Log\Log;
@@ -67,7 +68,9 @@ class ConnectionTest extends TestCase
 
         $opts = ['log' => true];
         $connection = new Connection($opts);
+
         $this->assertTrue($connection->logQueries());
+        $this->assertInstanceOf('\Cake\Log\Engine\FileLog', $connection->getLogger());
     }
 
     /**
@@ -75,13 +78,52 @@ class ConnectionTest extends TestCase
      *
      * @return void
      */
-    public function testQueryLogging()
+    public function testLoggerFileLog()
     {
-        $logger = $this->getMockBuilder('Cake\Log\Engine\BaseLog')->setMethods(['log'])->getMock();
-        $logger->expects($this->once())->method('log');
-        Log::config('elasticsearch', $logger);
+        $logger = $this->getMockBuilder('Cake\Log\Engine\FileLog')->setMethods(['log'])->getMock();
+
+        $message = json_encode([
+            'method' => 'GET',
+            'path' => '_stats',
+            'data' => []
+        ], JSON_PRETTY_PRINT);
+
+        $logger->expects($this->once())->method('log')->with(
+            $this->equalTo('debug'),
+            $this->equalTo($message)
+        );
+
+        Log::setConfig('elasticsearch', $logger);
 
         $connection = ConnectionManager::get('test');
+        $connection->logQueries(true);
+        $result = $connection->request('_stats');
+        $connection->logQueries(false);
+
+        $this->assertNotEmpty($result);
+    }
+
+    /**
+     * Ensure that logging queries works.
+     *
+     * @return void
+     */
+    public function testLoggerQueryLogger()
+    {
+        $logger = $this->getMockBuilder('Cake\Database\Log\QueryLogger')->setMethods(['log'])->getMock();
+        $logger->expects($this->once())->method('log');
+
+        $query = new LoggedQuery;
+        $query->query = json_encode([
+            'method' => 'GET',
+            'path' => '_stats',
+            'data' => []
+        ], JSON_PRETTY_PRINT);
+
+        $logger->expects($this->once())->method('log')->with($query);
+
+        $connection = ConnectionManager::get('test');
+        $connection->setLogger($logger);
         $connection->logQueries(true);
         $result = $connection->request('_stats');
         $connection->logQueries(false);

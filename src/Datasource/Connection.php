@@ -16,13 +16,14 @@ namespace Cake\ElasticSearch\Datasource;
 
 use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionInterface;
+use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
+use Cake\Log\Engine\FileLog;
 use Cake\Log\Log;
-use Elastica\Client;
+use Elastica\Client as ElasticaClient;
 use Elastica\Log as ElasticaLog;
 use Elastica\Request;
-use Psr\Log\NullLogger;
 
-class Connection extends Client implements ConnectionInterface
+class Connection implements ConnectionInterface
 {
     /**
      * Whether or not query logging is enabled.
@@ -39,6 +40,26 @@ class Connection extends Client implements ConnectionInterface
     protected $configName = '';
 
     /**
+     * Elastica client instance
+     *
+     * @var \Elastica\Client;
+     */
+    protected $_client;
+
+    /**
+     * Logger object instance.
+     *
+     * @var \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
+     * Instance of ElasticLogger
+     * @var \Cake\ElasticSearch\Datasource\Log\ElasticLogger
+     */
+    protected $_esLogger;
+
+    /**
      * Constructor.
      *
      * @param array $config config options
@@ -53,7 +74,23 @@ class Connection extends Client implements ConnectionInterface
         if (isset($config['log'])) {
             $this->logQueries((bool)$config['log']);
         }
-        parent::__construct($config, $callback);
+
+        $this->_client = new ElasticaClient($config, $callback, $this->getEsLogger());
+    }
+
+    /**
+     * Pass remaining methods to the elastica client (if they exist)
+     * And set the current logger based on current logQueries value
+     *
+     * @param string $name Method name
+     * @param array $attributes Method attributes
+     * @return mixed
+     */
+    public function __call($name, $attributes)
+    {
+        if (method_exists($this->_client, $name)) {
+            return call_user_func_array([$this->_client, $name], $attributes);
+        }
     }
 
     /**
@@ -62,7 +99,7 @@ class Connection extends Client implements ConnectionInterface
      *
      * @return \Cake\ElasticSearch\Datasource\SchemaCollection
      */
-    public function schemaCollection()
+    public function getSchemaCollection()
     {
         return new SchemaCollection($this);
     }
@@ -112,6 +149,7 @@ class Connection extends Client implements ConnectionInterface
         if ($enable === null) {
             return $this->logQueries;
         }
+
         $this->logQueries = $enable;
     }
 
@@ -141,61 +179,75 @@ class Connection extends Client implements ConnectionInterface
      */
     public function config()
     {
-        return $this->_config;
+        return $this->_client->getConfig();
     }
 
     /**
-     * Sets the logger object instance. When called with no arguments
-     * it returns the currently setup logger instance.
+     * Sets a logger
      *
-     * @param object $instance logger object instance
-     * @return object logger instance
+     * @param \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog $logger Logger instance
+     * @return $this
+     */
+    public function setLogger($logger)
+    {
+        $this->_logger = $logger;
+        $this->getEsLogger()->setLogger($logger);
+
+        return $this;
+    }
+
+    /**
+     * Get the logger object
+     * Will set the default logger to elasticsearch if found, or debug
+     * If none of the above are found the default Es logger will be used.
+     *
+     * @return \Cake\Database\Log\QueryLogger logger instance
+     */
+    public function getLogger()
+    {
+        if ($this->_logger === null) {
+            $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
+
+            if (!$engine) {
+                $engine = new ElasticaLog;
+            }
+
+            $this->setLogger($engine);
+        }
+
+        return $this->_logger;
+    }
+
+    /**
+     * Return instance of ElasticLogger
+     *
+     * @return \Cake\ElasticSearch\Datasource\Log\ElasticLogger
+     */
+    public function getEsLogger()
+    {
+        if ($this->_esLogger === null) {
+            $this->_esLogger = new ElasticLogger($this->getLogger(), $this);
+        }
+
+        return $this->_esLogger;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated Use getLogger() and setLogger() instead.
      */
     public function logger($instance = null)
     {
+        deprecationWarning(
+            'Connection::logger() is deprecated. ' .
+            'Use Connection::setLogger()/getLogger() instead.'
+        );
+
         if ($instance === null) {
-            return $this->_logger;
-        }
-        $this->_logger = $instance;
-    }
-
-    /**
-     * Log requests to Elastic Search.
-     *
-     * @param Request|array $context The context of the request made.
-     * @return void
-     */
-    protected function _log($context)
-    {
-        if (!$this->logQueries) {
-            return;
+            return $this->getLogger();
         }
 
-        if (!isset($this->_logger) || $this->_logger instanceof NullLogger) {
-            $this->_logger = Log::engine('elasticsearch') ?: new ElasticaLog();
-        }
-
-        if ($context instanceof Request) {
-            $contextArray = $context->toArray();
-            $logData = [
-                'method' => $contextArray['method'],
-                'path' => $contextArray['path'],
-                'data' => $contextArray['data']
-            ];
-        } elseif ($context instanceof \Exception) {
-            $logData = ['message' => $context->getMessage()];
-        } else {
-            $logData = ['message' => 'Unknown'];
-        }
-
-        $data = json_encode($logData, JSON_PRETTY_PRINT);
-        $loggedQuery = new LoggedQuery();
-        $loggedQuery->query = $data;
-
-        if ($this->_logger instanceof \Psr\Log\LoggerInterface) {
-            $this->_logger->log('debug', $loggedQuery);
-        } else {
-            $this->_logger->log($loggedQuery);
-        }
+        $this->setLogger($instance);
     }
 }

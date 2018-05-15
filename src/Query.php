@@ -556,8 +556,8 @@ class Query implements IteratorAggregate, QueryInterface
      */
     protected function _execute()
     {
-        $connection = $this->_repository->connection();
-        $index = $this->_repository->name();
+        $connection = $this->_repository->getConnection();
+        $index = $this->_repository->getName();
         $type = $connection->getIndex($index)->getType($this->_repository->getType());
 
         $query = $this->compileQuery();
@@ -644,8 +644,8 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function count()
     {
-        $connection = $this->_repository->connection();
-        $index = $this->_repository->name();
+        $connection = $this->_repository->getConnection();
+        $index = $this->_repository->getName();
         $type = $connection->getIndex($index)->getType($this->_repository->getType());
 
         $query = clone $this->compileQuery();

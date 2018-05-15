@@ -19,6 +19,7 @@ use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
 use Cake\Datasource\RulesAwareTrait;
+use Cake\Datasource\RulesChecker;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Datasource\MappingSchema;
@@ -26,7 +27,6 @@ use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
-use Cake\ORM\RulesChecker;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
@@ -89,6 +89,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     protected $_type;
 
     /**
+     * Registry key used to create this index object
+     *
+     * @var string
+     */
+    protected $_registryAlias;
+
+    /**
      * The name of the class that represent a single document for this type
      *
      * @var string
@@ -125,6 +132,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function __construct(array $config = [])
     {
+        if (!empty($config['registryAlias'])) {
+            $this->setRegistryAlias($config['registryAlias']);
+        }
         if (!empty($config['connection'])) {
             $this->setConnection($config['connection']);
         }
@@ -248,11 +258,43 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function connection($conn = null)
     {
+        deprecationWarning(
+            'Index::connection() is deprecated. ' .
+            'Use Index::setConnection()/getConnection() instead.'
+        );
+
         if ($conn !== null) {
             return $this->setConnection($conn);
         }
 
         return $this->getConnection();
+    }
+
+    /**
+     * Sets the index registry key used to create this table instance.
+     *
+     * @param string $registryAlias The key used to access this object.
+     * @return $this
+     */
+    public function setRegistryAlias($registryAlias)
+    {
+        $this->_registryAlias = $registryAlias;
+
+        return $this;
+    }
+
+    /**
+     * Returns the index registry key used to create this instance.
+     *
+     * @return string
+     */
+    public function getRegistryAlias()
+    {
+        if ($this->_registryAlias === null) {
+            $this->_registryAlias = $this->getAlias();
+        }
+
+        return $this->_registryAlias;
     }
 
     /**
@@ -295,6 +337,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function name($name = null)
     {
+        deprecationWarning(
+            'Index::name() is deprecated. ' .
+            'Use Index::setName()/getName() instead.'
+        );
+
         if ($name !== null) {
             $this->setName($name);
         }
@@ -309,8 +356,26 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
+    public function getTable()
+    {
+        return $this->getName();
+    }
+
+    /**
+     * Get the index name, as required by QueryTrait
+     *
+     * This method is just an alias of name().
+     *
+     * @return string
+     * @deprecated Use getTable() instead
+     */
     public function table()
     {
+        deprecationWarning(
+            'Index::table() is deprecated. ' .
+            'Use Index::getTable() instead.'
+        );
+
         return $this->getName();
     }
 
@@ -325,7 +390,12 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function alias($alias = null)
     {
-        return $this->name($alias);
+        deprecationWarning(
+            'Index::table() is deprecated. ' .
+            'Use Index::setAlias()/getAlias() instead.'
+        );
+
+        return $this->getName($alias);
     }
 
     /**
@@ -460,7 +530,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             'markNew' => false,
             'markClean' => true,
             'useSetters' => false,
-            'source' => $this->getName(),
+            'source' => $this->getRegistryAlias(),
         ];
         $data = $result->getData();
         $data['id'] = $result->getId();
@@ -586,7 +656,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
                 'options' => $options
             ]);
 
-            if ($event->isStopped() || $entity->errors()) {
+            if ($event->isStopped() || $entity->getErrors()) {
                 return false;
             }
 
@@ -613,7 +683,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $entities[$key]->id = $doc->getId();
             $entities[$key]->_version = $doc->getVersion();
             $entities[$key]->isNew(false);
-            $entities[$key]->source($this->getName());
+            $entities[$key]->setSource($this->getRegistryAlias());
             $entities[$key]->clean();
 
             $this->dispatchEvent('Model.afterSave', [
@@ -653,7 +723,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return $event->result;
         }
 
-        if ($entity->errors()) {
+        if ($entity->getErrors()) {
             return false;
         }
 
@@ -677,7 +747,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
-        $entity->source($this->getName());
+        $entity->setSource($this->getRegistryAlias());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [
@@ -760,7 +830,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         if ($data === null) {
             $class = $this->entityClass();
 
-            return new $class([], ['source' => $this->getName()]);
+            return new $class([], ['source' => $this->getRegistryAlias()]);
         }
 
         return $this->marshaller()->one($data, $options);
@@ -806,7 +876,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
                 return $this->_documentClass = $default;
             }
 
-            $alias = Inflector::singularize(substr(array_pop($parts), 0, -4));
+            $alias = Inflector::singularize(substr(array_pop($parts), 0, -5));
             $name = implode('\\', array_slice($parts, 0, -1)) . '\Document\\' . $alias;
             if (!class_exists($name)) {
                 return $this->_documentClass = $default;
