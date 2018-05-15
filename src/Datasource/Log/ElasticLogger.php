@@ -122,8 +122,19 @@ class ElasticLogger extends AbstractLogger
         $logData = json_encode($logData, JSON_PRETTY_PRINT);
 
         if ($this->getLogger() instanceof QueryLogger) {
+            $took = $numRows = 0;
+            if (isset($context['response']['took'])) {
+                $took = $context['response']['took'];
+            }
+            if (isset($context['response']['hits']['total'])) {
+                $numRows = $context['response']['hits']['total'];
+            }
+
             $message = new LoggedQuery();
             $message->query = $logData;
+            $message->took = $took;
+            $message->numRows = $numRows;
+
             $this->getLogger()->log($message);
         } else {
             $this->getLogger()->log($level, $logData, $context);
