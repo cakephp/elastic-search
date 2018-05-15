@@ -20,6 +20,7 @@ use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
 use Cake\Log\Engine\FileLog;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
+use Elastica\Log as ElasticaLog;
 use Elastica\Request;
 
 class Connection implements ConnectionInterface
@@ -53,6 +54,12 @@ class Connection implements ConnectionInterface
     protected $_logger;
 
     /**
+     * Instance of ElasticLogger
+     * @var \Cake\ElasticSearch\Datasource\Log\ElasticLogger
+     */
+    protected $_esLogger;
+
+    /**
      * Constructor.
      *
      * @param array $config config options
@@ -68,7 +75,7 @@ class Connection implements ConnectionInterface
             $this->logQueries((bool)$config['log']);
         }
 
-        $this->_client = new ElasticaClient($config, $callback, $this->getLogger());
+        $this->_client = new ElasticaClient($config, $callback, $this->getEsLogger());
     }
 
     /**
@@ -183,34 +190,46 @@ class Connection implements ConnectionInterface
      */
     public function setLogger($logger)
     {
-        if (!$this->_logger) {
-            $this->_logger = new ElasticLogger($logger, $this);
-
-            return $this;
-        }
-
-        $this->_logger->setLogger($logger);
+        $this->_logger = $logger;
+        $this->getEsLogger()->setLogger($logger);
 
         return $this;
     }
 
     /**
      * Get the logger object
+     * Will set the default logger to elasticsearch if found, or debug
+     * If none of the above are found the default Es logger will be used.
      *
      * @return \Cake\Database\Log\QueryLogger logger instance
      */
     public function getLogger()
     {
         if ($this->_logger === null) {
-            $engine = Log::engine('elasticsearch');
+            $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
+
             if (!$engine) {
-                $engine = Log::engine('debug');
+                $engine = new ElasticaLog;
             }
 
             $this->setLogger($engine);
         }
 
         return $this->_logger;
+    }
+
+    /**
+     * Return instance of ElasticLogger
+     *
+     * @return \Cake\ElasticSearch\Datasource\Log\ElasticLogger
+     */
+    public function getEsLogger()
+    {
+        if ($this->_esLogger === null) {
+            $this->_esLogger = new ElasticLogger($this->getLogger(), $this);
+        }
+
+        return $this->_esLogger;
     }
 
     /**

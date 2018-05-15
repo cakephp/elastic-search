@@ -19,10 +19,13 @@ define('CAKE', dirname(__DIR__) . '/vendor/cakephp/cakephp/src/');
 require CAKE . 'basics.php';
 
 define('APP', __DIR__);
+define('TMP', sys_get_temp_dir() . DS);
+define('LOGS', TMP . 'logs' . DS);
 
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
+use Cake\Log\Log;
 
 Configure::write('App', [
     'namespace' => 'App',
@@ -34,6 +37,14 @@ Configure::write('App', [
 Cache::setConfig('_cake_core_', [
     'className' => 'File',
     'path' => sys_get_temp_dir(),
+]);
+
+Log::setConfig([
+    'debug' => [
+        'engine' => 'Cake\Log\Engine\FileLog',
+        'levels' => ['notice', 'info', 'debug'],
+        'file' => 'debug',
+    ]
 ]);
 
 if (!getenv('db_dsn')) {

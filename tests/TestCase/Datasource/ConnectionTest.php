@@ -68,7 +68,9 @@ class ConnectionTest extends TestCase
 
         $opts = ['log' => true];
         $connection = new Connection($opts);
+
         $this->assertTrue($connection->logQueries());
+        $this->assertInstanceOf('\Cake\Log\Engine\FileLog', $connection->getLogger());
     }
 
     /**
@@ -76,9 +78,9 @@ class ConnectionTest extends TestCase
      *
      * @return void
      */
-    public function testQueryLoggingWithBaseLog()
+    public function testLoggerFileLog()
     {
-        $logger = $this->getMockBuilder('Cake\Log\Engine\BaseLog')->setMethods(['log'])->getMock();
+        $logger = $this->getMockBuilder('Cake\Log\Engine\FileLog')->setMethods(['log'])->getMock();
 
         $message = json_encode([
             'method' => 'GET',
@@ -106,7 +108,7 @@ class ConnectionTest extends TestCase
      *
      * @return void
      */
-    public function testQueryLogger()
+    public function testLoggerQueryLogger()
     {
         $logger = $this->getMockBuilder('Cake\Database\Log\QueryLogger')->setMethods(['log'])->getMock();
         $logger->expects($this->once())->method('log');

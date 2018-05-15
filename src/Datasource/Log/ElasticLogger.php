@@ -110,7 +110,6 @@ class ElasticLogger extends AbstractLogger
     protected function _log($level, $message, array $context = [])
     {
         $logData = $context;
-        $logger = $this->getLogger();
 
         if (LogLevel::DEBUG && isset($context['request'])) {
             $logData = [
@@ -122,12 +121,12 @@ class ElasticLogger extends AbstractLogger
 
         $logData = json_encode($logData, JSON_PRETTY_PRINT);
 
-        if ($logger instanceof QueryLogger) {
+        if ($this->getLogger() instanceof QueryLogger) {
             $message = new LoggedQuery();
             $message->query = $logData;
-            $logger->log($message);
+            $this->getLogger()->log($message);
         } else {
-            $logger->log($level, $logData, $context);
+            $this->getLogger()->log($level, $logData, $context);
         }
     }
 }
