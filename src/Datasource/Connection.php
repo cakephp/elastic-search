@@ -202,7 +202,12 @@ class Connection implements ConnectionInterface
     public function getLogger()
     {
         if ($this->_logger === null) {
-            $this->setLogger(Log::engine('elasticsearch') ?: new FileLog);
+            $engine = Log::engine('elasticsearch');
+            if (!$engine) {
+                $engine = Log::engine('debug');
+            }
+
+            $this->setLogger($engine);
         }
 
         return $this->_logger;
