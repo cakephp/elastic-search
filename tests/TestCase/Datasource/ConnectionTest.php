@@ -79,10 +79,16 @@ class ConnectionTest extends TestCase
     public function testQueryLoggingWithBaseLog()
     {
         $logger = $this->getMockBuilder('Cake\Log\Engine\BaseLog')->setMethods(['log'])->getMock();
+
+        $message = json_encode([
+            'method' => 'GET',
+            'path' => '_stats',
+            'data' => []
+        ], JSON_PRETTY_PRINT);
+
         $logger->expects($this->once())->method('log')->with(
             $this->equalTo('debug'),
-            $this->equalTo('Elastica Request'),
-            $this->anything()
+            $this->equalTo($message)
         );
 
         Log::setConfig('elasticsearch', $logger);

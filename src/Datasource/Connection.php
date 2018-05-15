@@ -16,12 +16,11 @@ namespace Cake\ElasticSearch\Datasource;
 
 use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionInterface;
-use Cake\ElasticSearch\Datasource\Log\QueryLoggerAdapter;
+use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
+use Cake\Log\Engine\FileLog;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
-use Elastica\Log as ElasticaLog;
 use Elastica\Request;
-use Psr\Log\NullLogger;
 
 class Connection implements ConnectionInterface
 {
@@ -54,13 +53,6 @@ class Connection implements ConnectionInterface
     protected $_logger;
 
     /**
-     * NullLooger object instance
-     *
-     * @var \Psr\Log\NullLogger
-     */
-    protected $_nullLogger;
-
-    /**
      * Constructor.
      *
      * @param array $config config options
@@ -90,8 +82,6 @@ class Connection implements ConnectionInterface
     public function __call($name, $attributes)
     {
         if (method_exists($this->_client, $name)) {
-            $this->_client->setLogger($this->getLogger());
-
             return call_user_func_array([$this->_client, $name], $attributes);
         }
     }
@@ -188,16 +178,18 @@ class Connection implements ConnectionInterface
     /**
      * Sets a logger
      *
-     * @param \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface $logger Logger instance
+     * @param \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog $logger Logger instance
      * @return $this
      */
     public function setLogger($logger)
     {
-        $this->_logger = $logger;
+        if (!$this->_logger) {
+            $this->_logger = new ElasticLogger($logger, $this);
 
-        if ($this->_logger instanceof \Cake\Database\Log\QueryLogger) {
-            $this->_logger = new QueryLoggerAdapter($this->_logger);
+            return $this;
         }
+
+        $this->_logger->setLogger($logger);
 
         return $this;
     }
@@ -209,29 +201,11 @@ class Connection implements ConnectionInterface
      */
     public function getLogger()
     {
-        if (!$this->logQueries()) {
-            return $this->getNullLogger();
-        }
-
         if ($this->_logger === null) {
-            $this->_logger = Log::engine('elasticsearch') ?: new ElasticaLog();
+            $this->setLogger(Log::engine('elasticsearch') ?: new FileLog);
         }
 
         return $this->_logger;
-    }
-
-    /**
-     * Return instance of the NullLogger
-     *
-     * @return \Psr\Log\NullLogger
-     */
-    public function getNullLogger()
-    {
-        if (!$this->_nullLogger) {
-            $this->_nullLogger = new NullLogger;
-        }
-
-        return $this->_nullLogger;
     }
 
     /**
