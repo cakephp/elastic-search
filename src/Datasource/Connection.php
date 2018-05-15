@@ -62,9 +62,21 @@ class Connection extends Client implements ConnectionInterface
      * Returns a SchemaCollection stub until we can add more
      * abstract API's in Connection.
      *
+     * @deprecated Use getSchemaCollection() instead
      * @return \Cake\ElasticSearch\Datasource\SchemaCollection
      */
     public function schemaCollection()
+    {
+        return new SchemaCollection($this);
+    }
+
+    /**
+     * Returns a SchemaCollection stub until we can add more
+     * abstract API's in Connection.
+     *
+     * @return \Cake\ElasticSearch\Datasource\SchemaCollection
+     */
+    public function getSchemaCollection()
     {
         return new SchemaCollection($this);
     }
