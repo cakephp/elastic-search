@@ -14,6 +14,7 @@
  */
 namespace Cake\ElasticSearch\Test\Datasource;
 
+use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\Log\Log;
@@ -78,7 +79,11 @@ class ConnectionTest extends TestCase
     public function testQueryLoggingWithBaseLog()
     {
         $logger = $this->getMockBuilder('Cake\Log\Engine\BaseLog')->setMethods(['log'])->getMock();
-        $logger->expects($this->once())->method('log');
+        $logger->expects($this->once())->method('log')->with(
+            $this->equalTo('debug'),
+            $this->equalTo('Elastica Request'),
+            $this->anything()
+        );
 
         Log::setConfig('elasticsearch', $logger);
 
@@ -99,6 +104,15 @@ class ConnectionTest extends TestCase
     {
         $logger = $this->getMockBuilder('Cake\Database\Log\QueryLogger')->setMethods(['log'])->getMock();
         $logger->expects($this->once())->method('log');
+
+        $query = new LoggedQuery;
+        $query->query = json_encode([
+            'method' => 'GET',
+            'path' => '_stats',
+            'data' => []
+        ], JSON_PRETTY_PRINT);
+
+        $logger->expects($this->once())->method('log')->with($query);
 
         $connection = ConnectionManager::get('test');
         $connection->setLogger($logger);
