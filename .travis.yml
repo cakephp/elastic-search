@@ -28,7 +28,7 @@ install:
   - composer install --dev
 
 script:
-  - sh -c "if [ '$RUN_TESTS' = '1' ]; then phpunit --stderr; fi"
+  - sh -c "if [ '$RUN_TESTS' = '1' ]; then vendor/bin/phpunit --stderr; fi"
   - sh -c "if [ '$PHPCS' = '1' ]; then vendor/bin/phpcs -p --extensions=php --standard=vendor/cakephp/cakephp-codesniffer/CakePHP ./src ./tests; fi"
 
 notifications:

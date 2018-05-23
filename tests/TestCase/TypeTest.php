@@ -224,6 +224,32 @@ class TypeTest extends TestCase
     }
 
     /**
+     * Test saving many entities
+     *
+     * @return void
+     */
+    public function testSaveMany()
+    {
+        $entities = [
+            new Document([
+                'title' => 'First',
+                'body' => 'Some new content'
+            ], [
+                'markNew' => true
+            ]),
+            new Document([
+                'title' => 'Second',
+                'body' => 'Some new content'
+            ], [
+                'markNew' => true
+            ])
+        ];
+
+        $result = $this->type->saveMany($entities);
+        $this->assertTrue($result);
+    }
+
+    /**
      * Test saving a new document.
      *
      * @return void

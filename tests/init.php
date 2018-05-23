@@ -14,6 +14,10 @@
  */
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+define('CAKE', dirname(__DIR__) . '/vendor/cakephp/cakephp/src/');
+
+require CAKE . 'basics.php';
+
 define('APP', __DIR__);
 
 use Cake\Cache\Cache;
