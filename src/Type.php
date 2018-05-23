@@ -519,7 +519,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
         $entity->isNew(false);
-        $entity->source($this->name());
+        $entity->setSource($this->name());
         $entity->clean();
 
         $this->dispatchEvent('Model.afterSave', [
