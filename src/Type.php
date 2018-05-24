@@ -500,7 +500,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
                 'options' => $options
             ]);
 
-            if ($event->isStopped() || $entity->errors()) {
+            if ($event->isStopped() || $entity->getErrors()) {
                 return false;
             }
 
@@ -527,7 +527,7 @@ class Type implements RepositoryInterface, EventListenerInterface, EventDispatch
             $entities[$key]->id = $doc->getId();
             $entities[$key]->_version = $doc->getVersion();
             $entities[$key]->isNew(false);
-            $entities[$key]->source($this->name());
+            $entities[$key]->setSource($this->name());
             $entities[$key]->clean();
 
             $this->dispatchEvent('Model.afterSave', [
