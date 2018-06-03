@@ -53,12 +53,25 @@ class RulesCheckerTest extends TestCase
     {
         $document = $this->index->get(1);
         $rules = $this->index->rulesChecker();
-        $rules->add(new IsUnique([ 'user_id' ]), '_isUnique', [
-            'errorField' => 'user_id',
-            'message' => 'This value is already in use'
-        ]);
+        $rules->add(new IsUnique([ 'user_id' ]));
 
         $document->setDirty('user_id', true);
+        $this->assertInstanceOf('\Cake\ElasticSearch\Document', $this->index->save($document));
+    }
+
+    /**
+     * Test unique rule on existing document
+     *
+     * @group save
+     * @return void
+     */
+    public function testIsUniqueWithNullValue()
+    {
+        $document = $this->index->get(1);
+        $rules = $this->index->rulesChecker();
+        $rules->add(new IsUnique([ 'user_id', 'title' ]));
+
+        $document->title = null;
         $this->assertInstanceOf('\Cake\ElasticSearch\Document', $this->index->save($document));
     }
 }

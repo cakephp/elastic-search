@@ -15,6 +15,7 @@
 namespace Cake\ElasticSearch\Rule;
 
 use Cake\Datasource\EntityInterface;
+use Cake\ElasticSearch\QueryBuilder;
 
 /**
  * Checks that a list of fields from an entity are unique in the table
@@ -30,14 +31,12 @@ class IsUnique
     protected $_fields;
 
     /**
-     * The options to use.
-     *
-     * @var array
-     */
-    protected $_options;
-
-    /**
      * Constructor.
+     *
+     * ### Options
+     *
+     * - `filterNullFields` Set to false to allow keys with null values in the
+     *   the conditions array.
      *
      * @param array $fields The list of fields to check uniqueness for
      */
@@ -51,6 +50,7 @@ class IsUnique
      *
      * @param \Cake\Datasource\EntityInterface $entity The entity from where to extract the fields
      *   where the `repository` key is required.
+     *
      * @param array $options Options passed to the check,
      * @return bool
      */
@@ -60,10 +60,15 @@ class IsUnique
             return true;
         }
 
-        $conditions = $entity->extract($this->_fields);
+        $fields = $entity->extract($this->_fields);
+        $conditions = [];
+
+        foreach ($fields as $field => $value) {
+            $conditions[$field . ' is'] = $value;
+        }
 
         if ($entity->isNew() === false) {
-            $conditions['_id not in'] = [ $entity->get('id') ];
+            $conditions['_id is not'] = $entity->get('id');
         }
 
         return !$options['repository']->exists($conditions);
