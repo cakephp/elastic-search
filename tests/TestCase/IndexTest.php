@@ -321,6 +321,29 @@ class IndexTest extends TestCase
     }
 
     /**
+     * Test saving documents with index refresh
+     *
+     * @return void
+     */
+    public function testSaveWithRefresh()
+    {
+        $doc = new Document([
+            'title' => 'A brand new article',
+            'body' => 'Some new content'
+        ], ['markNew' => true]);
+
+        $document = $this->index->save($doc, [
+            'refresh' => true
+        ]);
+
+        $query = $this->index->find();
+        $match = $query->firstMatch([ 'id' => $document->id ]);
+
+        $this->assertCount(3, $query);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $match);
+    }
+
+    /**
      * Test save triggers events.
      *
      * @return void

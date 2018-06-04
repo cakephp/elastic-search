@@ -510,7 +510,7 @@ class QueryBuilderTest extends TestCase
         $builder = new QueryBuilder;
         $result = $builder->script("doc['foo'] > 2");
         $expected = [
-            'script' => ['script' => ['inline' => "doc['foo'] > 2"]]
+            'script' => ['script' => ['source' => "doc['foo'] > 2"]]
         ];
         $this->assertEquals($expected, $result->toArray());
     }
