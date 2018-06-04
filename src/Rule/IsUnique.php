@@ -15,7 +15,6 @@
 namespace Cake\ElasticSearch\Rule;
 
 use Cake\Datasource\EntityInterface;
-use Cake\ElasticSearch\QueryBuilder;
 
 /**
  * Checks that a list of fields from an entity are unique in the table

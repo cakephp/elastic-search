@@ -637,7 +637,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function saveMany($entities, $options = [])
     {
-        $options += ['checkRules' => true];
+        $options += [
+            'checkRules' => true,
+            'refresh' => false
+        ];
         $options = new ArrayObject($options);
 
         $documents = [];
@@ -679,6 +682,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $type->addDocuments($documents);
 
+        if ($options['refresh']) {
+            $type->getIndex()->refresh();
+        }
+
         foreach ($documents as $key => $document) {
             $entities[$key]->id = $doc->getId();
             $entities[$key]->_version = $doc->getVersion();
@@ -712,7 +719,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function save(EntityInterface $entity, $options = [])
     {
-        $options += ['checkRules' => true];
+        $options += [
+            'checkRules' => true,
+            'refresh' => false
+        ];
         $options = new ArrayObject($options);
         $event = $this->dispatchEvent('Model.beforeSave', [
             'entity' => $entity,
@@ -743,6 +753,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $doc->setAutoPopulate(true);
 
         $type->addDocument($doc);
+
+        if ($options['refresh']) {
+            $type->getIndex()->refresh();
+        }
 
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
@@ -776,7 +790,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $msg = 'Deleting requires an "id" value.';
             throw new InvalidArgumentException($msg);
         }
-        $options += ['checkRules' => true];
+        $options += [
+            'checkRules' => true,
+            'refresh' => false
+        ];
         $options = new ArrayObject($options);
         $event = $this->dispatchEvent('Model.beforeDelete', [
             'entity' => $entity,
@@ -798,6 +815,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $result = $type->deleteDocument($doc);
+
+        if ($options['refresh']) {
+            $type->getIndex()->refresh();
+        }
 
         $this->dispatchEvent('Model.afterDelete', [
             'entity' => $entity,
