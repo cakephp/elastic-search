@@ -620,7 +620,7 @@ class Query implements IteratorAggregate, QueryInterface
                 $this->_elasticQuery->addAggregation($aggregation);
             }
         }
-        
+
         if ($this->_queryParts['suggest']) {
             $this->_elasticQuery->setSuggest($this->_queryParts['suggest']);
         }
