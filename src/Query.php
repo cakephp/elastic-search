@@ -418,7 +418,7 @@ class Query implements IteratorAggregate, QueryInterface
      *      $query->suggest($suggest);
      * }}}
      *
-     * @param \Elastica\Suggest $suggest
+     * @param \Elastica\Suggest $suggest suggest params
      * @return $this
      */
     public function suggest(ElasticaSuggest $suggest)
