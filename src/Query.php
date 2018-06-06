@@ -18,7 +18,9 @@ use Cake\Datasource\QueryInterface;
 use Cake\Datasource\QueryTrait;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
+use Elastica\Suggest as ElasticaSuggest;
 use IteratorAggregate;
+
 
 class Query implements IteratorAggregate, QueryInterface
 {
@@ -406,6 +408,27 @@ class Query implements IteratorAggregate, QueryInterface
     }
 
     /**
+     * Add an suggest to the elastic query object
+     *
+     * {{{
+     *      $termSuggest = new \Elastica\Suggest\Term('title_finder', 'title');
+     *      $termSuggest->setText('keyword')
+     *
+     *      $suggest = new \Elastica\Suggest($termSuggest);
+     *      $query->suggest($suggest);
+     * }}}
+     *
+     * @param \Elastica\Suggest $suggest
+     * @return $this
+     */
+    public function suggest(ElasticaSuggest $suggest)
+    {
+        $this->_queryParts['suggest'] = $suggest;
+
+        return $this;
+    }
+
+    /**
      * Set or get the search options
      *
      * @param  null|array $options An array of additional search options
@@ -596,6 +619,10 @@ class Query implements IteratorAggregate, QueryInterface
             foreach ($this->_queryParts['aggregations'] as $aggregation) {
                 $this->_elasticQuery->addAggregation($aggregation);
             }
+        }
+        
+        if ($this->_queryParts['suggest']) {
+            $this->_elasticQuery->setSuggest($this->_queryParts['suggest']);
         }
 
         if ($this->_queryParts['query'] === null) {
