@@ -21,10 +21,8 @@ use Elastica\Query\AbstractQuery;
 use Elastica\Suggest as ElasticaSuggest;
 use IteratorAggregate;
 
-
 class Query implements IteratorAggregate, QueryInterface
 {
-
     use QueryTrait;
 
     /**
