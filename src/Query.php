@@ -70,6 +70,7 @@ class Query implements IteratorAggregate, QueryInterface
         'query' => null,
         'filter' => null,
         'postFilter' => null,
+        'suggest' => null
     ];
 
     /**
