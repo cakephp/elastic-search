@@ -14,7 +14,9 @@
  */
 namespace Cake\ElasticSearch\Test;
 
+use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\ResultSet;
 use Cake\TestSuite\TestCase;
 
@@ -28,6 +30,7 @@ class MyTestDocument extends Document
  */
 class ResultSetTest extends TestCase
 {
+    public $fixtures = ['plugin.cake/elastic_search.articles'];
 
     /**
      * Tests the construction process
@@ -133,5 +136,25 @@ class ResultSetTest extends TestCase
 
             $this->assertSame($return, $resultSet->{$method}($param));
         }
+    }
+
+    /**
+     * Test serialize/unserialize
+     *
+     * @return void
+     */
+    public function testSerialize()
+    {
+        $index = new Index([
+            'name' => 'articles',
+            'connection' => ConnectionManager::get('test')
+        ]);
+
+        $resultSet = $index->find()->all();
+        $serialized = serialize($resultSet);
+        $outcome = unserialize($serialized);
+
+        $this->assertEquals($resultSet->getResults(), $outcome->getResults());
+        $this->assertEquals($resultSet->toArray(), $outcome->toArray());
     }
 }
