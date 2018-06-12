@@ -15,17 +15,15 @@
 namespace Cake\ElasticSearch;
 
 use Cake\Collection\CollectionTrait;
-use Countable;
+use Cake\Datasource\ResultSetInterface;
 use IteratorIterator;
-use JsonSerializable;
 
 /**
  * Decorates the Elastica ResultSet in order to hydrate results with the
  * correct class and provide a Collection interface to the returned results.
  */
-class ResultSet extends IteratorIterator implements Countable, JsonSerializable
+class ResultSet extends IteratorIterator implements ResultSetInterface
 {
-
     use CollectionTrait;
 
     /**
@@ -34,6 +32,13 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
      * @var string
      */
     protected $resultSet;
+
+    /**
+     * Holds the Elasticsearch ORM query object
+     *
+     * @var \Cake\ElasticSearch\Query
+     */
+    protected $queryObject;
 
     /**
      * The full class name of the document class to wrap the results
@@ -65,7 +70,8 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
     public function __construct($resultSet, $query)
     {
         $this->resultSet = $resultSet;
-        $repo = $query->getRepository();
+        $this->queryObject = $query;
+        $repo = $this->queryObject->getRepository();
         foreach ($repo->embedded() as $embed) {
             $this->embeds[$embed->property()] = $embed;
         }
@@ -254,6 +260,28 @@ class ResultSet extends IteratorIterator implements Countable, JsonSerializable
         $document = new $class($data, $options);
 
         return $document;
+    }
+
+    /**
+     * Returns a string representation of this object that can be used
+     * to reconstruct it
+     *
+     * @return string
+     */
+    public function serialize()
+    {
+        return serialize([ $this->resultSet, $this->queryObject ]);
+    }
+
+    /**
+     * Unserializes the passed string and rebuilds the ResultSet instance
+     *
+     * @param string $serialized The serialized ResultSet information
+     * @return void
+     */
+    public function unserialize($serialized)
+    {
+        $this->__construct(...unserialize($serialized));
     }
 
     /**
