@@ -306,7 +306,7 @@ class DocumentContextTest extends TestCase
     {
         $context = new DocumentContext($this->request, [
             'entity' => $collection,
-            'tyupe' => 'articles',
+            'type' => 'articles',
         ]);
 
         $this->assertTrue($context->hasError('0.title'));
@@ -332,7 +332,7 @@ class DocumentContextTest extends TestCase
 
         $row = new Article([
             'title' => 'My title',
-            'user' => new Document(['username' => 'Mark']),
+            'user' => new Document(['username' => 'Mark'])
         ]);
         $row->setError('title', []);
         $row->setError('body', 'Gotta have one');
@@ -351,6 +351,38 @@ class DocumentContextTest extends TestCase
         $this->assertEquals($expected, $context->error('body'));
 
         $expected = ['Required'];
+        $this->assertEquals($expected, $context->error('user.username'));
+    }
+
+    /**
+     * Test validation errors coming from a nested validator
+     *
+     * @return void
+     */
+    public function testNestedValidatorErrors()
+    {
+        $articles = $this->setupIndex();
+
+        $row = new Article([
+            'title' => 'My title',
+            'user' => new Document(['username' => 'Mark'])
+        ]);
+
+        $row->setErrors([
+            'user' => [
+                'username' => [ 'Required' ]
+            ]
+        ]);
+
+        $context = new DocumentContext($this->request, [
+            'entity' => $row,
+            'index' => $articles,
+        ]);
+
+        $expected = [ 'username' => [ 'Required' ] ];
+        $this->assertEquals($expected, $context->error('user'));
+
+        $expected = [ 'Required' ];
         $this->assertEquals($expected, $context->error('user.username'));
     }
 
