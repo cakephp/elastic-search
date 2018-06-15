@@ -350,7 +350,7 @@ class DocumentContext implements ContextInterface
             $errors = $entity->getError(array_pop($parts));
 
             if (!$errors && $this->_context['entity'] instanceof Document) {
-                $errors = array_values((array)Hash::get($this->_context['entity']->getErrors(), $field, []));
+                $errors = Hash::extract($this->_context['entity']->getErrors(), $field) ?: [];
             }
         }
 
