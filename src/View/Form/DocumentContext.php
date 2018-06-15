@@ -18,6 +18,7 @@ use Cake\Collection\Collection;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\Http\ServerRequest;
+use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Cake\View\Form\ContextInterface;
 use RuntimeException;
@@ -343,11 +344,16 @@ class DocumentContext implements ContextInterface
     {
         $parts = explode('.', $field);
         $entity = $this->entity($parts);
+        $errors = [];
 
         if ($entity instanceof Document) {
-            return $entity->getError(array_pop($parts));
+            $errors = $entity->getError(array_pop($parts));
+
+            if (!$errors && $this->_context['entity'] instanceof Document) {
+                $errors = Hash::extract($this->_context['entity']->getErrors(), $field) ?: [];
+            }
         }
 
-        return [];
+        return $errors;
     }
 }
