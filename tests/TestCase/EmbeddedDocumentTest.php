@@ -63,6 +63,24 @@ class EmbeddedDocumentTest extends TestCase
     }
 
     /**
+     * Test fetching with embedded nested documents.
+     *
+     * @return void
+     */
+    public function testGetWithEmbedOneNested()
+    {
+        $this->index->embedOne('Address');
+        $this->index->embedOne('Aliases', [
+            'property' => 'address.aliases'
+        ]);
+
+        $result = $this->index->get(2);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address->aliases);
+        $this->assertEquals('Home', $result->address->aliases->name);
+    }
+
+    /**
      * Test fetching with embedded documents.
      *
      * @return void
@@ -73,6 +91,25 @@ class EmbeddedDocumentTest extends TestCase
         $result = $this->index->find()->where(['username' => 'mark']);
         $rows = $result->toArray();
         $this->assertCount(1, $rows);
+    }
+
+    /**
+     * Test fetching with embedded nested documents.
+     *
+     * @return void
+     */
+    public function testFindWithEmbedOneNested()
+    {
+        $this->index->embedOne('Address');
+        $this->index->embedOne('Aliases', [
+            'property' => 'address.aliases'
+        ]);
+
+        $result = $this->index->find()->where(['username' => 'jose']);
+        $rows = $result->toArray();
+
+        $this->assertCount(1, $rows);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address->aliases);
     }
 
     /**
@@ -90,6 +127,24 @@ class EmbeddedDocumentTest extends TestCase
     }
 
     /**
+     * Test fetching with embedded nested documents.
+     *
+     * @return void
+     */
+    public function testGetWithEmbedManyNested()
+    {
+        $this->index->embedOne('Address');
+        $this->index->embedMany('Aliases', [
+            'property' => 'address.aliases'
+        ]);
+
+        $result = $this->index->get(1);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address->aliases[0]);
+        $this->assertEquals('Home', $result->address->aliases[0]->name);
+    }
+
+    /**
      * Test fetching with embedded documents.
      *
      * @return void
@@ -104,5 +159,25 @@ class EmbeddedDocumentTest extends TestCase
         $this->assertInternalType('array', $rows[0]->address);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address[1]);
+    }
+
+    /**
+     * Test fetching with embedded documents.
+     *
+     * @return void
+     */
+    public function testFindWithEmbedManyNested()
+    {
+        $this->index->embedOne('Address');
+        $this->index->embedMany('Aliases', [
+            'property' => 'address.aliases'
+        ]);
+
+        $result = $this->index->find()->where(['username' => 'mark']);
+        $rows = $result->toArray();
+
+        $this->assertCount(1, $rows);
+        $this->assertInternalType('array', $rows[0]->address->aliases);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address->aliases[0]);
     }
 }
