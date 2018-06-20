@@ -562,9 +562,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $prop = $embed->property();
         if (strpos($prop, '.')) {
-            $extracted = Hash::extract($data, $prop);
-            $data = Hash::insert($data, $prop, $embed->hydrate($extracted, $options));
-        } elseif (isset($data[$prop])) {
+            return Hash::insert($data, $prop, $embed->hydrate(
+                Hash::extract($data, $prop),
+                $options
+            ));
+        }
+
+        if (isset($data[$prop])) {
             $data[$prop] = $embed->hydrate($data[$prop], $options);
         }
 
