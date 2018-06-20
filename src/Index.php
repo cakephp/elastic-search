@@ -561,15 +561,24 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     public function hydrateEmbed(Embedded $embed, array $data, array $options)
     {
         $prop = $embed->property();
-        if (strpos($prop, '.')) {
-            return Hash::insert($data, $prop, $embed->hydrate(
-                Hash::extract($data, $prop),
-                $options
-            ));
-        }
 
         if (isset($data[$prop])) {
             $data[$prop] = $embed->hydrate($data[$prop], $options);
+
+            return $data;
+        }
+
+        if (strpos($prop, '.')) {
+            $extracted = Hash::extract($data, $prop);
+
+            if (preg_match('/({n})/', $prop)) {
+                foreach ($extracted as $i => $extractedPart) {
+                    $path = preg_replace('/({n})/', $i, $prop);
+                    $data = Hash::insert($data, $path, $embed->hydrate($extractedPart, $options));
+                }
+            } else {
+                $data = Hash::insert($data, $prop, $embed->hydrate($extracted, $options));
+            }
         }
 
         return $data;

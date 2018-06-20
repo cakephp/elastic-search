@@ -86,7 +86,7 @@ class ProfilesFixture extends TestFixture
                 'province' => 'Copenhagen',
                 'country' => 'Denmark',
                 'aliases' => [
-                    'name' => 'Home'
+                    'name' => 'Home',
                 ]
             ]
         ],
@@ -98,13 +98,29 @@ class ProfilesFixture extends TestFixture
                     'street' => '456 street',
                     'city' => 'Copenhagen',
                     'province' => 'Copenhagen',
-                    'country' => 'Denmark'
+                    'country' => 'Denmark',
+                    'aliases' => [
+                        [
+                            'name' => 'Home'
+                        ],
+                        [
+                            'name' => 'My Place'
+                        ]
+                    ]
                 ],
                 [
                     'street' => '89 street',
                     'city' => 'Calgary',
                     'province' => 'Alberta',
-                    'country' => 'Canada'
+                    'country' => 'Canada',
+                    'aliases' => [
+                        [
+                            'name' => 'Home 2'
+                        ],
+                        [
+                            'name' => 'Friends place'
+                        ]
+                    ]
                 ]
             ]
         ],

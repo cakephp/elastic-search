@@ -180,4 +180,25 @@ class EmbeddedDocumentTest extends TestCase
         $this->assertInternalType('array', $rows[0]->address->aliases);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address->aliases[0]);
     }
+
+    /**
+     * Test fetching with embedded documents.
+     *
+     * @return void
+     */
+    public function testFindWithEmbedManyManyNested()
+    {
+        $this->index->embedMany('Address');
+        $this->index->embedMany('Aliases', [
+            'property' => 'address.{n}.aliases'
+        ]);
+
+        $result = $this->index->find()->where(['username' => 'sara']);
+        $rows = $result->toArray();
+
+        $this->assertCount(1, $rows);
+        $this->assertCount(2, $rows[0]->address[0]->aliases);
+        $this->assertInternalType('array', $rows[0]->address[0]->aliases);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address[0]->aliases[0]);
+    }
 }
