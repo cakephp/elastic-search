@@ -20,6 +20,7 @@ use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
 use Cake\Datasource\RulesAwareTrait;
 use Cake\Datasource\RulesChecker;
+use Cake\ElasticSearch\Association\Embedded;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Datasource\MappingSchema;
@@ -27,6 +28,7 @@ use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
+use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
@@ -186,7 +188,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function embedOne($name, $options = [])
     {
-        $this->embeds[] = new EmbedOne($name, $options);
+        $embed = new EmbedOne($name, $options);
+        $this->embeds[$embed->property()] = $embed;
     }
 
     /**
@@ -203,17 +206,23 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function embedMany($name, $options = [])
     {
-        $this->embeds[] = new EmbedMany($name, $options);
+        $embed = new EmbedMany($name, $options);
+        $this->embeds[$embed->property()] = $embed;
     }
 
     /**
      * Get the list of embedded documents this type has.
+     * Sorted by the deepest level first
      *
      * @return array
      */
     public function embedded()
     {
-        return $this->embeds;
+        uksort($this->embeds, function ($a, $b) {
+            return substr_count($a, '.') <= substr_count($b, '.');
+        });
+
+        return array_values($this->embeds);
     }
 
     /**
@@ -535,13 +544,44 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $data = $result->getData();
         $data['id'] = $result->getId();
         foreach ($this->embedded() as $embed) {
-            $prop = $embed->property();
-            if (isset($data[$prop])) {
-                $data[$prop] = $embed->hydrate($data[$prop], $options);
-            }
+            $data = $this->hydrateEmbed($embed, $data, $options);
         }
 
         return new $class($data, $options);
+    }
+
+    /**
+     * Hydrate embedded document into data array
+     *
+     * @param \Cake\ElasticSearch\Association\Embedded $embed Embed
+     * @param array $data Result
+     * @param array $options Options to pass to Embedded:hydrate
+     * @return array Data with hydrated embeds
+     */
+    public function hydrateEmbed(Embedded $embed, array $data, array $options)
+    {
+        $prop = $embed->property();
+
+        if (isset($data[$prop])) {
+            $data[$prop] = $embed->hydrate($data[$prop], $options);
+
+            return $data;
+        }
+
+        if (strpos($prop, '.')) {
+            $extracted = Hash::extract($data, $prop);
+
+            if (preg_match('/({n})/', $prop)) {
+                foreach ($extracted as $i => $extractedPart) {
+                    $path = preg_replace('/({n})/', $i, $prop);
+                    $data = Hash::insert($data, $path, $embed->hydrate($extractedPart, $options));
+                }
+            } else {
+                $data = Hash::insert($data, $prop, $embed->hydrate($extracted, $options));
+            }
+        }
+
+        return $data;
     }
 
     /**

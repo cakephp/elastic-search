@@ -369,6 +369,7 @@ class DocumentContextTest extends TestCase
             'comments' => [
                 new Document(['comment' => '']),
                 new Document(['comment' => 'Second comment']),
+                new Document(['comment' => 'Third comment'])
             ]
         ]);
 
@@ -377,7 +378,9 @@ class DocumentContextTest extends TestCase
                 'username' => [ 'Required' ]
             ],
             'comments' => [
-                0 => [ 'comment' => [ 'Required' ] ]
+                0 => [ 'comment' => [ 'Required' ] ],
+                2 => [ 'comment' => [ 'Required' ] ],
+                3 => [ 'comment' => [ 'Required' ] ]
             ]
         ]);
 
@@ -395,6 +398,8 @@ class DocumentContextTest extends TestCase
         $expected = [ 'Required' ];
         $this->assertEquals([], $context->error('comments.0'));
         $this->assertEquals($expected, $context->error('comments.0.comment'));
+        $this->assertEquals($expected, $context->error('comments.2.comment'));
+        $this->assertEquals($expected, $context->error('comments.3.comment'));
     }
 
     /**

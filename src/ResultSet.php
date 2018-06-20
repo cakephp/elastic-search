@@ -41,6 +41,13 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     protected $queryObject;
 
     /**
+     * Holds the Elasticsearch ORM repository
+     *
+     * @var \Cake\ElasticSearch\Index
+     */
+    protected $repository;
+
+    /**
      * The full class name of the document class to wrap the results
      *
      * @var \Cake\ElasticSearch\Document
@@ -71,12 +78,15 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     {
         $this->resultSet = $resultSet;
         $this->queryObject = $query;
-        $repo = $this->queryObject->getRepository();
-        foreach ($repo->embedded() as $embed) {
+        $this->repository = $this->queryObject->getRepository();
+
+        foreach ($this->repository->embedded() as $embed) {
             $this->embeds[$embed->property()] = $embed;
         }
-        $this->entityClass = $repo->entityClass();
-        $this->repoName = $repo->getRegistryAlias();
+
+        $this->entityClass = $this->repository->entityClass();
+        $this->repoName = $this->repository->getRegistryAlias();
+
         parent::__construct($resultSet);
     }
 
@@ -253,10 +263,9 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
         $data['id'] = $result->getId();
 
         foreach ($this->embeds as $property => $embed) {
-            if (isset($data[$property])) {
-                $data[$property] = $embed->hydrate($data[$property], $options);
-            }
+            $data = $this->repository->hydrateEmbed($embed, $data, $options);
         }
+
         $document = new $class($data, $options);
 
         return $document;
