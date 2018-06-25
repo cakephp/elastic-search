@@ -344,14 +344,19 @@ class DocumentContext implements ContextInterface
     {
         $parts = explode('.', $field);
         $entity = $this->entity($parts);
+        $entityErrors = [];
         $errors = [];
+
+        if ($this->_context['entity'] instanceof Document) {
+            $entityErrors = $this->_context['entity']->getErrors();
+        }
 
         if ($entity instanceof Document) {
             $errors = $entity->getError(array_pop($parts));
+        }
 
-            if (!$errors && $this->_context['entity'] instanceof Document) {
-                $errors = Hash::extract($this->_context['entity']->getErrors(), $field) ?: [];
-            }
+        if (!$errors && $entityErrors && !is_array($entity)) {
+            $errors = Hash::extract($entityErrors, $field) ?: [];
         }
 
         return $errors;
