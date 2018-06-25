@@ -258,6 +258,38 @@ class DocumentContextTest extends TestCase
     }
 
     /**
+     * Test val on plain arrays
+     *
+     * @return void
+     */
+    public function testValOnArrays()
+    {
+        $row = new Article([
+            'title' => 'Test entity',
+            'body' => 'Something new',
+            'user' => new Document(['username' => 'sarah']),
+            'comments' => [
+                ['comment' => 'first comment'],
+                ['comment' => 'second comment']
+            ]
+        ]);
+
+        $context = new DocumentContext($this->request, [
+            'entity' => $row,
+            'table' => 'articles',
+        ]);
+
+        $result = $context->val('comments.0.comment');
+        $this->assertEquals($result, $row->comments[0]['comment']);
+
+        $result = $context->val('comments.1.comment');
+        $this->assertEquals($result, $row->comments[1]['comment']);
+
+        $result = $context->val('comments.2.comment');
+        $this->assertNull($result);
+    }
+
+    /**
      * Test fields being required by validation.
      *
      * @return void

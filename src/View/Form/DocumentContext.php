@@ -180,6 +180,10 @@ class DocumentContext implements ContextInterface
         if ($entity instanceof Document) {
             return $entity->get(array_pop($parts));
         }
+
+        if ($this->_context['entity'] instanceof Document) {
+            return Hash::get($this->_context['entity'], $field);
+        }
     }
 
     /**
