@@ -180,6 +180,10 @@ class DocumentContext implements ContextInterface
         if ($entity instanceof Document) {
             return $entity->get(array_pop($parts));
         }
+
+        if ($this->_context['entity'] instanceof Document) {
+            return Hash::get($this->_context['entity'], $field);
+        }
     }
 
     /**
@@ -273,6 +277,11 @@ class DocumentContext implements ContextInterface
     {
         $parts = explode('.', $field);
         $entity = $this->entity($parts);
+
+        if (!$entity) {
+            return false;
+        }
+
         $isNew = true;
         if ($entity instanceof Document) {
             $isNew = $entity->isNew();
