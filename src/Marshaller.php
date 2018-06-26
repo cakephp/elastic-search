@@ -148,7 +148,7 @@ class Marshaller
         }
 
         if ($embed->type() === Embedded::ONE_TO_MANY) {
-            foreach ($existing as $i => $row) {
+            foreach ((array)$existing as $i => $row) {
                 if (isset($data[$i])) {
                     $row->set($data[$i]);
                 }
