@@ -277,6 +277,11 @@ class DocumentContext implements ContextInterface
     {
         $parts = explode('.', $field);
         $entity = $this->entity($parts);
+
+        if (!$entity) {
+            return false;
+        }
+
         $isNew = true;
         if ($entity instanceof Document) {
             $isNew = $entity->isNew();
