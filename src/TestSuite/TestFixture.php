@@ -14,8 +14,10 @@
  */
 namespace Cake\ElasticSearch\TestSuite;
 
+use Cake\Core\Exception\Exception as CakeException;
 use Cake\Datasource\ConnectionInterface;
 use Cake\Datasource\FixtureInterface;
+use Cake\ElasticSearch\IndexRegistry;
 use Cake\Utility\Inflector;
 use Elastica\Query\MatchAll;
 use Elastica\Type\Mapping as ElasticaMapping;
@@ -70,6 +72,37 @@ class TestFixture implements FixtureInterface
     public $created = [];
 
     /**
+     * Instantiate the fixture.
+     *
+     * @throws \Cake\Core\Exception\Exception on invalid datasource usage.
+     */
+    public function __construct()
+    {
+        if (!empty($this->connection)) {
+            $connection = $this->connection;
+            if (strpos($connection, 'test') !== 0) {
+                $message = sprintf(
+                    'Invalid datasource name "%s" for "%s" fixture. Fixture datasource names must begin with "test".',
+                    $connection,
+                    $this->table
+                );
+                throw new CakeException($message);
+            }
+        }
+
+        $this->init();
+    }
+
+    /**
+     * Initialize the fixture.
+     *
+     * @return void
+     */
+    public function init()
+    {
+    }
+
+    /**
      * Create index and mapping for the type.
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
@@ -81,13 +114,15 @@ class TestFixture implements FixtureInterface
             return;
         }
 
-        $index = $db->getIndex($this->table);
-        if ($index->exists()) {
-            $index->delete();
-        }
-        $index->create();
+        $index = IndexRegistry::get(Inflector::camelize($this->table));
 
-        $type = $index->getType(Inflector::singularize($this->table));
+        $esIndex = $db->getIndex($index->getName());
+        if ($esIndex->exists()) {
+            $esIndex->delete();
+        }
+        $esIndex->create();
+
+        $type = $esIndex->getType($index->getType());
         $mapping = new ElasticaMapping();
         $mapping->setType($type);
         $mapping->setProperties($this->schema);
@@ -122,8 +157,8 @@ class TestFixture implements FixtureInterface
             return;
         }
         $documents = [];
-        $index = $db->getIndex($this->table);
-        $type = $index->getType(Inflector::singularize($this->table));
+        $esIndex = $db->getIndex($this->table);
+        $type = $esIndex->getType(Inflector::singularize($this->table));
 
         foreach ($this->records as $data) {
             $id = '';
@@ -134,7 +169,7 @@ class TestFixture implements FixtureInterface
             $documents[] = $type->createDocument($id, $data);
         }
         $type->addDocuments($documents);
-        $index->refresh();
+        $esIndex->refresh();
     }
 
     /**
@@ -145,10 +180,10 @@ class TestFixture implements FixtureInterface
      */
     public function drop(ConnectionInterface $db)
     {
-        $index = $db->getIndex($this->table);
+        $esIndex = $db->getIndex($this->table);
 
-        if ($index->exists()) {
-            $index->delete();
+        if ($esIndex->exists()) {
+            $esIndex->delete();
         }
     }
 
@@ -161,10 +196,10 @@ class TestFixture implements FixtureInterface
     public function truncate(ConnectionInterface $db)
     {
         $query = new MatchAll();
-        $index = $db->getIndex($this->table);
-        $type = $index->getType(Inflector::singularize($this->table));
+        $esIndex = $db->getIndex($this->table);
+        $type = $esIndex->getType(Inflector::singularize($this->table));
         $type->deleteByQuery($query);
-        $index->refresh();
+        $esIndex->refresh();
     }
 
     /**
