@@ -103,6 +103,18 @@ class TestFixture implements FixtureInterface
     }
 
     /**
+     * Return the index class from table name
+     *
+     * @return \Cake\ElasticSearch\Index
+     */
+    public function getIndex()
+    {
+        $name = Inflector::camelize($this->table);
+
+        return IndexRegistry::get($name);
+    }
+
+    /**
      * Create index and mapping for the type.
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
@@ -114,15 +126,13 @@ class TestFixture implements FixtureInterface
             return;
         }
 
-        $index = IndexRegistry::get(Inflector::camelize($this->table));
-
-        $esIndex = $db->getIndex($index->getName());
+        $esIndex = $db->getIndex($this->getIndex()->getName());
         if ($esIndex->exists()) {
             $esIndex->delete();
         }
         $esIndex->create();
 
-        $type = $esIndex->getType($index->getType());
+        $type = $esIndex->getType($this->getIndex()->getType());
         $mapping = new ElasticaMapping();
         $mapping->setType($type);
         $mapping->setProperties($this->schema);
@@ -157,8 +167,8 @@ class TestFixture implements FixtureInterface
             return;
         }
         $documents = [];
-        $esIndex = $db->getIndex($this->table);
-        $type = $esIndex->getType(Inflector::singularize($this->table));
+        $esIndex = $db->getIndex($this->getIndex()->getName());
+        $type = $esIndex->getType($this->getIndex()->getType());
 
         foreach ($this->records as $data) {
             $id = '';
@@ -180,7 +190,7 @@ class TestFixture implements FixtureInterface
      */
     public function drop(ConnectionInterface $db)
     {
-        $esIndex = $db->getIndex($this->table);
+        $esIndex = $db->getIndex($this->getIndex()->getName());
 
         if ($esIndex->exists()) {
             $esIndex->delete();
@@ -196,8 +206,8 @@ class TestFixture implements FixtureInterface
     public function truncate(ConnectionInterface $db)
     {
         $query = new MatchAll();
-        $esIndex = $db->getIndex($this->table);
-        $type = $esIndex->getType(Inflector::singularize($this->table));
+        $esIndex = $db->getIndex($this->getIndex()->getName());
+        $type = $esIndex->getType($this->getIndex()->getType());
         $type->deleteByQuery($query);
         $esIndex->refresh();
     }
