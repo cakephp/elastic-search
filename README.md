@@ -95,7 +95,7 @@ class SomeController extends AppController
 {
     public function initialize()
     {
-        $this->loadModel('Comments', 'elastic');
+        $this->loadModel('Comments', 'Elastic');
     }
 
     public function index()
