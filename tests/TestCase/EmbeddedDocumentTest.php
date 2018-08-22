@@ -14,6 +14,7 @@
  */
 namespace Cake\ElasticSearch\Test;
 
+use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Index;
 use Cake\TestSuite\TestCase;
@@ -63,6 +64,44 @@ class EmbeddedDocumentTest extends TestCase
     }
 
     /**
+     * DataProvider for different embed types
+     *
+     * @return array
+     */
+
+    public function embedTypeProvider() {
+        return [
+            // Test to make sure entityClass is derived from Alias
+            [[], 'TestApp\Model\Document\Address'],
+
+            // Test to make sure simple classname entityClass works
+            [['entityClass' => 'Address'], 'TestApp\Model\Document\Address'],
+
+            // Test to make sure full namespace on entityClass works
+            [['entityClass' => 'TestApp\Model\Document\Address'], 'TestApp\Model\Document\Address'],
+        ];
+    }
+
+    /**
+     * Test fetching with EmbedOne documents.
+     *
+     * @dataProvider embedTypeProvider
+     *
+     * @param array  $options  Options to pass to embed
+     * @param string $expected Expected type
+     *
+     * @return void
+     */
+    public function testGetWithEmbedOneType($options, $expected) {
+
+        Configure::write('App.namespace', 'TestApp');
+        $this->index->embedOne('Address', $options);
+        $result = $this->index->get(1);
+        $this->assertInstanceOf($expected, $result->address);
+        $this->assertEquals('123 street', $result->address->street);
+    }
+
+    /**
      * Test fetching with embedded documents.
      *
      * @return void
@@ -87,6 +126,26 @@ class EmbeddedDocumentTest extends TestCase
         $this->assertInternalType('array', $result->address);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address[1]);
+    }
+
+    /**
+     * Test fetching with EmbedMany documents.
+     *
+     * @dataProvider embedTypeProvider
+     *
+     * @param array  $options  Options to pass to embed
+     * @param string $expected Expected type
+     *
+     * @return void
+     */
+    public function testGetWithEmbedManyType($options, $expected) {
+
+        Configure::write('App.namespace', 'TestApp');
+        $this->index->embedMany('Address', $options);
+        $result = $this->index->get(3);
+        $this->assertInternalType('array', $result->address);
+        $this->assertInstanceOf($expected, $result->address[0]);
+        $this->assertInstanceOf($expected, $result->address[1]);
     }
 
     /**

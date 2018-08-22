@@ -34,6 +34,7 @@
     "autoload-dev": {
         "psr-4": {
             "Cake\\ElasticSearch\\Test\\": "tests",
+            "TestApp\\": "tests/testapp/TestApp/src/",
             "TestPlugin\\": "tests/testapp/Plugin/TestPlugin/src",
             "TestPluginTwo\\": "tests/testapp/Plugin/TestPluginTwo/src"
         }
