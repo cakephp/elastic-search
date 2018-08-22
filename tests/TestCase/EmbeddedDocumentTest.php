@@ -95,7 +95,6 @@ class EmbeddedDocumentTest extends TestCase
      */
     public function testGetWithEmbedOneType($options, $expected)
     {
-
         Configure::write('App.namespace', 'TestApp');
         $this->index->embedOne('Address', $options);
         $result = $this->index->get(1);
@@ -142,7 +141,6 @@ class EmbeddedDocumentTest extends TestCase
      */
     public function testGetWithEmbedManyType($options, $expected)
     {
-
         Configure::write('App.namespace', 'TestApp');
         $this->index->embedMany('Address', $options);
         $result = $this->index->get(3);
