@@ -69,7 +69,8 @@ class EmbeddedDocumentTest extends TestCase
      * @return array
      */
 
-    public function embedTypeProvider() {
+    public function embedTypeProvider()
+    {
         return [
             // Test to make sure entityClass is derived from Alias
             [[], 'TestApp\Model\Document\Address'],
@@ -92,7 +93,8 @@ class EmbeddedDocumentTest extends TestCase
      *
      * @return void
      */
-    public function testGetWithEmbedOneType($options, $expected) {
+    public function testGetWithEmbedOneType($options, $expected)
+    {
 
         Configure::write('App.namespace', 'TestApp');
         $this->index->embedOne('Address', $options);
@@ -138,7 +140,8 @@ class EmbeddedDocumentTest extends TestCase
      *
      * @return void
      */
-    public function testGetWithEmbedManyType($options, $expected) {
+    public function testGetWithEmbedManyType($options, $expected)
+    {
 
         Configure::write('App.namespace', 'TestApp');
         $this->index->embedMany('Address', $options);
