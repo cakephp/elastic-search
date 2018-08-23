@@ -79,7 +79,8 @@ class Marshaller
 
         foreach ($this->index->embedded() as $embed) {
             $property = $embed->property();
-            if (in_array($embed->getAlias(), $options['associated']) &&
+            $alias = $embed->getAlias();
+            if ((in_array($alias, $options['associated']) || isset($options['associated'][$alias])) &&
                 isset($data[$property])
             ) {
                 $data[$property] = $this->newNested($embed, $data[$property]);
