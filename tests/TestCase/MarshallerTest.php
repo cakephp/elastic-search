@@ -235,6 +235,58 @@ class MarshallerTest extends TestCase
     }
 
     /**
+     * DataProvider for testOneEmbeddedOneWithOption
+     *
+     * @return array
+     */
+    public function oneEmbeddedOneWithOptionProvider()
+    {
+        return [
+            // Test both embeds with options
+            [['associated' => ['User' => [], 'Comment' => ['guard' => false]]]],
+            // Test both embeds one with options the other without
+            [['associated' => ['User' => [], 'Comment']]],
+            // Test both embeds one without options
+            [['associated' => ['User', 'Comment']]]
+        ];
+    }
+
+    /**
+     * test marshalling a simple object with associated options
+     *
+     * @dataProvider oneEmbeddedOneWithOptionProvider
+     *
+     * @param array  $options  Options to pass to marshaller->one
+     *
+     * @return void
+     */
+    public function testOneEmbeddedOneWithOptions($options)
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user' => [
+                'username' => 'mark',
+            ],
+            'comment' => [
+                'text' => 'this is great',
+                'id' => 123
+            ]
+        ];
+        $this->index->embedOne('User');
+        $this->index->embedOne('Comment');
+
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data, $options);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comment);
+        $this->assertSame($data['user']['username'], $result->user->username);
+        $this->assertSame($data['comment']['text'], $result->comment->text);
+    }
+
+    /**
      * test marshalling a simple object.
      *
      * @return void
@@ -262,6 +314,67 @@ class MarshallerTest extends TestCase
         $this->assertTrue($result->isNew());
         $this->assertTrue($result->comments[0]->isNew());
         $this->assertTrue($result->comments[1]->isNew());
+    }
+
+    /**
+     * DataProvider for testOneEmbeddedManyWithOptions
+     *
+     * @return array
+     */
+    public function oneEmbeddedManyWithOptionsProvider()
+    {
+        return [
+            // Test both embeds with options
+            [['associated' => ['Comments' => ['guard' => false], 'Authors' => []]]],
+            // Test both embeds one with options the other without
+            [['associated' => ['Comments' => ['guard' => false], 'Authors']]],
+            // Test both embeds one without options
+            [['associated' => ['Comments', 'Authors']]]
+        ];
+    }
+
+    /**
+     * test marshalling a simple object.
+     *
+     * @dataProvider oneEmbeddedManyWithOptionsProvider
+     *
+     * @param array  $options  Options to pass to marshaller->one
+     *
+     * @return void
+     */
+    public function testOneEmbeddedManyWithOptions($options)
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'comments' => [
+                ['comment' => 'First comment'],
+                ['comment' => 'Second comment'],
+                'bad' => 'data'
+            ],
+            'authors' => [
+                ['name' => 'Bob Smith'],
+                ['name' => 'Claire Muller']
+            ]
+        ];
+        $this->index->embedMany('Comments');
+        $this->index->embedMany('Authors');
+
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data, $options);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInternalType('array', $result->comments);
+        $this->assertInternalType('array', $result->authors);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->authors[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->authors[1]);
+        $this->assertTrue($result->isNew());
+        $this->assertTrue($result->comments[0]->isNew());
+        $this->assertTrue($result->comments[1]->isNew());
+        $this->assertTrue($result->authors[0]->isNew());
+        $this->assertTrue($result->authors[1]->isNew());
     }
 
     /**
