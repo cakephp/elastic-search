@@ -55,18 +55,17 @@ abstract class Embedded
     public function __construct($alias, $options = [])
     {
         $this->alias = $alias;
-        $defaults = [
+        $properties = [
             'entityClass',
             'property'
         ];
-        foreach ($defaults as $prop) {
+        $options += [
+            'entityClass' => $alias
+        ];
+        foreach ($properties as $prop) {
             if (isset($options[$prop])) {
-                $this->{$prop} = $options[$prop];
+                $this->{$prop}($options[$prop]);
             }
-        }
-
-        if (empty($this->entityClass) && strpos($alias, '.')) {
-            $this->entityClass = $alias;
         }
     }
 
