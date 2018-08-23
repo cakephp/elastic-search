@@ -59,9 +59,40 @@ class Marshaller
      */
     public function one(array $data, array $options = [])
     {
+        $options += ['associated' => []];
+
         $entityClass = $this->index->entityClass();
-        $entity = new $entityClass();
+        $entity = $this->createAndHydrate($entityClass, $data, $options);
         $entity->setSource($this->index->getRegistryAlias());
+
+        foreach ($this->index->embedded() as $embed) {
+            $property = $embed->property();
+            $alias = $embed->getAlias();
+            if (isset($data[$property])) {
+                if (isset($options['associated'][$alias])) {
+                    $entity->set($property, $this->newNested($embed, $data[$property], $options['associated'][$alias]));
+                } elseif (in_array($alias, $options['associated'])) {
+                    $entity->set($property, $this->newNested($embed, $data[$property]));
+                }
+            }
+        }
+
+        return $entity;
+    }
+
+    /**
+     * Creates and Hydrates Document whilst honouring accessibleFields etc
+     *
+     * @param string $class   Class name of Document to create
+     * @param array  $data    The data to hydrate with
+     * @param array  $options Options to control the hydration
+     *
+     * @return Document
+     */
+    protected function createAndHydrate($class, array $data, array $options = [])
+    {
+        $entity = new $class();
+
         $options += ['associated' => []];
 
         list($data, $options) = $this->_prepareDataAndOptions($data, $options);
@@ -77,25 +108,13 @@ class Marshaller
             unset($data[$badKey]);
         }
 
-        foreach ($this->index->embedded() as $embed) {
-            $property = $embed->property();
-            $alias = $embed->getAlias();
-            if ((in_array($alias, $options['associated']) || isset($options['associated'][$alias])) &&
-                isset($data[$property])
-            ) {
-                $data[$property] = $this->newNested($embed, $data[$property]);
-            }
-        }
-
         if (!isset($options['fieldList'])) {
             $entity->set($data);
-
-            return $entity;
-        }
-
-        foreach ((array)$options['fieldList'] as $field) {
-            if (array_key_exists($field, $data)) {
-                $entity->set($field, $data[$field]);
+        } else {
+            foreach ((array)$options['fieldList'] as $field) {
+                if (array_key_exists($field, $data)) {
+                    $entity->set($field, $data[$field]);
+                }
             }
         }
 
@@ -105,22 +124,24 @@ class Marshaller
     /**
      * Marshal an embedded document.
      *
-     * @param \Cake\ElasticSearch\Association\Embedded $embed The embed definition.
-     * @param array $data The data to marshal
+     * @param \Cake\ElasticSearch\Association\Embedded $embed   The embed definition.
+     * @param array                                    $data    The data to marshal
+     * @param array                                    $options The options to pass on
+     *
      * @return array|\Cake\ElasticSearch\Document Either a document or an array of documents.
      */
-    protected function newNested(Embedded $embed, array $data)
+    protected function newNested(Embedded $embed, array $data, array $options = [])
     {
         $class = $embed->entityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
-            return new $class($data);
+            return $this->createAndHydrate($class, $data, $options);
         }
 
         if ($embed->type() === Embedded::ONE_TO_MANY) {
             $children = [];
             foreach ($data as $row) {
                 if (is_array($row)) {
-                    $children[] = new $class($row);
+                    $children[] = $this->createAndHydrate($class, $row, $options);
                 }
             }
 
