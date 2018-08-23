@@ -2,6 +2,7 @@
 namespace Cake\ElasticSearch\Association;
 
 use Cake\Core\App;
+use Cake\ElasticSearch\Index;
 use Cake\Utility\Inflector;
 
 /**
@@ -47,6 +48,13 @@ abstract class Embedded
     protected $property;
 
     /**
+     * The index class this embed is linked to
+     *
+     * @var string
+     */
+    protected $indexClass;
+
+    /**
      * Constructor
      *
      * @param string $alias The alias/name for the embedded document.
@@ -57,7 +65,8 @@ abstract class Embedded
         $this->alias = $alias;
         $properties = [
             'entityClass',
-            'property'
+            'property',
+            'indexClass'
         ];
         $options += [
             'entityClass' => $alias
@@ -117,6 +126,38 @@ abstract class Embedded
         }
 
         return $this->entityClass;
+    }
+
+    /**
+     * Get/set the index class used for this embed.
+     *
+     * @param string|null|Index $name The class name to set.
+     *
+     * @return string The class name.
+     */
+    public function indexClass($name = null)
+    {
+        if ($name === null && !$this->indexClass) {
+            $alias = Inflector::pluralize($this->alias);
+            $class = App::className($alias . 'Index', 'Model/Index');
+
+            if ($class) {
+                return $this->indexClass = $class;
+            } else {
+                return $this->indexClass = '\Cake\ElasticSearch\Index';
+            }
+        }
+
+        if ($name !== null) {
+            if ($name instanceof Index) {
+                $this->indexClass = get_class($name);
+            } elseif (is_string($name)) {
+                $class = App::className($name, 'Model/Index');
+                $this->indexClass = $class;
+            }
+        }
+
+        return $this->indexClass;
     }
 
     /**

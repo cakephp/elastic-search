@@ -46,7 +46,9 @@ class EmbeddedDocumentTest extends TestCase
         $this->assertNull($this->index->embedOne('Address'));
         $assocs = $this->index->embedded();
         $this->assertCount(1, $assocs);
+        $this->assertInstanceOf('Cake\ElasticSearch\Association\EmbedOne', $assocs[0]);
         $this->assertEquals('\Cake\ElasticSearch\Document', $assocs[0]->entityClass());
+        $this->assertEquals('\Cake\ElasticSearch\Index', $assocs[0]->indexClass());
         $this->assertEquals('address', $assocs[0]->property());
     }
 
@@ -113,6 +115,22 @@ class EmbeddedDocumentTest extends TestCase
         $result = $this->index->find()->where(['username' => 'mark']);
         $rows = $result->toArray();
         $this->assertCount(1, $rows);
+    }
+
+    /**
+     * Test defining many embedded documents.
+     *
+     * @return void
+     */
+    public function testEmbedMany()
+    {
+        $this->assertNull($this->index->embedMany('Address'));
+        $assocs = $this->index->embedded();
+        $this->assertCount(1, $assocs);
+        $this->assertInstanceOf('Cake\ElasticSearch\Association\EmbedMany', $assocs[0]);
+        $this->assertEquals('\Cake\ElasticSearch\Document', $assocs[0]->entityClass());
+        $this->assertEquals('\Cake\ElasticSearch\Index', $assocs[0]->indexClass());
+        $this->assertEquals('address', $assocs[0]->property());
     }
 
     /**
