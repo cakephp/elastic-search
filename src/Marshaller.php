@@ -59,23 +59,9 @@ class Marshaller
      */
     public function one(array $data, array $options = [])
     {
-        $options += ['associated' => []];
-
         $entityClass = $this->index->entityClass();
         $entity = $this->createAndHydrate($entityClass, $data, $options);
         $entity->setSource($this->index->getRegistryAlias());
-
-        foreach ($this->index->embedded() as $embed) {
-            $property = $embed->property();
-            $alias = $embed->getAlias();
-            if (isset($data[$property])) {
-                if (isset($options['associated'][$alias])) {
-                    $entity->set($property, $this->newNested($embed, $data[$property], $options['associated'][$alias]));
-                } elseif (in_array($alias, $options['associated'])) {
-                    $entity->set($property, $this->newNested($embed, $data[$property]));
-                }
-            }
-        }
 
         return $entity;
     }
@@ -83,13 +69,14 @@ class Marshaller
     /**
      * Creates and Hydrates Document whilst honouring accessibleFields etc
      *
-     * @param string $class   Class name of Document to create
-     * @param array  $data    The data to hydrate with
-     * @param array  $options Options to control the hydration
+     * @param string $class      Class name of Document to create
+     * @param array  $data       The data to hydrate with
+     * @param array  $options    Options to control the hydration
+     * @param string $indexClass Index class to get embeds from (for nesting)
      *
      * @return Document
      */
-    protected function createAndHydrate($class, array $data, array $options = [])
+    protected function createAndHydrate($class, array $data, array $options = [], $indexClass = null)
     {
         $entity = new $class();
 
@@ -106,6 +93,27 @@ class Marshaller
         $entity->setErrors($errors);
         foreach (array_keys($errors) as $badKey) {
             unset($data[$badKey]);
+        }
+
+        if ($indexClass === null) {
+            $embeds = $this->index->embedded();
+        } else {
+            $index = IndexRegistry::get($indexClass);
+            $embeds = $index->embedded();
+        }
+
+        foreach ($embeds as $embed) {
+            $property = $embed->property();
+            $alias = $embed->getAlias();
+            if (isset($data[$property])) {
+                if (isset($options['associated'][$alias])) {
+                    $entity->set($property, $this->newNested($embed, $data[$property], $options['associated'][$alias]));
+                    unset($data[$property]);
+                } elseif (in_array($alias, $options['associated'])) {
+                    $entity->set($property, $this->newNested($embed, $data[$property]));
+                    unset($data[$property]);
+                }
+            }
         }
 
         if (!isset($options['fieldList'])) {
@@ -134,14 +142,14 @@ class Marshaller
     {
         $class = $embed->entityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
-            return $this->createAndHydrate($class, $data, $options);
+            return $this->createAndHydrate($class, $data, $options, $embed->indexClass());
         }
 
         if ($embed->type() === Embedded::ONE_TO_MANY) {
             $children = [];
             foreach ($data as $row) {
                 if (is_array($row)) {
-                    $children[] = $this->createAndHydrate($class, $row, $options);
+                    $children[] = $this->createAndHydrate($class, $row, $options, $embed->indexClass());
                 }
             }
 
