@@ -14,11 +14,13 @@
  */
 namespace Cake\ElasticSearch\Test;
 
+use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Marshaller;
 use Cake\TestSuite\TestCase;
+use TestApp\Model\Index\AccountsIndex;
 
 /**
  * Test entity for mass assignment.
@@ -235,6 +237,58 @@ class MarshallerTest extends TestCase
     }
 
     /**
+     * DataProvider for testOneEmbeddedOneWithOption
+     *
+     * @return array
+     */
+    public function oneEmbeddedOneWithOptionProvider()
+    {
+        return [
+            // Test both embeds with options
+            [['associated' => ['User' => [], 'Comment' => ['guard' => false]]]],
+            // Test both embeds one with options the other without
+            [['associated' => ['User' => [], 'Comment']]],
+            // Test both embeds one without options
+            [['associated' => ['User', 'Comment']]]
+        ];
+    }
+
+    /**
+     * test marshalling a simple object with associated options
+     *
+     * @dataProvider oneEmbeddedOneWithOptionProvider
+     *
+     * @param array  $options  Options to pass to marshaller->one
+     *
+     * @return void
+     */
+    public function testOneEmbeddedOneWithOptions($options)
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user' => [
+                'username' => 'mark',
+            ],
+            'comment' => [
+                'text' => 'this is great',
+                'id' => 123
+            ]
+        ];
+        $this->index->embedOne('User');
+        $this->index->embedOne('Comment');
+
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data, $options);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comment);
+        $this->assertSame($data['user']['username'], $result->user->username);
+        $this->assertSame($data['comment']['text'], $result->comment->text);
+    }
+
+    /**
      * test marshalling a simple object.
      *
      * @return void
@@ -262,6 +316,67 @@ class MarshallerTest extends TestCase
         $this->assertTrue($result->isNew());
         $this->assertTrue($result->comments[0]->isNew());
         $this->assertTrue($result->comments[1]->isNew());
+    }
+
+    /**
+     * DataProvider for testOneEmbeddedManyWithOptions
+     *
+     * @return array
+     */
+    public function oneEmbeddedManyWithOptionsProvider()
+    {
+        return [
+            // Test both embeds with options
+            [['associated' => ['Comments' => ['guard' => false], 'Authors' => []]]],
+            // Test both embeds one with options the other without
+            [['associated' => ['Comments' => ['guard' => false], 'Authors']]],
+            // Test both embeds one without options
+            [['associated' => ['Comments', 'Authors']]]
+        ];
+    }
+
+    /**
+     * test marshalling a simple object.
+     *
+     * @dataProvider oneEmbeddedManyWithOptionsProvider
+     *
+     * @param array  $options  Options to pass to marshaller->one
+     *
+     * @return void
+     */
+    public function testOneEmbeddedManyWithOptions($options)
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'comments' => [
+                ['comment' => 'First comment'],
+                ['comment' => 'Second comment'],
+                'bad' => 'data'
+            ],
+            'authors' => [
+                ['name' => 'Bob Smith'],
+                ['name' => 'Claire Muller']
+            ]
+        ];
+        $this->index->embedMany('Comments');
+        $this->index->embedMany('Authors');
+
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data, $options);
+
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInternalType('array', $result->comments);
+        $this->assertInternalType('array', $result->authors);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->authors[0]);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->authors[1]);
+        $this->assertTrue($result->isNew());
+        $this->assertTrue($result->comments[0]->isNew());
+        $this->assertTrue($result->comments[1]->isNew());
+        $this->assertTrue($result->authors[0]->isNew());
+        $this->assertTrue($result->authors[1]->isNew());
     }
 
     /**
@@ -690,5 +805,176 @@ class MarshallerTest extends TestCase
 
         $this->assertCount(1, $result);
         $this->assertEquals($data[0], $result[0]->toArray());
+    }
+
+    /**
+     * test marshalling One with multi level embed
+     *
+     * @return void
+     */
+    public function testMarshallOneMultiLevelEmbed()
+    {
+        Configure::write('App.namespace', 'TestApp');
+
+        $data = [
+            'address' => '123 West Street',
+            'users' => [
+                [
+                    'first_name' => 'Mark',
+                    'last_name' => 'Story',
+                    'user_type' => [
+                        'label' => 'Admin'
+                    ]
+                ],
+                ['first_name' => 'Clare', 'last_name' => 'Smith'],
+            ]
+        ];
+        $options = [
+            'associated' => [
+                'User' => [
+                    'associated' => [
+                        'UserType' => []
+                    ]
+                ]
+            ]
+        ];
+
+        $index = new AccountsIndex();
+
+        $marshaller = new Marshaller($index);
+        $result = $marshaller->one($data, $options);
+
+        $this->assertCount(2, $result->users);
+        $this->assertSame('123 West Street', $result->address);
+        $this->assertInstanceOf('TestApp\Model\Document\User', $result->users[0]);
+        $this->assertSame('Mark', $result->users[0]->first_name);
+        $this->assertSame('Story', $result->users[0]->last_name);
+        $this->assertInstanceOf('TestApp\Model\Document\User', $result->users[1]);
+        $this->assertSame('Clare', $result->users[1]->first_name);
+        $this->assertSame('Smith', $result->users[1]->last_name);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->users[0]->user_type);
+        $this->assertSame('Admin', $result->users[0]->user_type->label);
+    }
+
+    /**
+     * test marshalling One with multi level embed (with AccessibleFields)
+     *
+     * @return void
+     */
+    public function testMarshallOneMultiLevelEmbedWithAccessibleFields()
+    {
+        Configure::write('App.namespace', 'TestApp');
+
+        $data = [
+            'address' => '123 West Street',
+            'remove_this' => 'something',
+            'users' => [
+                [
+                    'first_name' => 'Mark',
+                    'last_name' => 'Story',
+                    'user_type' => [
+                        'label' => 'Admin',
+                        'level' => 21
+                    ]
+                ],
+                ['first_name' => 'Clare', 'last_name' => 'Smith'],
+            ]
+        ];
+        $options = [
+            'accessibleFields' => ['remove_this' => false],
+            'associated' => [
+                'User' => [
+                    'accessibleFields' => ['last_name' => false],
+                    'associated' => [
+                        'UserType' => [
+                            'accessibleFields' => ['level' => false]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $index = new AccountsIndex();
+
+        $marshaller = new Marshaller($index);
+        $result = $marshaller->one($data, $options);
+
+        $this->assertCount(2, $result->users);
+        $this->assertNull($result->remove_this);
+        $this->assertInstanceOf('TestApp\Model\Document\User', $result->users[0]);
+        $this->assertNull($result->users[0]->last_name);
+        $this->assertInstanceOf('TestApp\Model\Document\User', $result->users[1]);
+        $this->assertNull($result->users[1]->last_name);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->users[0]->user_type);
+        $this->assertNull($result->users[0]->user_type->level);
+    }
+
+    /**
+     * test marshalling Many with multi level embed
+     *
+     * @return void
+     */
+    public function testMarshallManyMultiLevelEmbed()
+    {
+        Configure::write('App.namespace', 'TestApp');
+
+        $data = [
+            [
+                'address' => '123 West Street',
+                'users' => [
+                    [
+                        'first_name' => 'Mark',
+                        'last_name' => 'Story',
+                        'user_type' => [
+                            'label' => 'Admin'
+                        ]
+                    ],
+                    ['first_name' => 'Clare', 'last_name' => 'Smith']
+                ]
+            ],
+            [
+                'address' => '87 Grant Avenue',
+                'users' => [
+                    [
+                        'first_name' => 'Colin',
+                        'last_name' => 'Thomas',
+                        'user_type' => [
+                            'label' => 'Admin'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $options = [
+            'associated' => [
+                'User' => [
+                    'associated' => [
+                        'UserType' => []
+                    ]
+                ]
+            ]
+        ];
+
+        $index = new AccountsIndex();
+
+        $marshaller = new Marshaller($index);
+        $result = $marshaller->many($data, $options);
+
+        $this->assertCount(2, $result);
+        $this->assertCount(2, $result[0]->users);
+        $this->assertCount(1, $result[1]->users);
+        $this->assertSame('123 West Street', $result[0]->address);
+        $this->assertSame('87 Grant Avenue', $result[1]->address);
+        $this->assertInstanceOf('TestApp\Model\Document\User', $result[0]->users[0]);
+        $this->assertInstanceOf('TestApp\Model\Document\User', $result[0]->users[1]);
+        $this->assertInstanceOf('TestApp\Model\Document\User', $result[1]->users[0]);
+        $this->assertSame('Mark', $result[0]->users[0]->first_name);
+        $this->assertSame('Story', $result[0]->users[0]->last_name);
+        $this->assertSame('Clare', $result[0]->users[1]->first_name);
+        $this->assertSame('Smith', $result[0]->users[1]->last_name);
+        $this->assertSame('Colin', $result[1]->users[0]->first_name);
+        $this->assertSame('Thomas', $result[1]->users[0]->last_name);
+        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[0]->users[0]->user_type);
+        $this->assertSame('Admin', $result[0]->users[0]->user_type->label);
     }
 }
