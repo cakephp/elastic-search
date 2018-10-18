@@ -14,7 +14,7 @@ You can install Elasticsearch into your project using
 following to your `composer.json` file:
 
     "require": {
-        "cakephp/elastic-search": "^2.0-RC1"
+        "cakephp/elastic-search": "^2.0"
     }
 
 And run `php composer.phar update`
