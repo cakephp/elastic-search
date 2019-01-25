@@ -161,4 +161,20 @@ class Document implements EntityInterface
 
         return [];
     }
+    
+    /**
+     * Returns the score for this document as returned from Elasticsearch.
+     *
+     * If a score is not provided this function will return an empty array.
+     *
+     * @return array
+     */
+    public function score()
+    {
+        if ($this->_result) {
+            return $this->_result->getScore();
+        }
+
+        return [];
+    }
 }
