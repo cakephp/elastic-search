@@ -31,6 +31,7 @@ use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Base class for index.
