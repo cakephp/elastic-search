@@ -31,6 +31,7 @@ use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Base class for index.
@@ -577,7 +578,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function updateAll($fields, $conditions)
     {
-        throw new \RuntimeException('Not implemented yet');
+        throw new RuntimeException('Not implemented yet');
     }
 
     /**
@@ -910,7 +911,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
 
         if (!$this->_documentClass) {
-            throw new \RuntimeException(sprintf('Missing document class "%s"', $class));
+            throw new RuntimeException(sprintf('Missing document class "%s"', $class));
         }
 
         return $this->_documentClass;
