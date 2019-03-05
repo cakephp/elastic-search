@@ -82,7 +82,7 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Additional options for Elastica\Type::search()
      *
-     * @see Elastica\Search::OPTION_SEARCH_* constants
+     * @see \Elastica\Search::OPTION_SEARCH_* constants
      * @var array
      */
     protected $_searchOptions = [];
@@ -309,11 +309,11 @@ class Query implements IteratorAggregate, QueryInterface
      *   $query->where(new \Elastica\Filter\Term('name.first', 'jose'));
      * }}{
      *
-     * @param array|null|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param array|null|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
      * @param array $types Not used, required to comply with QueryInterface.
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
-     * @see Cake\ElasticSearch\QueryBuilder
+     * @see \Cake\ElasticSearch\QueryBuilder
      */
     public function where($conditions = null, $types = [], $overwrite = false)
     {
@@ -331,7 +331,7 @@ class Query implements IteratorAggregate, QueryInterface
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions
+     * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return Query
      */
@@ -347,7 +347,7 @@ class Query implements IteratorAggregate, QueryInterface
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions
+     * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return Query
      */
@@ -363,10 +363,10 @@ class Query implements IteratorAggregate, QueryInterface
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param array|callable|\Elastica\Filter\AbstractFilter $conditions The list of conditions.
+     * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous filters.
      * @return $this
-     * @see Cake\ElasticSearch\Query::where()
+     * @see \Cake\ElasticSearch\Query::where()
      */
     public function postFilter($conditions, $overwrite = false)
     {
