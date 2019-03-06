@@ -83,7 +83,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     /**
      * Returns all results
      *
-     * @return Result[] Results
+     * @return \Elastica\Result[] Results
      */
     public function getResults()
     {

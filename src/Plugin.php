@@ -21,6 +21,7 @@ use Cake\Datasource\FactoryLocator;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Event\EventManager;
+use Traversable;
 
 /**
  * Elasticsearch plugin

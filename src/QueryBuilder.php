@@ -43,7 +43,7 @@ class QueryBuilder
      * or not set to null.
      *
      * @param string $field The field to check for existance.
-     * @return \Elastica\Filter\Exists
+     * @return \Elastica\Query\Exists
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html
      */
     public function exists($field)
@@ -232,7 +232,7 @@ class QueryBuilder
      *
      * @param string|\Elastica\Query|\Elastica\Query\AbstractQuery $query The query.
      * @param string $type The parent type to query against.
-     * @return \Elastica\Filter\HasParent
+     * @return \Elastica\Query\HasParent
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-query.html
      */
     public function hasParent($query, $type)
@@ -576,7 +576,7 @@ class QueryBuilder
      *
      * @param string $method The method name.
      * @param array $args The argumemts to pass to the method.
-     * @return \Elastica\Filter\AbstractFilter
+     * @return \Elastica\Query\AbstractQuery
      */
     public function __call($method, $args)
     {
@@ -725,7 +725,7 @@ class QueryBuilder
      *
      * @param string $field The filed name containing the operator
      * @param mixed $value The value to pass to the query
-     * @return \Elastica\Filter\AbstractFilter
+     * @return \Elastica\Query\AbstractQuery
      */
     protected function _parseQuery($field, $value)
     {

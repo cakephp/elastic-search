@@ -230,7 +230,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     /**
      * Sets the connection instance
      *
-     * @param Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
+     * @param \Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
      * @return $this
      */
     public function setConnection($conn)
