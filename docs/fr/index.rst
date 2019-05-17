@@ -88,10 +88,10 @@ document ajouté à elasticsearch.
 Objets Document
 ===============
 
-Comme l'ORM, l'ODM Elasticsearch utilise les classes de type `Entities <https://book.cakephp.org/3.0/fr/orm/entities.html>`__`
-. La classe de base que vous devrez hériter est
-``Cake\ElasticSearch\Document``. Les classes de Document se trouvent
-dans le namespace ``Model\Document`` dans votre application ou votre
+Comme l'ORM, l'ODM Elasticsearch utilise les classes de type `Entities
+<https://book.cakephp.org/3.0/fr/orm/entities.html>`__ . La classe de base que
+vous devrez hériter est ``Cake\ElasticSearch\Document``. Les classes de Document
+se trouvent dans le namespace ``Model\Document`` dans votre application ou votre
 plugin::
 
     namespace App\Model\Document;
