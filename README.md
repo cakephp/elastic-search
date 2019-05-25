@@ -3,9 +3,9 @@
 [![Build Status](https://travis-ci.org/cakephp/elastic-search.svg?branch=master)](https://travis-ci.org/cakephp/elastic-search)
 [![License](https://poser.pugx.org/cakephp/elastic-search/license.svg)](https://packagist.org/packages/cakephp/elastic-search)
 
-Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 3.6+. It is currently under active development.
+Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 3.6+.
 
-You can [find the documentation for the plugin in the Cake Book](http://book.cakephp.org/3.0/en/elasticsearch.html).
+You can [find the documentation for the plugin in the Cake Book](http://book.cakephp.org/elasticsearch).
 
 ## Installing Elasticsearch via composer
 
