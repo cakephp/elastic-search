@@ -7,10 +7,10 @@
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @since         0.0.1
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link      http://cakephp.org CakePHP(tm) Project
+ * @since     0.0.1
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace Cake\ElasticSearch\Test;
 
@@ -21,19 +21,20 @@ use Cake\TestSuite\TestCase;
 
 /**
  * Tests features around embeded documents.
- *
  */
 class EmbeddedDocumentTest extends TestCase
 {
-    public $fixtures = ['plugin.cake/elastic_search.profiles'];
+    public $fixtures = ['plugin.Cake/ElasticSearch.Profiles'];
 
     public function setUp()
     {
         parent::setUp();
-        $this->index = new Index([
+        $this->index = new Index(
+            [
             'name' => 'profiles',
             'connection' => ConnectionManager::get('test')
-        ]);
+            ]
+        );
     }
 
     /**

@@ -7,10 +7,10 @@
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @since         3.0.0
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link      http://cakephp.org CakePHP(tm) Project
+ * @since     3.0.0
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace Cake\ElasticSearch\Test\TestCase\View\Form;
 
@@ -45,8 +45,8 @@ class DocumentContextTest extends TestCase
      * @var array
      */
     public $fixtures = [
-        'plugin.cake/elastic_search.articles',
-        'plugin.cake/elastic_search.profiles'
+        'plugin.Cake/ElasticSearch.Articles',
+        'plugin.Cake/ElasticSearch.Profiles'
     ];
 
     /**
@@ -80,9 +80,11 @@ class DocumentContextTest extends TestCase
     public function testPrimaryKey()
     {
         $row = new Article();
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
-        ]);
+            ]
+        );
         $this->assertEquals(['id'], $context->primaryKey());
     }
 
@@ -94,9 +96,11 @@ class DocumentContextTest extends TestCase
     public function testIsPrimaryKey()
     {
         $row = new Article();
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
-        ]);
+            ]
+        );
         $this->assertTrue($context->isPrimaryKey('id'));
         $this->assertFalse($context->isPrimaryKey('title'));
         $this->assertTrue($context->isPrimaryKey('1.id'));
@@ -115,9 +119,11 @@ class DocumentContextTest extends TestCase
     public function testIsCreateSingle()
     {
         $row = new Article();
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
-        ]);
+            ]
+        );
         $this->assertTrue($context->isCreate());
 
         $row->isNew(false);
@@ -134,18 +140,22 @@ class DocumentContextTest extends TestCase
      */
     public static function collectionProvider()
     {
-        $one = new Article([
+        $one = new Article(
+            [
             'title' => 'First post',
             'body' => 'Stuff',
             'user' => new Document(['username' => 'mark'])
-        ]);
+            ]
+        );
         $one->setError('title', 'Required field');
 
-        $two = new Article([
+        $two = new Article(
+            [
             'title' => 'Second post',
             'body' => 'Some text',
             'user' => new Document(['username' => 'jose'])
-        ]);
+            ]
+        );
         $two->setError('body', 'Not long enough');
 
         return [
@@ -160,13 +170,15 @@ class DocumentContextTest extends TestCase
      * Test isCreate on a collection.
      *
      * @dataProvider collectionProvider
-     * @return void
+     * @return       void
      */
     public function testIsCreateCollection($collection)
     {
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $collection,
-        ]);
+            ]
+        );
         $this->assertTrue($context->isCreate());
     }
 
@@ -177,14 +189,18 @@ class DocumentContextTest extends TestCase
      */
     public function testValBasic()
     {
-        $row = new Article([
+        $row = new Article(
+            [
             'title' => 'Test entity',
             'body' => 'Something new'
-        ]);
-        $context = new DocumentContext($this->request, [
+            ]
+        );
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
             'table' => 'articles',
-        ]);
+            ]
+        );
         $result = $context->val('title');
         $this->assertEquals($row->title, $result);
 
@@ -202,7 +218,8 @@ class DocumentContextTest extends TestCase
      */
     public function testValEmbeddedDocs()
     {
-        $row = new Article([
+        $row = new Article(
+            [
             'title' => 'Test entity',
             'body' => 'Something new',
             'user' => new Document(['username' => 'sarah']),
@@ -210,11 +227,14 @@ class DocumentContextTest extends TestCase
                 new Document(['comment' => 'first comment']),
                 new Document(['comment' => 'second comment']),
             ]
-        ]);
-        $context = new DocumentContext($this->request, [
+            ]
+        );
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
             'table' => 'articles',
-        ]);
+            ]
+        );
         $result = $context->val('user.username');
         $this->assertEquals($result, $row->user->username);
 
@@ -232,14 +252,16 @@ class DocumentContextTest extends TestCase
      * Test operations on a collection of entities.
      *
      * @dataProvider collectionProvider
-     * @return void
+     * @return       void
      */
     public function testValOnCollections($collection)
     {
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $collection,
             'index' => 'articles',
-        ]);
+            ]
+        );
 
         $result = $context->val('0.title');
         $this->assertEquals('First post', $result);
@@ -264,7 +286,8 @@ class DocumentContextTest extends TestCase
      */
     public function testValOnArrays()
     {
-        $row = new Article([
+        $row = new Article(
+            [
             'title' => 'Test entity',
             'body' => 'Something new',
             'user' => new Document(['username' => 'sarah']),
@@ -272,12 +295,15 @@ class DocumentContextTest extends TestCase
                 ['comment' => 'first comment'],
                 ['comment' => 'second comment']
             ]
-        ]);
+            ]
+        );
 
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
             'table' => 'articles',
-        ]);
+            ]
+        );
 
         $result = $context->val('comments.0.comment');
         $this->assertEquals($result, $row->comments[0]['comment']);
@@ -299,10 +325,12 @@ class DocumentContextTest extends TestCase
         $articles = $this->setupIndex();
         $entity = new Document(['title' => 'test']);
 
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $entity,
             'index' => $articles,
-        ]);
+            ]
+        );
         $this->assertTrue($context->isRequired('title'));
         $this->assertFalse($context->isRequired('body'));
         $this->assertFalse($context->isRequired('no_validate'));
@@ -318,11 +346,13 @@ class DocumentContextTest extends TestCase
         $articles = $this->setupIndex();
         $entity = new Document(['title' => 'test']);
 
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $entity,
             'index' => $articles,
             'validator' => 'alternate'
-        ]);
+            ]
+        );
         $this->assertFalse($context->isRequired('title'));
         $this->assertTrue($context->isRequired('body'));
         $this->assertFalse($context->isRequired('no_validate'));
@@ -332,14 +362,16 @@ class DocumentContextTest extends TestCase
      * Test error operations on a collection of entities.
      *
      * @dataProvider collectionProvider
-     * @return void
+     * @return       void
      */
     public function testErrorsOnCollections($collection)
     {
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $collection,
             'type' => 'articles',
-        ]);
+            ]
+        );
 
         $this->assertTrue($context->hasError('0.title'));
         $this->assertEquals(['Required field'], $context->error('0.title'));
@@ -362,20 +394,24 @@ class DocumentContextTest extends TestCase
     {
         $articles = $this->setupIndex();
 
-        $row = new Article([
+        $row = new Article(
+            [
             'title' => 'My title',
             'user' => new Document(['username' => 'Mark'])
-        ]);
+            ]
+        );
         $row->setError('title', []);
         $row->setError('body', 'Gotta have one');
         $row->setError('user_id', ['Required field']);
 
         $row->user->setError('username', ['Required']);
 
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
             'index' => $articles,
-        ]);
+            ]
+        );
 
         $this->assertEquals([], $context->error('title'));
 
@@ -395,7 +431,8 @@ class DocumentContextTest extends TestCase
     {
         $articles = $this->setupIndex();
 
-        $row = new Article([
+        $row = new Article(
+            [
             'title' => 'My title',
             'user' => new Document(['username' => 'Mark']),
             'comments' => [
@@ -403,9 +440,11 @@ class DocumentContextTest extends TestCase
                 new Document(['comment' => 'Second comment']),
                 new Document(['comment' => 'Third comment'])
             ]
-        ]);
+            ]
+        );
 
-        $row->setErrors([
+        $row->setErrors(
+            [
             'user' => [
                 'username' => [ 'Required' ]
             ],
@@ -414,12 +453,15 @@ class DocumentContextTest extends TestCase
                 2 => [ 'comment' => [ 'Required' ] ],
                 3 => [ 'comment' => [ 'Required' ] ]
             ]
-        ]);
+            ]
+        );
 
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
             'index' => $articles,
-        ]);
+            ]
+        );
 
         $expected = [ 'username' => [ 'Required' ] ];
         $this->assertEquals($expected, $context->error('user'));
@@ -443,21 +485,25 @@ class DocumentContextTest extends TestCase
     {
         $articles = $this->setupIndex();
 
-        $row = new Article([
+        $row = new Article(
+            [
             'title' => 'My title',
             'comments' => [
                 new Document(['comment' => '']),
                 new Document(['comment' => 'Second comment']),
             ]
-        ]);
+            ]
+        );
         $row->comments[0]->setError('comment', ['Is required']);
         $row->comments[0]->setError('article_id', ['Is required']);
 
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
             'table' => $articles,
             'validator' => 'default',
-        ]);
+            ]
+        );
 
         $this->assertEquals([], $context->error('title'));
         $this->assertEquals([], $context->error('comments.0.user_id'));
@@ -477,10 +523,12 @@ class DocumentContextTest extends TestCase
     public function testFieldNames()
     {
         $articles = $this->setupIndex();
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => new Document([]),
             'index' => 'articles',
-        ]);
+            ]
+        );
         $result = $context->fieldNames();
         $this->assertContains('title', $result);
         $this->assertContains('body', $result);
@@ -496,14 +544,18 @@ class DocumentContextTest extends TestCase
     {
         $articles = $this->setupIndex();
 
-        $row = new Article([
+        $row = new Article(
+            [
             'title' => 'My title',
             'body' => 'Some content',
-        ]);
-        $context = new DocumentContext($this->request, [
+            ]
+        );
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
             'index' => $articles,
-        ]);
+            ]
+        );
 
         $this->assertEquals($this->textField, $context->type('title'));
         $this->assertEquals($this->textField, $context->type('body'));
@@ -518,16 +570,20 @@ class DocumentContextTest extends TestCase
      */
     public function testIndexNestedFields()
     {
-        $profiles = new Index([
+        $profiles = new Index(
+            [
             'connection' => ConnectionManager::get('test'),
             'name' => 'profiles',
-        ]);
+            ]
+        );
 
         $row = new Document([]);
-        $context = new DocumentContext($this->request, [
+        $context = new DocumentContext(
+            $this->request, [
             'entity' => $row,
             'index' => $profiles,
-        ]);
+            ]
+        );
 
         $this->assertEquals($this->textField, $context->type('username'));
         $this->assertEquals($this->textField, $context->type('address.city'));
@@ -545,14 +601,18 @@ class DocumentContextTest extends TestCase
         $articles->embedOne('User');
         $articles->embedMany('Comments');
 
-        $articles->getValidator()->add('title', 'notblank', [
+        $articles->getValidator()->add(
+            'title', 'notblank', [
             'rule' => 'notBlank'
-        ]);
+            ]
+        );
 
         $validator = new Validator();
-        $validator->add('body', 'notblank', [
+        $validator->add(
+            'body', 'notblank', [
             'rule' => 'notBlank'
-        ]);
+            ]
+        );
         $articles->setValidator('alternate', $validator);
 
         return $articles;
