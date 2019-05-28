@@ -30,7 +30,7 @@ class MyTestDocument extends Document
  */
 class ResultSetTest extends TestCase
 {
-    public $fixtures = ['plugin.cake/elastic_search.articles'];
+    public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     /**
      * Tests the construction process

@@ -7,10 +7,10 @@
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @since         0.5.0
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link      http://cakephp.org CakePHP(tm) Project
+ * @since     0.5.0
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace Cake\ElasticSearch\View\Form;
 
@@ -189,7 +189,7 @@ class DocumentContext implements ContextInterface
     /**
      * Get the entity that is closest to $path.
      *
-     * @param array $path The to get an entity for.
+     * @param  array $path The to get an entity for.
      * @return \Cake\Datasource\EntityInterface|false The entity or false.
      * @throws \RuntimeException when no entity can be found.
      */
@@ -236,16 +236,18 @@ class DocumentContext implements ContextInterface
             $entity = $next;
         }
 
-        throw new RuntimeException(sprintf(
-            'Unable to fetch property "%s"',
-            implode(".", $path)
-        ));
+        throw new RuntimeException(
+            sprintf(
+                'Unable to fetch property "%s"',
+                implode(".", $path)
+            )
+        );
     }
 
     /**
      * Read property values or traverse arrays/iterators.
      *
-     * @param mixed $target The entity/array/collection to fetch $field from.
+     * @param mixed  $target The entity/array/collection to fetch $field from.
      * @param string $field The next field to fetch.
      * @return mixed
      */

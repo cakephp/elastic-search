@@ -7,10 +7,10 @@
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @since         0.5.0
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link      http://cakephp.org CakePHP(tm) Project
+ * @since     0.5.0
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace Cake\ElasticSearch\Test\TestCase;
 
@@ -83,9 +83,12 @@ class IndexRegistryTest extends TestCase
      */
     public function testGet()
     {
-        $result = IndexRegistry::get('Articles', [
-            'name' => 'my_articles',
-        ]);
+        $result = IndexRegistry::get(
+            'Articles',
+            [
+                'name' => 'my_articles',
+            ]
+        );
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertEquals('my_articles', $result->getName());
 
@@ -107,9 +110,16 @@ class IndexRegistryTest extends TestCase
 
         $result = IndexRegistry::get('R2D2', ['className' => 'Droids']);
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
-        $this->assertEquals('r2_d2', $result->getName(), 'The name should be derived from the alias');
+        $this->assertEquals(
+            'r2_d2',
+            $result->getName(),
+            'The name should be derived from the alias'
+        );
 
-        $result = IndexRegistry::get('C3P0', ['className' => 'Droids', 'name' => 'droids']);
+        $result = IndexRegistry::get(
+            'C3P0',
+            ['className' => 'Droids', 'name' => 'droids']
+        );
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertEquals('droids', $result->getName(), 'The name should be taken from options');
 
@@ -129,9 +139,9 @@ class IndexRegistryTest extends TestCase
     /**
      * Test get with config throws an exception if the alias exists already.
      *
-     * @expectedException \RuntimeException
+     * @expectedException        \RuntimeException
      * @expectedExceptionMessage You cannot configure "Users", it already exists in the registry.
-     * @return void
+     * @return                   void
      */
     public function testGetExistingWithConfigData()
     {
@@ -159,7 +169,7 @@ class IndexRegistryTest extends TestCase
      */
     public function testGetPlugin()
     {
-        Plugin::load('TestPlugin');
+        $this->loadPlugins(['TestPlugin']);
         $table = IndexRegistry::get('TestPlugin.Comments');
 
         $this->assertInstanceOf('TestPlugin\Model\Index\CommentsIndex', $table);
@@ -185,8 +195,7 @@ class IndexRegistryTest extends TestCase
      */
     public function testGetMultiplePlugins()
     {
-        Plugin::load('TestPlugin');
-        Plugin::load('TestPluginTwo');
+        $this->loadPlugins(['TestPlugin', 'TestPluginTwo']);
 
         $app = IndexRegistry::get('Comments');
         $plugin1 = IndexRegistry::get('TestPlugin.Comments');
@@ -212,10 +221,13 @@ class IndexRegistryTest extends TestCase
      */
     public function testGetPluginWithClassNameOption()
     {
-        Plugin::load('TestPlugin');
-        $table = IndexRegistry::get('MyComments', [
+        $this->loadPlugins(['TestPlugin']);
+        $table = IndexRegistry::get(
+            'MyComments',
+            [
             'className' => 'TestPlugin.Comments',
-        ]);
+            ]
+        );
         $class = 'TestPlugin\Model\Index\CommentsIndex';
         $this->assertInstanceOf($class, $table);
         $this->assertFalse(IndexRegistry::exists('Comments'), 'Class name should not exist');
@@ -233,11 +245,12 @@ class IndexRegistryTest extends TestCase
      */
     public function testGetPluginWithFullNamespaceName()
     {
-        Plugin::load('TestPlugin');
+        $this->loadPlugins(['TestPlugin']);
         $class = 'TestPlugin\Model\Index\CommentsIndex';
-        $table = IndexRegistry::get('Comments', [
-            'className' => $class,
-        ]);
+        $table = IndexRegistry::get(
+            'Comments',
+            ['className' => $class]
+        );
         $this->assertInstanceOf($class, $table);
         $this->assertFalse(IndexRegistry::exists('TestPlugin.Comments'), 'Full class alias should not exist');
         $this->assertTrue(IndexRegistry::exists('Comments'), 'Class name should exist');
@@ -262,9 +275,10 @@ class IndexRegistryTest extends TestCase
      */
     public function testSetPlugin()
     {
-        Plugin::load('TestPlugin');
+        $this->loadPlugins(['TestPlugin']);
 
-        $mock = $this->getMockBuilder('TestPlugin\Model\Index\CommentsIndex')->getMock();
+        $mock = $this->getMockBuilder('TestPlugin\Model\Index\CommentsIndex')
+            ->getMock();
 
         $this->assertSame($mock, IndexRegistry::set('TestPlugin.Comments', $mock));
         $this->assertSame($mock, IndexRegistry::get('TestPlugin.Comments'));
@@ -286,7 +300,11 @@ class IndexRegistryTest extends TestCase
 
         $second = IndexRegistry::get('Comments');
 
-        $this->assertNotSame($first, $second, 'Should be different objects, as the reference to the first was destroyed');
+        $this->assertNotSame(
+            $first,
+            $second,
+            'Should be different, as the reference to the first was destroyed'
+        );
         $this->assertTrue(IndexRegistry::exists('Comments'));
     }
 
@@ -302,8 +320,7 @@ class IndexRegistryTest extends TestCase
      */
     public function testRemovePlugin()
     {
-        Plugin::load('TestPlugin');
-        Plugin::load('TestPluginTwo');
+        $this->loadPlugins(['TestPlugin', 'TestPluginTwo']);
 
         $app = IndexRegistry::get('Comments');
         IndexRegistry::get('TestPlugin.Comments');

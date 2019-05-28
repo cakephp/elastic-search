@@ -9,35 +9,43 @@ use Cake\TestSuite\TestCase;
 
 class RulesCheckerTest extends TestCase
 {
-    public $fixtures = ['plugin.cake/elastic_search.articles'];
+    public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     public function setUp()
     {
         parent::setUp();
         $this->connection = ConnectionManager::get('test');
-        $this->index = new Index([
-            'name' => 'articles',
-            'connection' => $this->connection
-        ]);
+        $this->index = new Index(
+            [
+                'name' => 'articles',
+                'connection' => $this->connection
+            ]
+        );
     }
 
     /**
      * Tests the isUnique domain rule
      *
-     * @group save
+     * @group  save
      * @return void
      */
     public function testIsUniqueDomainRule()
     {
-        $document = new Document([
-            'user_id' => 1
-        ]);
+        $document = new Document(
+            [
+                'user_id' => 1
+            ]
+        );
 
         $rules = $this->index->rulesChecker();
-        $rules->add(new IsUnique([ 'user_id' ]), '_isUnique', [
-            'errorField' => 'user_id',
-            'message' => 'This value is already in use'
-        ]);
+        $rules->add(
+            new IsUnique([ 'user_id' ]),
+            '_isUnique',
+            [
+                'errorField' => 'user_id',
+                'message' => 'This value is already in use'
+            ]
+        );
 
         $this->assertFalse($this->index->save($document));
         $this->assertEquals(['_isUnique' => 'This value is already in use'], $document->getError('user_id'));
@@ -46,7 +54,7 @@ class RulesCheckerTest extends TestCase
     /**
      * Test unique rule on existing document
      *
-     * @group save
+     * @group  save
      * @return void
      */
     public function testIsUniqueExisting()
@@ -62,7 +70,7 @@ class RulesCheckerTest extends TestCase
     /**
      * Test unique rule on existing document
      *
-     * @group save
+     * @group  save
      * @return void
      */
     public function testIsUniqueWithNullValue()

@@ -7,10 +7,10 @@
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @since         0.0.1
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link      http://cakephp.org CakePHP(tm) Project
+ * @since     0.0.1
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -26,26 +26,35 @@ use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\Log\Log;
+use Cake\Routing\Router;
 
-Configure::write('App', [
+Configure::write(
+    'App',
+    [
     'namespace' => 'App',
     'paths' => [
         'plugins' => [APP . DS . 'testapp' . DS . 'Plugin' . DS],
     ]
-]);
+    ]
+);
 
-Cache::setConfig('_cake_core_', [
+Cache::setConfig(
+    '_cake_core_',
+    [
     'className' => 'File',
     'path' => sys_get_temp_dir(),
-]);
+    ]
+);
 
-Log::setConfig([
+Log::setConfig(
+    [
     'debug' => [
         'engine' => 'Cake\Log\Engine\FileLog',
         'levels' => ['notice', 'info', 'debug'],
         'file' => 'debug',
     ]
-]);
+    ]
+);
 
 if (!getenv('db_dsn')) {
     putenv('db_dsn=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection');
@@ -53,3 +62,5 @@ if (!getenv('db_dsn')) {
 
 ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
 ConnectionManager::setConfig('test_elastic', ['url' => getenv('db_dsn')]);
+
+Router::reload();

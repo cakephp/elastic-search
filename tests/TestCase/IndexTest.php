@@ -7,10 +7,10 @@
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @since         0.0.1
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link      http://cakephp.org CakePHP(tm) Project
+ * @since     0.0.1
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace Cake\ElasticSearch\Test;
 
@@ -22,20 +22,21 @@ use Cake\TestSuite\TestCase;
 
 /**
  * Tests the Index class
- *
  */
 class IndexTest extends TestCase
 {
-    public $fixtures = ['plugin.cake/elastic_search.articles'];
+    public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     public function setUp()
     {
         parent::setUp();
         $this->connection = ConnectionManager::get('test');
-        $this->index = new Index([
+        $this->index = new Index(
+            [
             'name' => 'articles',
             'connection' => $this->connection
-        ]);
+            ]
+        );
     }
 
     /**
@@ -54,7 +55,7 @@ class IndexTest extends TestCase
      * Tests that calling find will return a query object
      *
      * @expectedException \Cake\Datasource\Exception\RecordNotFoundException
-     * @return void
+     * @return            void
      */
     public function testFindAllWithFirstOrFail()
     {
@@ -140,10 +141,12 @@ class IndexTest extends TestCase
             ->setMethods(['getIndex'])
             ->getMock();
 
-        $index = new Index([
+        $index = new Index(
+            [
             'name' => 'foo',
             'connection' => $connection
-        ]);
+            ]
+        );
 
         $internalIndex = $this->getMockBuilder('Elastica\Index')
             ->disableOriginalConstructor()
@@ -194,10 +197,12 @@ class IndexTest extends TestCase
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
             ->setMethods(['getIndex'])
             ->getMock();
-        $index = new Index([
+        $index = new Index(
+            [
             'name' => 'articles',
             'connection' => $connection
-        ]);
+            ]
+        );
         $data = [
             'title' => 'A newer title'
         ];
@@ -217,10 +222,12 @@ class IndexTest extends TestCase
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
             ->setMethods(['getIndex'])
             ->getMock();
-        $index = new Index([
+        $index = new Index(
+            [
             'name' => 'articles',
             'connection' => $connection
-        ]);
+            ]
+        );
         $data = [
             [
                 'title' => 'A newer title'
@@ -245,18 +252,24 @@ class IndexTest extends TestCase
     public function testSaveMany()
     {
         $entities = [
-            new Document([
+            new Document(
+                [
                 'title' => 'First',
                 'body' => 'Some new content'
-            ], [
+                ],
+                [
                 'markNew' => true
-            ]),
-            new Document([
+                ]
+            ),
+            new Document(
+                [
                 'title' => 'Second',
                 'body' => 'Some new content'
-            ], [
+                ],
+                [
                 'markNew' => true
-            ])
+                ]
+            )
         ];
 
         $result = $this->index->saveMany($entities);
@@ -270,10 +283,13 @@ class IndexTest extends TestCase
      */
     public function testSaveNew()
     {
-        $doc = new Document([
+        $doc = new Document(
+            [
             'title' => 'A brand new article',
             'body' => 'Some new content'
-        ], ['markNew' => true]);
+            ],
+            ['markNew' => true]
+        );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
         $this->assertNotEmpty($doc->_version, 'Should get a version');
@@ -293,11 +309,14 @@ class IndexTest extends TestCase
      */
     public function testSaveUpdate()
     {
-        $doc = new Document([
+        $doc = new Document(
+            [
             'id' => '123',
             'title' => 'A brand new article',
             'body' => 'Some new content'
-        ], ['markNew' => false]);
+            ],
+            ['markNew' => false]
+        );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertFalse($doc->isNew(), 'Not new.');
         $this->assertFalse($doc->isDirty(), 'Not dirty anymore.');
@@ -311,11 +330,14 @@ class IndexTest extends TestCase
      */
     public function testSaveDoesNotSaveDocumentWithErrors()
     {
-        $doc = new Document([
+        $doc = new Document(
+            [
             'id' => '123',
             'title' => 'A brand new article',
             'body' => 'Some new content'
-        ], ['markNew' => false]);
+            ],
+            ['markNew' => false]
+        );
         $doc->setErrors(['title' => ['bad news']]);
         $this->assertFalse($this->index->save($doc), 'Should not save.');
     }
@@ -327,14 +349,20 @@ class IndexTest extends TestCase
      */
     public function testSaveWithRefresh()
     {
-        $doc = new Document([
+        $doc = new Document(
+            [
             'title' => 'A brand new article',
             'body' => 'Some new content'
-        ], ['markNew' => true]);
+            ],
+            ['markNew' => true]
+        );
 
-        $document = $this->index->save($doc, [
+        $document = $this->index->save(
+            $doc,
+            [
             'refresh' => true
-        ]);
+            ]
+        );
 
         $query = $this->index->find();
         $match = $query->firstMatch([ 'id' => $document->id ]);
@@ -385,14 +413,20 @@ class IndexTest extends TestCase
     {
         $doc = $this->index->get(1);
         $doc->title = 'new title';
-        $this->index->getEventManager()->on('Model.beforeSave', function ($event, $entity, $options) use ($doc) {
-            $event->stopPropagation();
+        $this->index->getEventManager()->on(
+            'Model.beforeSave',
+            function ($event, $entity, $options) use ($doc) {
+                $event->stopPropagation();
 
-            return 'kaboom';
-        });
-        $this->index->getEventManager()->on('Model.afterSave', function () {
-            $this->fail('Should not be fired');
-        });
+                return 'kaboom';
+            }
+        );
+        $this->index->getEventManager()->on(
+            'Model.afterSave',
+            function () {
+                $this->fail('Should not be fired');
+            }
+        );
         $this->assertSame('kaboom', $this->index->save($doc));
     }
 
@@ -403,11 +437,13 @@ class IndexTest extends TestCase
      */
     public function testSaveEmbedOne()
     {
-        $entity = new Document([
+        $entity = new Document(
+            [
             'title' => 'A brand new article',
             'body' => 'Some new content',
             'user' => new Document(['username' => 'sarah'])
-        ]);
+            ]
+        );
         $this->index->embedOne('User');
         $this->index->save($entity);
 
@@ -423,14 +459,16 @@ class IndexTest extends TestCase
      */
     public function testSaveEmbedMany()
     {
-        $entity = new Document([
+        $entity = new Document(
+            [
             'title' => 'A brand new article',
             'body' => 'Some new content',
             'comments' => [
                 new Document(['comment' => 'Nice post']),
                 new Document(['comment' => 'Awesome!']),
             ]
-        ]);
+            ]
+        );
         $this->index->embedMany('Comments');
         $this->index->save($entity);
 
@@ -448,11 +486,17 @@ class IndexTest extends TestCase
      */
     public function testSaveWithRulesCreate()
     {
-        $this->index->getEventManager()->on('Model.buildRules', function ($event, $rules) {
-            $rules->addCreate(function ($doc) {
-                return 'Did not work';
-            }, ['errorField' => 'name']);
-        });
+        $this->index->getEventManager()->on(
+            'Model.buildRules',
+            function ($event, $rules) {
+                $rules->addCreate(
+                    function ($doc) {
+                        return 'Did not work';
+                    },
+                    ['errorField' => 'name']
+                );
+            }
+        );
 
         $doc = new Document(['title' => 'rules are checked']);
         $this->assertFalse($this->index->save($doc), 'Save should fail');
@@ -470,11 +514,17 @@ class IndexTest extends TestCase
      */
     public function testSaveWithRulesUpdate()
     {
-        $this->index->getEventManager()->on('Model.buildRules', function ($event, $rules) {
-            $rules->addUpdate(function ($doc) {
-                return 'Did not work';
-            }, ['errorField' => 'name']);
-        });
+        $this->index->getEventManager()->on(
+            'Model.buildRules',
+            function ($event, $rules) {
+                $rules->addUpdate(
+                    function ($doc) {
+                        return 'Did not work';
+                    },
+                    ['errorField' => 'name']
+                );
+            }
+        );
 
         $doc = new Document(['title' => 'update rules'], ['markNew' => false]);
         $this->assertFalse($this->index->save($doc), 'Save should fail');
@@ -487,10 +537,13 @@ class IndexTest extends TestCase
      */
     public function testDoubleSave()
     {
-        $doc = new Document([
+        $doc = new Document(
+            [
             'title' => 'A brand new article',
             'body' => 'Some new content'
-        ], ['markNew' => true]);
+            ],
+            ['markNew' => true]
+        );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
         $this->assertNotEmpty($doc->_version, 'Should get a version');
@@ -521,9 +574,12 @@ class IndexTest extends TestCase
      */
     public function testDeleteRules()
     {
-        $this->index->rulesChecker()->addDelete(function () {
-            return 'not good';
-        }, ['errorField' => 'title']);
+        $this->index->rulesChecker()->addDelete(
+            function () {
+                return 'not good';
+            },
+            ['errorField' => 'title']
+        );
         $doc = $this->index->get(1);
 
         $this->assertFalse($this->index->delete($doc));
@@ -567,23 +623,29 @@ class IndexTest extends TestCase
     public function testDeleteBeforeDeleteAbort()
     {
         $doc = $this->index->get(1);
-        $this->index->getEventManager()->on('Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
-            $event->stopPropagation();
+        $this->index->getEventManager()->on(
+            'Model.beforeDelete',
+            function ($event, $entity, $options) use ($doc) {
+                $event->stopPropagation();
 
-            return 'kaboom';
-        });
-        $this->index->getEventManager()->on('Model.afterDelete', function () {
-            $this->fail('Should not be fired');
-        });
+                return 'kaboom';
+            }
+        );
+        $this->index->getEventManager()->on(
+            'Model.afterDelete',
+            function () {
+                $this->fail('Should not be fired');
+            }
+        );
         $this->assertSame('kaboom', $this->index->delete($doc));
     }
 
     /**
      * Test deleting a new document
      *
-     * @expectedException \InvalidArgumentException
+     * @expectedException        \InvalidArgumentException
      * @expectedExceptionMessage Deleting requires an "id" value.
-     * @return void
+     * @return                   void
      */
     public function testDeleteMissing()
     {
@@ -613,11 +675,14 @@ class IndexTest extends TestCase
     public function testValidatorTriggerEvent()
     {
         $called = 0;
-        $this->index->getEventManager()->on('Model.buildValidator', function ($event, $validator, $name) use (&$called) {
-            $called++;
-            $this->assertInstanceOf('Cake\Validation\Validator', $validator);
-            $this->assertEquals('default', $name);
-        });
+        $this->index->getEventManager()->on(
+            'Model.buildValidator',
+            function ($event, $validator, $name) use (&$called) {
+                $called++;
+                $this->assertInstanceOf('Cake\Validation\Validator', $validator);
+                $this->assertEquals('default', $name);
+            }
+        );
         $this->index->getValidator();
         $this->assertEquals(1, $called, 'Event not triggered');
     }
@@ -670,11 +735,16 @@ class IndexTest extends TestCase
      */
     public function testAddRules()
     {
-        $this->index->getEventManager()->on('Model.buildRules', function ($event, $rules) {
-            $rules->add(function ($doc) {
-                return false;
-            });
-        });
+        $this->index->getEventManager()->on(
+            'Model.buildRules',
+            function ($event, $rules) {
+                $rules->add(
+                    function ($doc) {
+                        return false;
+                    }
+                );
+            }
+        );
         $rules = $this->index->rulesChecker();
         $this->assertInstanceOf('Cake\Datasource\RulesChecker', $rules);
 
