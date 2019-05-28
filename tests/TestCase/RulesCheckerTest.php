@@ -17,8 +17,8 @@ class RulesCheckerTest extends TestCase
         $this->connection = ConnectionManager::get('test');
         $this->index = new Index(
             [
-            'name' => 'articles',
-            'connection' => $this->connection
+                'name' => 'articles',
+                'connection' => $this->connection
             ]
         );
     }
@@ -33,15 +33,17 @@ class RulesCheckerTest extends TestCase
     {
         $document = new Document(
             [
-            'user_id' => 1
+                'user_id' => 1
             ]
         );
 
         $rules = $this->index->rulesChecker();
         $rules->add(
-            new IsUnique([ 'user_id' ]), '_isUnique', [
-            'errorField' => 'user_id',
-            'message' => 'This value is already in use'
+            new IsUnique([ 'user_id' ]),
+            '_isUnique',
+            [
+                'errorField' => 'user_id',
+                'message' => 'This value is already in use'
             ]
         );
 

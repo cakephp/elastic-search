@@ -84,8 +84,9 @@ class IndexRegistryTest extends TestCase
     public function testGet()
     {
         $result = IndexRegistry::get(
-            'Articles', [
-            'name' => 'my_articles',
+            'Articles',
+            [
+                'name' => 'my_articles',
             ]
         );
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
@@ -109,9 +110,16 @@ class IndexRegistryTest extends TestCase
 
         $result = IndexRegistry::get('R2D2', ['className' => 'Droids']);
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
-        $this->assertEquals('r2_d2', $result->getName(), 'The name should be derived from the alias');
+        $this->assertEquals(
+            'r2_d2',
+            $result->getName(),
+            'The name should be derived from the alias'
+        );
 
-        $result = IndexRegistry::get('C3P0', ['className' => 'Droids', 'name' => 'droids']);
+        $result = IndexRegistry::get(
+            'C3P0',
+            ['className' => 'Droids', 'name' => 'droids']
+        );
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertEquals('droids', $result->getName(), 'The name should be taken from options');
 
@@ -215,7 +223,8 @@ class IndexRegistryTest extends TestCase
     {
         $this->loadPlugins(['TestPlugin']);
         $table = IndexRegistry::get(
-            'MyComments', [
+            'MyComments',
+            [
             'className' => 'TestPlugin.Comments',
             ]
         );
@@ -239,9 +248,8 @@ class IndexRegistryTest extends TestCase
         $this->loadPlugins(['TestPlugin']);
         $class = 'TestPlugin\Model\Index\CommentsIndex';
         $table = IndexRegistry::get(
-            'Comments', [
-            'className' => $class,
-            ]
+            'Comments',
+            ['className' => $class]
         );
         $this->assertInstanceOf($class, $table);
         $this->assertFalse(IndexRegistry::exists('TestPlugin.Comments'), 'Full class alias should not exist');
@@ -269,7 +277,8 @@ class IndexRegistryTest extends TestCase
     {
         $this->loadPlugins(['TestPlugin']);
 
-        $mock = $this->getMockBuilder('TestPlugin\Model\Index\CommentsIndex')->getMock();
+        $mock = $this->getMockBuilder('TestPlugin\Model\Index\CommentsIndex')
+            ->getMock();
 
         $this->assertSame($mock, IndexRegistry::set('TestPlugin.Comments', $mock));
         $this->assertSame($mock, IndexRegistry::get('TestPlugin.Comments'));
@@ -291,7 +300,11 @@ class IndexRegistryTest extends TestCase
 
         $second = IndexRegistry::get('Comments');
 
-        $this->assertNotSame($first, $second, 'Should be different objects, as the reference to the first was destroyed');
+        $this->assertNotSame(
+            $first,
+            $second,
+            'Should be different, as the reference to the first was destroyed'
+        );
         $this->assertTrue(IndexRegistry::exists('Comments'));
     }
 

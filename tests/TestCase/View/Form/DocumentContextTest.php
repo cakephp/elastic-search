@@ -81,7 +81,8 @@ class DocumentContextTest extends TestCase
     {
         $row = new Article();
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             ]
         );
@@ -97,7 +98,8 @@ class DocumentContextTest extends TestCase
     {
         $row = new Article();
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             ]
         );
@@ -120,7 +122,8 @@ class DocumentContextTest extends TestCase
     {
         $row = new Article();
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             ]
         );
@@ -175,7 +178,8 @@ class DocumentContextTest extends TestCase
     public function testIsCreateCollection($collection)
     {
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $collection,
             ]
         );
@@ -196,7 +200,8 @@ class DocumentContextTest extends TestCase
             ]
         );
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             'table' => 'articles',
             ]
@@ -230,7 +235,8 @@ class DocumentContextTest extends TestCase
             ]
         );
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             'table' => 'articles',
             ]
@@ -257,7 +263,8 @@ class DocumentContextTest extends TestCase
     public function testValOnCollections($collection)
     {
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $collection,
             'index' => 'articles',
             ]
@@ -299,7 +306,8 @@ class DocumentContextTest extends TestCase
         );
 
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             'table' => 'articles',
             ]
@@ -326,7 +334,8 @@ class DocumentContextTest extends TestCase
         $entity = new Document(['title' => 'test']);
 
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $entity,
             'index' => $articles,
             ]
@@ -347,7 +356,8 @@ class DocumentContextTest extends TestCase
         $entity = new Document(['title' => 'test']);
 
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $entity,
             'index' => $articles,
             'validator' => 'alternate'
@@ -367,7 +377,8 @@ class DocumentContextTest extends TestCase
     public function testErrorsOnCollections($collection)
     {
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $collection,
             'type' => 'articles',
             ]
@@ -407,7 +418,8 @@ class DocumentContextTest extends TestCase
         $row->user->setError('username', ['Required']);
 
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             'index' => $articles,
             ]
@@ -457,7 +469,8 @@ class DocumentContextTest extends TestCase
         );
 
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             'index' => $articles,
             ]
@@ -498,7 +511,8 @@ class DocumentContextTest extends TestCase
         $row->comments[0]->setError('article_id', ['Is required']);
 
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             'table' => $articles,
             'validator' => 'default',
@@ -524,7 +538,8 @@ class DocumentContextTest extends TestCase
     {
         $articles = $this->setupIndex();
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => new Document([]),
             'index' => 'articles',
             ]
@@ -551,7 +566,8 @@ class DocumentContextTest extends TestCase
             ]
         );
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             'index' => $articles,
             ]
@@ -579,7 +595,8 @@ class DocumentContextTest extends TestCase
 
         $row = new Document([]);
         $context = new DocumentContext(
-            $this->request, [
+            $this->request,
+            [
             'entity' => $row,
             'index' => $profiles,
             ]
@@ -602,14 +619,18 @@ class DocumentContextTest extends TestCase
         $articles->embedMany('Comments');
 
         $articles->getValidator()->add(
-            'title', 'notblank', [
+            'title',
+            'notblank',
+            [
             'rule' => 'notBlank'
             ]
         );
 
         $validator = new Validator();
         $validator->add(
-            'body', 'notblank', [
+            'body',
+            'notblank',
+            [
             'rule' => 'notBlank'
             ]
         );

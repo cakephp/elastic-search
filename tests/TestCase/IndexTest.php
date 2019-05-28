@@ -256,7 +256,8 @@ class IndexTest extends TestCase
                 [
                 'title' => 'First',
                 'body' => 'Some new content'
-                ], [
+                ],
+                [
                 'markNew' => true
                 ]
             ),
@@ -264,7 +265,8 @@ class IndexTest extends TestCase
                 [
                 'title' => 'Second',
                 'body' => 'Some new content'
-                ], [
+                ],
+                [
                 'markNew' => true
                 ]
             )
@@ -285,7 +287,8 @@ class IndexTest extends TestCase
             [
             'title' => 'A brand new article',
             'body' => 'Some new content'
-            ], ['markNew' => true]
+            ],
+            ['markNew' => true]
         );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
@@ -311,7 +314,8 @@ class IndexTest extends TestCase
             'id' => '123',
             'title' => 'A brand new article',
             'body' => 'Some new content'
-            ], ['markNew' => false]
+            ],
+            ['markNew' => false]
         );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertFalse($doc->isNew(), 'Not new.');
@@ -331,7 +335,8 @@ class IndexTest extends TestCase
             'id' => '123',
             'title' => 'A brand new article',
             'body' => 'Some new content'
-            ], ['markNew' => false]
+            ],
+            ['markNew' => false]
         );
         $doc->setErrors(['title' => ['bad news']]);
         $this->assertFalse($this->index->save($doc), 'Should not save.');
@@ -348,11 +353,13 @@ class IndexTest extends TestCase
             [
             'title' => 'A brand new article',
             'body' => 'Some new content'
-            ], ['markNew' => true]
+            ],
+            ['markNew' => true]
         );
 
         $document = $this->index->save(
-            $doc, [
+            $doc,
+            [
             'refresh' => true
             ]
         );
@@ -407,14 +414,16 @@ class IndexTest extends TestCase
         $doc = $this->index->get(1);
         $doc->title = 'new title';
         $this->index->getEventManager()->on(
-            'Model.beforeSave', function ($event, $entity, $options) use ($doc) {
+            'Model.beforeSave',
+            function ($event, $entity, $options) use ($doc) {
                 $event->stopPropagation();
 
                 return 'kaboom';
             }
         );
         $this->index->getEventManager()->on(
-            'Model.afterSave', function () {
+            'Model.afterSave',
+            function () {
                 $this->fail('Should not be fired');
             }
         );
@@ -478,11 +487,13 @@ class IndexTest extends TestCase
     public function testSaveWithRulesCreate()
     {
         $this->index->getEventManager()->on(
-            'Model.buildRules', function ($event, $rules) {
+            'Model.buildRules',
+            function ($event, $rules) {
                 $rules->addCreate(
                     function ($doc) {
                         return 'Did not work';
-                    }, ['errorField' => 'name']
+                    },
+                    ['errorField' => 'name']
                 );
             }
         );
@@ -504,11 +515,13 @@ class IndexTest extends TestCase
     public function testSaveWithRulesUpdate()
     {
         $this->index->getEventManager()->on(
-            'Model.buildRules', function ($event, $rules) {
+            'Model.buildRules',
+            function ($event, $rules) {
                 $rules->addUpdate(
                     function ($doc) {
                         return 'Did not work';
-                    }, ['errorField' => 'name']
+                    },
+                    ['errorField' => 'name']
                 );
             }
         );
@@ -528,7 +541,8 @@ class IndexTest extends TestCase
             [
             'title' => 'A brand new article',
             'body' => 'Some new content'
-            ], ['markNew' => true]
+            ],
+            ['markNew' => true]
         );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
@@ -563,7 +577,8 @@ class IndexTest extends TestCase
         $this->index->rulesChecker()->addDelete(
             function () {
                 return 'not good';
-            }, ['errorField' => 'title']
+            },
+            ['errorField' => 'title']
         );
         $doc = $this->index->get(1);
 
@@ -609,14 +624,16 @@ class IndexTest extends TestCase
     {
         $doc = $this->index->get(1);
         $this->index->getEventManager()->on(
-            'Model.beforeDelete', function ($event, $entity, $options) use ($doc) {
+            'Model.beforeDelete',
+            function ($event, $entity, $options) use ($doc) {
                 $event->stopPropagation();
 
                 return 'kaboom';
             }
         );
         $this->index->getEventManager()->on(
-            'Model.afterDelete', function () {
+            'Model.afterDelete',
+            function () {
                 $this->fail('Should not be fired');
             }
         );
@@ -659,7 +676,8 @@ class IndexTest extends TestCase
     {
         $called = 0;
         $this->index->getEventManager()->on(
-            'Model.buildValidator', function ($event, $validator, $name) use (&$called) {
+            'Model.buildValidator',
+            function ($event, $validator, $name) use (&$called) {
                 $called++;
                 $this->assertInstanceOf('Cake\Validation\Validator', $validator);
                 $this->assertEquals('default', $name);
@@ -718,7 +736,8 @@ class IndexTest extends TestCase
     public function testAddRules()
     {
         $this->index->getEventManager()->on(
-            'Model.buildRules', function ($event, $rules) {
+            'Model.buildRules',
+            function ($event, $rules) {
                 $rules->add(
                     function ($doc) {
                         return false;

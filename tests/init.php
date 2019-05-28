@@ -29,7 +29,8 @@ use Cake\Log\Log;
 use Cake\Routing\Router;
 
 Configure::write(
-    'App', [
+    'App',
+    [
     'namespace' => 'App',
     'paths' => [
         'plugins' => [APP . DS . 'testapp' . DS . 'Plugin' . DS],
@@ -38,7 +39,8 @@ Configure::write(
 );
 
 Cache::setConfig(
-    '_cake_core_', [
+    '_cake_core_',
+    [
     'className' => 'File',
     'path' => sys_get_temp_dir(),
     ]
