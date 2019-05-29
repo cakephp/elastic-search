@@ -24,7 +24,7 @@
         "cakephp/cakephp": "^3.6",
         "cakephp/cakephp-codesniffer": "^3.0",
         "psr/log": "~1.0",
-        "phpunit/phpunit": "^6.0"
+        "phpunit/phpunit": "^8.1"
     },
     "autoload": {
         "psr-4": {
