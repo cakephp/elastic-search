@@ -651,6 +651,7 @@ class Query implements IteratorAggregate, QueryInterface
         $query = clone $this->compileQuery();
         $query->setSize(0);
         $query->setSource(false);
+        $query->setParam('track_total_hits',true);
 
         return $type->search($query)->getTotalHits();
     }
