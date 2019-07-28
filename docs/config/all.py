@@ -41,3 +41,5 @@ show_root_link = True
 repository = 'cakephp/elastic-search'
 
 source_path = 'docs/'
+
+hide_page_contents = ('search', '404', 'contents')
