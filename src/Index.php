@@ -27,6 +27,7 @@ use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
+use Cake\Event\EventManagerInterface;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
@@ -218,16 +219,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Get the event manager for this Table.
-     *
-     * @return \Cake\Event\EventManager
-     */
-    public function getEventManager()
-    {
-        return $this->_eventManager;
-    }
-
-    /**
      * Sets the connection instance
      *
      * @param \Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
@@ -277,7 +268,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $registryAlias The key used to access this object.
      * @return $this
      */
-    public function setRegistryAlias($registryAlias)
+    public function setRegistryAlias(string $registryAlias)
     {
         $this->_registryAlias = $registryAlias;
 
@@ -289,7 +280,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
-    public function getRegistryAlias()
+    public function getRegistryAlias(): string
     {
         if ($this->_registryAlias === null) {
             $this->_registryAlias = $this->getAlias();
@@ -405,7 +396,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $alias Index alias
      * @return $this
      */
-    public function setAlias($alias)
+    public function setAlias(string $alias)
     {
         return $this->setName($alias);
     }
@@ -415,7 +406,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
-    public function getAlias()
+    public function getAlias(): string
     {
         return $this->getName();
     }
@@ -462,7 +453,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options An array that will be passed to Query::applyOptions
      * @return \Cake\ElasticSearch\Query
      */
-    public function find($type = 'all', $options = [])
+    public function find(string $type = 'all', $options = [])
     {
         $query = $this->query();
 
@@ -521,7 +512,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @throws \Elastica\Exception\NotFoundException if no document exist with such id
      * @return \Cake\ElasticSearch\Document A new Elasticsearch document entity
      */
-    public function get($primaryKey, $options = [])
+    public function get($primaryKey, $options = []): EntityInterface
     {
         $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $result = $type->getDocument($primaryKey, $options);
@@ -574,9 +565,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param array $fields A hash of field => new value.
      * @param array $conditions An array of conditions, similar to those used with find()
-     * @return void
+     * @return int
      */
-    public function updateAll($fields, $conditions)
+    public function updateAll($fields, $conditions): int
     {
         throw new RuntimeException('Not implemented yet');
     }
@@ -590,17 +581,17 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * need those first load a collection of records and delete them.
      *
      * @param array $conditions An array of conditions, similar to those used with find()
-     * @return bool Success Returns true if one or more rows are effected.
+     * @return int Success Returns 1 if one or more rows are effected.
      * @see RepositoryInterface::delete()
      */
-    public function deleteAll($conditions)
+    public function deleteAll($conditions): int
     {
         $query = $this->query();
         $query->where($conditions);
         $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $response = $type->deleteByQuery($query->compileQuery());
 
-        return $response->isOk();
+        return (int)$response->isOk();
     }
 
     /**
@@ -610,7 +601,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $conditions list of conditions to pass to the query
      * @return bool
      */
-    public function exists($conditions)
+    public function exists($conditions): bool
     {
         $query = $this->query();
         if (count($conditions) && isset($conditions['id'])) {
@@ -785,7 +776,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options The options for the delete.
      * @return bool success
      */
-    public function delete(EntityInterface $entity, $options = [])
+    public function delete(EntityInterface $entity, $options = []): bool
     {
         if (!$entity->has('id')) {
             $msg = 'Deleting requires an "id" value.';
@@ -830,6 +821,16 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
+     * @inheritDoc
+     */
+    public function newEmptyEntity(): EntityInterface
+    {
+        $class = $this->entityClass();
+
+        return new $class([], ['source' => $this->getRegistryAlias()]);
+    }
+
+    /**
      * Create a new entity + associated entities from an array.
      *
      * This is most useful when hydrating request data back into entities.
@@ -847,14 +848,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options A list of options for the object hydration.
      * @return \Cake\Datasource\EntityInterface
      */
-    public function newEntity($data = null, array $options = [])
+    public function newEntity(array $data, array $options = []): EntityInterface
     {
-        if ($data === null) {
-            $class = $this->entityClass();
-
-            return new $class([], ['source' => $this->getRegistryAlias()]);
-        }
-
         return $this->marshaller()->one($data, $options);
     }
 
@@ -874,7 +869,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options A list of options for the objects hydration.
      * @return array An array of hydrated records.
      */
-    public function newEntities(array $data, array $options = [])
+    public function newEntities(array $data, array $options = []): array
     {
         return $this->marshaller()->many($data, $options);
     }
@@ -934,7 +929,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options A list of options for the object hydration.
      * @return \Cake\Datasource\EntityInterface
      */
-    public function patchEntity(EntityInterface $entity, array $data, array $options = [])
+    public function patchEntity(EntityInterface $entity, array $data, array $options = []): EntityInterface
     {
         $marshaller = $this->marshaller();
 
@@ -959,7 +954,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options A list of options for the objects hydration.
      * @return array
      */
-    public function patchEntities($entities, array $data, array $options = [])
+    public function patchEntities($entities, array $data, array $options = []): array
     {
         $marshaller = $this->marshaller();
 
@@ -993,7 +988,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $field The field to check.
      * @return bool
      */
-    public function hasField($field)
+    public function hasField(string $field): bool
     {
         return $this->schema()->field($field) !== null;
     }
@@ -1020,7 +1015,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return array
      */
-    public function implementedEvents()
+    public function implementedEvents(): array
     {
         $eventMap = [
             'Model.beforeMarshal' => 'beforeMarshal',

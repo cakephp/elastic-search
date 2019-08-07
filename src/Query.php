@@ -111,7 +111,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param bool $overwrite Whether or not to replace previous selections.
      * @return $this
      */
-    public function select(array $fields, $overwrite = false)
+    public function select($fields, bool $overwrite = false)
     {
         if (!$overwrite) {
             $fields = array_merge($this->_queryParts['fields'], $fields);
@@ -163,7 +163,7 @@ class Query implements IteratorAggregate, QueryInterface
      *  the current limit clause will be used.
      * @return $this
      */
-    public function page($num, $limit = null)
+    public function page(int $num, ?int $limit = null)
     {
         if ($limit !== null) {
             $this->limit($limit);
@@ -315,7 +315,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @return $this
      * @see \Cake\ElasticSearch\QueryBuilder
      */
-    public function where($conditions = null, $types = [], $overwrite = false)
+    public function where($conditions = null, array $types = [], bool $overwrite = false)
     {
         if (is_bool($types)) {
             $overwrite = $types;
@@ -622,7 +622,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @return array
      */
-    public function aliasField($field, $alias = null)
+    public function aliasField(string $field, ?string $alias = null): array
     {
         return [$field => $field];
     }
@@ -632,7 +632,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @return array
      */
-    public function aliasFields($fields, $defaultAlias = null)
+    public function aliasFields(array $fields, ?string $defaultAlias = null): array
     {
         return array_map([$this, 'aliasField', $fields]);
     }
@@ -642,7 +642,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         $connection = $this->_repository->getConnection();
         $index = $this->_repository->getName();
