@@ -66,12 +66,12 @@ class ConnectionTest extends TestCase
     public function testConstructLogOption()
     {
         $connection = new Connection();
-        $this->assertFalse($connection->logQueries());
+        $this->assertFalse($connection->isQueryLoggingEnabled());
 
         $opts = ['log' => true];
         $connection = new Connection($opts);
 
-        $this->assertTrue($connection->logQueries());
+        $this->assertTrue($connection->isQueryLoggingEnabled());
         $this->assertInstanceOf('\Cake\Log\Engine\FileLog', $connection->getLogger());
     }
 
@@ -126,9 +126,9 @@ class ConnectionTest extends TestCase
 
         $connection = ConnectionManager::get('test');
         $connection->setLogger($logger);
-        $connection->logQueries(true);
+        $connection->enableQueryLogging(true);
         $result = $connection->request('_stats');
-        $connection->logQueries(false);
+        $connection->disbaleQueryLogging();
 
         $this->assertNotEmpty($result);
     }

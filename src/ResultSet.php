@@ -221,7 +221,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      */
     public function count(): int
     {
-        return $this->resultSet->count();
+        return (int)$this->resultSet->count();
     }
 
     /**

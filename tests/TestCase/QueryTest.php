@@ -336,7 +336,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $filter);
 
-        $query->where(['name.first' => 'jose'], true);
+        $query->where(['name.first' => 'jose'], [], true);
         $compiled = $query->compileQuery()->toArray();
         $filter = $compiled['query']['bool']['filter'][0]['bool']['must'];
         $expected = ['term' => ['name.first' => 'jose']];

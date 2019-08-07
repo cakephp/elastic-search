@@ -74,7 +74,7 @@ class Connection implements ConnectionInterface
             $this->configName = $config['name'];
         }
         if (isset($config['log'])) {
-            $this->logQueries((bool)$config['log']);
+            $this->enableQueryLogging((bool)$config['log']);
         }
 
         $this->_client = new ElasticaClient($config, $callback, $this->getEsLogger());

@@ -711,7 +711,7 @@ class IndexTest extends TestCase
 
         $this->connection->getIndex($this->index->getName())->refresh();
 
-        $this->assertTrue($result);
+        $this->assertSame(1, $result);
         $this->assertEquals(0, $this->index->find()->count());
     }
 
@@ -726,7 +726,7 @@ class IndexTest extends TestCase
 
         $this->connection->getIndex($this->index->getName())->refresh();
 
-        $this->assertTrue($result);
+        $this->assertSame(1, $result);
         $this->assertEquals(1, $this->index->find()->count());
     }
 

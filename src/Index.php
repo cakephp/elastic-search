@@ -644,7 +644,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         ]);
 
         if ($event->isStopped()) {
-            return $event->result;
+            return $event->getResult();
         }
 
         if ($entity->getErrors()) {
@@ -715,7 +715,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         ]);
 
         if ($event->isStopped()) {
-            return $event->result;
+            return $event->getResult();
         }
 
         if (!$this->checkRules($entity, RulesChecker::DELETE, $options)) {
