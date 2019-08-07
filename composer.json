@@ -21,10 +21,9 @@
         "ruflin/elastica": "^6.0"
     },
     "require-dev": {
-        "cakephp/cakephp": "^3.6",
-        "cakephp/cakephp-codesniffer": "^3.0",
-        "psr/log": "~1.0",
-        "phpunit/phpunit": "^6.0"
+        "cakephp/cakephp": "4.x-dev",
+        "cakephp/cakephp-codesniffer": "dev-next",
+        "phpunit/phpunit": "^8.3.3|^8.4"
     },
     "autoload": {
         "psr-4": {
@@ -44,7 +43,9 @@
             "@test",
             "@cs-check"
         ],
-        "cs-check": "phpcs --colors -p --standard=vendor/cakephp/cakephp-codesniffer/CakePHP ./src ./tests",
+        "cs-check": "phpcs --colors -p ./src ./tests",
         "test": "phpunit --colors=always"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

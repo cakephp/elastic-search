@@ -3,6 +3,7 @@ phpunit.xml
 vendor
 .env
 composer.phar
+.phpunit.result.cache
 
 # Tool specific files #
 #######################
