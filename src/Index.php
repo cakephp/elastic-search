@@ -603,7 +603,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         foreach ($documents as $key => $document) {
             $entities[$key]->id = $doc->getId();
             $entities[$key]->_version = $doc->getVersion();
-            $entities[$key]->isNew(false);
+            $entities[$key]->setNew(false);
             $entities[$key]->setSource($this->getRegistryAlias());
             $entities[$key]->clean();
 
@@ -674,7 +674,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
-        $entity->isNew(false);
+        $entity->setNew(false);
         $entity->setSource($this->getRegistryAlias());
         $entity->clean();
 
