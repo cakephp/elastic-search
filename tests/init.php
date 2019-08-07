@@ -18,6 +18,7 @@ define('CAKE', dirname(__DIR__) . '/vendor/cakephp/cakephp/src/');
 
 require CAKE . 'basics.php';
 
+define('DS', DIRECTORY_SEPARATOR);
 define('APP', __DIR__);
 define('TMP', sys_get_temp_dir() . DS);
 define('LOGS', TMP . 'logs' . DS);

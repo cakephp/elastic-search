@@ -135,7 +135,7 @@ class ElasticLogger extends AbstractLogger
             $message->took = $took;
             $message->numRows = $numRows;
 
-            $this->getLogger()->log($message);
+            $this->getLogger()->log($message, (string)$context['query'], $context);
         } else {
             $this->getLogger()->log($level, $logData, $context);
         }

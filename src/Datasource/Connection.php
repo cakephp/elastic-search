@@ -14,6 +14,7 @@
  */
 namespace Cake\ElasticSearch\Datasource;
 
+use Cake\Cache\Cache;
 use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
@@ -22,6 +23,8 @@ use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
 use Elastica\Log as ElasticaLog;
 use Elastica\Request;
+use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 
 class Connection implements ConnectionInterface
 {
@@ -107,7 +110,7 @@ class Connection implements ConnectionInterface
     /**
      * {@inheritDoc}
      */
-    public function configName()
+    public function configName(): string
     {
         return $this->configName;
     }
@@ -142,15 +145,38 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Enable/disable query logging
+     *
+     * @param bool $value Enable/disable query logging
+     * @return $this
      */
-    public function logQueries($enable = null)
+    public function enableQueryLogging(bool $value)
     {
-        if ($enable === null) {
-            return $this->logQueries;
-        }
+        $this->logQueries = $value;
 
-        $this->logQueries = $enable;
+        return $this;
+    }
+
+    /**
+     * Disable query logging
+     *
+     * @return $this
+     */
+    public function disableQueryLogging()
+    {
+        $this->logQueries = false;
+
+        return $this;
+    }
+
+    /**
+     * Check if query logging is enabled.
+     *
+     * @return bool
+     */
+    public function isQueryLoggingEnabled(): bool
+    {
+        return $this->logQueries;
     }
 
     /**
@@ -177,7 +203,7 @@ class Connection implements ConnectionInterface
      *
      * @return array
      */
-    public function config()
+    public function config(): array
     {
         return $this->_client->getConfig();
     }
@@ -201,9 +227,9 @@ class Connection implements ConnectionInterface
      * Will set the default logger to elasticsearch if found, or debug
      * If none of the above are found the default Es logger will be used.
      *
-     * @return \Cake\Database\Log\QueryLogger logger instance
+     * @return \Psr\Log\LoggerInterface logger instance
      */
-    public function getLogger()
+    public function getLogger(): LoggerInterface
     {
         if ($this->_logger === null) {
             $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
@@ -233,21 +259,36 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @deprecated Use getLogger() and setLogger() instead.
+     * @inheritDoc
      */
-    public function logger($instance = null)
+    public function setCacher(CacheInterface $cacher)
     {
-        deprecationWarning(
-            'Connection::logger() is deprecated. ' .
-            'Use Connection::setLogger()/getLogger() instead.'
-        );
+        $this->cacher = $cacher;
 
-        if ($instance === null) {
-            return $this->getLogger();
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCacher(): CacheInterface
+    {
+        if ($this->cacher !== null) {
+            return $this->cacher;
         }
 
-        $this->setLogger($instance);
+        $configName = $this->_config['cacheMetadata'] ?? '_cake_model_';
+        if (!is_string($configName)) {
+            $configName = '_cake_model_';
+        }
+
+        if (!class_exists(Cache::class)) {
+            throw new RuntimeException(
+                'To use caching you must either set a cacher using Connection::setCacher()' .
+                ' or require the cakephp/cache package in your composer config.'
+            );
+        }
+
+        return $this->cacher = Cache::pool($configName);
     }
 }

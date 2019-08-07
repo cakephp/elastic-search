@@ -118,12 +118,12 @@ class TestFixture implements FixtureInterface
      * Create index and mapping for the type.
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
-     * @return void
+     * @return bool
      */
-    public function create(ConnectionInterface $db)
+    public function create(ConnectionInterface $db): bool
     {
         if (empty($this->schema)) {
-            return;
+            return false;
         }
 
         $esIndex = $db->getIndex($this->getIndex()->getName());
@@ -186,36 +186,42 @@ class TestFixture implements FixtureInterface
      * Drops the index
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
-     * @return void
+     * @return bool
      */
-    public function drop(ConnectionInterface $db)
+    public function drop(ConnectionInterface $db): bool
     {
         $esIndex = $db->getIndex($this->getIndex()->getName());
 
         if ($esIndex->exists()) {
             $esIndex->delete();
+
+            return true;
         }
+
+        return false;
     }
 
     /**
      * Truncate the fixture type.
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
-     * @return void
+     * @return bool
      */
-    public function truncate(ConnectionInterface $db)
+    public function truncate(ConnectionInterface $db): bool
     {
         $query = new MatchAll();
         $esIndex = $db->getIndex($this->getIndex()->getName());
         $type = $esIndex->getType($this->getIndex()->getType());
         $type->deleteByQuery($query);
         $esIndex->refresh();
+
+        return true;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function connection()
+    public function connection(): string
     {
         return $this->connection;
     }
@@ -223,7 +229,7 @@ class TestFixture implements FixtureInterface
     /**
      * {@inheritDoc}
      */
-    public function sourceName()
+    public function sourceName(): string
     {
         return $this->table;
     }

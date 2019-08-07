@@ -27,7 +27,7 @@ class IndexTest extends TestCase
 {
     public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->connection = ConnectionManager::get('test');
