@@ -22,6 +22,7 @@ use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Marshaller;
 use Cake\TestSuite\TestCase;
+use TestApp\Model\Document\ProtectedArticle;
 use TestApp\Model\Index\AccountsIndex;
 
 /**
