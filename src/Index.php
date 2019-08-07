@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -27,7 +29,6 @@ use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
-use Cake\Event\EventManagerInterface;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
@@ -51,21 +52,21 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @var string
      */
-    const DEFAULT_VALIDATOR = 'default';
+    public const DEFAULT_VALIDATOR = 'default';
 
     /**
      * Validator provider name.
      *
      * @var string
      */
-    const VALIDATOR_PROVIDER_NAME = 'collection';
+    public const VALIDATOR_PROVIDER_NAME = 'collection';
 
     /**
      * The name of the event dispatched when a validator has been built.
      *
      * @var string
      */
-    const BUILD_VALIDATOR_EVENT = 'Model.buildValidator';
+    public const BUILD_VALIDATOR_EVENT = 'Model.buildValidator';
 
     /**
      * Connection instance
@@ -291,7 +292,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     public function getName()
     {
         if ($this->_name === null) {
-            $name = namespaceSplit(get_class($this));
+            $name = namespaceSplit(static::class);
             $name = substr(end($name), 0, -5);
             $this->_name = Inflector::underscore($name);
         }
@@ -552,7 +553,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $options += [
             'checkRules' => true,
-            'refresh' => false
+            'refresh' => false,
         ];
         $options = new ArrayObject($options);
 
@@ -569,7 +570,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
             $event = $this->dispatchEvent('Model.beforeSave', [
                 'entity' => $entity,
-                'options' => $options
+                'options' => $options,
             ]);
 
             if ($event->isStopped() || $entity->getErrors()) {
@@ -608,7 +609,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
             $this->dispatchEvent('Model.afterSave', [
                 'entity' => $entities[$key],
-                'options' => $options
+                'options' => $options,
             ]);
         }
 
@@ -634,12 +635,12 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $options += [
             'checkRules' => true,
-            'refresh' => false
+            'refresh' => false,
         ];
         $options = new ArrayObject($options);
         $event = $this->dispatchEvent('Model.beforeSave', [
             'entity' => $entity,
-            'options' => $options
+            'options' => $options,
         ]);
 
         if ($event->isStopped()) {
@@ -679,7 +680,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $this->dispatchEvent('Model.afterSave', [
             'entity' => $entity,
-            'options' => $options
+            'options' => $options,
         ]);
 
         return $entity;
@@ -705,12 +706,12 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
         $options += [
             'checkRules' => true,
-            'refresh' => false
+            'refresh' => false,
         ];
         $options = new ArrayObject($options);
         $event = $this->dispatchEvent('Model.beforeDelete', [
             'entity' => $entity,
-            'options' => $options
+            'options' => $options,
         ]);
 
         if ($event->isStopped()) {
@@ -735,7 +736,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $this->dispatchEvent('Model.afterDelete', [
             'entity' => $entity,
-            'options' => $options
+            'options' => $options,
         ]);
 
         return $result->isOk();
@@ -807,10 +808,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         if ($name === null && !$this->_documentClass) {
             $default = '\Cake\ElasticSearch\Document';
-            $self = get_called_class();
+            $self = static::class;
             $parts = explode('\\', $self);
 
-            if ($self === __CLASS__ || count($parts) < 3) {
+            if ($self === self::class || count($parts) < 3) {
                 return $this->_documentClass = $default;
             }
 

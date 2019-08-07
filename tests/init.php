@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -35,7 +37,7 @@ Configure::write(
     'namespace' => 'App',
     'paths' => [
         'plugins' => [APP . DS . 'testapp' . DS . 'Plugin' . DS],
-    ]
+    ],
     ]
 );
 
@@ -53,7 +55,7 @@ Log::setConfig(
         'engine' => 'Cake\Log\Engine\FileLog',
         'levels' => ['notice', 'info', 'debug'],
         'file' => 'debug',
-    ]
+    ],
     ]
 );
 

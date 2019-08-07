@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -18,7 +20,6 @@ use Cake\Collection\Collection;
 use Cake\Core\BasePlugin;
 use Cake\Core\PluginApplicationInterface;
 use Cake\Datasource\FactoryLocator;
-use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Event\EventManager;
 use Traversable;

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -15,14 +17,11 @@
 namespace Cake\ElasticSearch\Datasource;
 
 use Cake\Cache\Cache;
-use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
-use Cake\Log\Engine\FileLog;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
 use Elastica\Log as ElasticaLog;
-use Elastica\Request;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
@@ -235,7 +234,7 @@ class Connection implements ConnectionInterface
             $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
 
             if (!$engine) {
-                $engine = new ElasticaLog;
+                $engine = new ElasticaLog();
             }
 
             $this->setLogger($engine);

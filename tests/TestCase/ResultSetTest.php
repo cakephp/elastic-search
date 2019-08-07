@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -15,14 +17,10 @@
 namespace Cake\ElasticSearch\Test;
 
 use Cake\Datasource\ConnectionManager;
-use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\ResultSet;
 use Cake\TestSuite\TestCase;
-
-class MyTestDocument extends Document
-{
-}
+use TestApp\Model\Document\MyTestDocument;
 
 /**
  * Tests the ResultSet class
@@ -51,7 +49,7 @@ class ResultSetTest extends TestCase
 
         $type->expects($this->once())
             ->method('entityClass')
-            ->will($this->returnValue(__NAMESPACE__ . '\MyTestDocument'));
+            ->will($this->returnValue(MyTestDocument::class));
         $type->method('embedded')
             ->will($this->returnValue([]));
 
@@ -67,7 +65,7 @@ class ResultSetTest extends TestCase
      */
     public function testCurrent($resultSets)
     {
-        list($resultSet, $elasticaSet) = $resultSets;
+        [$resultSet, $elasticaSet] = $resultSets;
         $data = ['foo' => 1, 'bar' => 2];
         $result = $this->getMockBuilder('Elastica\Result')
             ->setMethods(['getId', 'getData', 'getType'])
@@ -85,7 +83,7 @@ class ResultSetTest extends TestCase
             ->will($this->returnValue($result));
 
         $document = $resultSet->current();
-        $this->assertInstanceOf(__NAMESPACE__ . '\MyTestDocument', $document);
+        $this->assertInstanceOf(MyTestDocument::class, $document);
         $this->assertSame($data + ['id' => 99], $document->toArray());
         $this->assertFalse($document->isDirty());
         $this->assertFalse($document->isNew());
@@ -102,7 +100,7 @@ class ResultSetTest extends TestCase
         $methods = get_class_methods('Elastica\ResultSet');
         $exclude = [
             '__construct', 'offsetSet', 'offsetGet', 'offsetExists', 'offsetUnset',
-            'current', 'next', 'key', 'valid', 'rewind', 'create', 'setClass'
+            'current', 'next', 'key', 'valid', 'rewind', 'create', 'setClass',
         ];
         $methods = array_diff($methods, $exclude);
 
@@ -147,7 +145,7 @@ class ResultSetTest extends TestCase
     {
         $index = new Index([
             'name' => 'articles',
-            'connection' => ConnectionManager::get('test')
+            'connection' => ConnectionManager::get('test'),
         ]);
 
         $resultSet = $index->find()->all();

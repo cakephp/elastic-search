@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -105,7 +107,7 @@ class DocumentContext implements ContextInterface
                 $index = $entity->getSource();
             }
             if (!$index && $isDocument && get_class($entity) !== 'Cake\ElasticSearch\Document') {
-                list(, $entityClass) = namespaceSplit(get_class($entity));
+                [, $entityClass] = namespaceSplit(get_class($entity));
                 $index = Inflector::pluralize($entityClass);
             }
         }

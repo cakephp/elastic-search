@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -32,7 +34,7 @@ class EmbeddedDocumentTest extends TestCase
         $this->index = new Index(
             [
             'name' => 'profiles',
-            'connection' => ConnectionManager::get('test')
+            'connection' => ConnectionManager::get('test'),
             ]
         );
     }

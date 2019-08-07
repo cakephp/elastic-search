@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -22,29 +24,28 @@ use IteratorAggregate;
 
 class Query implements IteratorAggregate, QueryInterface
 {
-
     use QueryTrait;
 
     /**
      * Indicates that the operation should append to the list
      *
-     * @var integer
+     * @var int
      */
-    const APPEND = 0;
+    public const APPEND = 0;
 
     /**
      * Indicates that the operation should prepend to the list
      *
-     * @var integer
+     * @var int
      */
-    const PREPEND = 1;
+    public const PREPEND = 1;
 
     /**
      * Indicates that the operation should overwrite the list
      *
-     * @var boolean
+     * @var bool
      */
-    const OVERWRITE = true;
+    public const OVERWRITE = true;
 
     /**
      * The Elastica Query object that is to be executed after
@@ -95,7 +96,7 @@ class Query implements IteratorAggregate, QueryInterface
     public function __construct(Index $repository)
     {
         $this->repository($repository);
-        $this->_elasticQuery = new ElasticaQuery;
+        $this->_elasticQuery = new ElasticaQuery();
     }
 
     /**
@@ -333,7 +334,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
-     * @return Query
+     * @return \Cake\ElasticSearch\Query
      */
     public function queryMust($conditions, $overwrite = false)
     {
@@ -349,7 +350,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
-     * @return Query
+     * @return \Cake\ElasticSearch\Query
      */
     public function queryShould($conditions, $overwrite = false)
     {
@@ -376,7 +377,7 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Method to set or overwrite the query
      *
-     * @param AbstractQuery $query Set the query
+     * @param \Elastica\Query\AbstractQuery $query Set the query
      * @return $this
      */
     public function setFullQuery(AbstractQuery $query)
@@ -411,7 +412,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param  null|array $options An array of additional search options
      * @return $this|array
      */
-    public function searchOptions(array $options = null)
+    public function searchOptions(?array $options = null)
     {
         if ($options === null) {
             return $this->_searchOptions;
@@ -445,7 +446,7 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         if (is_callable($conditions)) {
-            $conditions = $conditions(new QueryBuilder, $this->_queryParts[$partType], $this);
+            $conditions = $conditions(new QueryBuilder(), $this->_queryParts[$partType], $this);
         }
 
         if ($conditions === null) {
@@ -453,7 +454,7 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         if (is_array($conditions)) {
-            $conditions = (new QueryBuilder)->parse($conditions);
+            $conditions = (new QueryBuilder())->parse($conditions);
             array_map([$this->_queryParts[$partType], $type], $conditions);
 
             return $this;

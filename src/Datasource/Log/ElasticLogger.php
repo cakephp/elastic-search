@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -115,7 +117,7 @@ class ElasticLogger extends AbstractLogger
             $logData = [
                 'method' => $context['request']['method'],
                 'path' => $context['request']['path'],
-                'data' => $context['request']['data']
+                'data' => $context['request']['data'],
             ];
         }
 

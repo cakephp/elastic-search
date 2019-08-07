@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -15,8 +17,6 @@
 namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Core\Configure;
-use Cake\Core\Plugin;
-use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\TestSuite\TestCase;
 
@@ -25,7 +25,6 @@ use Cake\TestSuite\TestCase;
  */
 class IndexRegistryTest extends TestCase
 {
-
     /**
      * setup
      *

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Cake\ElasticSearch;
 
@@ -7,7 +8,6 @@ use Elastica\Query\AbstractQuery;
 
 class QueryBuilder
 {
-
     /**
      * Returns a Range query object setup to query documents having the field between
      * a `from` and a `to` value
@@ -22,7 +22,7 @@ class QueryBuilder
     {
         return $this->range($field, [
             'gte' => $from,
-            'lte' => $to
+            'lte' => $to,
         ]);
     }
 
@@ -350,12 +350,12 @@ class QueryBuilder
      * @param string $field The field to query by.
      * @param string $prefix The prefix to check for.
      * @param float $boost The optional boost
-     * @return Elastica\Query\Prefix
+     * @return \Elastica\Query\Prefix
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html
      */
     public function prefix($field, $prefix, $boost = 1.0)
     {
-        $prefixQuery = new Elastica\Query\Prefix;
+        $prefixQuery = new Elastica\Query\Prefix();
         $prefixQuery->setPrefix($field, $prefix, $boost);
 
         return $prefixQuery;
@@ -733,7 +733,7 @@ class QueryBuilder
         $parts = explode(' ', trim($field), 2);
 
         if (count($parts) > 1) {
-            list($field, $operator) = $parts;
+            [$field, $operator] = $parts;
         }
 
         $operator = strtolower(trim($operator));

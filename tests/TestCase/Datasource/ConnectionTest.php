@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -85,7 +87,7 @@ class ConnectionTest extends TestCase
         $message = json_encode([
             'method' => 'GET',
             'path' => '_stats',
-            'data' => []
+            'data' => [],
         ], JSON_PRETTY_PRINT);
 
         $logger->expects($this->once())->method('log')->with(
@@ -113,11 +115,11 @@ class ConnectionTest extends TestCase
         $logger = $this->getMockBuilder('Cake\Database\Log\QueryLogger')->setMethods(['log'])->getMock();
         $logger->expects($this->once())->method('log');
 
-        $query = new LoggedQuery;
+        $query = new LoggedQuery();
         $query->query = json_encode([
             'method' => 'GET',
             'path' => '_stats',
-            'data' => []
+            'data' => [],
         ], JSON_PRETTY_PRINT);
 
         $logger->expects($this->once())->method('log')->with($query);

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Datasource\ConnectionManager;
@@ -18,7 +20,7 @@ class RulesCheckerTest extends TestCase
         $this->index = new Index(
             [
                 'name' => 'articles',
-                'connection' => $this->connection
+                'connection' => $this->connection,
             ]
         );
     }
@@ -33,7 +35,7 @@ class RulesCheckerTest extends TestCase
     {
         $document = new Document(
             [
-                'user_id' => 1
+                'user_id' => 1,
             ]
         );
 
@@ -43,7 +45,7 @@ class RulesCheckerTest extends TestCase
             '_isUnique',
             [
                 'errorField' => 'user_id',
-                'message' => 'This value is already in use'
+                'message' => 'This value is already in use',
             ]
         );
 

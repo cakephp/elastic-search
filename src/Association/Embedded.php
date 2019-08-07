@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Cake\ElasticSearch\Association;
 
 use Cake\Core\App;
@@ -17,14 +19,14 @@ abstract class Embedded
      *
      * @var string
      */
-    const ONE_TO_ONE = 'oneToOne';
+    public const ONE_TO_ONE = 'oneToOne';
 
     /**
      * Type name for many embedded documents.
      *
      * @var string
      */
-    const ONE_TO_MANY = 'oneToMany';
+    public const ONE_TO_MANY = 'oneToMany';
 
     /**
      * The alias this association uses.
@@ -66,10 +68,10 @@ abstract class Embedded
         $properties = [
             'entityClass',
             'property',
-            'indexClass'
+            'indexClass',
         ];
         $options += [
-            'entityClass' => $alias
+            'entityClass' => $alias,
         ];
         foreach ($properties as $prop) {
             if (isset($options[$prop])) {
@@ -106,10 +108,10 @@ abstract class Embedded
     {
         if ($name === null && !$this->entityClass) {
             $default = '\Cake\ElasticSearch\Document';
-            $self = get_called_class();
+            $self = static::class;
             $parts = explode('\\', $self);
 
-            if ($self === __CLASS__ || count($parts) < 3) {
+            if ($self === self::class || count($parts) < 3) {
                 return $this->entityClass = $default;
             }
 
@@ -131,7 +133,7 @@ abstract class Embedded
     /**
      * Get/set the index class used for this embed.
      *
-     * @param string|null|Index $name The class name to set.
+     * @param string|null|\Cake\ElasticSearch\Index $name The class name to set.
      *
      * @return string The class name.
      */
