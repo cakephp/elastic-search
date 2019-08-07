@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @since         0.0.1
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Test\Datasource;
+namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
 use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionManager;

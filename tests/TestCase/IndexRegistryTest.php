@@ -138,12 +138,12 @@ class IndexRegistryTest extends TestCase
     /**
      * Test get with config throws an exception if the alias exists already.
      *
-     * @expectedException        \RuntimeException
-     * @expectedExceptionMessage You cannot configure "Users", it already exists in the registry.
      * @return                   void
      */
     public function testGetExistingWithConfigData()
     {
+        $this->expectException('RuntimeException');
+        $this->expectExceptionMessage('You cannot configure "Users", it already exists in the registry.');
         $users = IndexRegistry::get('Users');
         IndexRegistry::get('Users', ['name' => 'my_users']);
     }

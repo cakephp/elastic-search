@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @since         0.0.1
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Test;
+namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
@@ -222,7 +222,7 @@ class MarshallerTest extends TestCase
         $result = $marshaller->one($data);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertInternalType('array', $result->user);
+        $this->assertIsArray($result->user);
         $this->assertSame($data['title'], $result->title);
         $this->assertSame($data['body'], $result->body);
         $this->assertSame($data['user']['username'], $result->user['username']);
@@ -302,7 +302,7 @@ class MarshallerTest extends TestCase
         $result = $marshaller->one($data, ['associated' => ['Comments']]);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertInternalType('array', $result->comments);
+        $this->assertIsArray($result->comments);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
         $this->assertTrue($result->isNew());
@@ -358,8 +358,8 @@ class MarshallerTest extends TestCase
         $result = $marshaller->one($data, $options);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertInternalType('array', $result->comments);
-        $this->assertInternalType('array', $result->authors);
+        $this->assertIsArray($result->comments);
+        $this->assertIsArray($result->authors);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->authors[0]);
@@ -613,7 +613,7 @@ class MarshallerTest extends TestCase
         $result = $marshaller->merge($entity, $data, ['associated' => ['Comments']]);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertInternalType('array', $result->comments);
+        $this->assertIsArray($result->comments);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
         $this->assertFalse($result->comments[0]->isNew());
@@ -649,7 +649,7 @@ class MarshallerTest extends TestCase
         $result = $marshaller->merge($entity, $data, ['associated' => ['Comments']]);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertInternalType('array', $result->comments);
+        $this->assertIsArray($result->comments);
 
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
         $this->assertSame('First comment', $result->comments[0]->comment);

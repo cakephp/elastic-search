@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @since     0.0.1
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Test;
+namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
@@ -56,11 +56,11 @@ class IndexTest extends TestCase
     /**
      * Tests that calling find will return a query object
      *
-     * @expectedException \Cake\Datasource\Exception\RecordNotFoundException
      * @return            void
      */
     public function testFindAllWithFirstOrFail()
     {
+        $this->expectException('Cake\Datasource\Exception\RecordNotFoundException');
         $this->index->find('all')->where(['id' => '999999999'])->firstOrFail();
     }
 
@@ -645,12 +645,12 @@ class IndexTest extends TestCase
     /**
      * Test deleting a new document
      *
-     * @expectedException        \InvalidArgumentException
-     * @expectedExceptionMessage Deleting requires an "id" value.
      * @return                   void
      */
     public function testDeleteMissing()
     {
+        $this->expectException('InvalidArgumentException');
+        $this->expectExceptionMessage('Deleting requires an "id" value.');
         $doc = new Document(['title' => 'not there.']);
         $this->index->delete($doc);
     }

@@ -28,7 +28,7 @@ class RulesCheckerTest extends TestCase
     /**
      * Tests the isUnique domain rule
      *
-     * @group  save
+     * @group save
      * @return void
      */
     public function testIsUniqueDomainRule()
@@ -56,7 +56,7 @@ class RulesCheckerTest extends TestCase
     /**
      * Test unique rule on existing document
      *
-     * @group  save
+     * @group save
      * @return void
      */
     public function testIsUniqueExisting()
@@ -72,7 +72,7 @@ class RulesCheckerTest extends TestCase
     /**
      * Test unique rule on existing document
      *
-     * @group  save
+     * @group save
      * @return void
      */
     public function testIsUniqueWithNullValue()
