@@ -503,7 +503,7 @@ class IndexTest extends TestCase
 
         $doc->clean();
         $doc->id = 12345;
-        $doc->isNew(false);
+        $doc->setNew(false);
         $this->assertSame($doc, $this->index->save($doc), 'Save should pass, not new anymore.');
     }
 

@@ -242,27 +242,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Returns the connection instance or sets a new one
-     *
-     * @deprecated Use getConnection() and setConnection() instead
-     * @param \Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
-     * @return \Cake\ElasticSearch\Datasource\Connection
-     */
-    public function connection($conn = null)
-    {
-        deprecationWarning(
-            'Index::connection() is deprecated. ' .
-            'Use Index::setConnection()/getConnection() instead.'
-        );
-
-        if ($conn !== null) {
-            return $this->setConnection($conn);
-        }
-
-        return $this->getConnection();
-    }
-
-    /**
      * Sets the index registry key used to create this table instance.
      *
      * @param string $registryAlias The key used to access this object.
@@ -321,27 +300,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Returns the index name or sets a new one
-     *
-     * @deprecated Use getName() and setName() instead
-     * @param string $name the new index name
-     * @return string
-     */
-    public function name($name = null)
-    {
-        deprecationWarning(
-            'Index::name() is deprecated. ' .
-            'Use Index::setName()/getName() instead.'
-        );
-
-        if ($name !== null) {
-            $this->setName($name);
-        }
-
-        return $this->getName();
-    }
-
-    /**
      * Get the index name, as required by QueryTrait
      *
      * This method is just an alias of name().
@@ -351,43 +309,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     public function getTable()
     {
         return $this->getName();
-    }
-
-    /**
-     * Get the index name, as required by QueryTrait
-     *
-     * This method is just an alias of name().
-     *
-     * @return string
-     * @deprecated Use getTable() instead
-     */
-    public function table()
-    {
-        deprecationWarning(
-            'Index::table() is deprecated. ' .
-            'Use Index::getTable() instead.'
-        );
-
-        return $this->getName();
-    }
-
-    /**
-     * Get the alias for this Index.
-     *
-     * This method is just an alias of name().
-     *
-     * @deprecated Use getAlias() and setAlias() instead
-     * @param string $alias The new index name
-     * @return string
-     */
-    public function alias($alias = null)
-    {
-        deprecationWarning(
-            'Index::table() is deprecated. ' .
-            'Use Index::setAlias()/getAlias() instead.'
-        );
-
-        return $this->getName($alias);
     }
 
     /**

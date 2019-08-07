@@ -129,10 +129,10 @@ class DocumentContextTest extends TestCase
         );
         $this->assertTrue($context->isCreate());
 
-        $row->isNew(false);
+        $row->setNew(false);
         $this->assertFalse($context->isCreate());
 
-        $row->isNew(true);
+        $row->setNew(true);
         $this->assertTrue($context->isCreate());
     }
 
