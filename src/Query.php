@@ -558,11 +558,11 @@ class Query implements IteratorAggregate, QueryInterface
     {
         $connection = $this->_repository->getConnection();
         $index = $this->_repository->getName();
-        $type = $connection->getIndex($index)->getType($this->_repository->getType());
+        $searchObject = $connection->getIndex($index)->createSearch($this->_repository->getType());
 
         $query = $this->compileQuery();
 
-        return new ResultSet($type->search($query, $this->_searchOptions), $this);
+        return new ResultSet($searchObject->search($query, $this->_searchOptions), $this);
     }
 
     /**
@@ -646,13 +646,13 @@ class Query implements IteratorAggregate, QueryInterface
     {
         $connection = $this->_repository->getConnection();
         $index = $this->_repository->getName();
-        $type = $connection->getIndex($index)->getType($this->_repository->getType());
+        $searchObject = $connection->getIndex($index)->createSearch($this->_repository->getType());
 
         $query = clone $this->compileQuery();
         $query->setSize(0);
         $query->setSource(false);
         $query->setParam('track_total_hits', true);
 
-        return $type->search($query)->getTotalHits();
+        return $searchObject->search($query)->getTotalHits();
     }
 }

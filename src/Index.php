@@ -597,8 +597,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $query = $this->query();
         $query->where($conditions);
-        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
-        $response = $type->deleteByQuery($query->compileQuery());
+        $indexObject = $this->getConnection()->getIndex($this->getName());
+        $response = $indexObject->deleteByQuery($query->compileQuery());
 
         return $response->isOk();
     }
@@ -680,11 +680,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $documents[$key] = $doc;
         }
 
-        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
-        $type->addDocuments($documents);
+        $indexObject = $this->getConnection()->getIndex($this->getName());
+        $indexObject->addDocuments($documents);
 
         if ($options['refresh']) {
-            $type->getIndex()->refresh();
+            $indexObject->refresh();
         }
 
         foreach ($documents as $key => $document) {
@@ -814,11 +814,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $doc = new ElasticaDocument($entity->id, $data);
 
-        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
-        $result = $type->deleteDocument($doc);
+        $indexObject = $this->getConnection()->getIndex($this->getName());
+        $result = $indexObject->deleteDocument($doc);
 
         if ($options['refresh']) {
-            $type->getIndex()->refresh();
+            $indexObject->refresh();
         }
 
         $this->dispatchEvent('Model.afterDelete', [
@@ -981,8 +981,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return $this->schema;
         }
         $index = $this->getName();
-        $type = $this->getConnection()->getIndex($index)->getType($this->getType());
-        $this->schema = new MappingSchema($this->getType(), $type->getMapping());
+        $indexObj = $this->getConnection()->getIndex($index);
+        $this->schema = new MappingSchema($index, [$index =>$indexObj->getMapping()]);
 
         return $this->schema;
     }
