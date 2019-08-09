@@ -428,7 +428,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function setType($type)
     {
-        $this->_type = $type;
+        $this->_type = '_doc';
 
         return $this;
     }
@@ -443,7 +443,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     public function getType()
     {
         if ($this->_type === null) {
-            $this->_type = Inflector::singularize($this->getName());
+            $this->_type = '_doc';
         }
 
         return $this->_type;
