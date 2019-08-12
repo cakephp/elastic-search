@@ -814,11 +814,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $doc = new ElasticaDocument($entity->id, $data);
 
-        $indexObject = $this->getConnection()->getIndex($this->getName());
-        $result = $indexObject->deleteDocument($doc);
+        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
+        $result = $type->deleteDocument($doc);
 
         if ($options['refresh']) {
-            $indexObject->refresh();
+            $type->getIndex()->refresh();
         }
 
         $this->dispatchEvent('Model.afterDelete', [
@@ -982,7 +982,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
         $index = $this->getName();
         $indexObj = $this->getConnection()->getIndex($index);
-        $this->schema = new MappingSchema($index, [$index => $indexObj->getMapping()]);
+        $this->schema = new MappingSchema($index, [$index =>$indexObj->getMapping()]);
 
         return $this->schema;
     }
