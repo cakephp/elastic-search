@@ -982,7 +982,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
         $index = $this->getName();
         $indexObj = $this->getConnection()->getIndex($index);
-        $this->schema = new MappingSchema($index, [$index =>$indexObj->getMapping()]);
+        $this->schema = new MappingSchema($index, [$index => $indexObj->getMapping()]);
 
         return $this->schema;
     }
