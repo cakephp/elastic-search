@@ -126,7 +126,7 @@ construire les requêtes de recherche::
         echo $article->title;
     }
 
-Vous pouvez utiliser le ``FilterBuilder`` pour ajouter des conditions de
+Vous pouvez utiliser le ``QueryBuilder`` pour ajouter des conditions de
 filtrage::
 
     $query->where(function ($builder) {
@@ -136,8 +136,8 @@ filtrage::
         );
     });
 
-La `source de FilterBuilder
-<https://github.com/cakephp/elastic-search/blob/master/src/FilterBuilder.php>`_
+La `source de QueryBuilder
+<https://github.com/cakephp/elastic-search/blob/master/src/QueryBuilder.php>`_
 a la liste complète des méthodes avec des exemples pour beaucoup de méthodes
 couramment utilisées.
 
