@@ -3,8 +3,8 @@ FROM markstory/cakephp-docs-builder as builder
 
 COPY docs /data/docs
 
+# Build docs with sphinx
 RUN cd /data/docs-builder && \
-  # In the future repeat website for each version
   make website LANGS="en fr ja pt" SOURCE=/data/docs DEST=/data/website/
 
 
@@ -17,5 +17,3 @@ COPY --from=builder /data/docs-builder/nginx.conf /etc/nginx/conf.d/default.conf
 # Move build docs in place
 RUN cp -R /data/website/html/* /usr/share/nginx/html \
   && rm -rf /data/website/
-
-RUN ln -s /usr/share/nginx/html /usr/share/nginx/html/2.x
