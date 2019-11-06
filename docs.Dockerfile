@@ -5,7 +5,7 @@ COPY docs /data/docs
 
 RUN cd /data/docs-builder && \
   # In the future repeat website for each version
-  make website LANGS="en fr ja pt" SOURCE=/data/docs DEST=/data/website/2.x
+  make website LANGS="en fr ja pt" SOURCE=/data/docs DEST=/data/website/
 
 
 # Build a small nginx container with just the static site in it.
