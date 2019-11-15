@@ -497,24 +497,6 @@ class QueryBuilder
     }
 
     /**
-     * Returns a Type query object that query documents matching the provided document/mapping type.
-     *
-     * ### Example:
-     *
-     * {{{
-     *  $builder->type('products');
-     * }}}
-     *
-     * @param string $type The type name
-     * @return \Elastica\Query\Type
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
-     */
-    public function type($type)
-    {
-        return new Elastica\Query\Type($type);
-    }
-
-    /**
      * Combines all the passed arguments in a single bool query
      * using the "must" clause.
      *
