@@ -121,7 +121,7 @@ ElasticSearch プラグインを使用すると、検索クエリーを構築す
         echo $article->title;
     }
 
-フィルタリング条件を追加するために ``FilterBuilder`` を使用することができます。 ::
+フィルタリング条件を追加するために ``QueryBuilder`` を使用することができます。 ::
 
     $query->where(function ($builder) {
         return $builder->and(
@@ -130,8 +130,8 @@ ElasticSearch プラグインを使用すると、検索クエリーを構築す
         );
     });
 
-`FilterBuilder のソース
-<https://github.com/cakephp/elastic-search/blob/master/src/FilterBuilder.php>`_
+`QueryBuilder のソース
+<https://github.com/cakephp/elastic-search/blob/master/src/QueryBuilder.php>`_
 は、多くの一般的に使用されるメソッドの例となるメソッドの完全なリストを持っています。
 
 データのバリデーションとアプリケーションルールの使用

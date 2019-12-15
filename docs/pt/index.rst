@@ -128,7 +128,7 @@ ElasticSearch disponibiliza um *query builder* que permite a você construir
         echo $article->title;
     }
 
-Você pode usar o ``FilterBuilder`` para adicionar condições de filtragem::
+Você pode usar o ``QueryBuilder`` para adicionar condições de filtragem::
 
     $query->where(function ($builder) {
         return $builder->and(
@@ -138,8 +138,8 @@ Você pode usar o ``FilterBuilder`` para adicionar condições de filtragem::
     });
 
 A lista completa de métodos com exemplos práticos pode ser encontradda no código
-fonte do `FilterBuilder
-<https://github.com/cakephp/elastic-search/blob/master/src/FilterBuilder.php>`_.
+fonte do `QueryBuilder
+<https://github.com/cakephp/elastic-search/blob/master/src/QueryBuilder.php>`_.
 
 Validando dados & Usando regras da aplicação
 ============================================
