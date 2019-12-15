@@ -252,9 +252,7 @@ class Marshaller
 
         foreach ($this->index->embedded() as $embed) {
             $property = $embed->property();
-            if (in_array($embed->getAlias(), $options['associated']) &&
-                isset($data[$property])
-            ) {
+            if (in_array($embed->getAlias(), $options['associated']) && isset($data[$property])) {
                 $data[$property] = $this->mergeNested($embed, $entity->{$property}, $data[$property]);
             }
         }
