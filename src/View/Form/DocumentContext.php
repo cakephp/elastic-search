@@ -131,7 +131,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function primaryKey(): array
+    public function getPrimaryKey(): array
     {
         return ['id'];
     }
