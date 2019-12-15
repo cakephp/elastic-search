@@ -1,6 +1,6 @@
 {
     "name": "cakephp/elastic-search",
-    "description": "An Elastic Search datasource and data mapper for CakePHP 3.0",
+    "description": "An Elastic Search datasource and data mapper for CakePHP",
     "type": "cakephp-plugin",
     "keywords": ["cakephp", "elasticsearch"],
     "homepage": "https://github.com/cakephp/elastic-search",
