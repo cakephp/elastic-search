@@ -353,7 +353,7 @@ class Marshaller
             );
         }
 
-        return $options['validate']->errors($data, $isNew);
+        return $options['validate']->validate($data, $isNew);
     }
 
     /**
