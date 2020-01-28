@@ -24,6 +24,10 @@ use Elastica\Client as ElasticaClient;
 use Elastica\Log as ElasticaLog;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+use Elastica\Query\BoolQuery;
+use Elastica\Connection;
+use RuntimeException;
+use Cake\ElasticSearch\Exception\NotImplementedException;
 
 class Connection implements ConnectionInterface
 {
@@ -289,5 +293,68 @@ class Connection implements ConnectionInterface
         }
 
         return $this->cacher = Cache::pool($configName);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::execute($query, $params, $types)
+     */
+    public function execute($query, $params = [], array $types = [])
+    {
+        throw new NotImplementedException();
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::query($sql)
+     */
+    public function query(string $sql)
+    {
+        throw new NotImplementedException();
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::prepare($sql)
+     */
+    public function prepare($sql) 
+    {
+        throw new NotImplementedException();
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::getDriver()
+     * @return \Elastica\Client
+     */
+    public function getDriver()
+    {
+        return $this->_client;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::supportsDynamicConstraints()
+     * @return bool
+     */
+    public function supportsDynamicConstraints()
+    {
+        return false;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::newQuery()
+     * @return \Elastica\Query\BoolQuery
+     */
+    public function newQuery()
+    {
+        return new BoolQuery();
     }
 }
