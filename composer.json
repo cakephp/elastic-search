@@ -21,8 +21,8 @@
         "ruflin/elastica": "^6.0"
     },
     "require-dev": {
-        "cakephp/cakephp": "4.x-dev",
-        "cakephp/cakephp-codesniffer": "dev-next",
+        "cakephp/cakephp": "^4.0.3",
+        "cakephp/cakephp-codesniffer": "~4.0.0",
         "phpunit/phpunit": "^8.3.3|^8.4"
     },
     "autoload": {
