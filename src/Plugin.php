@@ -32,7 +32,7 @@ class Plugin extends BasePlugin
     /**
      * {@inheritdoc}
      */
-    public function bootstrap(PluginApplicationInterface $app)
+    public function bootstrap(PluginApplicationInterface $app): void
     {
         $callback = ['Cake\ElasticSearch\IndexRegistry', 'get'];
         FactoryLocator::add('Elastic', $callback);
