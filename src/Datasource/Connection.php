@@ -357,4 +357,16 @@ class Connection implements ConnectionInterface
     {
         return new BoolQuery();
     }
+    
+    /**
+     * Returns the index for the given connection
+     *
+     * @param  string $name Index name to create connection to, if no value is passed
+     * it will use the default index name for the connection.
+     * @return \Elastica\Index Index for the given name
+     */
+    public function getIndex($name = null)
+    {
+        return $this->_client->getIndex($name ?: $this->getConfig('index'));
+    }
 }
