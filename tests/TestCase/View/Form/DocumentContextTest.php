@@ -81,7 +81,7 @@ class DocumentContextTest extends TestCase
             'entity' => $row,
             ]
         );
-        $this->assertEquals(['id'], $context->primaryKey());
+        $this->assertEquals(['id'], $context->getPrimaryKey());
     }
 
     /**
