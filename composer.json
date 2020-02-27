@@ -23,7 +23,7 @@
     "require-dev": {
         "cakephp/cakephp": "^4.0",
         "cakephp/cakephp-codesniffer": "^4.0",
-        "phpunit/phpunit": "^8.4"
+        "phpunit/phpunit": "^8.5"
     },
     "autoload": {
         "psr-4": {
