@@ -79,7 +79,7 @@ class Document implements EntityInterface
         }
 
         if (!empty($data) && $options['markClean'] && !$options['useSetters']) {
-            $this->_properties = $data;
+            $this->_fields = $data;
 
             return;
         }
