@@ -22,7 +22,6 @@ use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
 
-
 class Query implements IteratorAggregate, QueryInterface
 {
     use QueryTrait;
@@ -325,7 +324,7 @@ class Query implements IteratorAggregate, QueryInterface
 
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
-    
+
     /**
      * Connects any previously defined set of conditions to the provided list
      * using the AND operator. This function accepts the conditions list in the same
