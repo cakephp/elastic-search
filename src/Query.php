@@ -22,6 +22,7 @@ use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
 
+
 class Query implements IteratorAggregate, QueryInterface
 {
     use QueryTrait;
@@ -323,6 +324,67 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
+    }
+    
+    /**
+     * Connects any previously defined set of conditions to the provided list
+     * using the AND operator. This function accepts the conditions list in the same
+     * format as the method `where` does, hence you can use arrays, expression objects
+     * callback functions or strings.
+     *
+     * It is important to notice that when calling this function, any previous set
+     * of conditions defined for this query will be treated as a single argument for
+     * the AND operator. This function will not only operate the most recently defined
+     * condition, but all the conditions as a whole.
+     *
+     * When using an array for defining conditions, creating constraints form each
+     * array entry will use the same logic as with the `where()` function. This means
+     * that each array entry will be joined to the other using the AND operator, unless
+     * you nest the conditions in the array using other operator.
+     *
+     * ### Examples:
+     *
+     * ```
+     * $query->where(['title' => 'Hello World')->andWhere(['author_id' => 1]);
+     * ```
+     *
+     * Will produce:
+     *
+     * `WHERE title = 'Hello World' AND author_id = 1`
+     *
+     * ```
+     * $query
+     *   ->where(['OR' => ['published' => false, 'published is NULL']])
+     *   ->andWhere(['author_id' => 1, 'comments_count >' => 10])
+     * ```
+     *
+     * Produces:
+     *
+     * `WHERE (published = 0 OR published IS NULL) AND author_id = 1 AND comments_count > 10`
+     *
+     * ```
+     * $query
+     *   ->where(['title' => 'Foo'])
+     *   ->andWhere(function ($exp, $query) {
+     *     return $exp
+     *       ->or(['author_id' => 1])
+     *       ->add(['author_id' => 2]);
+     *   });
+     * ```
+     *
+     * Generates the following conditions:
+     *
+     * `WHERE (title = 'Foo') AND (author_id = 1 OR author_id = 2)`
+     *
+     * @param array|null|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
+     * @param array $types Not used, required to comply with QueryInterface.
+     * @see \Cake\ElasticSearch\Query::where()
+     * @see \Cake\ElasticSearch\QueryBuilder
+     * @return $this
+     */
+    public function andWhere($conditions, array $types = [])
+    {
+        return $this->_buildBoolQuery('filter', $conditions, false, 'addMust');
     }
 
     /**

@@ -34,6 +34,8 @@ use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 use RuntimeException;
+use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Exception\MissingDocumentException;
 
 /**
  * Base class for index.
@@ -152,6 +154,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $eventManager = $config['eventManager'];
         }
         $this->_eventManager = $eventManager ?: new EventManager();
+        $this->setType($this->_name);
         $this->initialize($config);
         $this->_eventManager->on($this);
         $this->dispatchEvent('Model.initialize');
@@ -795,43 +798,74 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         return $this->marshaller()->many($data, $options);
     }
+    
+    /**
+     * Returns the class used to hydrate rows for this table.
+     *
+     * @return string
+     * @psalm-suppress MoreSpecificReturnType
+     * @psalm-return class-string<\Cake\ElasticSearch\Document>
+     */
+    public function getEntityClass(): string
+    {
+        if (!$this->_documentClass) {
+            $default = Document::class;
+            $self = static::class;
+            $parts = explode('\\', $self);
+            
+            if ($self === self::class || count($parts) < 3) {
+                return $this->_documentClass = $default;
+            }
+            
+            $alias = Inflector::classify(Inflector::underscore(substr(array_pop($parts), 0, -5)));
+            $name = implode('\\', array_slice($parts, 0, -1)) . '\\Document\\' . $alias;
+            if (!class_exists($name)) {
+                return $this->_documentClass = $default;
+            }
+            
+            /** @var class-string<\Cake\Datasource\EntityInterface>|null $class */
+            $class = App::className($name, 'Model/Entity');
+            if (!$class) {
+                throw new MissingDocumentException([$name]);
+            }
+            
+            $this->_documentClass = $class;
+        }
+        
+        return $this->_documentClass;
+    }
+    
+    /**
+     * Sets the class used to hydrate rows for this table.
+     *
+     * @param string $name The name of the class to use
+     * @throws \Cake\ElasticSearch\Exception\MissingDocumentException when the entity class cannot be found
+     * @return $this
+     */
+    public function setEntityClass(string $name)
+    {
+        $class = App::className($name, 'Model/Document');
+        if (!$class) {
+            throw new MissingDocumentException([$name]);
+        }
+        
+        $this->_documentClass = $class;
+        
+        return $this;
+    }
 
     /**
      * Returns the class used to hydrate rows for this table or sets
      * a new one
      *
+     * @deprecated
      * @param string $name the name of the class to use
-     * @throws \RuntimeException when the entity class cannot be found
+     * @throws \Cake\ElasticSearch\Exception\MissingDocumentException when the entity class cannot be found
      * @return string
      */
     public function entityClass($name = null)
     {
-        if ($name === null && !$this->_documentClass) {
-            $default = '\Cake\ElasticSearch\Document';
-            $self = static::class;
-            $parts = explode('\\', $self);
-
-            if ($self === self::class || count($parts) < 3) {
-                return $this->_documentClass = $default;
-            }
-
-            $alias = Inflector::singularize(substr(array_pop($parts), 0, -5));
-            $name = implode('\\', array_slice($parts, 0, -1)) . '\Document\\' . $alias;
-            if (!class_exists($name)) {
-                return $this->_documentClass = $default;
-            }
-        }
-
-        if ($name !== null) {
-            $class = App::classname($name, 'Model/Document');
-            $this->_documentClass = $class;
-        }
-
-        if (!$this->_documentClass) {
-            throw new RuntimeException(sprintf('Missing document class "%s"', $class));
-        }
-
-        return $this->_documentClass;
+        return ($name === null) ? $this->getEntityClass() : $this->setEntityClass($name);
     }
 
     /**

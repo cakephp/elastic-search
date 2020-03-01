@@ -18,6 +18,8 @@ composer.phar
 *.tmPreferences.cache
 # Eclipse
 .settings/*
+.project
+.buildpath
 # JetBrains, aka PHPStorm, IntelliJ IDEA
 .idea/*
 # NetBeans
