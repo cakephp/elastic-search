@@ -19,15 +19,14 @@ namespace Cake\ElasticSearch\Datasource;
 use Cake\Cache\Cache;
 use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
+use Cake\ElasticSearch\Exception\NotImplementedException;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
 use Elastica\Log as ElasticaLog;
+use Elastica\Query\BoolQuery;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
-use Elastica\Query\BoolQuery;
-use Elastica\Connection;
 use RuntimeException;
-use Cake\ElasticSearch\Exception\NotImplementedException;
 
 class Connection implements ConnectionInterface
 {
@@ -294,9 +293,9 @@ class Connection implements ConnectionInterface
 
         return $this->cacher = Cache::pool($configName);
     }
-    
+
     /**
-     * 
+     *
      * {@inheritDoc}
      * @see \Cake\Datasource\ConnectionInterface::execute($query, $params, $types)
      */
@@ -304,9 +303,9 @@ class Connection implements ConnectionInterface
     {
         throw new NotImplementedException();
     }
-    
+
     /**
-     * 
+     *
      * {@inheritDoc}
      * @see \Cake\Datasource\ConnectionInterface::query($sql)
      */
@@ -314,19 +313,19 @@ class Connection implements ConnectionInterface
     {
         throw new NotImplementedException();
     }
-    
+
     /**
-     * 
+     *
      * {@inheritDoc}
      * @see \Cake\Datasource\ConnectionInterface::prepare($sql)
      */
-    public function prepare($sql) 
+    public function prepare($sql)
     {
         throw new NotImplementedException();
     }
-    
+
     /**
-     * 
+     *
      * {@inheritDoc}
      * @see \Cake\Datasource\ConnectionInterface::getDriver()
      * @return \Elastica\Client
@@ -335,9 +334,9 @@ class Connection implements ConnectionInterface
     {
         return $this->_client;
     }
-    
+
     /**
-     * 
+     *
      * {@inheritDoc}
      * @see \Cake\Datasource\ConnectionInterface::supportsDynamicConstraints()
      * @return bool
@@ -346,9 +345,9 @@ class Connection implements ConnectionInterface
     {
         return false;
     }
-    
+
     /**
-     * 
+     *
      * {@inheritDoc}
      * @see \Cake\Datasource\ConnectionInterface::newQuery()
      * @return \Elastica\Query\BoolQuery
@@ -357,7 +356,7 @@ class Connection implements ConnectionInterface
     {
         return new BoolQuery();
     }
-    
+
     /**
      * Returns the index for the given connection
      *

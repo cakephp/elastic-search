@@ -25,6 +25,7 @@ use Cake\Datasource\RulesChecker;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Datasource\MappingSchema;
+use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventListenerInterface;
@@ -34,8 +35,6 @@ use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 use RuntimeException;
-use Cake\ElasticSearch\Document;
-use Cake\ElasticSearch\Exception\MissingDocumentException;
 
 /**
  * Base class for index.
@@ -798,7 +797,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         return $this->marshaller()->many($data, $options);
     }
-    
+
     /**
      * Returns the class used to hydrate rows for this table.
      *
@@ -812,29 +811,29 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $default = Document::class;
             $self = static::class;
             $parts = explode('\\', $self);
-            
+
             if ($self === self::class || count($parts) < 3) {
                 return $this->_documentClass = $default;
             }
-            
+
             $alias = Inflector::classify(Inflector::underscore(substr(array_pop($parts), 0, -5)));
             $name = implode('\\', array_slice($parts, 0, -1)) . '\\Document\\' . $alias;
             if (!class_exists($name)) {
                 return $this->_documentClass = $default;
             }
-            
+
             /** @var class-string<\Cake\Datasource\EntityInterface>|null $class */
             $class = App::className($name, 'Model/Entity');
             if (!$class) {
                 throw new MissingDocumentException([$name]);
             }
-            
+
             $this->_documentClass = $class;
         }
-        
+
         return $this->_documentClass;
     }
-    
+
     /**
      * Sets the class used to hydrate rows for this table.
      *
@@ -848,9 +847,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         if (!$class) {
             throw new MissingDocumentException([$name]);
         }
-        
+
         $this->_documentClass = $class;
-        
+
         return $this;
     }
 
@@ -865,7 +864,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function entityClass($name = null)
     {
-        return ($name === null) ? $this->getEntityClass() : $this->setEntityClass($name);
+        return $name === null ? $this->getEntityClass() : $this->setEntityClass($name);
     }
 
     /**
