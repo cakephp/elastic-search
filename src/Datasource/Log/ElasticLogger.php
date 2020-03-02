@@ -83,7 +83,7 @@ class ElasticLogger extends AbstractLogger
      */
     public function log($level, $message, array $context = [])
     {
-        if ($this->_connection->logQueries()) {
+        if ($this->_connection->isQueryLoggingEnabled()) {
             $this->_log($level, $message, $context);
         }
     }
@@ -137,7 +137,7 @@ class ElasticLogger extends AbstractLogger
             $message->took = $took;
             $message->numRows = $numRows;
 
-            $this->getLogger()->log($message, (string)$context['query'], $context);
+            $this->getLogger()->log($level, $logData, ['query' => $message]);
         } else {
             $this->getLogger()->log($level, $logData, $context);
         }
