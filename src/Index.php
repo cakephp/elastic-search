@@ -440,7 +440,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $result = $type->getDocument($primaryKey, $options);
-        $class = $this->entityClass();
+        $class = $this->getEntityClass();
 
         $options = [
             'markNew' => false,
@@ -717,7 +717,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         ]);
 
         if ($event->isStopped()) {
-            return $event->getResult();
+            return (bool)$event->getResult();
         }
 
         if (!$this->checkRules($entity, RulesChecker::DELETE, $options)) {
@@ -749,7 +749,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function newEmptyEntity(): EntityInterface
     {
-        $class = $this->entityClass();
+        $class = $this->getEntityClass();
 
         return new $class([], ['source' => $this->getRegistryAlias()]);
     }
@@ -851,20 +851,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $this->_documentClass = $class;
 
         return $this;
-    }
-
-    /**
-     * Returns the class used to hydrate rows for this table or sets
-     * a new one
-     *
-     * @deprecated
-     * @param string $name the name of the class to use
-     * @throws \Cake\ElasticSearch\Exception\MissingDocumentException when the entity class cannot be found
-     * @return string
-     */
-    public function entityClass($name = null)
-    {
-        return $name === null ? $this->getEntityClass() : $this->setEntityClass($name);
     }
 
     /**
