@@ -48,7 +48,7 @@ class ResultSetTest extends TestCase
             ->will($this->returnValue($type));
 
         $type->expects($this->once())
-            ->method('entityClass')
+            ->method('getEntityClass')
             ->will($this->returnValue(MyTestDocument::class));
         $type->method('embedded')
             ->will($this->returnValue([]));

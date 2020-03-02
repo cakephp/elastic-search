@@ -130,7 +130,7 @@ class MarshallerTest extends TestCase
             'body' => 'Elastic text',
             'user_id' => 1,
         ];
-        $this->index->entityClass(ProtectedArticle::class);
+        $this->index->setEntityClass(ProtectedArticle::class);
 
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
