@@ -101,6 +101,7 @@ class ResultSetTest extends TestCase
         $exclude = [
             '__construct', 'offsetSet', 'offsetGet', 'offsetExists', 'offsetUnset',
             'current', 'next', 'key', 'valid', 'rewind', 'create', 'setClass',
+            'count',
         ];
         $methods = array_diff($methods, $exclude);
 
@@ -132,7 +133,7 @@ class ResultSetTest extends TestCase
             $return = 'something';
             $expect->will($this->returnValue($return));
 
-            $this->assertSame($return, $resultSet->{$method}($param));
+            $this->assertSame($return, $resultSet->{$method}($param), "The {$method} method did not have a matching return.");
         }
     }
 
