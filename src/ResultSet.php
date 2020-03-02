@@ -113,26 +113,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     }
 
     /**
-     * Returns whether facets exist
-     *
-     * @return bool Facet existence
-     */
-    public function hasFacets()
-    {
-        return $this->resultSet->hasFacets();
-    }
-
-    /**
-     * Returns all facets results
-     *
-     * @return array Facet results
-     */
-    public function getFacets()
-    {
-        return $this->resultSet->getFacets();
-    }
-
-    /**
      * Returns all aggregation results
      *
      * @return array

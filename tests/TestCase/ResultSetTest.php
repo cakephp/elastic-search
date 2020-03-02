@@ -138,6 +138,27 @@ class ResultSetTest extends TestCase
     }
 
     /**
+     * Test stats related proxy methods
+     *
+     * @return void
+     */
+    public function testStatsProxies()
+    {
+        $index = new Index([
+            'name' => 'articles',
+            'connection' => ConnectionManager::get('test'),
+        ]);
+        $resultSet = $index->find()->all();
+        $this->assertSame(2, $resultSet->count());
+        $this->assertSame(0, $resultSet->countSuggests());
+        $this->assertFalse($resultSet->hasTimedOut());
+        $this->assertGreaterThan(-1, $resultSet->getTotalTime());
+        $this->assertSame(2, $resultSet->getTotalHits());
+        $this->assertSame([], $resultSet->getAggregations());
+        $this->assertSame([], $resultSet->getSuggests());
+    }
+
+    /**
      * Test serialize/unserialize
      *
      * @return void
