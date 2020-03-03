@@ -48,7 +48,7 @@ Cache::setConfig('_cake_core_', [
 ]);
 
 Log::setConfig('debug', [
-    'engine' => 'Cake\Log\Engine\FileLog',
+    'engine' => FileLog::class,
     'levels' => ['notice', 'info', 'debug'],
     'path' => LOGS,
     'file' => 'debug',
