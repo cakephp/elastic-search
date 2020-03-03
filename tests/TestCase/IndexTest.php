@@ -18,10 +18,10 @@ namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\EntityInterface;
-use Cake\Event\EventInterface;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
+use Cake\Event\EventInterface;
 use Cake\TestSuite\TestCase;
 
 /**
