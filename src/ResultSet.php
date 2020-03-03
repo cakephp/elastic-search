@@ -77,7 +77,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
         foreach ($repo->embedded() as $embed) {
             $this->embeds[$embed->property()] = $embed;
         }
-        $this->entityClass = $repo->entityClass();
+        $this->entityClass = $repo->getEntityClass();
         $this->repoName = $repo->getRegistryAlias();
         parent::__construct($resultSet);
     }
@@ -110,26 +110,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     public function getSuggests()
     {
         return $this->resultSet->getSuggests();
-    }
-
-    /**
-     * Returns whether facets exist
-     *
-     * @return bool Facet existence
-     */
-    public function hasFacets()
-    {
-        return $this->resultSet->hasFacets();
-    }
-
-    /**
-     * Returns all facets results
-     *
-     * @return array Facet results
-     */
-    public function getFacets()
-    {
-        return $this->resultSet->getFacets();
     }
 
     /**

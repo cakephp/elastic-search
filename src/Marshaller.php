@@ -61,7 +61,7 @@ class Marshaller
      */
     public function one(array $data, array $options = [])
     {
-        $entityClass = $this->index->entityClass();
+        $entityClass = $this->index->getEntityClass();
         $entity = $this->createAndHydrate($entityClass, $data, $options);
         $entity->setSource($this->index->getRegistryAlias());
 

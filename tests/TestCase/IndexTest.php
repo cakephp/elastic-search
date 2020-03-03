@@ -17,9 +17,11 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Datasource\ConnectionManager;
+use Cake\Datasource\EntityInterface;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
+use Cake\Event\EventInterface;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -79,9 +81,9 @@ class IndexTest extends TestCase
      *
      * @return void
      */
-    public function testEntityClassDefault()
+    public function testGetEntityClassDefault()
     {
-        $this->assertEquals('\Cake\ElasticSearch\Document', $this->index->entityClass());
+        $this->assertEquals(Document::class, $this->index->getEntityClass());
     }
 
     /**
@@ -89,11 +91,11 @@ class IndexTest extends TestCase
      *
      * @return void
      */
-    public function testEntityClassCustom()
+    public function testGetEntityClassCustom()
     {
         $index = IndexRegistry::get('TestPlugin.Comments');
 
-        $this->assertEquals('TestPlugin\Model\Document\Comment', $index->entityClass());
+        $this->assertEquals('TestPlugin\Model\Document\Comment', $index->getEntityClass());
     }
 
     /**
@@ -102,15 +104,16 @@ class IndexTest extends TestCase
      *
      * @return void
      */
-    public function testTableClassInApp()
+    public function testSetEntityClassInApp()
     {
         $class = $this->getMockClass('Cake\ElasticSearch\Document');
         class_alias($class, 'App\Model\Document\TestUser');
 
         $index = new Index();
+        $index->setEntityClass('TestUser');
         $this->assertEquals(
             'App\Model\Document\TestUser',
-            $index->entityClass('TestUser')
+            $index->getEntityClass()
         );
     }
 
@@ -120,15 +123,16 @@ class IndexTest extends TestCase
      *
      * @return void
      */
-    public function testTableClassInPlugin()
+    public function testsetEntityClassInPlugin()
     {
         $class = $this->getMockClass('\Cake\ElasticSearch\Document');
         class_alias($class, 'MyPlugin\Model\Document\SuperUser');
 
         $index = new Index();
+        $this->assertSame($index, $index->setEntityClass('MyPlugin.SuperUser'));
         $this->assertEquals(
             'MyPlugin\Model\Document\SuperUser',
-            $index->entityClass('MyPlugin.SuperUser')
+            $index->getEntityClass()
         );
     }
 
@@ -386,7 +390,7 @@ class IndexTest extends TestCase
         $called = 0;
         $this->index->getEventManager()->on(
             'Model.beforeSave',
-            function ($event, $entity, $options) use ($doc, &$called) {
+            function (EventInterface $event, EntityInterface $entity, $options) use ($doc, &$called) {
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
@@ -417,7 +421,7 @@ class IndexTest extends TestCase
         $doc->title = 'new title';
         $this->index->getEventManager()->on(
             'Model.beforeSave',
-            function ($event, $entity, $options) use ($doc) {
+            function (EventInterface $event, EntityInterface $entity, $options) use ($doc) {
                 $event->stopPropagation();
 
                 return 'kaboom';
@@ -630,7 +634,7 @@ class IndexTest extends TestCase
             function ($event, $entity, $options) use ($doc) {
                 $event->stopPropagation();
 
-                return 'kaboom';
+                return false;
             }
         );
         $this->index->getEventManager()->on(
@@ -639,7 +643,7 @@ class IndexTest extends TestCase
                 $this->fail('Should not be fired');
             }
         );
-        $this->assertSame('kaboom', $this->index->delete($doc));
+        $this->assertFalse($this->index->delete($doc));
     }
 
     /**

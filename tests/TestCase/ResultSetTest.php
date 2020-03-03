@@ -48,7 +48,7 @@ class ResultSetTest extends TestCase
             ->will($this->returnValue($type));
 
         $type->expects($this->once())
-            ->method('entityClass')
+            ->method('getEntityClass')
             ->will($this->returnValue(MyTestDocument::class));
         $type->method('embedded')
             ->will($this->returnValue([]));
@@ -101,6 +101,7 @@ class ResultSetTest extends TestCase
         $exclude = [
             '__construct', 'offsetSet', 'offsetGet', 'offsetExists', 'offsetUnset',
             'current', 'next', 'key', 'valid', 'rewind', 'create', 'setClass',
+            'count',
         ];
         $methods = array_diff($methods, $exclude);
 
@@ -132,8 +133,29 @@ class ResultSetTest extends TestCase
             $return = 'something';
             $expect->will($this->returnValue($return));
 
-            $this->assertSame($return, $resultSet->{$method}($param));
+            $this->assertSame($return, $resultSet->{$method}($param), "The {$method} method did not have a matching return.");
         }
+    }
+
+    /**
+     * Test stats related proxy methods
+     *
+     * @return void
+     */
+    public function testStatsProxies()
+    {
+        $index = new Index([
+            'name' => 'articles',
+            'connection' => ConnectionManager::get('test'),
+        ]);
+        $resultSet = $index->find()->all();
+        $this->assertSame(2, $resultSet->count());
+        $this->assertSame(0, $resultSet->countSuggests());
+        $this->assertFalse($resultSet->hasTimedOut());
+        $this->assertGreaterThan(-1, $resultSet->getTotalTime());
+        $this->assertSame(2, $resultSet->getTotalHits());
+        $this->assertSame([], $resultSet->getAggregations());
+        $this->assertSame([], $resultSet->getSuggests());
     }
 
     /**
