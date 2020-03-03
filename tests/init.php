@@ -50,6 +50,7 @@ Cache::setConfig('_cake_core_', [
 Log::setConfig('debug', [
     'engine' => 'Cake\Log\Engine\FileLog',
     'levels' => ['notice', 'info', 'debug'],
+    'path' => LOGS,
     'file' => 'debug',
 ]);
 
