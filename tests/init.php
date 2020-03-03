@@ -31,8 +31,8 @@ define('LOGS', TMP . 'logs' . DS);
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
-use Cake\Log\Log;
 use Cake\Log\Engine\FileLog;
+use Cake\Log\Log;
 use Cake\Routing\Router;
 
 Configure::write('debug', true);
