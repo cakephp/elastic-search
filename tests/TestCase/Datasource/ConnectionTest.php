@@ -16,8 +16,8 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
-use Cake\Database\Log\QueryLogger;
 use Cake\Database\Log\LoggedQuery;
+use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\Log\Log;
