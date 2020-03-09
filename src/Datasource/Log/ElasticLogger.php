@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Datasource\Log;
 
 use Cake\Database\Log\LoggedQuery;
-use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionInterface;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LogLevel;
@@ -99,10 +98,10 @@ class ElasticLogger extends AbstractLogger
      *     context: [ exception, request, retry ]
      * debug (request):
      *     message: "Elastica Request"
-     *     context: [ request, response, responseStatus ]
+     *     context: [ request, response, responseStatus, query ]
      * debug (fallback?):
      *     message: "Elastica Request"
-     *     context: [ message ]
+     *     context: [ message, query ]
      *
      * @param string $level The log level
      * @param string $message The log message
@@ -112,7 +111,6 @@ class ElasticLogger extends AbstractLogger
     protected function _log($level, $message, array $context = [])
     {
         $logData = $context;
-
         if (LogLevel::DEBUG && isset($context['request'])) {
             $logData = [
                 'method' => $context['request']['method'],
@@ -120,10 +118,9 @@ class ElasticLogger extends AbstractLogger
                 'data' => $context['request']['data'],
             ];
         }
-
         $logData = json_encode($logData, JSON_PRETTY_PRINT);
 
-        if ($this->getLogger() instanceof QueryLogger) {
+        if (isset($context['request'], $context['response'])) {
             $took = $numRows = 0;
             if (isset($context['response']['took'])) {
                 $took = $context['response']['took'];
@@ -131,15 +128,13 @@ class ElasticLogger extends AbstractLogger
             if (isset($context['response']['hits']['total'])) {
                 $numRows = $context['response']['hits']['total'];
             }
-
             $message = new LoggedQuery();
             $message->query = $logData;
             $message->took = $took;
             $message->numRows = $numRows;
 
-            $this->getLogger()->log($level, $logData, ['query' => $message]);
-        } else {
-            $this->getLogger()->log($level, $logData, $context);
+            $context['query'] = $message;
         }
+        $this->getLogger()->log($level, $logData, $context);
     }
 }
