@@ -37,6 +37,13 @@ your **config/app.php** file. An example configuration would be::
         ],
     ]
 
+If your endpoint requires https, use::
+
+    'port' => 443,
+    'transport' => 'https'
+
+or you might get a 400 response back from the elasticsearch server.
+
 Overview
 ========
 
