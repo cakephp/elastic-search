@@ -14,7 +14,7 @@ Para instalar o plugin ElasticSearch, você pode usar o ``composer``. A partir d
 diretório raiz de sua aplicação (onde o arquivo composer.json está localizado)
 execute o seguinte::
 
-    php composer.phar require cakephp/elastic-search "@stable"
+    php composer.phar require cakephp/elastic-search "^2.0"
 
 Você precisará adicionar a seguinte linha ao arquivo **config/bootstrap.php** da
 sua aplicação::

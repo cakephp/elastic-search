@@ -11,7 +11,7 @@ ElasticSearch プラグインは、`elasticsearch <https://www.elastic.co/produc
 ElasticSearch プラグインをインストールするには、 ``composer`` が利用できます。(composer.json
 ファイルが置かれている) アプリケーションの ROOT ディレクトリーから次のコマンドを実行します。 ::
 
-    php composer.phar require cakephp/elastic-search "@stable"
+    php composer.phar require cakephp/elastic-search "^2.0"
 
 以下の1行をあなたのアプリケーションの **src/Application.php** ファイルに追加する必要があります。 ::
 

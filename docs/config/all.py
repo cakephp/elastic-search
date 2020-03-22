@@ -23,7 +23,8 @@ project = 'CakePHP ElasticSearch'
 
 # Other versions that display in the version picker menu.
 version_list = [
-    {'name': '2.x', 'number': '/elasticsearch/2.x', 'title': '2.x', 'current': True},
+    {'name': '3.x', 'number': '/elasticsearch/3', 'title': '3.x'},
+    {'name': '2.x', 'number': '/elasticsearch/2', 'title': '2.x', 'current': True},
 ]
 
 # Languages available.
