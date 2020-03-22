@@ -1,4 +1,4 @@
-4.0 Upgrade Guide
+3.0 Upgrade Guide
 #################
 
 If you are upgrading from an earlier version of this plugin, this page aims to
