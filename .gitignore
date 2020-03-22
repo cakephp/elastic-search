@@ -3,6 +3,7 @@ phpunit.xml
 vendor
 .env
 composer.phar
+.phpunit.result.cache
 
 # Tool specific files #
 #######################
@@ -17,6 +18,8 @@ composer.phar
 *.tmPreferences.cache
 # Eclipse
 .settings/*
+.project
+.buildpath
 # JetBrains, aka PHPStorm, IntelliJ IDEA
 .idea/*
 # NetBeans

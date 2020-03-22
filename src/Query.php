@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -22,29 +24,28 @@ use IteratorAggregate;
 
 class Query implements IteratorAggregate, QueryInterface
 {
-
     use QueryTrait;
 
     /**
      * Indicates that the operation should append to the list
      *
-     * @var integer
+     * @var int
      */
-    const APPEND = 0;
+    public const APPEND = 0;
 
     /**
      * Indicates that the operation should prepend to the list
      *
-     * @var integer
+     * @var int
      */
-    const PREPEND = 1;
+    public const PREPEND = 1;
 
     /**
      * Indicates that the operation should overwrite the list
      *
-     * @var boolean
+     * @var bool
      */
-    const OVERWRITE = true;
+    public const OVERWRITE = true;
 
     /**
      * The Elastica Query object that is to be executed after
@@ -95,7 +96,7 @@ class Query implements IteratorAggregate, QueryInterface
     public function __construct(Index $repository)
     {
         $this->repository($repository);
-        $this->_elasticQuery = new ElasticaQuery;
+        $this->_elasticQuery = new ElasticaQuery();
     }
 
     /**
@@ -111,7 +112,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param bool $overwrite Whether or not to replace previous selections.
      * @return $this
      */
-    public function select(array $fields, $overwrite = false)
+    public function select($fields, bool $overwrite = false)
     {
         if (!$overwrite) {
             $fields = array_merge($this->_queryParts['fields'], $fields);
@@ -163,7 +164,7 @@ class Query implements IteratorAggregate, QueryInterface
      *  the current limit clause will be used.
      * @return $this
      */
-    public function page($num, $limit = null)
+    public function page(int $num, ?int $limit = null)
     {
         if ($limit !== null) {
             $this->limit($limit);
@@ -315,13 +316,74 @@ class Query implements IteratorAggregate, QueryInterface
      * @return $this
      * @see \Cake\ElasticSearch\QueryBuilder
      */
-    public function where($conditions = null, $types = [], $overwrite = false)
+    public function where($conditions = null, array $types = [], bool $overwrite = false)
     {
         if (is_bool($types)) {
             $overwrite = $types;
         }
 
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
+    }
+
+    /**
+     * Connects any previously defined set of conditions to the provided list
+     * using the AND operator. This function accepts the conditions list in the same
+     * format as the method `where` does, hence you can use arrays, expression objects
+     * callback functions or strings.
+     *
+     * It is important to notice that when calling this function, any previous set
+     * of conditions defined for this query will be treated as a single argument for
+     * the AND operator. This function will not only operate the most recently defined
+     * condition, but all the conditions as a whole.
+     *
+     * When using an array for defining conditions, creating constraints form each
+     * array entry will use the same logic as with the `where()` function. This means
+     * that each array entry will be joined to the other using the AND operator, unless
+     * you nest the conditions in the array using other operator.
+     *
+     * ### Examples:
+     *
+     * ```
+     * $query->where(['title' => 'Hello World')->andWhere(['author_id' => 1]);
+     * ```
+     *
+     * Will produce:
+     *
+     * `WHERE title = 'Hello World' AND author_id = 1`
+     *
+     * ```
+     * $query
+     *   ->where(['OR' => ['published' => false, 'published is NULL']])
+     *   ->andWhere(['author_id' => 1, 'comments_count >' => 10])
+     * ```
+     *
+     * Produces:
+     *
+     * `WHERE (published = 0 OR published IS NULL) AND author_id = 1 AND comments_count > 10`
+     *
+     * ```
+     * $query
+     *   ->where(['title' => 'Foo'])
+     *   ->andWhere(function ($exp, $query) {
+     *     return $exp
+     *       ->or(['author_id' => 1])
+     *       ->add(['author_id' => 2]);
+     *   });
+     * ```
+     *
+     * Generates the following conditions:
+     *
+     * `WHERE (title = 'Foo') AND (author_id = 1 OR author_id = 2)`
+     *
+     * @param array|null|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
+     * @param array $types Not used, required to comply with QueryInterface.
+     * @see \Cake\ElasticSearch\Query::where()
+     * @see \Cake\ElasticSearch\QueryBuilder
+     * @return $this
+     */
+    public function andWhere($conditions, array $types = [])
+    {
+        return $this->_buildBoolQuery('filter', $conditions, false, 'addMust');
     }
 
     /**
@@ -333,7 +395,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
-     * @return Query
+     * @return \Cake\ElasticSearch\Query
      */
     public function queryMust($conditions, $overwrite = false)
     {
@@ -349,7 +411,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
-     * @return Query
+     * @return \Cake\ElasticSearch\Query
      */
     public function queryShould($conditions, $overwrite = false)
     {
@@ -376,7 +438,7 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Method to set or overwrite the query
      *
-     * @param AbstractQuery $query Set the query
+     * @param \Elastica\Query\AbstractQuery $query Set the query
      * @return $this
      */
     public function setFullQuery(AbstractQuery $query)
@@ -411,7 +473,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param  null|array $options An array of additional search options
      * @return $this|array
      */
-    public function searchOptions(array $options = null)
+    public function searchOptions(?array $options = null)
     {
         if ($options === null) {
             return $this->_searchOptions;
@@ -445,7 +507,7 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         if (is_callable($conditions)) {
-            $conditions = $conditions(new QueryBuilder, $this->_queryParts[$partType], $this);
+            $conditions = $conditions(new QueryBuilder(), $this->_queryParts[$partType], $this);
         }
 
         if ($conditions === null) {
@@ -453,7 +515,7 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         if (is_array($conditions)) {
-            $conditions = (new QueryBuilder)->parse($conditions);
+            $conditions = (new QueryBuilder())->parse($conditions);
             array_map([$this->_queryParts[$partType], $type], $conditions);
 
             return $this;
@@ -622,7 +684,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @return array
      */
-    public function aliasField($field, $alias = null)
+    public function aliasField(string $field, ?string $alias = null): array
     {
         return [$field => $field];
     }
@@ -632,7 +694,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @return array
      */
-    public function aliasFields($fields, $defaultAlias = null)
+    public function aliasFields(array $fields, ?string $defaultAlias = null): array
     {
         return array_map([$this, 'aliasField', $fields]);
     }
@@ -642,7 +704,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         $connection = $this->_repository->getConnection();
         $index = $this->_repository->getName();

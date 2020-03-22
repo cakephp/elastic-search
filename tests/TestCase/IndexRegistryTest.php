@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -15,8 +17,6 @@
 namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Core\Configure;
-use Cake\Core\Plugin;
-use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\TestSuite\TestCase;
 
@@ -25,13 +25,12 @@ use Cake\TestSuite\TestCase;
  */
 class IndexRegistryTest extends TestCase
 {
-
     /**
      * setup
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         Configure::write('App.namespace', 'TestApp');
@@ -42,7 +41,7 @@ class IndexRegistryTest extends TestCase
      *
      * @return void
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         IndexRegistry::clear();
@@ -139,12 +138,12 @@ class IndexRegistryTest extends TestCase
     /**
      * Test get with config throws an exception if the alias exists already.
      *
-     * @expectedException        \RuntimeException
-     * @expectedExceptionMessage You cannot configure "Users", it already exists in the registry.
      * @return                   void
      */
     public function testGetExistingWithConfigData()
     {
+        $this->expectException('RuntimeException');
+        $this->expectExceptionMessage('You cannot configure "Users", it already exists in the registry.');
         $users = IndexRegistry::get('Users');
         IndexRegistry::get('Users', ['name' => 'my_users']);
     }

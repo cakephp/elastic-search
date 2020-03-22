@@ -5,6 +5,9 @@ namespace TestApp\Model\Document;
 
 use Cake\ElasticSearch\Document;
 
-class User extends Document
+class ProtectedArticle extends Document
 {
+    protected $_accessible = [
+        'title' => true,
+    ];
 }

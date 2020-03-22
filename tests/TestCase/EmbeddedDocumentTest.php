@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -12,7 +14,7 @@
  * @since     0.0.1
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Test;
+namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
@@ -26,13 +28,13 @@ class EmbeddedDocumentTest extends TestCase
 {
     public $fixtures = ['plugin.Cake/ElasticSearch.Profiles'];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->index = new Index(
             [
             'name' => 'profiles',
-            'connection' => ConnectionManager::get('test')
+            'connection' => ConnectionManager::get('test'),
             ]
         );
     }
@@ -143,7 +145,7 @@ class EmbeddedDocumentTest extends TestCase
     {
         $this->index->embedMany('Address');
         $result = $this->index->get(3);
-        $this->assertInternalType('array', $result->address);
+        $this->assertIsArray($result->address);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address[1]);
     }
@@ -163,7 +165,7 @@ class EmbeddedDocumentTest extends TestCase
         Configure::write('App.namespace', 'TestApp');
         $this->index->embedMany('Address', $options);
         $result = $this->index->get(3);
-        $this->assertInternalType('array', $result->address);
+        $this->assertIsArray($result->address);
         $this->assertInstanceOf($expected, $result->address[0]);
         $this->assertInstanceOf($expected, $result->address[1]);
     }
@@ -180,7 +182,7 @@ class EmbeddedDocumentTest extends TestCase
         $rows = $result->toArray();
 
         $this->assertCount(1, $rows);
-        $this->assertInternalType('array', $rows[0]->address);
+        $this->assertIsArray($rows[0]->address);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address[1]);
     }

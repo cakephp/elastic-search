@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -16,7 +18,6 @@ namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
 use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\TestSuite\TestCase;
-use Cake\Validation\Validator;
 
 /**
  * Test case for the MappingSchema
@@ -43,14 +44,14 @@ class MappingSchemaTest extends TestCase
     {
         $data = [
             'user_id' => [
-                'type' => 'integer'
+                'type' => 'integer',
             ],
             'title' => [
-                'type' => 'text'
+                'type' => 'text',
             ],
             'body' => [
-                'type' => 'text'
-            ]
+                'type' => 'text',
+            ],
         ];
         $mapping = new MappingSchema('articles', $data);
         $expected = array_keys($data);
@@ -66,15 +67,15 @@ class MappingSchemaTest extends TestCase
     {
         $data = [
             'user_id' => [
-                'type' => 'integer'
+                'type' => 'integer',
             ],
             'title' => [
                 'type' => 'text',
                 'null_value' => 'na',
             ],
             'body' => [
-                'type' => 'text'
-            ]
+                'type' => 'text',
+            ],
         ];
         $mapping = new MappingSchema('articles', $data);
         $this->assertEquals($data['user_id'], $mapping->field('user_id'));
@@ -91,13 +92,13 @@ class MappingSchemaTest extends TestCase
     {
         $data = [
             'user_id' => [
-                'type' => 'integer'
+                'type' => 'integer',
             ],
             'address' => [
                 'type' => 'nested',
                 'properties' => [
                     'street' => ['type' => 'text'],
-                ]
+                ],
             ],
         ];
         $mapping = new MappingSchema('articles', $data);
@@ -114,13 +115,13 @@ class MappingSchemaTest extends TestCase
     {
         $data = [
             'user_id' => [
-                'type' => 'integer'
+                'type' => 'integer',
             ],
             'address' => [
                 'type' => 'nested',
                 'properties' => [
                     'street' => ['type' => 'text'],
-                ]
+                ],
             ],
         ];
         $mapping = new MappingSchema('articles', $data);

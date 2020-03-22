@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -12,12 +14,14 @@
  * @since     0.0.1
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Test;
+namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Datasource\ConnectionManager;
+use Cake\Datasource\EntityInterface;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
+use Cake\Event\EventInterface;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -27,14 +31,14 @@ class IndexTest extends TestCase
 {
     public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->connection = ConnectionManager::get('test');
         $this->index = new Index(
             [
             'name' => 'articles',
-            'connection' => $this->connection
+            'connection' => $this->connection,
             ]
         );
     }
@@ -54,11 +58,11 @@ class IndexTest extends TestCase
     /**
      * Tests that calling find will return a query object
      *
-     * @expectedException \Cake\Datasource\Exception\RecordNotFoundException
      * @return            void
      */
     public function testFindAllWithFirstOrFail()
     {
+        $this->expectException('Cake\Datasource\Exception\RecordNotFoundException');
         $this->index->find('all')->where(['id' => '999999999'])->firstOrFail();
     }
 
@@ -77,9 +81,9 @@ class IndexTest extends TestCase
      *
      * @return void
      */
-    public function testEntityClassDefault()
+    public function testGetEntityClassDefault()
     {
-        $this->assertEquals('\Cake\ElasticSearch\Document', $this->index->entityClass());
+        $this->assertEquals(Document::class, $this->index->getEntityClass());
     }
 
     /**
@@ -87,11 +91,11 @@ class IndexTest extends TestCase
      *
      * @return void
      */
-    public function testEntityClassCustom()
+    public function testGetEntityClassCustom()
     {
         $index = IndexRegistry::get('TestPlugin.Comments');
 
-        $this->assertEquals('TestPlugin\Model\Document\Comment', $index->entityClass());
+        $this->assertEquals('TestPlugin\Model\Document\Comment', $index->getEntityClass());
     }
 
     /**
@@ -100,15 +104,16 @@ class IndexTest extends TestCase
      *
      * @return void
      */
-    public function testTableClassInApp()
+    public function testSetEntityClassInApp()
     {
         $class = $this->getMockClass('Cake\ElasticSearch\Document');
         class_alias($class, 'App\Model\Document\TestUser');
 
         $index = new Index();
+        $index->setEntityClass('TestUser');
         $this->assertEquals(
             'App\Model\Document\TestUser',
-            $index->entityClass('TestUser')
+            $index->getEntityClass()
         );
     }
 
@@ -118,15 +123,16 @@ class IndexTest extends TestCase
      *
      * @return void
      */
-    public function testTableClassInPlugin()
+    public function testsetEntityClassInPlugin()
     {
         $class = $this->getMockClass('\Cake\ElasticSearch\Document');
         class_alias($class, 'MyPlugin\Model\Document\SuperUser');
 
         $index = new Index();
+        $this->assertSame($index, $index->setEntityClass('MyPlugin.SuperUser'));
         $this->assertEquals(
             'MyPlugin\Model\Document\SuperUser',
-            $index->entityClass('MyPlugin.SuperUser')
+            $index->getEntityClass()
         );
     }
 
@@ -144,7 +150,7 @@ class IndexTest extends TestCase
         $index = new Index(
             [
             'name' => 'foo',
-            'connection' => $connection
+            'connection' => $connection,
             ]
         );
 
@@ -200,11 +206,11 @@ class IndexTest extends TestCase
         $index = new Index(
             [
             'name' => 'articles',
-            'connection' => $connection
+            'connection' => $connection,
             ]
         );
         $data = [
-            'title' => 'A newer title'
+            'title' => 'A newer title',
         ];
         $result = $index->newEntity($data);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -225,15 +231,15 @@ class IndexTest extends TestCase
         $index = new Index(
             [
             'name' => 'articles',
-            'connection' => $connection
+            'connection' => $connection,
             ]
         );
         $data = [
             [
-                'title' => 'A newer title'
+                'title' => 'A newer title',
             ],
             [
-                'title' => 'A second title'
+                'title' => 'A second title',
             ],
         ];
         $result = $index->newEntities($data);
@@ -255,21 +261,21 @@ class IndexTest extends TestCase
             new Document(
                 [
                 'title' => 'First',
-                'body' => 'Some new content'
+                'body' => 'Some new content',
                 ],
                 [
-                'markNew' => true
+                'markNew' => true,
                 ]
             ),
             new Document(
                 [
                 'title' => 'Second',
-                'body' => 'Some new content'
+                'body' => 'Some new content',
                 ],
                 [
-                'markNew' => true
+                'markNew' => true,
                 ]
-            )
+            ),
         ];
 
         $result = $this->index->saveMany($entities);
@@ -286,7 +292,7 @@ class IndexTest extends TestCase
         $doc = new Document(
             [
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => true]
         );
@@ -313,7 +319,7 @@ class IndexTest extends TestCase
             [
             'id' => '123',
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => false]
         );
@@ -334,7 +340,7 @@ class IndexTest extends TestCase
             [
             'id' => '123',
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => false]
         );
@@ -352,7 +358,7 @@ class IndexTest extends TestCase
         $doc = new Document(
             [
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => true]
         );
@@ -360,7 +366,7 @@ class IndexTest extends TestCase
         $document = $this->index->save(
             $doc,
             [
-            'refresh' => true
+            'refresh' => true,
             ]
         );
 
@@ -384,7 +390,7 @@ class IndexTest extends TestCase
         $called = 0;
         $this->index->getEventManager()->on(
             'Model.beforeSave',
-            function ($event, $entity, $options) use ($doc, &$called) {
+            function (EventInterface $event, EntityInterface $entity, $options) use ($doc, &$called) {
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
@@ -415,7 +421,7 @@ class IndexTest extends TestCase
         $doc->title = 'new title';
         $this->index->getEventManager()->on(
             'Model.beforeSave',
-            function ($event, $entity, $options) use ($doc) {
+            function (EventInterface $event, EntityInterface $entity, $options) use ($doc) {
                 $event->stopPropagation();
 
                 return 'kaboom';
@@ -441,7 +447,7 @@ class IndexTest extends TestCase
             [
             'title' => 'A brand new article',
             'body' => 'Some new content',
-            'user' => new Document(['username' => 'sarah'])
+            'user' => new Document(['username' => 'sarah']),
             ]
         );
         $this->index->embedOne('User');
@@ -466,7 +472,7 @@ class IndexTest extends TestCase
             'comments' => [
                 new Document(['comment' => 'Nice post']),
                 new Document(['comment' => 'Awesome!']),
-            ]
+            ],
             ]
         );
         $this->index->embedMany('Comments');
@@ -503,7 +509,7 @@ class IndexTest extends TestCase
 
         $doc->clean();
         $doc->id = 12345;
-        $doc->isNew(false);
+        $doc->setNew(false);
         $this->assertSame($doc, $this->index->save($doc), 'Save should pass, not new anymore.');
     }
 
@@ -540,7 +546,7 @@ class IndexTest extends TestCase
         $doc = new Document(
             [
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => true]
         );
@@ -628,7 +634,7 @@ class IndexTest extends TestCase
             function ($event, $entity, $options) use ($doc) {
                 $event->stopPropagation();
 
-                return 'kaboom';
+                return false;
             }
         );
         $this->index->getEventManager()->on(
@@ -637,18 +643,18 @@ class IndexTest extends TestCase
                 $this->fail('Should not be fired');
             }
         );
-        $this->assertSame('kaboom', $this->index->delete($doc));
+        $this->assertFalse($this->index->delete($doc));
     }
 
     /**
      * Test deleting a new document
      *
-     * @expectedException        \InvalidArgumentException
-     * @expectedExceptionMessage Deleting requires an "id" value.
      * @return                   void
      */
     public function testDeleteMissing()
     {
+        $this->expectException('InvalidArgumentException');
+        $this->expectExceptionMessage('Deleting requires an "id" value.');
         $doc = new Document(['title' => 'not there.']);
         $this->index->delete($doc);
     }
@@ -709,7 +715,7 @@ class IndexTest extends TestCase
 
         $this->connection->getIndex($this->index->getName())->refresh();
 
-        $this->assertTrue($result);
+        $this->assertSame(1, $result);
         $this->assertEquals(0, $this->index->find()->count());
     }
 
@@ -724,7 +730,7 @@ class IndexTest extends TestCase
 
         $this->connection->getIndex($this->index->getName())->refresh();
 
-        $this->assertTrue($result);
+        $this->assertSame(1, $result);
         $this->assertEquals(1, $this->index->find()->count());
     }
 

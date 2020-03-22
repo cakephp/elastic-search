@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -67,7 +69,7 @@ class IndexRegistry
         }
 
         static::$options[$alias] = $options;
-        list(, $classAlias) = pluginSplit($alias);
+        [, $classAlias] = pluginSplit($alias);
         $options += ['name' => Inflector::underscore($classAlias)];
 
         if (empty($options['className'])) {
@@ -78,7 +80,7 @@ class IndexRegistry
             $options['className'] = $className;
         } else {
             if (!isset($options['name']) && strpos($options['className'], '\\') === false) {
-                list(, $name) = pluginSplit($options['className']);
+                [, $name] = pluginSplit($options['className']);
                 $options['name'] = Inflector::underscore($name);
             }
             $options['className'] = 'Cake\ElasticSearch\Index';

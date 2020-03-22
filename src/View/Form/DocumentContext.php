@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -105,7 +107,7 @@ class DocumentContext implements ContextInterface
                 $index = $entity->getSource();
             }
             if (!$index && $isDocument && get_class($entity) !== 'Cake\ElasticSearch\Document') {
-                list(, $entityClass) = namespaceSplit(get_class($entity));
+                [, $entityClass] = namespaceSplit(get_class($entity));
                 $index = Inflector::pluralize($entityClass);
             }
         }
@@ -129,7 +131,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function primaryKey()
+    public function getPrimaryKey(): array
     {
         return ['id'];
     }
@@ -137,7 +139,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function isPrimaryKey($field)
+    public function isPrimaryKey(string $field): bool
     {
         $parts = explode('.', $field);
 
@@ -147,7 +149,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function isCreate()
+    public function isCreate(): bool
     {
         $entity = $this->_context['entity'];
         if (is_array($entity) || $entity instanceof Traversable) {
@@ -163,7 +165,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function val($field)
+    public function val(string $field, array $options = [])
     {
         $val = $this->_request->getData($field);
         if ($val !== null) {
@@ -275,7 +277,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function isRequired($field)
+    public function isRequired(string $field): bool
     {
         $parts = explode('.', $field);
         $entity = $this->entity($parts);
@@ -303,6 +305,57 @@ class DocumentContext implements ContextInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getRequiredMessage(string $field): ?string
+    {
+        $parts = explode('.', $field);
+
+        $validator = $this->_getValidator($parts);
+        $fieldName = array_pop($parts);
+        if (!$validator->hasField($fieldName)) {
+            return null;
+        }
+
+        $ruleset = $validator->field($fieldName);
+
+        $requiredMessage = $validator->getRequiredMessage($fieldName);
+        $emptyMessage = $validator->getNotEmptyMessage($fieldName);
+
+        if ($ruleset->isPresenceRequired() && $requiredMessage) {
+            return $requiredMessage;
+        }
+        if (!$ruleset->isEmptyAllowed() && $emptyMessage) {
+            return $emptyMessage;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get field length from validation
+     *
+     * @param string $field The dot separated path to the field you want to check.
+     * @return int|null
+     */
+    public function getMaxLength(string $field): ?int
+    {
+        $parts = explode('.', $field);
+        $validator = $this->_getValidator($parts);
+        $fieldName = array_pop($parts);
+        if (!$validator->hasField($fieldName)) {
+            return null;
+        }
+        foreach ($validator->field($fieldName)->rules() as $rule) {
+            if ($rule->get('rule') === 'maxLength') {
+                return $rule->get('pass')[0];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Get the validator for the current index.
      *
      * @return \Cake\Validation\Validator The validator for the index.
@@ -315,7 +368,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function fieldNames()
+    public function fieldNames(): array
     {
         $schema = $this->_context['index']->schema();
 
@@ -325,7 +378,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function type($field)
+    public function type(string $field): ?string
     {
         $schema = $this->_context['index']->schema();
 
@@ -335,7 +388,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function attributes($field)
+    public function attributes(string $field): array
     {
         return ['length' => null, 'precision' => null];
     }
@@ -343,7 +396,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function hasError($field)
+    public function hasError(string $field): bool
     {
         return $this->error($field) !== [];
     }
@@ -351,7 +404,7 @@ class DocumentContext implements ContextInterface
     /**
      * {@inheritDoc}
      */
-    public function error($field)
+    public function error(string $field): array
     {
         $parts = explode('.', $field);
         $entity = $this->entity($parts);

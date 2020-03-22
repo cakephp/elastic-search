@@ -10,8 +10,7 @@
          stopOnError="false"
          stopOnFailure="false"
          stopOnIncomplete="false"
-         stopOnSkipped="false"
-         syntaxCheck="false">
+         stopOnSkipped="false">
 
     <listeners>
         <listener class="\Cake\TestSuite\Fixture\FixtureInjector"

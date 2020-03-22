@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -14,14 +16,17 @@
  */
 namespace Cake\ElasticSearch\Datasource;
 
-use Cake\Database\Log\LoggedQuery;
+use Cake\Cache\Cache;
 use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
-use Cake\Log\Engine\FileLog;
+use Cake\ElasticSearch\Exception\NotImplementedException;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
 use Elastica\Log as ElasticaLog;
-use Elastica\Request;
+use Elastica\Query\BoolQuery;
+use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
+use RuntimeException;
 
 class Connection implements ConnectionInterface
 {
@@ -72,7 +77,7 @@ class Connection implements ConnectionInterface
             $this->configName = $config['name'];
         }
         if (isset($config['log'])) {
-            $this->logQueries((bool)$config['log']);
+            $this->enableQueryLogging((bool)$config['log']);
         }
 
         $this->_client = new ElasticaClient($config, $callback, $this->getEsLogger());
@@ -107,7 +112,7 @@ class Connection implements ConnectionInterface
     /**
      * {@inheritDoc}
      */
-    public function configName()
+    public function configName(): string
     {
         return $this->configName;
     }
@@ -142,15 +147,38 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Enable/disable query logging
+     *
+     * @param bool $value Enable/disable query logging
+     * @return $this
      */
-    public function logQueries($enable = null)
+    public function enableQueryLogging(bool $value = true)
     {
-        if ($enable === null) {
-            return $this->logQueries;
-        }
+        $this->logQueries = $value;
 
-        $this->logQueries = $enable;
+        return $this;
+    }
+
+    /**
+     * Disable query logging
+     *
+     * @return $this
+     */
+    public function disableQueryLogging()
+    {
+        $this->logQueries = false;
+
+        return $this;
+    }
+
+    /**
+     * Check if query logging is enabled.
+     *
+     * @return bool
+     */
+    public function isQueryLoggingEnabled(): bool
+    {
+        return $this->logQueries;
     }
 
     /**
@@ -177,7 +205,7 @@ class Connection implements ConnectionInterface
      *
      * @return array
      */
-    public function config()
+    public function config(): array
     {
         return $this->_client->getConfig();
     }
@@ -201,15 +229,15 @@ class Connection implements ConnectionInterface
      * Will set the default logger to elasticsearch if found, or debug
      * If none of the above are found the default Es logger will be used.
      *
-     * @return \Cake\Database\Log\QueryLogger logger instance
+     * @return \Psr\Log\LoggerInterface logger instance
      */
-    public function getLogger()
+    public function getLogger(): LoggerInterface
     {
         if ($this->_logger === null) {
             $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
 
             if (!$engine) {
-                $engine = new ElasticaLog;
+                $engine = new ElasticaLog();
             }
 
             $this->setLogger($engine);
@@ -233,21 +261,111 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @deprecated Use getLogger() and setLogger() instead.
+     * @inheritDoc
      */
-    public function logger($instance = null)
+    public function setCacher(CacheInterface $cacher)
     {
-        deprecationWarning(
-            'Connection::logger() is deprecated. ' .
-            'Use Connection::setLogger()/getLogger() instead.'
-        );
+        $this->cacher = $cacher;
 
-        if ($instance === null) {
-            return $this->getLogger();
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCacher(): CacheInterface
+    {
+        if ($this->cacher !== null) {
+            return $this->cacher;
         }
 
-        $this->setLogger($instance);
+        $configName = $this->_config['cacheMetadata'] ?? '_cake_model_';
+        if (!is_string($configName)) {
+            $configName = '_cake_model_';
+        }
+
+        if (!class_exists(Cache::class)) {
+            throw new RuntimeException(
+                'To use caching you must either set a cacher using Connection::setCacher()' .
+                ' or require the cakephp/cache package in your composer config.'
+            );
+        }
+
+        return $this->cacher = Cache::pool($configName);
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::execute($query, $params, $types)
+     */
+    public function execute($query, $params = [], array $types = [])
+    {
+        throw new NotImplementedException();
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::query($sql)
+     */
+    public function query(string $sql)
+    {
+        throw new NotImplementedException();
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::prepare($sql)
+     */
+    public function prepare($sql)
+    {
+        throw new NotImplementedException();
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::getDriver()
+     * @return \Elastica\Client
+     */
+    public function getDriver()
+    {
+        return $this->_client;
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::supportsDynamicConstraints()
+     * @return bool
+     */
+    public function supportsDynamicConstraints()
+    {
+        return false;
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \Cake\Datasource\ConnectionInterface::newQuery()
+     * @return \Elastica\Query\BoolQuery
+     */
+    public function newQuery()
+    {
+        return new BoolQuery();
+    }
+
+    /**
+     * Returns the index for the given connection
+     *
+     * @param  string $name Index name to create connection to, if no value is passed
+     * it will use the default index name for the connection.
+     * @return \Elastica\Index Index for the given name
+     */
+    public function getIndex($name = null)
+    {
+        return $this->_client->getIndex($name ?: $this->getConfig('index'));
     }
 }

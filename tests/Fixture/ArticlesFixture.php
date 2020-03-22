@@ -59,7 +59,7 @@ class ArticlesFixture extends TestFixture
             'title' => 'Second article',
             'user_id' => 2,
             'body' => 'A delicious cake I made yesterday for you.',
-            'created' => '2015-04-06T16:03:30'
+            'created' => '2015-04-06T16:03:30',
         ],
     ];
 }

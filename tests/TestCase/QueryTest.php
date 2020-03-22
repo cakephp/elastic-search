@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -12,7 +14,7 @@
  * @since         0.0.1
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Test;
+namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Query;
@@ -25,7 +27,6 @@ use Cake\TestSuite\TestCase;
  */
 class QueryTest extends TestCase
 {
-
     /**
      * Tests query constructor
      *
@@ -66,8 +67,8 @@ class QueryTest extends TestCase
 
         $expected = ['query' => [
             'term' => [
-                'name' => 'cake'
-            ]
+                'name' => 'cake',
+            ],
         ]];
 
         $this->assertSame($expected, $query->compileQuery()->toArray());
@@ -180,8 +181,8 @@ class QueryTest extends TestCase
         $query->order('price');
         $this->assertSame([ 0 => [
             'price' => [
-                'order' => 'desc'
-            ]
+                'order' => 'desc',
+            ],
         ]], $query->clause('order'));
     }
 
@@ -198,9 +199,9 @@ class QueryTest extends TestCase
         $query->applyOptions([
             'fields' => ['id', 'name'],
             'conditions' => [
-                'created >=' => '2013-01-01'
+                'created >=' => '2013-01-01',
             ],
-            'limit' => 10
+            'limit' => 10,
         ]);
 
         $result = [
@@ -213,14 +214,14 @@ class QueryTest extends TestCase
                             'must' => [[
                                 'range' => [
                                     'created' => [
-                                        'gte' => '2013-01-01'
-                                    ]
-                                ]
-                            ]]
-                        ]]
-                    ]
-                ]
-            ]
+                                        'gte' => '2013-01-01',
+                                    ],
+                                ],
+                            ]],
+                        ]],
+                    ],
+                ],
+            ],
         ];
 
         $this->assertSame($result, $query->compileQuery()->toArray());
@@ -246,7 +247,7 @@ class QueryTest extends TestCase
         $elasticQuery = $query->compileQuery()->toArray();
         $expected = [
             ['price' => ['order' => 'desc']],
-            ['created' => ['order' => 'asc']]
+            ['created' => ['order' => 'asc']],
         ];
         $this->assertEquals($expected, $elasticQuery['sort']);
 
@@ -267,14 +268,14 @@ class QueryTest extends TestCase
             ['created' => ['order' => 'asc']],
             ['modified' => ['order' => 'desc']],
             ['score' => ['order' => 'asc']],
-            ['clicks' => ['mode' => 'avg', 'order' => 'asc']]
+            ['clicks' => ['mode' => 'avg', 'order' => 'asc']],
         ];
         $this->assertEquals($expected, $elasticQuery['sort']);
 
         $query->order(['created' => 'asc'], true);
         $elasticQuery = $query->compileQuery()->toArray();
         $expected = [
-            ['created' => ['order' => 'asc']]
+            ['created' => ['order' => 'asc']],
         ];
         $this->assertEquals($expected, $elasticQuery['sort']);
     }
@@ -293,8 +294,8 @@ class QueryTest extends TestCase
             'age >' => 29,
             'or' => [
                 'tags in' => ['cake', 'php'],
-                'interests not in' => ['c#', 'java']
-            ]
+                'interests not in' => ['c#', 'java'],
+            ],
         ]);
 
         $compiled = $query->compileQuery()->toArray();
@@ -313,9 +314,9 @@ class QueryTest extends TestCase
         $expected = [
             'bool' => [
                 'must_not' => [
-                    ['terms' => ['interests' => ['c#', 'java']]]
-                ]
-            ]
+                    ['terms' => ['interests' => ['c#', 'java']]],
+                ],
+            ],
         ];
         $this->assertEquals($expected, $filter[2]['bool']['should'][1]);
 
@@ -335,7 +336,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $filter);
 
-        $query->where(['name.first' => 'jose'], true);
+        $query->where(['name.first' => 'jose'], [], true);
         $compiled = $query->compileQuery()->toArray();
         $filter = $compiled['query']['bool']['filter'][0]['bool']['must'];
         $expected = ['term' => ['name.first' => 'jose']];
@@ -356,8 +357,8 @@ class QueryTest extends TestCase
             'age >' => 29,
             'or' => [
                 'tags in' => ['cake', 'php'],
-                'interests not in' => ['c#', 'java']
-            ]
+                'interests not in' => ['c#', 'java'],
+            ],
         ]);
 
         $compiled = $query->compileQuery()->toArray();
@@ -376,9 +377,9 @@ class QueryTest extends TestCase
         $expected = [
             'bool' => [
                 'must_not' => [
-                    ['terms' => ['interests' => ['c#', 'java']]]
-                ]
-            ]
+                    ['terms' => ['interests' => ['c#', 'java']]],
+                ],
+            ],
         ];
         $this->assertEquals($expected, $must[2]['bool']['should'][1]);
 
@@ -414,8 +415,8 @@ class QueryTest extends TestCase
             'age >' => 29,
             'or' => [
                 'tags in' => ['cake', 'php'],
-                'interests not in' => ['c#', 'java']
-            ]
+                'interests not in' => ['c#', 'java'],
+            ],
         ]);
 
         $compiled = $query->compileQuery()->toArray();
@@ -434,9 +435,9 @@ class QueryTest extends TestCase
         $expected = [
             'bool' => [
                 'must_not' => [
-                    ['terms' => ['interests' => ['c#', 'java']]]
-                ]
-            ]
+                    ['terms' => ['interests' => ['c#', 'java']]],
+                ],
+            ],
         ];
         $this->assertEquals($expected, $should[2]['bool']['should'][1]);
 
@@ -477,8 +478,8 @@ class QueryTest extends TestCase
             'age >' => 29,
             'or' => [
                 'tags in' => ['cake', 'php'],
-                'interests not in' => ['c#', 'java']
-            ]
+                'interests not in' => ['c#', 'java'],
+            ],
         ]);
 
         $compiled = $query->compileQuery()->toArray();
@@ -497,9 +498,9 @@ class QueryTest extends TestCase
         $expected = [
             'bool' => [
                 'must_not' => [
-                        ['terms' => ['interests' => ['c#', 'java']]]
-                ]
-            ]
+                        ['terms' => ['interests' => ['c#', 'java']]],
+                ],
+            ],
         ];
         $this->assertEquals($expected, $filter[2]['bool']['should'][1]);
 
@@ -569,7 +570,7 @@ class QueryTest extends TestCase
             'fields' => [
                 'contents' => [
                     'fragment_size' => 100,
-                    'number_of_fragments' => 3
+                    'number_of_fragments' => 3,
                 ],
             ],
         ]);

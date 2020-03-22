@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -59,7 +61,7 @@ class Marshaller
      */
     public function one(array $data, array $options = [])
     {
-        $entityClass = $this->index->entityClass();
+        $entityClass = $this->index->getEntityClass();
         $entity = $this->createAndHydrate($entityClass, $data, $options);
         $entity->setSource($this->index->getRegistryAlias());
 
@@ -74,7 +76,7 @@ class Marshaller
      * @param array  $options    Options to control the hydration
      * @param string $indexClass Index class to get embeds from (for nesting)
      *
-     * @return Document
+     * @return \Cake\ElasticSearch\Document
      */
     protected function createAndHydrate($class, array $data, array $options = [], $indexClass = null)
     {
@@ -82,7 +84,7 @@ class Marshaller
 
         $options += ['associated' => []];
 
-        list($data, $options) = $this->_prepareDataAndOptions($data, $options);
+        [$data, $options] = $this->_prepareDataAndOptions($data, $options);
 
         if (isset($options['accessibleFields'])) {
             foreach ((array)$options['accessibleFields'] as $key => $value) {
@@ -240,7 +242,7 @@ class Marshaller
     public function merge(EntityInterface $entity, array $data, array $options = [])
     {
         $options += ['associated' => []];
-        list($data, $options) = $this->_prepareDataAndOptions($data, $options);
+        [$data, $options] = $this->_prepareDataAndOptions($data, $options);
         $errors = $this->_validate($data, $options, $entity->isNew());
         $entity->setErrors($errors);
 
@@ -250,9 +252,7 @@ class Marshaller
 
         foreach ($this->index->embedded() as $embed) {
             $property = $embed->property();
-            if (in_array($embed->getAlias(), $options['associated']) &&
-                isset($data[$property])
-            ) {
+            if (in_array($embed->getAlias(), $options['associated']) && isset($data[$property])) {
                 $data[$property] = $this->mergeNested($embed, $entity->{$property}, $data[$property]);
             }
         }
@@ -301,7 +301,7 @@ class Marshaller
             })
             ->toArray();
 
-        $new = isset($indexed[null]) ? $indexed[null] : [];
+        $new = $indexed[null] ?? [];
         unset($indexed[null]);
 
         $output = [];
@@ -351,7 +351,7 @@ class Marshaller
             );
         }
 
-        return $options['validate']->errors($data, $isNew);
+        return $options['validate']->validate($data, $isNew);
     }
 
     /**

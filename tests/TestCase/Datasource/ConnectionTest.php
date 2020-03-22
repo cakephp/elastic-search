@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -12,9 +14,10 @@
  * @since         0.0.1
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Test\Datasource;
+namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
 use Cake\Database\Log\LoggedQuery;
+use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\Log\Log;
@@ -26,6 +29,12 @@ use Cake\TestSuite\TestCase;
  */
 class ConnectionTest extends TestCase
 {
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        Log::drop('elasticsearch');
+    }
+
     /**
      * Tests the getIndex method that calling it with no arguments,
      * which is not supported
@@ -34,10 +43,10 @@ class ConnectionTest extends TestCase
      */
     public function testGetEmptyIndex()
     {
-        $this->expectException(\ArgumentCountError::class);
+        $this->expectException(\Elastica\Exception\InvalidException::class);
 
         $connection = new Connection();
-        $index = $connection->getIndex();
+        $connection->getIndex();
     }
 
     /**
@@ -64,12 +73,12 @@ class ConnectionTest extends TestCase
     public function testConstructLogOption()
     {
         $connection = new Connection();
-        $this->assertFalse($connection->logQueries());
+        $this->assertFalse($connection->isQueryLoggingEnabled());
 
         $opts = ['log' => true];
         $connection = new Connection($opts);
 
-        $this->assertTrue($connection->logQueries());
+        $this->assertTrue($connection->isQueryLoggingEnabled());
         $this->assertInstanceOf('\Cake\Log\Engine\FileLog', $connection->getLogger());
     }
 
@@ -78,29 +87,28 @@ class ConnectionTest extends TestCase
      *
      * @return void
      */
-    public function testLoggerFileLog()
+    public function testQueryLoggingWithLog()
     {
-        $logger = $this->getMockBuilder('Cake\Log\Engine\FileLog')->setMethods(['log'])->getMock();
+        Log::setConfig('elasticsearch', [
+            'engine' => 'Array',
+        ]);
+
+        $connection = ConnectionManager::get('test');
+        $connection->enableQueryLogging();
+        $result = $connection->request('_stats');
+        $connection->disableQueryLogging(false);
+
+        $this->assertNotEmpty($result);
+
+        $logs = Log::engine('elasticsearch')->read();
+        $this->assertCount(1, $logs);
 
         $message = json_encode([
             'method' => 'GET',
             'path' => '_stats',
-            'data' => []
+            'data' => [],
         ], JSON_PRETTY_PRINT);
-
-        $logger->expects($this->once())->method('log')->with(
-            $this->equalTo('debug'),
-            $this->equalTo($message)
-        );
-
-        Log::setConfig('elasticsearch', $logger);
-
-        $connection = ConnectionManager::get('test');
-        $connection->logQueries(true);
-        $result = $connection->request('_stats');
-        $connection->logQueries(false);
-
-        $this->assertNotEmpty($result);
+        $this->assertEquals('debug ' . $message, $logs[0]);
     }
 
     /**
@@ -110,24 +118,28 @@ class ConnectionTest extends TestCase
      */
     public function testLoggerQueryLogger()
     {
-        $logger = $this->getMockBuilder('Cake\Database\Log\QueryLogger')->setMethods(['log'])->getMock();
-        $logger->expects($this->once())->method('log');
+        Log::setConfig('elasticsearch', [
+            'engine' => 'Array',
+        ]);
+        $logger = new QueryLogger();
 
-        $query = new LoggedQuery;
+        $query = new LoggedQuery();
         $query->query = json_encode([
             'method' => 'GET',
             'path' => '_stats',
-            'data' => []
+            'data' => [],
         ], JSON_PRETTY_PRINT);
-
-        $logger->expects($this->once())->method('log')->with($query);
 
         $connection = ConnectionManager::get('test');
         $connection->setLogger($logger);
-        $connection->logQueries(true);
+        $connection->enableQueryLogging();
         $result = $connection->request('_stats');
-        $connection->logQueries(false);
+        $connection->disableQueryLogging();
 
-        $this->assertNotEmpty($result);
+        $logs = Log::engine('elasticsearch')->read();
+        $this->assertCount(1, $logs);
+        $this->assertStringStartsWith('debug ', $logs[0]);
+        $this->assertStringContainsString('duration=', $logs[0]);
+        $this->assertStringContainsString('rows=', $logs[0]);
     }
 }
