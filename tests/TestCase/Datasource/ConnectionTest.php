@@ -25,7 +25,6 @@ use Cake\TestSuite\TestCase;
 
 /**
  * Tests the connection class
- *
  */
 class ConnectionTest extends TestCase
 {

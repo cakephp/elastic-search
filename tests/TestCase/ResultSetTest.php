@@ -24,7 +24,6 @@ use TestApp\Model\Document\MyTestDocument;
 
 /**
  * Tests the ResultSet class
- *
  */
 class ResultSetTest extends TestCase
 {

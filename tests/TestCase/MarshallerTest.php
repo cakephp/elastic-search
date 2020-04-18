@@ -249,9 +249,7 @@ class MarshallerTest extends TestCase
      * test marshalling a simple object with associated options
      *
      * @dataProvider oneEmbeddedOneWithOptionProvider
-     *
      * @param array  $options  Options to pass to marshaller->one
-     *
      * @return void
      */
     public function testOneEmbeddedOneWithOptions($options)
@@ -331,9 +329,7 @@ class MarshallerTest extends TestCase
      * test marshalling a simple object.
      *
      * @dataProvider oneEmbeddedManyWithOptionsProvider
-     *
      * @param array  $options  Options to pass to marshaller->one
-     *
      * @return void
      */
     public function testOneEmbeddedManyWithOptions($options)

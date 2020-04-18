@@ -75,7 +75,6 @@ class Marshaller
      * @param array  $data       The data to hydrate with
      * @param array  $options    Options to control the hydration
      * @param string $indexClass Index class to get embeds from (for nesting)
-     *
      * @return \Cake\ElasticSearch\Document
      */
     protected function createAndHydrate($class, array $data, array $options = [], $indexClass = null)
@@ -137,7 +136,6 @@ class Marshaller
      * @param \Cake\ElasticSearch\Association\Embedded $embed   The embed definition.
      * @param array                                    $data    The data to marshal
      * @param array                                    $options The options to pass on
-     *
      * @return array|\Cake\ElasticSearch\Document Either a document or an array of documents.
      */
     protected function newNested(Embedded $embed, array $data, array $options = [])

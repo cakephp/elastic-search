@@ -24,7 +24,7 @@ class EmbedOne extends Embedded
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function type()
     {

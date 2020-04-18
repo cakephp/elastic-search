@@ -134,7 +134,6 @@ abstract class Embedded
      * Get/set the index class used for this embed.
      *
      * @param string|null|\Cake\ElasticSearch\Index $name The class name to set.
-     *
      * @return string The class name.
      */
     public function indexClass($name = null)

@@ -129,7 +129,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getPrimaryKey(): array
     {
@@ -137,7 +137,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isPrimaryKey(string $field): bool
     {
@@ -147,7 +147,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isCreate(): bool
     {
@@ -163,7 +163,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function val(string $field, array $options = [])
     {
@@ -275,7 +275,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isRequired(string $field): bool
     {
@@ -366,7 +366,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function fieldNames(): array
     {
@@ -376,7 +376,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function type(string $field): ?string
     {
@@ -386,7 +386,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function attributes(string $field): array
     {
@@ -394,7 +394,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function hasError(string $field): bool
     {
@@ -402,7 +402,7 @@ class DocumentContext implements ContextInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function error(string $field): array
     {

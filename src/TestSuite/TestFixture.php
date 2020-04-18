@@ -220,7 +220,7 @@ class TestFixture implements FixtureInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function connection(): string
     {
@@ -228,7 +228,7 @@ class TestFixture implements FixtureInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function sourceName(): string
     {

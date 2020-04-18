@@ -30,7 +30,7 @@ class EmbedMany extends Embedded
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function type()
     {

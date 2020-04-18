@@ -92,10 +92,8 @@ class EmbeddedDocumentTest extends TestCase
      * Test fetching with EmbedOne documents.
      *
      * @dataProvider embedTypeProvider
-     *
      * @param array  $options  Options to pass to embed
      * @param string $expected Expected type
-     *
      * @return void
      */
     public function testGetWithEmbedOneType($options, $expected)
@@ -154,10 +152,8 @@ class EmbeddedDocumentTest extends TestCase
      * Test fetching with EmbedMany documents.
      *
      * @dataProvider embedTypeProvider
-     *
      * @param array  $options  Options to pass to embed
      * @param string $expected Expected type
-     *
      * @return void
      */
     public function testGetWithEmbedManyType($options, $expected)

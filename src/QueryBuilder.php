@@ -312,7 +312,6 @@ class QueryBuilder
      *    $builder->nested('comments', $builder->term('author', 'mark'));
      * }}}
      *
-     *
      * @param string $path A dot separated string denoting the path to the property to query.
      * @param \Elastica\Query\AbstractQuery $query The query conditions.
      * @return \Elastica\Query\Nested

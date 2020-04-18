@@ -35,12 +35,14 @@ class ElasticLogger extends AbstractLogger
 
     /**
      * Holds the connection instance
+     *
      * @var \Cake\ElasticSearch\Datasource\Connection
      */
     protected $_connection;
 
     /**
      * Constructor, set the QueryLogger instance
+     *
      * @param \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog $logger Instance of the QueryLogger
      * @param \Cake\Datasource\ConnectionInterface $connection Current connection instance
      */
@@ -65,6 +67,7 @@ class ElasticLogger extends AbstractLogger
 
     /**
      * Return the current logger
+     *
      * @return \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog|\Psr\Log\NullLogger [description]
      */
     public function getLogger()
