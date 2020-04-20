@@ -60,6 +60,7 @@ class Connection implements ConnectionInterface
 
     /**
      * Instance of ElasticLogger
+     *
      * @var \Cake\ElasticSearch\Datasource\Log\ElasticLogger
      */
     protected $_esLogger;
@@ -110,7 +111,7 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function configName(): string
     {
@@ -118,7 +119,7 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function enabled()
     {
@@ -126,21 +127,21 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function beginTransaction()
     {
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function disableForeignKeys()
     {
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function enableForeignKeys()
     {
@@ -182,7 +183,7 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function transactional(callable $callable)
     {
@@ -194,10 +195,15 @@ class Connection implements ConnectionInterface
      *
      * Elasticsearch does not deal with the concept of foreign key constraints
      * This method just triggers the $callback argument.
+     *
+     * @param callable $operation The callback to execute within a transaction.
+     * @return mixed The return value of the callback.
+     * @throws \Exception Will re-throw any exception raised in $callback after
+     *   rolling back the transaction.
      */
-    public function disableConstraints(callable $callback)
+    public function disableConstraints(callable $operation)
     {
-        return $callback($this);
+        return $operation($this);
     }
 
     /**
@@ -295,9 +301,7 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     *
-     * {@inheritDoc}
-     * @see \Cake\Datasource\ConnectionInterface::execute($query, $params, $types)
+     * @inheritDoc
      */
     public function execute($query, $params = [], array $types = [])
     {
@@ -305,9 +309,7 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     *
-     * {@inheritDoc}
-     * @see \Cake\Datasource\ConnectionInterface::query($sql)
+     * @inheritDoc
      */
     public function query(string $sql)
     {
@@ -315,9 +317,7 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     *
-     * {@inheritDoc}
-     * @see \Cake\Datasource\ConnectionInterface::prepare($sql)
+     * @inheritDoc
      */
     public function prepare($sql)
     {
@@ -325,8 +325,8 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     *
      * {@inheritDoc}
+     *
      * @see \Cake\Datasource\ConnectionInterface::getDriver()
      * @return \Elastica\Client
      */
@@ -336,8 +336,8 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     *
      * {@inheritDoc}
+     *
      * @see \Cake\Datasource\ConnectionInterface::supportsDynamicConstraints()
      * @return bool
      */
@@ -347,8 +347,8 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     *
      * {@inheritDoc}
+     *
      * @see \Cake\Datasource\ConnectionInterface::newQuery()
      * @return \Elastica\Query\BoolQuery
      */

@@ -22,7 +22,6 @@ use Elastica\Result;
 
 /**
  * Represents a document stored in a Elastic Search Index
- *
  */
 class Document implements EntityInterface
 {

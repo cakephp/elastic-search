@@ -21,7 +21,6 @@ use Cake\TestSuite\TestCase;
 
 /**
  * Tests the QueryBuilder class
- *
  */
 class QueryBuilderTest extends TestCase
 {

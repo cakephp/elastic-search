@@ -30,7 +30,7 @@ use Traversable;
 class Plugin extends BasePlugin
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function bootstrap(PluginApplicationInterface $app): void
     {

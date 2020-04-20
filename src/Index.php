@@ -430,7 +430,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * This method will not trigger the Model.beforeFind callback as it does not use
      * queries for the search, but a faster key lookup to the search index.
-     *
      * @param string $primaryKey The document's primary key
      * @param array $options An array of options
      * @throws \Elastica\Exception\NotFoundException if no document exist with such id
@@ -907,7 +906,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * This will fetch the schema from Elasticsearch the first
      * time this method is called.
-     *
      *
      * @return array
      */

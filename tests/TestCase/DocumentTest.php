@@ -21,7 +21,6 @@ use Cake\TestSuite\TestCase;
 
 /**
  * Tests the Document class
- *
  */
 class DocumentTest extends TestCase
 {
