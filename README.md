@@ -1,7 +1,10 @@
 # Elasticsearch Datasource for CakePHP
 
-[![Build Status](https://travis-ci.org/cakephp/elastic-search.svg?branch=master)](https://travis-ci.org/cakephp/elastic-search)
-[![License](https://poser.pugx.org/cakephp/elastic-search/license.svg)](https://packagist.org/packages/cakephp/elastic-search)
+[![Build Status](https://img.shields.io/travis/com/cakephp/elastic-search?style=flat-square)](https://travis-ci.com/cakephp/elastic-search)
+[![Latest Stable Version](https://img.shields.io/github/v/release/cakephp/elastic-search?sort=semver&style=flat-square)](https://packagist.org/packages/cakephp/elastic-search)
+[![Total Downloads](https://img.shields.io/packagist/dt/cakephp/elastic-search?style=flat-square)](https://packagist.org/packages/cakephp/elastic-search/stats)
+[![Code Coverage](https://img.shields.io/coveralls/cakephp/elastic-search/master.svg?style=flat-square)](https://coveralls.io/r/cakephp/elastic-search?branch=master)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
 Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 3.6+.
 
