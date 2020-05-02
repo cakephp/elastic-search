@@ -732,4 +732,35 @@ class QueryBuilderTest extends TestCase
         ];
         $this->assertEquals($expected, $filter);
     }
+
+    /**
+     * Tests the parse() method with numerically indexed arrays
+     *
+     * @return void
+     */
+    public function testParseNumericArray()
+    {
+        $builder = new QueryBuilder();
+        $filter = $builder->parse([
+            $builder->simpleQueryString('name', 'mark'),
+            ['age >' => 29],
+            'not' => [
+                ['name' => 'jose'],
+                ['age >' => 35],
+            ],
+        ]);
+        $expected = [
+            $builder->simpleQueryString('name', 'mark'),
+            $builder->and(
+                $builder->gt('age', 29)
+            ),
+            $builder->not(
+                $builder->and(
+                    $builder->and($builder->term('name', 'jose')),
+                    $builder->and($builder->gt('age', 35))
+                )
+            ),
+        ];
+        $this->assertEquals($expected, $filter);
+    }
 }
