@@ -526,13 +526,11 @@ class QueryBuilder
      *  );
      * }}}
      *
+     * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
      * @return \Elastica\Query\BoolQuery
      */
-    // @codingStandardsIgnoreStart
-    public function and_()
+    public function and(...$queries)
     {
-        // @codingStandardsIgnoreEnd
-        $queries = func_get_args();
         $bool = $this->bool();
 
         foreach ($queries as $query) {
@@ -554,13 +552,11 @@ class QueryBuilder
      *  );
      * }}}
      *
+     * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
      * @return \Elastica\Query\BoolQuery
      */
-    // @codingStandardsIgnoreStart
-    public function or_()
+    public function or(...$queries)
     {
-        // @codingStandardsIgnoreEnd
-        $queries = func_get_args();
         $bool = $this->bool();
 
         foreach ($queries as $query) {
@@ -570,20 +566,50 @@ class QueryBuilder
         return $bool;
     }
 
+    // @codingStandardsIgnoreStart
     /**
-     * Helps calling the `and()` and `or()` methods transparently.
+     * Combines all the passed arguments in a single bool query
+     * using the "must" clause.
      *
-     * @param string $method The method name.
-     * @param array $args The argumemts to pass to the method.
-     * @return \Elastica\Query\AbstractQuery
+     * ### Example:
+     *
+     * {{{
+     *  $bool = $builder->and(
+     *     $builder->terms('tags', ['cool', 'stuff']),
+     *     $builder->exists('comments')
+     *  );
+     * }}}
+     *
+     * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
+     * @return \Elastica\Query\BoolQuery
+     * @deprecated 3.0.1 Use `and()` instead.
      */
-    public function __call($method, $args)
+    public function and_(...$queries)
     {
-        if (in_array($method, ['and', 'or'])) {
-            return call_user_func_array([$this, $method . '_'], $args);
-        }
-        throw new \BadMethodCallException('Cannot build query ' . $method);
+        return $this->and(...$queries);
     }
+
+    /**
+     * Combines all the passed arguments in a single BoolQuery query using should clause.
+     *
+     * ### Example:
+     *
+     * {{{
+     *  $bool = $builder->or(
+     *     $builder->not($builder->exists('tags')),
+     *     $builder->exists('comments')
+     *  );
+     * }}}
+     *
+     * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
+     * @return \Elastica\Query\BoolQuery
+     * @deprecated 3.0.1 Use `or()` instead.
+     */
+    public function or_(...$queries)
+    {
+        return $this->or(...$queries);
+    }
+    // @codingStandardsIgnoreEnd
 
     /**
      * Converts an array into a single array of query objects
@@ -685,24 +711,24 @@ class QueryBuilder
             if ($numericKey) {
                 $c = $this->parse($c);
                 if (is_array($c)) {
-                    $c = $this->__call('and', $c);
+                    $c = $this->and(...$c);
                 }
                 $result[] = $c;
                 continue;
             }
 
             if ($operator === 'and') {
-                $result[] = $this->__call('and', $this->parse($c));
+                $result[] = $this->and(...$this->parse($c));
                 continue;
             }
 
             if ($operator === 'or') {
-                $result[] = $this->__call('or', $this->parse($c));
+                $result[] = $this->or(...$this->parse($c));
                 continue;
             }
 
             if ($operator === 'not') {
-                $result[] = $this->not($this->__call('and', $this->parse($c)));
+                $result[] = $this->not($this->and(...$this->parse($c)));
                 continue;
             }
 
