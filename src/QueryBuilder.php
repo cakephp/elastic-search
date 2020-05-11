@@ -706,7 +706,6 @@ class QueryBuilder
         $result = [];
         foreach ($conditions as $k => $c) {
             $numericKey = is_numeric($k);
-            $operator = strtolower($k);
 
             if ($numericKey) {
                 $c = $this->parse($c);
@@ -716,6 +715,8 @@ class QueryBuilder
                 $result[] = $c;
                 continue;
             }
+
+            $operator = strtolower($k);
 
             if ($operator === 'and') {
                 $result[] = $this->and(...$this->parse($c));
