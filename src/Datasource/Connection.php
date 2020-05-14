@@ -209,7 +209,7 @@ class Connection implements ConnectionInterface
             $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
 
             if (!$engine) {
-                $engine = new ElasticaLog;
+                $engine = new ElasticaLog();
             }
 
             $this->setLogger($engine);

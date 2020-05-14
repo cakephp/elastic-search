@@ -34,7 +34,7 @@ class IndexTest extends TestCase
         $this->index = new Index(
             [
             'name' => 'articles',
-            'connection' => $this->connection
+            'connection' => $this->connection,
             ]
         );
     }
@@ -144,7 +144,7 @@ class IndexTest extends TestCase
         $index = new Index(
             [
             'name' => 'foo',
-            'connection' => $connection
+            'connection' => $connection,
             ]
         );
 
@@ -200,11 +200,11 @@ class IndexTest extends TestCase
         $index = new Index(
             [
             'name' => 'articles',
-            'connection' => $connection
+            'connection' => $connection,
             ]
         );
         $data = [
-            'title' => 'A newer title'
+            'title' => 'A newer title',
         ];
         $result = $index->newEntity($data);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
@@ -225,15 +225,15 @@ class IndexTest extends TestCase
         $index = new Index(
             [
             'name' => 'articles',
-            'connection' => $connection
+            'connection' => $connection,
             ]
         );
         $data = [
             [
-                'title' => 'A newer title'
+                'title' => 'A newer title',
             ],
             [
-                'title' => 'A second title'
+                'title' => 'A second title',
             ],
         ];
         $result = $index->newEntities($data);
@@ -255,21 +255,21 @@ class IndexTest extends TestCase
             new Document(
                 [
                 'title' => 'First',
-                'body' => 'Some new content'
+                'body' => 'Some new content',
                 ],
                 [
-                'markNew' => true
+                'markNew' => true,
                 ]
             ),
             new Document(
                 [
                 'title' => 'Second',
-                'body' => 'Some new content'
+                'body' => 'Some new content',
                 ],
                 [
-                'markNew' => true
+                'markNew' => true,
                 ]
-            )
+            ),
         ];
 
         $result = $this->index->saveMany($entities);
@@ -286,7 +286,7 @@ class IndexTest extends TestCase
         $doc = new Document(
             [
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => true]
         );
@@ -313,7 +313,7 @@ class IndexTest extends TestCase
             [
             'id' => '123',
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => false]
         );
@@ -334,7 +334,7 @@ class IndexTest extends TestCase
             [
             'id' => '123',
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => false]
         );
@@ -352,7 +352,7 @@ class IndexTest extends TestCase
         $doc = new Document(
             [
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => true]
         );
@@ -360,7 +360,7 @@ class IndexTest extends TestCase
         $document = $this->index->save(
             $doc,
             [
-            'refresh' => true
+            'refresh' => true,
             ]
         );
 
@@ -441,7 +441,7 @@ class IndexTest extends TestCase
             [
             'title' => 'A brand new article',
             'body' => 'Some new content',
-            'user' => new Document(['username' => 'sarah'])
+            'user' => new Document(['username' => 'sarah']),
             ]
         );
         $this->index->embedOne('User');
@@ -466,7 +466,7 @@ class IndexTest extends TestCase
             'comments' => [
                 new Document(['comment' => 'Nice post']),
                 new Document(['comment' => 'Awesome!']),
-            ]
+            ],
             ]
         );
         $this->index->embedMany('Comments');
@@ -540,7 +540,7 @@ class IndexTest extends TestCase
         $doc = new Document(
             [
             'title' => 'A brand new article',
-            'body' => 'Some new content'
+            'body' => 'Some new content',
             ],
             ['markNew' => true]
         );

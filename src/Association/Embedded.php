@@ -66,10 +66,10 @@ abstract class Embedded
         $properties = [
             'entityClass',
             'property',
-            'indexClass'
+            'indexClass',
         ];
         $options += [
-            'entityClass' => $alias
+            'entityClass' => $alias,
         ];
         foreach ($properties as $prop) {
             if (isset($options[$prop])) {

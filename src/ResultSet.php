@@ -246,7 +246,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
             'useSetters' => false,
             'markNew' => false,
             'source' => $this->repoName,
-            'result' => $result
+            'result' => $result,
         ];
 
         $data = $result->getData();

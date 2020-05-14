@@ -32,7 +32,7 @@ class EmbeddedDocumentTest extends TestCase
         $this->index = new Index(
             [
             'name' => 'profiles',
-            'connection' => ConnectionManager::get('test')
+            'connection' => ConnectionManager::get('test'),
             ]
         );
     }

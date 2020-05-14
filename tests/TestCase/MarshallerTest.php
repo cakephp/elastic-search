@@ -249,7 +249,7 @@ class MarshallerTest extends TestCase
             // Test both embeds one with options the other without
             [['associated' => ['User' => [], 'Comment']]],
             // Test both embeds one without options
-            [['associated' => ['User', 'Comment']]]
+            [['associated' => ['User', 'Comment']]],
         ];
     }
 
@@ -272,8 +272,8 @@ class MarshallerTest extends TestCase
             ],
             'comment' => [
                 'text' => 'this is great',
-                'id' => 123
-            ]
+                'id' => 123,
+            ],
         ];
         $this->index->embedOne('User');
         $this->index->embedOne('Comment');
@@ -301,7 +301,7 @@ class MarshallerTest extends TestCase
             'comments' => [
                 ['comment' => 'First comment'],
                 ['comment' => 'Second comment'],
-                'bad' => 'data'
+                'bad' => 'data',
             ],
         ];
         $this->index->embedMany('Comments');
@@ -331,7 +331,7 @@ class MarshallerTest extends TestCase
             // Test both embeds one with options the other without
             [['associated' => ['Comments' => ['guard' => false], 'Authors']]],
             // Test both embeds one without options
-            [['associated' => ['Comments', 'Authors']]]
+            [['associated' => ['Comments', 'Authors']]],
         ];
     }
 
@@ -352,12 +352,12 @@ class MarshallerTest extends TestCase
             'comments' => [
                 ['comment' => 'First comment'],
                 ['comment' => 'Second comment'],
-                'bad' => 'data'
+                'bad' => 'data',
             ],
             'authors' => [
                 ['name' => 'Bob Smith'],
-                ['name' => 'Claire Muller']
-            ]
+                ['name' => 'Claire Muller'],
+            ],
         ];
         $this->index->embedMany('Comments');
         $this->index->embedMany('Authors');
@@ -396,7 +396,7 @@ class MarshallerTest extends TestCase
                 'title' => 'Second article',
                 'body' => 'Stretchy text',
                 'user_id' => 2,
-            ]
+            ],
         ];
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->many($data);
@@ -546,7 +546,7 @@ class MarshallerTest extends TestCase
         ];
         $entity = new Document([
             'title' => 'Old',
-            'user' => new Document(['username' => 'old'], ['markNew' => false])
+            'user' => new Document(['username' => 'old'], ['markNew' => false]),
         ], ['markNew' => false]);
 
         $marshaller = new Marshaller($this->index);
@@ -604,7 +604,7 @@ class MarshallerTest extends TestCase
             'comments' => [
                 ['comment' => 'First comment'],
                 ['comment' => 'Second comment'],
-                'bad' => 'data'
+                'bad' => 'data',
             ],
         ];
         $this->index->embedMany('Comments');
@@ -614,7 +614,7 @@ class MarshallerTest extends TestCase
             'comments' => [
                 new Document(['comment' => 'old'], ['markNew' => false]),
                 new Document(['comment' => 'old'], ['markNew' => false]),
-            ]
+            ],
         ], ['markNew' => false]);
 
         $marshaller = new Marshaller($this->index);
@@ -641,14 +641,14 @@ class MarshallerTest extends TestCase
             'comments' => [
                 ['comment' => 'First comment'],
                 ['comment' => 'Second comment'],
-                'bad' => 'data'
+                'bad' => 'data',
             ],
         ];
         $entity = new Document([
             'title' => 'old',
             'comments' => [
                 new Document(['comment' => 'old'], ['markNew' => false]),
-            ]
+            ],
         ], ['markNew' => false]);
 
         $this->index->embedMany('Comments');
@@ -823,20 +823,20 @@ class MarshallerTest extends TestCase
                     'first_name' => 'Mark',
                     'last_name' => 'Story',
                     'user_type' => [
-                        'label' => 'Admin'
-                    ]
+                        'label' => 'Admin',
+                    ],
                 ],
                 ['first_name' => 'Clare', 'last_name' => 'Smith'],
-            ]
+            ],
         ];
         $options = [
             'associated' => [
                 'User' => [
                     'associated' => [
-                        'UserType' => []
-                    ]
-                ]
-            ]
+                        'UserType' => [],
+                    ],
+                ],
+            ],
         ];
 
         $index = new AccountsIndex();
@@ -874,11 +874,11 @@ class MarshallerTest extends TestCase
                     'last_name' => 'Story',
                     'user_type' => [
                         'label' => 'Admin',
-                        'level' => 21
-                    ]
+                        'level' => 21,
+                    ],
                 ],
                 ['first_name' => 'Clare', 'last_name' => 'Smith'],
-            ]
+            ],
         ];
         $options = [
             'accessibleFields' => ['remove_this' => false],
@@ -887,11 +887,11 @@ class MarshallerTest extends TestCase
                     'accessibleFields' => ['last_name' => false],
                     'associated' => [
                         'UserType' => [
-                            'accessibleFields' => ['level' => false]
-                        ]
-                    ]
-                ]
-            ]
+                            'accessibleFields' => ['level' => false],
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $index = new AccountsIndex();
@@ -926,11 +926,11 @@ class MarshallerTest extends TestCase
                         'first_name' => 'Mark',
                         'last_name' => 'Story',
                         'user_type' => [
-                            'label' => 'Admin'
-                        ]
+                            'label' => 'Admin',
+                        ],
                     ],
-                    ['first_name' => 'Clare', 'last_name' => 'Smith']
-                ]
+                    ['first_name' => 'Clare', 'last_name' => 'Smith'],
+                ],
             ],
             [
                 'address' => '87 Grant Avenue',
@@ -939,20 +939,20 @@ class MarshallerTest extends TestCase
                         'first_name' => 'Colin',
                         'last_name' => 'Thomas',
                         'user_type' => [
-                            'label' => 'Admin'
-                        ]
-                    ]
-                ]
-            ]
+                            'label' => 'Admin',
+                        ],
+                    ],
+                ],
+            ],
         ];
         $options = [
             'associated' => [
                 'User' => [
                     'associated' => [
-                        'UserType' => []
-                    ]
-                ]
-            ]
+                        'UserType' => [],
+                    ],
+                ],
+            ],
         ];
 
         $index = new AccountsIndex();

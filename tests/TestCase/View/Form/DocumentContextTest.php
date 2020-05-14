@@ -46,7 +46,7 @@ class DocumentContextTest extends TestCase
      */
     public $fixtures = [
         'plugin.Cake/ElasticSearch.Articles',
-        'plugin.Cake/ElasticSearch.Profiles'
+        'plugin.Cake/ElasticSearch.Profiles',
     ];
 
     /**
@@ -147,7 +147,7 @@ class DocumentContextTest extends TestCase
             [
             'title' => 'First post',
             'body' => 'Stuff',
-            'user' => new Document(['username' => 'mark'])
+            'user' => new Document(['username' => 'mark']),
             ]
         );
         $one->setError('title', 'Required field');
@@ -156,7 +156,7 @@ class DocumentContextTest extends TestCase
             [
             'title' => 'Second post',
             'body' => 'Some text',
-            'user' => new Document(['username' => 'jose'])
+            'user' => new Document(['username' => 'jose']),
             ]
         );
         $two->setError('body', 'Not long enough');
@@ -196,7 +196,7 @@ class DocumentContextTest extends TestCase
         $row = new Article(
             [
             'title' => 'Test entity',
-            'body' => 'Something new'
+            'body' => 'Something new',
             ]
         );
         $context = new DocumentContext(
@@ -231,7 +231,7 @@ class DocumentContextTest extends TestCase
             'comments' => [
                 new Document(['comment' => 'first comment']),
                 new Document(['comment' => 'second comment']),
-            ]
+            ],
             ]
         );
         $context = new DocumentContext(
@@ -300,8 +300,8 @@ class DocumentContextTest extends TestCase
             'user' => new Document(['username' => 'sarah']),
             'comments' => [
                 ['comment' => 'first comment'],
-                ['comment' => 'second comment']
-            ]
+                ['comment' => 'second comment'],
+            ],
             ]
         );
 
@@ -360,7 +360,7 @@ class DocumentContextTest extends TestCase
             [
             'entity' => $entity,
             'index' => $articles,
-            'validator' => 'alternate'
+            'validator' => 'alternate',
             ]
         );
         $this->assertFalse($context->isRequired('title'));
@@ -408,7 +408,7 @@ class DocumentContextTest extends TestCase
         $row = new Article(
             [
             'title' => 'My title',
-            'user' => new Document(['username' => 'Mark'])
+            'user' => new Document(['username' => 'Mark']),
             ]
         );
         $row->setError('title', []);
@@ -450,21 +450,21 @@ class DocumentContextTest extends TestCase
             'comments' => [
                 new Document(['comment' => '']),
                 new Document(['comment' => 'Second comment']),
-                new Document(['comment' => 'Third comment'])
-            ]
+                new Document(['comment' => 'Third comment']),
+            ],
             ]
         );
 
         $row->setErrors(
             [
             'user' => [
-                'username' => [ 'Required' ]
+                'username' => [ 'Required' ],
             ],
             'comments' => [
                 0 => [ 'comment' => [ 'Required' ] ],
                 2 => [ 'comment' => [ 'Required' ] ],
-                3 => [ 'comment' => [ 'Required' ] ]
-            ]
+                3 => [ 'comment' => [ 'Required' ] ],
+            ],
             ]
         );
 
@@ -504,7 +504,7 @@ class DocumentContextTest extends TestCase
             'comments' => [
                 new Document(['comment' => '']),
                 new Document(['comment' => 'Second comment']),
-            ]
+            ],
             ]
         );
         $row->comments[0]->setError('comment', ['Is required']);
@@ -622,7 +622,7 @@ class DocumentContextTest extends TestCase
             'title',
             'notblank',
             [
-            'rule' => 'notBlank'
+            'rule' => 'notBlank',
             ]
         );
 
@@ -631,7 +631,7 @@ class DocumentContextTest extends TestCase
             'body',
             'notblank',
             [
-            'rule' => 'notBlank'
+            'rule' => 'notBlank',
             ]
         );
         $articles->setValidator('alternate', $validator);
