@@ -22,7 +22,7 @@ class QueryBuilder
     {
         return $this->range($field, [
             'gte' => $from,
-            'lte' => $to
+            'lte' => $to,
         ]);
     }
 
@@ -355,7 +355,7 @@ class QueryBuilder
      */
     public function prefix($field, $prefix, $boost = 1.0)
     {
-        $prefixQuery = new Elastica\Query\Prefix;
+        $prefixQuery = new Elastica\Query\Prefix();
         $prefixQuery->setPrefix($field, $prefix, $boost);
 
         return $prefixQuery;

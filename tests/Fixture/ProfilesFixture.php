@@ -43,7 +43,7 @@ class ProfilesFixture extends TestFixture
                 'city' => ['type' => 'text'],
                 'province' => ['type' => 'text'],
                 'country' => ['type' => 'text'],
-            ]
+            ],
         ],
     ];
 
@@ -60,8 +60,8 @@ class ProfilesFixture extends TestFixture
                 'street' => '123 street',
                 'city' => 'Toronto',
                 'province' => 'Ontario',
-                'country' => 'Canada'
-            ]
+                'country' => 'Canada',
+            ],
         ],
         [
             'id' => '2',
@@ -70,8 +70,8 @@ class ProfilesFixture extends TestFixture
                 'street' => '456 street',
                 'city' => 'Copenhagen',
                 'province' => 'Copenhagen',
-                'country' => 'Denmark'
-            ]
+                'country' => 'Denmark',
+            ],
         ],
         [
             'id' => '3',
@@ -81,15 +81,15 @@ class ProfilesFixture extends TestFixture
                     'street' => '456 street',
                     'city' => 'Copenhagen',
                     'province' => 'Copenhagen',
-                    'country' => 'Denmark'
+                    'country' => 'Denmark',
                 ],
                 [
                     'street' => '89 street',
                     'city' => 'Calgary',
                     'province' => 'Alberta',
-                    'country' => 'Canada'
-                ]
-            ]
+                    'country' => 'Canada',
+                ],
+            ],
         ],
     ];
 }

@@ -22,7 +22,6 @@ use IteratorAggregate;
 
 class Query implements IteratorAggregate, QueryInterface
 {
-
     use QueryTrait;
 
     /**
@@ -95,7 +94,7 @@ class Query implements IteratorAggregate, QueryInterface
     public function __construct(Index $repository)
     {
         $this->repository($repository);
-        $this->_elasticQuery = new ElasticaQuery;
+        $this->_elasticQuery = new ElasticaQuery();
     }
 
     /**
@@ -445,7 +444,7 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         if (is_callable($conditions)) {
-            $conditions = $conditions(new QueryBuilder, $this->_queryParts[$partType], $this);
+            $conditions = $conditions(new QueryBuilder(), $this->_queryParts[$partType], $this);
         }
 
         if ($conditions === null) {
@@ -453,7 +452,7 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         if (is_array($conditions)) {
-            $conditions = (new QueryBuilder)->parse($conditions);
+            $conditions = (new QueryBuilder())->parse($conditions);
             array_map([$this->_queryParts[$partType], $type], $conditions);
 
             return $this;

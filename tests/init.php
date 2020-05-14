@@ -34,7 +34,7 @@ Configure::write(
     'namespace' => 'App',
     'paths' => [
         'plugins' => [APP . DS . 'testapp' . DS . 'Plugin' . DS],
-    ]
+    ],
     ]
 );
 
@@ -52,7 +52,7 @@ Log::setConfig(
         'engine' => 'Cake\Log\Engine\FileLog',
         'levels' => ['notice', 'info', 'debug'],
         'file' => 'debug',
-    ]
+    ],
     ]
 );
 

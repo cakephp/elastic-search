@@ -102,7 +102,7 @@ class ResultSetTest extends TestCase
         $methods = get_class_methods('Elastica\ResultSet');
         $exclude = [
             '__construct', 'offsetSet', 'offsetGet', 'offsetExists', 'offsetUnset',
-            'current', 'next', 'key', 'valid', 'rewind', 'create', 'setClass'
+            'current', 'next', 'key', 'valid', 'rewind', 'create', 'setClass',
         ];
         $methods = array_diff($methods, $exclude);
 
@@ -147,7 +147,7 @@ class ResultSetTest extends TestCase
     {
         $index = new Index([
             'name' => 'articles',
-            'connection' => ConnectionManager::get('test')
+            'connection' => ConnectionManager::get('test'),
         ]);
 
         $resultSet = $index->find()->all();

@@ -640,7 +640,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $options += [
             'checkRules' => true,
-            'refresh' => false
+            'refresh' => false,
         ];
         $options = new ArrayObject($options);
 
@@ -657,7 +657,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
             $event = $this->dispatchEvent('Model.beforeSave', [
                 'entity' => $entity,
-                'options' => $options
+                'options' => $options,
             ]);
 
             if ($event->isStopped() || $entity->getErrors()) {
@@ -696,7 +696,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
             $this->dispatchEvent('Model.afterSave', [
                 'entity' => $entities[$key],
-                'options' => $options
+                'options' => $options,
             ]);
         }
 
@@ -722,12 +722,12 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $options += [
             'checkRules' => true,
-            'refresh' => false
+            'refresh' => false,
         ];
         $options = new ArrayObject($options);
         $event = $this->dispatchEvent('Model.beforeSave', [
             'entity' => $entity,
-            'options' => $options
+            'options' => $options,
         ]);
 
         if ($event->isStopped()) {
@@ -767,7 +767,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $this->dispatchEvent('Model.afterSave', [
             'entity' => $entity,
-            'options' => $options
+            'options' => $options,
         ]);
 
         return $entity;
@@ -793,12 +793,12 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
         $options += [
             'checkRules' => true,
-            'refresh' => false
+            'refresh' => false,
         ];
         $options = new ArrayObject($options);
         $event = $this->dispatchEvent('Model.beforeDelete', [
             'entity' => $entity,
-            'options' => $options
+            'options' => $options,
         ]);
 
         if ($event->isStopped()) {
@@ -823,7 +823,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $this->dispatchEvent('Model.afterDelete', [
             'entity' => $entity,
-            'options' => $options
+            'options' => $options,
         ]);
 
         return $result->isOk();

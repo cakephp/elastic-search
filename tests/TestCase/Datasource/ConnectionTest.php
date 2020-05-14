@@ -85,7 +85,7 @@ class ConnectionTest extends TestCase
         $message = json_encode([
             'method' => 'GET',
             'path' => '_stats',
-            'data' => []
+            'data' => [],
         ], JSON_PRETTY_PRINT);
 
         $logger->expects($this->once())->method('log')->with(
@@ -113,11 +113,11 @@ class ConnectionTest extends TestCase
         $logger = $this->getMockBuilder('Cake\Database\Log\QueryLogger')->setMethods(['log'])->getMock();
         $logger->expects($this->once())->method('log');
 
-        $query = new LoggedQuery;
+        $query = new LoggedQuery();
         $query->query = json_encode([
             'method' => 'GET',
             'path' => '_stats',
-            'data' => []
+            'data' => [],
         ], JSON_PRETTY_PRINT);
 
         $logger->expects($this->once())->method('log')->with($query);
