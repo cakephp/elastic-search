@@ -16,7 +16,7 @@ class EmbedOne extends Embedded
      */
     public function hydrate(array $data, $options)
     {
-        $class = $this->entityClass();
+        $class = $this->getEntityClass();
 
         return new $class($data, $options);
     }

@@ -2,7 +2,9 @@
 namespace Cake\ElasticSearch\Association;
 
 use Cake\Core\App;
+use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
+use Cake\ElasticSearch\MissingDocumentException;
 use Cake\Utility\Inflector;
 
 /**
@@ -64,18 +66,45 @@ abstract class Embedded
     {
         $this->alias = $alias;
         $properties = [
-            'entityClass',
-            'property',
-            'indexClass',
+            'entityClass' => 'setEntityClass',
+            'property' => 'setProperty',
+            'indexClass' => 'setIndexClass',
         ];
         $options += [
             'entityClass' => $alias,
         ];
-        foreach ($properties as $prop) {
+        foreach ($properties as $prop => $method) {
             if (isset($options[$prop])) {
-                $this->{$prop}($options[$prop]);
+                $this->{$method}($options[$prop]);
             }
         }
+    }
+
+    /**
+     * Get the property this embed is attached to.
+     *
+     * @return string The property name.
+     */
+    public function getProperty()
+    {
+        if (!$this->property) {
+            $this->property = Inflector::underscore($this->alias);
+        }
+
+        return $this->property;
+    }
+
+    /**
+     * Set the property this embed is attached to.
+     *
+     * @param string|null $name The property name to set.
+     * @return string The property name.
+     */
+    public function setProperty($name = null)
+    {
+        $this->property = $name;
+
+        return $this;
     }
 
     /**
@@ -86,26 +115,22 @@ abstract class Embedded
      */
     public function property($name = null)
     {
-        if ($name === null) {
-            if (!$this->property) {
-                $this->property = Inflector::underscore($this->alias);
-            }
-
-            return $this->property;
+        if ($name !== null) {
+            $this->setProperty($name);
         }
-        $this->property = $name;
+
+        return $this->getProperty();
     }
 
     /**
-     * Get/set the entity/document class used for this embed.
+     * Get the entity/document class used for this embed.
      *
-     * @param string|null $name The class name to set.
      * @return string The class name.
      */
-    public function entityClass($name = null)
+    public function getEntityClass()
     {
-        if ($name === null && !$this->entityClass) {
-            $default = '\Cake\ElasticSearch\Document';
+        if (!$this->entityClass) {
+            $default = Document::class;
             $self = get_called_class();
             $parts = explode('\\', $self);
 
@@ -118,10 +143,12 @@ abstract class Embedded
             if (!class_exists($name)) {
                 return $this->entityClass = $default;
             }
-        }
 
-        if ($name !== null) {
             $class = App::className($name, 'Model/Document');
+            if (!$class) {
+                throw new MissingDocumentException([$name]);
+            }
+
             $this->entityClass = $class;
         }
 
@@ -129,35 +156,86 @@ abstract class Embedded
     }
 
     /**
-     * Get/set the index class used for this embed.
+     * Sets the entity/document class used for this embed.
      *
-     * @param string|null|Index $name The class name to set.
+     * @param string $name The name of the class to use
+     * @return $this
+     */
+    public function setEntityClass($name)
+    {
+        $class = App::className($name, 'Model/Document');
+        $this->entityClass = $class;
+
+        return $this;
+    }
+
+    /**
+     * Get/set the entity/document class used for this embed.
+     *
+     * @param string|null $name The class name to set.
+     * @return string The class name.
+     */
+    public function entityClass($name = null)
+    {
+        if ($name !== null) {
+            $this->setEntityClass($name);
+        }
+
+        return $this->getEntityClass();
+    }
+
+    /**
+     * Get the index class used for this embed.
      *
      * @return string The class name.
      */
-    public function indexClass($name = null)
+    public function getIndexClass()
     {
-        if ($name === null && !$this->indexClass) {
+        if (!$this->indexClass) {
             $alias = Inflector::pluralize($this->alias);
             $class = App::className($alias . 'Index', 'Model/Index');
 
             if ($class) {
                 return $this->indexClass = $class;
-            } else {
-                return $this->indexClass = '\Cake\ElasticSearch\Index';
             }
-        }
 
-        if ($name !== null) {
-            if ($name instanceof Index) {
-                $this->indexClass = get_class($name);
-            } elseif (is_string($name)) {
-                $class = App::className($name, 'Model/Index');
-                $this->indexClass = $class;
-            }
+            $this->indexClass = Index::class;
         }
 
         return $this->indexClass;
+    }
+
+    /**
+     * Set the index class used for this embed.
+     *
+     * @param string|null|\Cake\ElasticSearch\Index $name The class name to set.
+     * @return $this
+     */
+    public function setIndexClass($name)
+    {
+        if ($name instanceof Index) {
+            $this->indexClass = get_class($name);
+        } elseif (is_string($name)) {
+            $class = App::className($name, 'Model/Index');
+            $this->indexClass = $class;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get/set the index class used for this embed.
+     *
+     * @param string|null|\Cake\ElasticSearch\Index $name The class name to set.
+     * @return string The class name.
+     */
+    public function indexClass($name = null)
+    {
+        if ($name !== null) {
+            $this->setIndexClass($name);
+        }
+
+        return $this->getIndexClass();
     }
 
     /**

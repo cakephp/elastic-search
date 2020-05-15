@@ -115,7 +115,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @var \Cake\ElasticSearch\Datasource\MappingSchema
      */
-    protected $schema;
+    protected $_schema;
 
     /**
      * Constructor
@@ -145,6 +145,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         if (!empty($config['type'])) {
             $this->setType($config['type']);
         }
+        if (!empty($config['schema'])) {
+            $this->setSchema($config['schema']);
+        }
         $eventManager = null;
         if (isset($config['eventManager'])) {
             $eventManager = $config['eventManager'];
@@ -156,7 +159,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Initialize a table instance. Called after the constructor.
+     * Initialize a index instance. Called after the constructor.
      *
      * You can use this method to define embedded documents,
      * define validation and do any other initialization logic you need.
@@ -272,7 +275,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Sets the index registry key used to create this table instance.
+     * Sets the index registry key used to create this index instance.
      *
      * @param string $registryAlias The key used to access this object.
      * @return $this
@@ -525,7 +528,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
         $result = $type->getDocument($primaryKey, $options);
-        $class = $this->entityClass();
+        $class = $this->getEntityClass();
 
         $options = [
             'markNew' => false,
@@ -536,7 +539,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $data = $result->getData();
         $data['id'] = $result->getId();
         foreach ($this->embedded() as $embed) {
-            $prop = $embed->property();
+            $prop = $embed->getProperty();
             if (isset($data[$prop])) {
                 $data[$prop] = $embed->hydrate($data[$prop], $options);
             }
@@ -590,7 +593,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * need those first load a collection of records and delete them.
      *
      * @param array $conditions An array of conditions, similar to those used with find()
-     * @return bool Success Returns true if one or more rows are effected.
+     * @return bool Success Returns true if one or more documents are effected.
      * @see RepositoryInterface::delete()
      */
     public function deleteAll($conditions)
@@ -850,7 +853,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     public function newEntity($data = null, array $options = [])
     {
         if ($data === null) {
-            $class = $this->entityClass();
+            $class = $this->getEntityClass();
 
             return new $class([], ['source' => $this->getRegistryAlias()]);
         }
@@ -880,17 +883,14 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Returns the class used to hydrate rows for this table or sets
-     * a new one
+     * Returns the class used to hydrate document for this index.
      *
-     * @param string $name the name of the class to use
-     * @throws \RuntimeException when the entity class cannot be found
      * @return string
      */
-    public function entityClass($name = null)
+    public function getEntityClass()
     {
-        if ($name === null && !$this->_documentClass) {
-            $default = '\Cake\ElasticSearch\Document';
+        if (!$this->_documentClass) {
+            $default = Document::class;
             $self = get_called_class();
             $parts = explode('\\', $self);
 
@@ -903,18 +903,57 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             if (!class_exists($name)) {
                 return $this->_documentClass = $default;
             }
-        }
 
-        if ($name !== null) {
-            $class = App::classname($name, 'Model/Document');
+            $class = App::className($name, 'Model/Document');
+            if (!$class) {
+                throw new MissingDocumentException([$name]);
+            }
+
             $this->_documentClass = $class;
         }
 
-        if (!$this->_documentClass) {
-            throw new RuntimeException(sprintf('Missing document class "%s"', $class));
+        return $this->_documentClass;
+    }
+
+    /**
+     * Sets the class used to hydrate documents for this index.
+     *
+     * @param string $name The name of the class to use
+     * @throws \Cake\ElasticSearch\MissingDocumentException when the document class cannot be found
+     * @return $this
+     */
+    public function setEntityClass($name)
+    {
+        $class = App::className($name, 'Model/Document');
+        if (!$class) {
+            throw new MissingDocumentException([$name]);
         }
 
-        return $this->_documentClass;
+        $this->_documentClass = $class;
+
+        return $this;
+    }
+
+    /**
+     * Returns the class used to hydrate documents for this index or sets
+     * a new one
+     *
+     * @deprecated 2.0.1 Use setEntityClass()/getEntityClass() instead.
+     * @param string $name the name of the class to use
+     * @throws \Cake\ElasticSearch\MissingDocumentException when the document class cannot be found
+     * @return string
+     */
+    public function entityClass($name = null)
+    {
+        deprecationWarning(
+            static::class . '::entityClass() is deprecated. ' .
+            'Use setEntityClass()/getEntityClass() instead.'
+        );
+        if ($name !== null) {
+            $this->setEntityClass($name);
+        }
+
+        return $this->getEntityClass();
     }
 
     /**
@@ -967,24 +1006,69 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Get the mapping data from the index type.
+     * Returns the index mapping object describing this index's properties.
      *
      * This will fetch the schema from Elasticsearch the first
      * time this method is called.
      *
-     *
-     * @return array
+     * @return \Cake\ElasticSearch\Datasource\MappingSchema
      */
-    public function schema()
+    public function getSchema()
     {
-        if ($this->schema !== null) {
-            return $this->schema;
+        if ($this->_schema === null) {
+            $index = $this->getName();
+            $type = $this->getConnection()->getIndex($index)->getType($this->getType());
+            $this->_schema = new MappingSchema($this->getType(), $type->getMapping());
         }
-        $index = $this->getName();
-        $type = $this->getConnection()->getIndex($index)->getType($this->getType());
-        $this->schema = new MappingSchema($this->getType(), $type->getMapping());
 
-        return $this->schema;
+        return $this->_schema;
+    }
+
+    /**
+     * Sets the index mapping object describing this index's properties.
+     *
+     * If an array is passed, a new MappingSchema will be constructed
+     * out of it and used as the schema for this index.
+     *
+     * @param array|\Cake\ElasticSearch\Datasource\MappingSchema $schema Schema to be used for this index
+     * @return $this
+     */
+    public function setSchema($schema)
+    {
+        if (is_array($schema)) {
+            $schema = new MappingSchema($this->getType(), $schema);
+        }
+
+        $this->_schema = $schema;
+
+        return $this;
+    }
+
+    /**
+     * Returns the index mapping object describing this index's properties.
+     *
+     * If a MappingSchema is passed, it will be used for this index
+     * instead of the default one.
+     *
+     * If an array is passed, a new MappingSchema will be constructed
+     * out of it and used as the schema for this index.
+     *
+     * @deprecated 2.0.1 Use setSchema()/getSchema() instead.
+     * @param array|\Cake\ElasticSearch\Datasource\MappingSchema|null $schema New schema to be used for this index
+     * @return \Cake\ElasticSearch\Datasource\MappingSchema
+     */
+    public function schema($schema = null)
+    {
+        deprecationWarning(
+            static::class . '::schema() is deprecated. ' .
+            'Use setSchema()/getSchema() instead.'
+        );
+
+        if ($schema !== null) {
+            $this->setSchema($schema);
+        }
+
+        return $this->getSchema();
     }
 
     /**
@@ -995,7 +1079,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function hasField($field)
     {
-        return $this->schema()->field($field) !== null;
+        return $this->getSchema()->field($field) !== null;
     }
 
     /**
@@ -1005,7 +1089,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * to be interested in the related event.
      *
      * Override this method if you need to add non-conventional event listeners.
-     * Or if you want you table to listen to non-standard events.
+     * Or if you want you index to listen to non-standard events.
      *
      * The conventional method map is:
      *

@@ -317,7 +317,7 @@ class DocumentContext implements ContextInterface
      */
     public function fieldNames()
     {
-        $schema = $this->_context['index']->schema();
+        $schema = $this->_context['index']->getSchema();
 
         return $schema->fields();
     }
@@ -327,7 +327,7 @@ class DocumentContext implements ContextInterface
      */
     public function type($field)
     {
-        $schema = $this->_context['index']->schema();
+        $schema = $this->_context['index']->getSchema();
 
         return $schema->fieldType($field);
     }

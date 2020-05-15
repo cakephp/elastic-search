@@ -112,7 +112,7 @@ In the above example, if you have defined a class as `CommentsIndex` and the `In
 
 ## The Index class
 
-You must create your own `Index` class so it will allow you to define the name of internal _index_ for Elasticsearch, and it mapping type and define any entity properties you could need like virtual propierties. As you have to [use only one mapping type for each _index_](https://www.elastic.co/guide/en/elasticsearch/reference/master/removal-of-types.html), you can use the same name for both (this is the default behavior when _type_ is undefined). Index types will be removed from ES 7 and up.
+You must create your own `Index` class so it will allow you to define the name of internal _index_ for Elasticsearch, and it mapping type and define any entity properties you could need like virtual properties. As you have to [use only one mapping type for each _index_](https://www.elastic.co/guide/en/elasticsearch/reference/master/removal-of-types.html), you can use the same name for both (the default behavior when type is undefined is use singular version of index name). Index types were removed in ElasticSearch 7.
 
 ```php
 use Cake\ElasticSearch\Index;

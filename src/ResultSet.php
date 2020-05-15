@@ -73,9 +73,9 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
         $this->queryObject = $query;
         $repo = $this->queryObject->getRepository();
         foreach ($repo->embedded() as $embed) {
-            $this->embeds[$embed->property()] = $embed;
+            $this->embeds[$embed->getProperty()] = $embed;
         }
-        $this->entityClass = $repo->entityClass();
+        $this->entityClass = $repo->getEntityClass();
         $this->repoName = $repo->getRegistryAlias();
         parent::__construct($resultSet);
     }
@@ -257,6 +257,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
                 $data[$property] = $embed->hydrate($data[$property], $options);
             }
         }
+
         $document = new $class($data, $options);
 
         return $document;
