@@ -6,7 +6,7 @@
 [![Code Coverage](https://img.shields.io/coveralls/cakephp/elastic-search/master.svg?style=flat-square)](https://coveralls.io/r/cakephp/elastic-search?branch=master)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 3.6+.
+Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 4.0+.
 
 You can [find the documentation for the plugin in the Cake Book](http://book.cakephp.org/elasticsearch).
 
@@ -17,12 +17,20 @@ You can install Elasticsearch into your project using
 following to your `composer.json` file:
 
     "require": {
-        "cakephp/elastic-search": "^2.0"
+        "cakephp/elastic-search": "^3.0"
     }
 
 And run `php composer.phar update`
 
-Please use the 1.x branch if you are looking for a version of this plugin that is compatible with Cake versions prior to 3.6 and ES versions before 6.x (2.x and 5.x)
+### Versions Table
+
+| Cake\ElasticSearch | CakePHP | ElasticSearch |
+| --- | --- | --- |
+| [1.x](https://github.com/cakephp/elastic-search/tree/1.0) | 3.0 - 3.5 | 2.x - 5.x |
+| [2.x](https://github.com/cakephp/elastic-search/tree/2.x) | 3.6+ | 6.x |
+| [3.x](https://github.com/cakephp/elastic-search/tree/master) | 4.0+ | 6.x |
+
+You are seeing the 3.x version.
 
 ## Connecting the Plugin to your Application
 
