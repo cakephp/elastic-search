@@ -15,6 +15,7 @@
 namespace Cake\ElasticSearch\Test;
 
 use Cake\Datasource\ConnectionManager;
+use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\ResultSet;
@@ -42,18 +43,19 @@ class ResultSetTest extends TestCase
         $elasticaSet = $this->getMockBuilder('Elastica\ResultSet')
             ->disableOriginalConstructor()
             ->getMock();
-        $type = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
+        $index = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
         $query = $this->getMockBuilder('Cake\ElasticSearch\Query')
-            ->setConstructorArgs([$type])
+            ->setConstructorArgs([$index])
             ->getMock();
         $query->expects($this->once())->method('getRepository')
-            ->will($this->returnValue($type));
-
-        $type->expects($this->once())
+            ->will($this->returnValue($index));
+        $index->expects($this->once())
             ->method('getEntityClass')
             ->will($this->returnValue(__NAMESPACE__ . '\MyTestDocument'));
-        $type->method('embedded')
+        $index->method('embedded')
             ->will($this->returnValue([]));
+        $index->method('getSchema')
+            ->will($this->returnValue(new MappingSchema($index->getType(), [])));
 
         return [new ResultSet($elasticaSet, $query), $elasticaSet];
     }
@@ -93,6 +95,64 @@ class ResultSetTest extends TestCase
     }
 
     /**
+     * Tests that calling current will get converted fields
+     * basic types
+     *
+     * @return void
+     */
+    public function testBasicTypesConversions()
+    {
+        $elasticaSet = $this->getMockBuilder('Elastica\ResultSet')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $index = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
+        $query = $this->getMockBuilder('Cake\ElasticSearch\Query')
+            ->setConstructorArgs([$index])
+            ->getMock();
+        $query->expects($this->once())->method('getRepository')
+            ->will($this->returnValue($index));
+        $index->expects($this->once())
+            ->method('getEntityClass')
+            ->will($this->returnValue(__NAMESPACE__ . '\MyTestDocument'));
+        $index->method('embedded')
+            ->will($this->returnValue([]));
+
+        $mapping = [
+            'foo' => ['type' => 'integer'],
+            'bar' => ['type' => 'keyword'],
+            'baz' => ['type' => 'date'],
+        ];
+        $index->method('getSchema')
+            ->will($this->returnValue(new MappingSchema($index->getType(), $mapping)));
+
+        $data = ['foo' => '1', 'bar' => 'brazil', 'baz' => '2020-05-22'];
+        $result = $this->getMockBuilder('Elastica\Result')
+            ->setMethods(['getId', 'getData', 'getType'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $result->method('getData')
+            ->will($this->returnValue($data));
+        $result->method('getId')
+            ->will($this->returnValue(99));
+        $result->method('getType')
+            ->will($this->returnValue('things'));
+        $elasticaSet->expects($this->once())
+            ->method('current')
+            ->will($this->returnValue($result));
+
+        $resultSet = new ResultSet($elasticaSet, $query);
+
+        $document = $resultSet->current();
+        $this->assertInstanceOf(__NAMESPACE__ . '\MyTestDocument', $document);
+        $this->assertTrue(is_integer($document->foo));
+        $this->assertSame(1, $document->foo);
+        $this->assertTrue(is_string($document->bar));
+        $this->assertSame('brazil', $document->bar);
+        $this->assertInstanceOf('Cake\I18n\Date', $document->baz);
+        $this->assertSame('22/05/2020', $document->baz->format('d/m/Y'));
+    }
+
+    /**
      * Tests that the original ResultSet's methods are accessible
      *
      * @return void
@@ -110,15 +170,17 @@ class ResultSetTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods($methods)
             ->getMock();
-        $type = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
-        $type->method('embedded')
+        $index = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
+        $index->method('embedded')
             ->will($this->returnValue([]));
+        $index->method('getSchema')
+            ->will($this->returnValue(new MappingSchema($index->getType(), [])));
         $query = $this->getMockBuilder('Cake\ElasticSearch\Query')
-            ->setConstructorArgs([$type])
+            ->setConstructorArgs([$index])
             ->getMock();
 
         $query->expects($this->once())->method('getRepository')
-            ->will($this->returnValue($type));
+            ->will($this->returnValue($index));
 
         $requireParam = ['getAggregation' => 'foo'];
         $resultSet = new ResultSet($elasticaSet, $query);

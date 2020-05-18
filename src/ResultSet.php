@@ -15,7 +15,9 @@
 namespace Cake\ElasticSearch;
 
 use Cake\Collection\CollectionTrait;
+use Cake\Database\Type;
 use Cake\Datasource\ResultSetInterface;
+use Cake\ElasticSearch\Datasource\Dummy;
 use IteratorIterator;
 
 /**
@@ -55,11 +57,18 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     protected $embeds = [];
 
     /**
-     * Name of the type that the originating query came from.
+     * Name of the index that the originating query came from.
      *
      * @var string
      */
     protected $repoName;
+
+    /**
+     * Map of ElasticSearch field types to Cake\Database\Type
+     *
+     * @var array
+     */
+    protected $map = [];
 
     /**
      * Decorator's constructor
@@ -77,6 +86,9 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
         }
         $this->entityClass = $repo->getEntityClass();
         $this->repoName = $repo->getRegistryAlias();
+        if ($query !== null) {
+            $this->map = $this->_getTypes($repo, $query->clause('fields'));
+        }
         parent::__construct($resultSet);
     }
 
@@ -251,11 +263,18 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
 
         $data = $result->getData();
         $data['id'] = $result->getId();
+        $driver = new Dummy();
 
         foreach ($this->embeds as $property => $embed) {
             if (isset($data[$property])) {
                 $data[$property] = $embed->hydrate($data[$property], $options);
             }
+        }
+        foreach ($data as $field => $value) {
+            if (!isset($this->map[$field])) {
+                continue;
+            }
+            $data[$field] = $this->map[$field]->toPHP($value, $driver);
         }
 
         $document = new $class($data, $options);
@@ -296,5 +315,43 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
             'items' => $this->resultSet->getResponse()->getData(),
             'query' => $this->resultSet->getQuery(),
         ];
+    }
+
+    /**
+     * Compute and return a map of internal types from a Index mapping type.
+     *
+     * @param  \Cake\ElasticSearch\Index $index The index which results belongs
+     * @param  array $fields Fields included on results
+     * @return array Map of ElasticSearch field type and Cake\Database\Type
+     */
+    protected function _getTypes($index, $fields)
+    {
+        $types = [];
+        $schema = $index->getSchema();
+        $map = array_keys((array)Type::getMap() + ['string' => 1, 'text' => 1, 'boolean' => 1]);
+        $typeMap = array_combine(
+            $map,
+            array_map(['Cake\Database\Type', 'build'], $map)
+        );
+
+        foreach (['string', 'text'] as $t) {
+            if (get_class($typeMap[$t]) === 'Cake\Database\Type') {
+                unset($typeMap[$t]);
+            }
+        }
+
+        $computeFields = $schema->fields();
+        if (!empty($fields)) {
+            $computeFields = array_intersect($fields, $computeFields);
+        }
+        foreach ($computeFields as $field) {
+            $typeName = $schema->fieldType($field);
+
+            if (isset($typeMap[$typeName])) {
+                $types[$field] = $typeMap[$typeName];
+            }
+        }
+
+        return $types;
     }
 }

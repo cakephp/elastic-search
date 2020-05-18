@@ -894,7 +894,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $self = get_called_class();
             $parts = explode('\\', $self);
 
-            if ($self === __CLASS__ || count($parts) < 3) {
+            if ($self === self::class || count($parts) < 3) {
                 return $this->_documentClass = $default;
             }
 
