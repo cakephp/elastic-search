@@ -142,6 +142,7 @@ class IndexTest extends TestCase
     public function testGet()
     {
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
+            ->disableOriginalConstructor()
             ->setMethods(['getIndex'])
             ->getMock();
 
@@ -199,6 +200,7 @@ class IndexTest extends TestCase
     public function testNewEntity()
     {
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
+            ->disableOriginalConstructor()
             ->setMethods(['getIndex'])
             ->getMock();
         $index = new Index(
@@ -224,6 +226,7 @@ class IndexTest extends TestCase
     public function testNewEntities()
     {
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
+            ->disableOriginalConstructor()
             ->setMethods(['getIndex'])
             ->getMock();
         $index = new Index(

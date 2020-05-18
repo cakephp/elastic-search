@@ -14,8 +14,11 @@
  */
 namespace Cake\ElasticSearch\Test\Datasource;
 
+use Cake\Core\Exception\Exception;
+use Cake\Database\Exception\MissingDriverException;
 use Cake\Database\Log\LoggedQuery;
 use Cake\Datasource\ConnectionManager;
+use Cake\ElasticSearch\Database\Driver\Elasticsearch;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\Log\Log;
 use Cake\TestSuite\TestCase;
@@ -34,21 +37,35 @@ class ConnectionTest extends TestCase
      */
     public function testGetEmptyIndex()
     {
-        $this->expectException(\ArgumentCountError::class);
+        $this->expectException(MissingDriverException::class);
 
         $connection = new Connection();
         $index = $connection->getIndex();
     }
 
     /**
+     * Tests a connection build by ConnectionManager and assert
+     * it Driver type.
+     *
+     * @return Connection
+     */
+    public function testValidConnection()
+    {
+        $connection = ConnectionManager::get('test');
+        $this->assertInstanceOf(Elasticsearch::class, $connection->getDriver());
+
+        return $connection;
+    }
+
+    /**
      * Tests the getIndex method when defining a index name from different
      * ways
      *
+     * @depends testValidConnection
      * @return void
      */
-    public function testGetIndex()
+    public function testGetIndex($connection)
     {
-        $connection = new Connection();
         $index = $connection->getIndex('something_else,another');
         $this->assertEquals('something_else,another', $index->getName());
 
@@ -59,15 +76,16 @@ class ConnectionTest extends TestCase
     /**
      * Ensure the log option works via the constructor
      *
+     * @depends testValidConnection
      * @return void
      */
-    public function testConstructLogOption()
+    public function testConstructLogOption($connection)
     {
-        $connection = new Connection();
         $this->assertFalse($connection->logQueries());
 
-        $opts = ['log' => true];
-        $connection = new Connection($opts);
+        $config = ConnectionManager::parseDsn(getenv('db_dsn'));
+        $config['log'] = true;
+        $connection = new Connection($config);
 
         $this->assertTrue($connection->logQueries());
         $this->assertInstanceOf('\Cake\Log\Engine\FileLog', $connection->getLogger());
@@ -95,10 +113,10 @@ class ConnectionTest extends TestCase
 
         Log::setConfig('elasticsearch', $logger);
 
-        $connection = ConnectionManager::get('test');
-        $connection->logQueries(true);
+        $config = ConnectionManager::parseDsn(getenv('db_dsn'));
+        $connection = new Connection($config);
+        $connection->enableQueryLogging(true);
         $result = $connection->request('_stats');
-        $connection->logQueries(false);
 
         $this->assertNotEmpty($result);
     }
@@ -122,11 +140,55 @@ class ConnectionTest extends TestCase
 
         $logger->expects($this->once())->method('log')->with($query);
 
-        $connection = ConnectionManager::get('test');
+        $config = ConnectionManager::parseDsn(getenv('db_dsn'));
+        $connection = new Connection($config);
         $connection->setLogger($logger);
         $connection->logQueries(true);
         $result = $connection->request('_stats');
-        $connection->logQueries(false);
+
+        $this->assertNotEmpty($result);
+    }
+
+    /**
+     * Ensure the esLogger option validate via the constructor
+     *
+     * @depends testValidConnection
+     * @return void
+     */
+    public function testConstructInvalidEsLogggerOption($connection)
+    {
+        $config = ConnectionManager::parseDsn(getenv('db_dsn'));
+        $config['esLogger'] = 'invalid';
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Value of 'esLogger' must implement \Psr\Log\LoggerInterface");
+        $connection = new Connection($config);
+    }
+
+    /**
+     * Ensure the esLogger option works via the constructor
+     *
+     * @depends testValidConnection
+     * @return void
+     */
+    public function testConstructEsLoggerOption($connection)
+    {
+        $esLogger = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Log\ElasticLogger')
+            ->disableOriginalConstructor()
+            ->setMethods(['log'])
+            ->getMock();
+
+        $esLogger->expects($this->once())->method('log')->with(
+            $this->equalTo('debug'),
+            $this->equalTo('Elastica Request')
+        );
+
+        $config = ConnectionManager::parseDsn(getenv('db_dsn'));
+        $config['log'] = true;
+        $config['esLogger'] = $esLogger;
+
+        $connection = new Connection($config);
+        $result = $connection->request('_stats');
 
         $this->assertNotEmpty($result);
     }

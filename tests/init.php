@@ -57,7 +57,7 @@ Log::setConfig(
 );
 
 if (!getenv('db_dsn')) {
-    putenv('db_dsn=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection');
+    putenv('db_dsn=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Database\Driver\Elasticsearch');
 }
 
 ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);

@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 /**
  * MissingDocumentException file
  *
@@ -16,7 +14,7 @@ declare(strict_types=1);
  * @since         2.0.1
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch;
+namespace Cake\Elasticsearch\Exception;
 
 use Cake\Core\Exception\Exception;
 

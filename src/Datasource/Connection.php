@@ -14,42 +14,44 @@
  */
 namespace Cake\ElasticSearch\Datasource;
 
-use Cake\Database\Log\LoggedQuery;
+use Cake\Core\App;
+use Cake\Core\Exception\Exception;
+use Cake\Database\Exception\MissingDriverException;
 use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
-use Cake\Log\Engine\FileLog;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
 use Elastica\Log as ElasticaLog;
 use Elastica\Request;
+use Psr\Log\LoggerInterface;
 
 class Connection implements ConnectionInterface
 {
     /**
-     * Whether or not query logging is enabled.
+     * Contains the configuration params for this connection.
+     *
+     * @var array
+     */
+    protected $_config;
+
+    /**
+     * Driver object, responsible for creating the real connection.
+     *
+     * @var \Cake\ElasticSearch\Database\Driver
+     */
+    protected $_driver;
+
+    /**
+     * Whether to log queries generated during this connection.
      *
      * @var bool
      */
-    protected $logQueries = false;
-
-    /**
-     * The connection name in the connection manager.
-     *
-     * @var string
-     */
-    protected $configName = '';
-
-    /**
-     * Elastica client instance
-     *
-     * @var \Elastica\Client
-     */
-    protected $_client;
+    protected $_logQueries = false;
 
     /**
      * Logger object instance.
      *
-     * @var \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface
+     * @var \Cake\Database\Log\QueryLogger|null
      */
     protected $_logger;
 
@@ -60,6 +62,13 @@ class Connection implements ConnectionInterface
     protected $_esLogger;
 
     /**
+     * The schema collection object
+     *
+     * @var \Cake\Database\Schema\Collection|null
+     */
+    protected $_schemaCollection;
+
+    /**
      * Constructor.
      *
      * @param array $config config options
@@ -68,14 +77,25 @@ class Connection implements ConnectionInterface
      */
     public function __construct(array $config = [], $callback = null)
     {
-        if (isset($config['name'])) {
-            $this->configName = $config['name'];
-        }
-        if (isset($config['log'])) {
-            $this->logQueries((bool)$config['log']);
+        $this->_config = $config;
+
+        if (!empty($config['esLogger'])) {
+            if (!($config['esLogger'] instanceof LoggerInterface)) {
+                throw new Exception("Value of 'esLogger' must implement \Psr\Log\LoggerInterface");
+            }
+
+            $this->_esLogger = $config['esLogger'];
         }
 
-        $this->_client = new ElasticaClient($config, $callback, $this->getEsLogger());
+        $driver = '';
+        if (!empty($config['driver'])) {
+            $driver = $config['driver'];
+        }
+        $this->setDriver($driver, $config);
+
+        if (!empty($config['log'])) {
+            $this->enableQueryLogging($config['log']);
+        }
     }
 
     /**
@@ -88,9 +108,80 @@ class Connection implements ConnectionInterface
      */
     public function __call($name, $attributes)
     {
-        if (method_exists($this->_client, $name)) {
-            return call_user_func_array([$this->_client, $name], $attributes);
+        $client = $this->getDriver()->getConnection();
+        if (method_exists($client, $name)) {
+            return call_user_func_array([$client, $name], $attributes);
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function config()
+    {
+        return $this->_config;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function configName()
+    {
+        if (empty($this->_config['name'])) {
+            return '';
+        }
+
+        return $this->_config['name'];
+    }
+
+    /**
+     * Sets the driver instance. If a string is passed it will be treated
+     * as a class name and will be instantiated.
+     *
+     * @param \Cake\ElasticSearch\Database\Driver|string $driver The driver instance to use.
+     * @param array $config Config for a new driver.
+     * @throws \Cake\Database\Exception\MissingDriverException When a driver class is missing.
+     * @return $this
+     */
+    public function setDriver($driver, $config = [])
+    {
+        if (is_string($driver)) {
+            $className = App::className($driver, 'Database/Driver');
+            if (!$className || !class_exists($className)) {
+                throw new MissingDriverException(['driver' => $driver]);
+            }
+
+            $config['esLogger'] = $this->getEsLogger();
+            $callback = $config['callback'] ?? null;
+            $driver = new $className($config, $callback);
+        }
+
+        $this->_driver = $driver;
+
+        return $this;
+    }
+
+    /**
+     * Gets the driver instance.
+     *
+     * @return \Cake\Database\Driver
+     */
+    public function getDriver()
+    {
+        return $this->_driver;
+    }
+
+    /**
+     * Sets a Schema\Collection object for this connection.
+     *
+     * @param \Cake\ElasticSearch\Datasource\SchemaCollection $collection The schema collection object
+     * @return $this
+     */
+    public function setSchemaCollection(SchemaCollection $collection)
+    {
+        $this->_schemaCollection = $collection;
+
+        return $this;
     }
 
     /**
@@ -101,56 +192,33 @@ class Connection implements ConnectionInterface
      */
     public function getSchemaCollection()
     {
-        return new SchemaCollection($this);
+        if ($this->_schemaCollection !== null) {
+            return $this->_schemaCollection;
+        }
+
+        return $this->_schemaCollection = new SchemaCollection($this);
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
-    public function configName()
+    public function enableQueryLogging($value)
     {
-        return $this->configName;
+        $this->_logQueries = (bool)$value;
+
+        return $this;
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function enabled()
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function beginTransaction()
-    {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function disableForeignKeys()
-    {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function enableForeignKeys()
-    {
-    }
-
-    /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function logQueries($enable = null)
     {
         if ($enable === null) {
-            return $this->logQueries;
+            return $this->_logQueries;
         }
 
-        $this->logQueries = $enable;
+        $this->_logQueries = $enable;
     }
 
     /**
@@ -162,24 +230,11 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * Elasticsearch does not deal with the concept of foreign key constraints
-     * This method just triggers the $operation argument.
+     * @inheritDoc
      */
     public function disableConstraints(callable $operation)
     {
         return $operation($this);
-    }
-
-    /**
-     * Get the config data for this connection.
-     *
-     * @return array
-     */
-    public function config()
-    {
-        return $this->_client->getConfig();
     }
 
     /**
@@ -191,7 +246,10 @@ class Connection implements ConnectionInterface
     public function setLogger($logger)
     {
         $this->_logger = $logger;
-        $this->getEsLogger()->setLogger($logger);
+
+        if ($this->_esLogger) {
+            $this->getEsLogger()->setLogger($logger);
+        }
 
         return $this;
     }
@@ -212,10 +270,27 @@ class Connection implements ConnectionInterface
                 $engine = new ElasticaLog();
             }
 
-            $this->setLogger($engine);
+            $this->_logger = $engine;
         }
 
         return $this->_logger;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function logger($instance = null)
+    {
+        deprecationWarning(
+            'Connection::logger() is deprecated. ' .
+            'Use Connection::setLogger()/getLogger() instead.'
+        );
+
+        if ($instance === null) {
+            return $this->getLogger();
+        }
+
+        $this->setLogger($instance);
     }
 
     /**
@@ -230,24 +305,5 @@ class Connection implements ConnectionInterface
         }
 
         return $this->_esLogger;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @deprecated Use getLogger() and setLogger() instead.
-     */
-    public function logger($instance = null)
-    {
-        deprecationWarning(
-            'Connection::logger() is deprecated. ' .
-            'Use Connection::setLogger()/getLogger() instead.'
-        );
-
-        if ($instance === null) {
-            return $this->getLogger();
-        }
-
-        $this->setLogger($instance);
     }
 }

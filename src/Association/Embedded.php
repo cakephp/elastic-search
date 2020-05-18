@@ -3,8 +3,8 @@ namespace Cake\ElasticSearch\Association;
 
 use Cake\Core\App;
 use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\ElasticSearch\Index;
-use Cake\ElasticSearch\MissingDocumentException;
 use Cake\Utility\Inflector;
 
 /**

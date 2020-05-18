@@ -98,7 +98,7 @@ class MappingSchema
     public function fieldType($name)
     {
         $field = $this->field($name);
-        if (!$field) {
+        if (!$field || !isset($field['type'])) {
             return null;
         }
 
