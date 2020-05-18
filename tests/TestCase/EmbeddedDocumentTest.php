@@ -50,9 +50,9 @@ class EmbeddedDocumentTest extends TestCase
         $assocs = $this->index->embedded();
         $this->assertCount(1, $assocs);
         $this->assertInstanceOf('Cake\ElasticSearch\Association\EmbedOne', $assocs[0]);
-        $this->assertEquals('\Cake\ElasticSearch\Document', $assocs[0]->entityClass());
-        $this->assertEquals('\Cake\ElasticSearch\Index', $assocs[0]->indexClass());
-        $this->assertEquals('address', $assocs[0]->property());
+        $this->assertEquals('TestApp\Model\Document\Address', $assocs[0]->getEntityClass());
+        $this->assertEquals('Cake\ElasticSearch\Index', $assocs[0]->getIndexClass());
+        $this->assertEquals('address', $assocs[0]->getProperty());
     }
 
     /**
@@ -129,9 +129,9 @@ class EmbeddedDocumentTest extends TestCase
         $assocs = $this->index->embedded();
         $this->assertCount(1, $assocs);
         $this->assertInstanceOf('Cake\ElasticSearch\Association\EmbedMany', $assocs[0]);
-        $this->assertEquals('\Cake\ElasticSearch\Document', $assocs[0]->entityClass());
-        $this->assertEquals('\Cake\ElasticSearch\Index', $assocs[0]->indexClass());
-        $this->assertEquals('address', $assocs[0]->property());
+        $this->assertEquals('TestApp\Model\Document\Address', $assocs[0]->getEntityClass());
+        $this->assertEquals('Cake\ElasticSearch\Index', $assocs[0]->getIndexClass());
+        $this->assertEquals('address', $assocs[0]->getProperty());
     }
 
     /**
@@ -181,5 +181,20 @@ class EmbeddedDocumentTest extends TestCase
         $this->assertIsArray($rows[0]->address);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $rows[0]->address[1]);
+    }
+
+    /**
+     * Test embed a missing document, so a generic one
+     * is used.
+     *
+     * @return void
+     */
+    public function testEmbededMissingDocument()
+    {
+        $this->index->embedOne('InvalidDocumentName');
+        $assocs = $this->index->embedded();
+        $this->assertCount(1, $assocs);
+        $this->assertEquals('Cake\ElasticSearch\Document', $assocs[0]->getEntityClass());
+        $this->assertEquals('invalid_document_name', $assocs[0]->getProperty());
     }
 }
