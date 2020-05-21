@@ -23,6 +23,7 @@ use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\Event\EventInterface;
 use Cake\TestSuite\TestCase;
+use Elastica\Exception\NotFoundException;
 
 /**
  * Tests the Index class
@@ -303,6 +304,38 @@ class IndexTest extends TestCase
         $this->assertFalse($doc->isDirty(), 'Not dirty anymore.');
 
         $result = $this->index->get($doc->id);
+        $this->assertEquals($doc->title, $result->title);
+        $this->assertEquals($doc->body, $result->body);
+        $this->assertEquals('articles', $result->getSource());
+    }
+
+    /**
+     * Test saving a new document with a custom routing key.
+     *
+     * @return void
+     */
+    public function testSaveNewRoutingKey()
+    {
+        $doc = new Document(
+            [
+                'title' => 'A brand new article',
+                'body' => 'Some new content',
+            ], ['markNew' => true]
+        );
+        $this->assertSame($doc, $this->index->save($doc, ['routing' => 'abcd']));
+        $this->assertNotEmpty($doc->id, 'Should get an id');
+        $this->assertNotEmpty($doc->_version, 'Should get a version');
+        $this->assertFalse($doc->isNew(), 'Not new anymore.');
+        $this->assertFalse($doc->isDirty(), 'Not dirty anymore.');
+
+        try {
+            $result = $this->index->get($doc->id, ['routing' => '1234']);
+            $this->assertFalse(true, 'Routing keys are not working.');
+        } catch (NotFoundException $e) {
+            $this->assertStringContainsString($doc->id, $e->getMessage());
+        }
+
+        $result = $this->index->get($doc->id, ['routing' => 'abcd']);
         $this->assertEquals($doc->title, $result->title);
         $this->assertEquals($doc->body, $result->body);
         $this->assertEquals('articles', $result->getSource());

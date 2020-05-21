@@ -555,6 +555,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $options += [
             'checkRules' => true,
             'refresh' => false,
+            'routing' => null,
         ];
         $options = new ArrayObject($options);
 
@@ -590,6 +591,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
             $doc = new ElasticaDocument($id, $data);
             $doc->setAutoPopulate(true);
+            if ($options['routing']) {
+                $doc->setRouting($options['routing']);
+            }
 
             $documents[$key] = $doc;
         }
@@ -637,6 +641,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $options += [
             'checkRules' => true,
             'refresh' => false,
+            'routing' => null,
         ];
         $options = new ArrayObject($options);
         $event = $this->dispatchEvent('Model.beforeSave', [
@@ -666,6 +671,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $doc = new ElasticaDocument($id, $data);
         $doc->setAutoPopulate(true);
+        if ($options['routing']) {
+            $doc->setRouting($options['routing']);
+        }
 
         $type->addDocument($doc);
 
