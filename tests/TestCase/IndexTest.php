@@ -320,7 +320,8 @@ class IndexTest extends TestCase
             [
                 'title' => 'A brand new article',
                 'body' => 'Some new content',
-            ], ['markNew' => true]
+            ],
+            ['markNew' => true]
         );
         $this->assertSame($doc, $this->index->save($doc, ['routing' => 'abcd']));
         $this->assertNotEmpty($doc->id, 'Should get an id');
