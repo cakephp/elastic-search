@@ -18,7 +18,7 @@ class EmbedMany extends Embedded
      */
     public function hydrate(array $data, $options)
     {
-        $class = $this->entityClass();
+        $class = $this->getEntityClass();
         $out = [];
         foreach ($data as $row) {
             if (is_array($row)) {

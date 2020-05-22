@@ -21,7 +21,7 @@ namespace Cake\ElasticSearch\Exception;
 use Cake\ORM\Exception\MissingEntityException;
 
 /**
- * Exception raised when an Entity could not be found.
+ * Exception raised when a Document could not be found.
  */
 class MissingDocumentException extends MissingEntityException
 {

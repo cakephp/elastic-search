@@ -99,6 +99,19 @@ class IndexTest extends TestCase
     }
 
     /**
+     * Test a custom entityClass with existing index without a
+     * document class.
+     *
+     * @return void
+     */
+    public function testGetEntityClassDynamic()
+    {
+        $index = IndexRegistry::get('Accounts');
+
+        $this->assertEquals(Document::class, $index->getEntityClass());
+    }
+
+    /**
      * Tests that using a simple string for entityClass will try to
      * load the class from the App namespace
      *
@@ -107,12 +120,12 @@ class IndexTest extends TestCase
     public function testSetEntityClassInApp()
     {
         $class = $this->getMockClass('Cake\ElasticSearch\Document');
-        class_alias($class, 'App\Model\Document\TestUser');
+        class_alias($class, 'TestApp\Model\Document\TestUser');
 
         $index = new Index();
         $index->setEntityClass('TestUser');
         $this->assertEquals(
-            'App\Model\Document\TestUser',
+            'TestApp\Model\Document\TestUser',
             $index->getEntityClass()
         );
     }
@@ -134,6 +147,39 @@ class IndexTest extends TestCase
             'MyPlugin\Model\Document\SuperUser',
             $index->getEntityClass()
         );
+    }
+
+    /**
+     * Tests that using a simple string for entityClass will try to
+     * load the class from the App namespace, without target class
+     *
+     * @return void
+     */
+    public function testSetInvalidEntityClass()
+    {
+        $index = new Index();
+
+        $this->expectException('\Cake\ElasticSearch\Exception\MissingDocumentException');
+
+        $index->setEntityClass('NotExistingDocument');
+    }
+
+    /**
+     * Tests that using a simple string for entityClass will try to
+     * load the class from the App namespace, without target class
+     *
+     * @return void
+     */
+    public function testSetInvalidDocumentClassButWithEntity()
+    {
+        $class = $this->getMockClass('\Cake\ORM\Entity');
+        class_alias($class, 'TestApp\Model\Entity\Doge');
+
+        $index = new Index();
+
+        $this->expectException('\Cake\ElasticSearch\Exception\MissingDocumentException');
+
+        $index->setEntityClass('Doge');
     }
 
     /**

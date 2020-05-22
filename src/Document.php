@@ -38,7 +38,7 @@ class Document implements EntityInterface
 
     /**
      * Takes either an array or a Result object form a search and constructs
-     * a document representing an entity in a elastic search type,
+     * a document representing an entity in a elastic search index,
      *
      * @param array|\Elastica\Result $data An array or Result object that
      *  represents an Elasticsearch document

@@ -104,7 +104,7 @@ class Marshaller
         }
 
         foreach ($embeds as $embed) {
-            $property = $embed->property();
+            $property = $embed->getProperty();
             $alias = $embed->getAlias();
             if (isset($data[$property])) {
                 if (isset($options['associated'][$alias])) {
@@ -140,16 +140,16 @@ class Marshaller
      */
     protected function newNested(Embedded $embed, array $data, array $options = [])
     {
-        $class = $embed->entityClass();
+        $class = $embed->getEntityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
-            return $this->createAndHydrate($class, $data, $options, $embed->indexClass());
+            return $this->createAndHydrate($class, $data, $options, $embed->getIndexClass());
         }
 
         if ($embed->type() === Embedded::ONE_TO_MANY) {
             $children = [];
             foreach ($data as $row) {
                 if (is_array($row)) {
-                    $children[] = $this->createAndHydrate($class, $row, $options, $embed->indexClass());
+                    $children[] = $this->createAndHydrate($class, $row, $options, $embed->getIndexClass());
                 }
             }
 
@@ -167,7 +167,7 @@ class Marshaller
      */
     protected function mergeNested(Embedded $embed, $existing, array $data)
     {
-        $class = $embed->entityClass();
+        $class = $embed->getEntityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
             if (!($existing instanceof EntityInterface)) {
                 $existing = new $class();
@@ -249,7 +249,7 @@ class Marshaller
         }
 
         foreach ($this->index->embedded() as $embed) {
-            $property = $embed->property();
+            $property = $embed->getProperty();
             if (in_array($embed->getAlias(), $options['associated']) && isset($data[$property])) {
                 $data[$property] = $this->mergeNested($embed, $entity->{$property}, $data[$property]);
             }

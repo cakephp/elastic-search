@@ -160,7 +160,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Initialize a table instance. Called after the constructor.
+     * Initialize a index instance. Called after the constructor.
      *
      * You can use this method to define embedded documents,
      * define validation and do any other initialization logic you need.
@@ -245,7 +245,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Sets the index registry key used to create this table instance.
+     * Sets the index registry key used to create this index instance.
      *
      * @param string $registryAlias The key used to access this object.
      * @return $this
@@ -450,7 +450,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $data = $result->getData();
         $data['id'] = $result->getId();
         foreach ($this->embedded() as $embed) {
-            $prop = $embed->property();
+            $prop = $embed->getProperty();
             if (isset($data[$prop])) {
                 $data[$prop] = $embed->hydrate($data[$prop], $options);
             }
@@ -504,7 +504,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * need those first load a collection of records and delete them.
      *
      * @param array $conditions An array of conditions, similar to those used with find()
-     * @return int Success Returns 1 if one or more rows are effected.
+     * @return int Success Returns 1 if one or more documents are effected.
      * @see RepositoryInterface::delete()
      */
     public function deleteAll($conditions): int
@@ -798,7 +798,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Returns the class used to hydrate rows for this table.
+     * Returns the class used to hydrate documents for this index.
      *
      * @return string
      * @psalm-suppress MoreSpecificReturnType
@@ -820,9 +820,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             if (!class_exists($name)) {
                 return $this->_documentClass = $default;
             }
-
-            /** @var class-string<\Cake\Datasource\EntityInterface>|null $class */
-            $class = App::className($name, 'Model/Entity');
+            /** @var class-string<\Cake\ElasticSearch\Document>|null $class */
+            $class = App::className($name, 'Model/Document');
             if (!$class) {
                 throw new MissingDocumentException([$name]);
             }
@@ -834,7 +833,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Sets the class used to hydrate rows for this table.
+     * Sets the class used to hydrate documents for this index.
      *
      * @param string $name The name of the class to use
      * @throws \Cake\ElasticSearch\Exception\MissingDocumentException when the entity class cannot be found
@@ -939,7 +938,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * to be interested in the related event.
      *
      * Override this method if you need to add non-conventional event listeners.
-     * Or if you want you table to listen to non-standard events.
+     * Or if you want your index to listen to non-standard events.
      *
      * The conventional method map is:
      *
