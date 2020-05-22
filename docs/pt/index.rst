@@ -42,15 +42,15 @@ Visão geral
 
 O plugin ElasticSearch torna fácil interagir com um índice do *elasticsearch* e
 disponibiliza uma interface similar ao :doc:`/orm`. Para começar, você deve
-criar um objeto ``Type``. Objetos ``Type`` são a classe similar a um
+criar um objeto ``Index``. Objetos ``Index`` são a classe similar a um
 "repositório" ou "tabela" no *elasticsearch*::
 
-    // No src/Model/Type/ArticlesType.php
-    namespace App\Model\Type;
+    // No src/Model/Index/ArticlesIndex.php
+    namespace App\Model\Index;
 
-    use Cake\ElasticSearch\Type;
+    use Cake\ElasticSearch\Index;
 
-    class ArticlesType extends Type
+    class ArticlesIndex extends Index
     {
     }
 
@@ -59,7 +59,7 @@ Você pode então usar a sua classe *type* nos seus *controllers*::
     public function beforeFilter(Event $event)
     {
         parent::beforeFilter($event);
-        // Carrega o Type usando o provedor 'Elastic'
+        // Carrega o Index usando o provedor 'Elastic'
         $this->loadModel('Articles', 'Elastic');
     }
 
@@ -136,6 +136,17 @@ Você pode usar o ``QueryBuilder`` para adicionar condições de filtragem::
             $builder->term('author.name', 'sally')
         );
     });
+
+
+Se você quiser fazer uma busca textual (fulltext), incluíndo ranqueamento, você
+precisa chamar ``mustWhere`` ou ``shouldWhere`` ao invés de ``where``::
+
+    $query->mustWhere(function ($builder) {
+        return $builder->match('article.body', 'post');
+    });
+
+Desta forma, você pode, por exemplo, ordenar os resultados em cima do campo
+``_score``.
 
 A lista completa de métodos com exemplos práticos pode ser encontradda no código
 fonte do `QueryBuilder
@@ -216,12 +227,12 @@ parente. Por exemplo, você pode querer ter os comentários incorporados a um
 artigo para ter acesso a métodos específicos da aplicação. Você pode usar os
 métodos ``embedOne`` e ``embedMany`` para definir documentos incorporados::
 
-    // No src/Model/Type/ArticlesType.php
-    namespace App\Model\Type;
+    // No src/Model/Index/ArticlesIndex.php
+    namespace App\Model\Index;
 
-    use Cake\ElasticSearch\Type;
+    use Cake\ElasticSearch\Index;
 
-    class ArticlesType extends Type
+    class ArticlesIndex extends Index
     {
         public function initialize()
         {
@@ -249,15 +260,15 @@ incorporados corretas::
     // Array das instâncias App\Model\Document\Comment
     $article->comments;
 
-Recebendo instâncias Type
+Recebendo instâncias Index
 =========================
 
 Como no ORM, o plugin ElasticSearch disponibiliza um *factory/registry* para
-receber instâncias ``Type``::
+receber instâncias ``Index``::
 
-    use Cake\ElasticSearch\TypeRegistry;
+    use Cake\ElasticSearch\IndexRegistry;
 
-    $articles = TypeRegistry::get('Articles');
+    $articles = IndexRegistry::get('Articles');
 
 Descarregando o Registry
 ------------------------
@@ -268,7 +279,7 @@ frequentemente útil quando
 During test cases you may want to flush the registry. Doing so is often useful
 when you are using mock objects, or modifying a type's dependencies::
 
-    TypeRegistry::flush();
+    IndexRegistry::flush();
 
 Suites de testes
 ================

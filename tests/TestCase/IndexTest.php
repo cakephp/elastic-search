@@ -79,7 +79,7 @@ class IndexTest extends TestCase
      */
     public function testEntityClassDefault()
     {
-        $this->assertEquals('\Cake\ElasticSearch\Document', $this->index->entityClass());
+        $this->assertEquals('Cake\ElasticSearch\Document', $this->index->getEntityClass());
     }
 
     /**
@@ -91,7 +91,7 @@ class IndexTest extends TestCase
     {
         $index = IndexRegistry::get('TestPlugin.Comments');
 
-        $this->assertEquals('TestPlugin\Model\Document\Comment', $index->entityClass());
+        $this->assertEquals('TestPlugin\Model\Document\Comment', $index->getEntityClass());
     }
 
     /**
@@ -106,9 +106,11 @@ class IndexTest extends TestCase
         class_alias($class, 'App\Model\Document\TestUser');
 
         $index = new Index();
+        $index->setEntityClass('TestUser');
+
         $this->assertEquals(
             'App\Model\Document\TestUser',
-            $index->entityClass('TestUser')
+            $index->getEntityClass()
         );
     }
 
@@ -124,9 +126,11 @@ class IndexTest extends TestCase
         class_alias($class, 'MyPlugin\Model\Document\SuperUser');
 
         $index = new Index();
+        $index->setEntityClass('MyPlugin.SuperUser');
+
         $this->assertEquals(
             'MyPlugin\Model\Document\SuperUser',
-            $index->entityClass('MyPlugin.SuperUser')
+            $index->getEntityClass()
         );
     }
 
