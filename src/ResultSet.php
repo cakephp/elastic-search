@@ -17,7 +17,7 @@ namespace Cake\ElasticSearch;
 use Cake\Collection\CollectionTrait;
 use Cake\Database\Type;
 use Cake\Datasource\ResultSetInterface;
-use Cake\ElasticSearch\Datasource\Dummy;
+use Cake\ElasticSearch\Database\Driver\Dummy;
 use IteratorIterator;
 
 /**
