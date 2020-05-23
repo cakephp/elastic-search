@@ -25,7 +25,7 @@ use Cake\Database\Driver;
 class Dummy extends Driver
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function connect()
     {
@@ -33,7 +33,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function enabled()
     {
@@ -41,7 +41,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function releaseSavePointSQL($name)
     {
@@ -49,7 +49,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function savePointSQL($name)
     {
@@ -57,7 +57,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function rollbackSavePointSQL($name)
     {
@@ -65,7 +65,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function disableForeignKeySQL()
     {
@@ -73,7 +73,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function enableForeignKeySQL()
     {
@@ -81,7 +81,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function supportsDynamicConstraints()
     {
@@ -89,7 +89,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function supportsSavePoints()
     {
@@ -97,7 +97,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function queryTranslator($type)
     {
@@ -107,7 +107,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function schemaDialect()
     {
@@ -115,7 +115,7 @@ class Dummy extends Driver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function quoteIdentifier($identifier)
     {
