@@ -592,7 +592,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
             $doc = new ElasticaDocument($id, $data);
             $doc->setAutoPopulate(true);
-            if ($options['routing']) {
+            if ($options['routing'] !== null) {
                 $doc->setRouting($options['routing']);
             }
 
@@ -673,7 +673,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $doc = new ElasticaDocument($id, $data);
         $doc->setAutoPopulate(true);
-        if ($options['routing']) {
+        if ($options['routing'] !== null) {
             $doc->setRouting($options['routing']);
         }
 
