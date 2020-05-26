@@ -261,11 +261,13 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * {@inheritDoc}
      *
+     * @param string $finder The finder method to use.
+     * @param array $options The options for the finder.
      * @return \Cake\ElasticSearch\Query
      */
-    public function find($type = 'all', array $options = [])
+    public function find($finder = 'all', array $options = [])
     {
-        return $this->_repository->callFinder($type, $this, $options);
+        return $this->_repository->callFinder($finder, $this, $options);
     }
 
     /**

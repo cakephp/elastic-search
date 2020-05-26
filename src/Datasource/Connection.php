@@ -42,7 +42,7 @@ class Connection implements ConnectionInterface
     /**
      * Elastica client instance
      *
-     * @var \Elastica\Client;
+     * @var \Elastica\Client
      */
     protected $_client;
 
@@ -154,22 +154,22 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
-    public function transactional(callable $callable)
+    public function transactional(callable $transaction)
     {
-        return $callable($this);
+        return $transaction($this);
     }
 
     /**
      * {@inheritDoc}
      *
      * Elasticsearch does not deal with the concept of foreign key constraints
-     * This method just triggers the $callback argument.
+     * This method just triggers the $operation argument.
      */
-    public function disableConstraints(callable $callback)
+    public function disableConstraints(callable $operation)
     {
-        return $callback($this);
+        return $operation($this);
     }
 
     /**

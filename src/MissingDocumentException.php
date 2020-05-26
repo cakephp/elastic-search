@@ -25,5 +25,8 @@ use Cake\Core\Exception\Exception;
  */
 class MissingDocumentException extends Exception
 {
+    /**
+     * @inheritDoc
+     */
     protected $_messageTemplate = 'Document class %s could not be found.';
 }
