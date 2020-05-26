@@ -422,7 +422,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * @{inheritdoc}
+     * {@inheritDoc}
      *
      * Any key present in the options array will be translated as a GET argument
      * when getting the document by its id. This is often useful whe you need to
@@ -430,6 +430,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * This method will not trigger the Model.beforeFind callback as it does not use
      * queries for the search, but a faster key lookup to the search index.
+     *
      * @param string $primaryKey The document's primary key
      * @param array $options An array of options
      * @throws \Elastica\Exception\NotFoundException if no document exist with such id
