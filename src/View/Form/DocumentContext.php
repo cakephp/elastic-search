@@ -241,7 +241,7 @@ class DocumentContext implements ContextInterface
         throw new RuntimeException(
             sprintf(
                 'Unable to fetch property "%s"',
-                implode(".", $path)
+                implode('.', $path)
             )
         );
     }
