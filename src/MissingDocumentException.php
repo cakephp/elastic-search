@@ -16,7 +16,7 @@ declare(strict_types=1);
  * @since         2.0.1
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\Elasticsearch;
+namespace Cake\ElasticSearch;
 
 use Cake\Core\Exception\Exception;
 

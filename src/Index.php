@@ -510,7 +510,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * @{inheritdoc}
+     * {@inheritDoc}
      *
      * Any key present in the options array will be translated as a GET argument
      * when getting the document by its id. This is often useful whe you need to
