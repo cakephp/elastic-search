@@ -18,7 +18,7 @@
         "source": "https://github.com/cakephp/elastic-search"
     },
     "require": {
-        "ruflin/elastica": "^6.0"
+        "ruflin/elastica": "^7.0"
     },
     "require-dev": {
         "cakephp/cakephp": "^4.0",
