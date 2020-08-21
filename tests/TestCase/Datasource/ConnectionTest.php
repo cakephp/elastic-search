@@ -58,10 +58,10 @@ class ConnectionTest extends TestCase
     {
         $connection = new Connection();
         $index = $connection->getIndex('something_else,another');
-        $this->assertEquals('something_else,another', $index->getName());
+        $this->assertSame('something_else,another', $index->getName());
 
         $index = $connection->getIndex('baz');
-        $this->assertEquals('baz', $index->getName());
+        $this->assertSame('baz', $index->getName());
     }
 
     /**
@@ -107,7 +107,7 @@ class ConnectionTest extends TestCase
             'path' => '_stats',
             'data' => [],
         ], JSON_PRETTY_PRINT);
-        $this->assertEquals('debug ' . $message, $logs[0]);
+        $this->assertSame('debug ' . $message, $logs[0]);
     }
 
     /**

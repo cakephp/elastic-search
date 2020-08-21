@@ -32,7 +32,7 @@ class MappingSchemaTest extends TestCase
     public function testName()
     {
         $mapping = new MappingSchema('articles', []);
-        $this->assertEquals('articles', $mapping->name());
+        $this->assertSame('articles', $mapping->name());
     }
 
     /**
@@ -125,8 +125,8 @@ class MappingSchemaTest extends TestCase
             ],
         ];
         $mapping = new MappingSchema('articles', $data);
-        $this->assertEquals('integer', $mapping->fieldType('user_id'));
-        $this->assertEquals('text', $mapping->fieldType('address.street'));
+        $this->assertSame('integer', $mapping->fieldType('user_id'));
+        $this->assertSame('text', $mapping->fieldType('address.street'));
         $this->assertNull($mapping->fieldType('address.nope'));
     }
 }

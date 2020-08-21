@@ -84,7 +84,7 @@ class IndexTest extends TestCase
      */
     public function testGetEntityClassDefault()
     {
-        $this->assertEquals(Document::class, $this->index->getEntityClass());
+        $this->assertSame(Document::class, $this->index->getEntityClass());
     }
 
     /**
@@ -96,7 +96,7 @@ class IndexTest extends TestCase
     {
         $index = IndexRegistry::get('TestPlugin.Comments');
 
-        $this->assertEquals('TestPlugin\Model\Document\Comment', $index->getEntityClass());
+        $this->assertSame('TestPlugin\Model\Document\Comment', $index->getEntityClass());
     }
 
     /**
@@ -109,7 +109,7 @@ class IndexTest extends TestCase
     {
         $index = IndexRegistry::get('Accounts');
 
-        $this->assertEquals(Document::class, $index->getEntityClass());
+        $this->assertSame(Document::class, $index->getEntityClass());
     }
 
     /**
@@ -125,7 +125,7 @@ class IndexTest extends TestCase
 
         $index = new Index();
         $index->setEntityClass('TestUser');
-        $this->assertEquals(
+        $this->assertSame(
             'TestApp\Model\Document\TestUser',
             $index->getEntityClass()
         );
@@ -144,7 +144,7 @@ class IndexTest extends TestCase
 
         $index = new Index();
         $this->assertSame($index, $index->setEntityClass('MyPlugin.SuperUser'));
-        $this->assertEquals(
+        $this->assertSame(
             'MyPlugin\Model\Document\SuperUser',
             $index->getEntityClass()
         );
@@ -237,7 +237,7 @@ class IndexTest extends TestCase
         $this->assertEquals(['a' => 'b', 'id' => 'foo'], $result->toArray());
         $this->assertFalse($result->isDirty());
         $this->assertFalse($result->isNew());
-        $this->assertEquals('foo', $result->getSource());
+        $this->assertSame('foo', $result->getSource());
     }
 
     /**
@@ -262,7 +262,7 @@ class IndexTest extends TestCase
         $result = $index->newEntity($data);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
         $this->assertSame($data, $result->toArray());
-        $this->assertEquals('articles', $result->getSource());
+        $this->assertSame('articles', $result->getSource());
     }
 
     /**
@@ -352,7 +352,7 @@ class IndexTest extends TestCase
         $result = $this->index->get($doc->id);
         $this->assertEquals($doc->title, $result->title);
         $this->assertEquals($doc->body, $result->body);
-        $this->assertEquals('articles', $result->getSource());
+        $this->assertSame('articles', $result->getSource());
     }
 
     /**
@@ -385,7 +385,7 @@ class IndexTest extends TestCase
         $result = $this->index->get($doc->id, ['routing' => 'abcd']);
         $this->assertEquals($doc->title, $result->title);
         $this->assertEquals($doc->body, $result->body);
-        $this->assertEquals('articles', $result->getSource());
+        $this->assertSame('articles', $result->getSource());
     }
 
     /**
@@ -406,7 +406,7 @@ class IndexTest extends TestCase
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertFalse($doc->isNew(), 'Not new.');
         $this->assertFalse($doc->isDirty(), 'Not dirty anymore.');
-        $this->assertEquals('articles', $doc->getSource());
+        $this->assertSame('articles', $doc->getSource());
     }
 
     /**
@@ -487,7 +487,7 @@ class IndexTest extends TestCase
             }
         );
         $this->index->save($doc);
-        $this->assertEquals(2, $called);
+        $this->assertSame(2, $called);
     }
 
     /**
@@ -535,7 +535,7 @@ class IndexTest extends TestCase
 
         $compare = $this->index->get($entity->id);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->user);
-        $this->assertEquals('sarah', $compare->user->username);
+        $this->assertSame('sarah', $compare->user->username);
     }
 
     /**
@@ -561,8 +561,8 @@ class IndexTest extends TestCase
         $compare = $this->index->get($entity->id);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->comments[0]);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->comments[1]);
-        $this->assertEquals('Nice post', $compare->comments[0]->comment);
-        $this->assertEquals('Awesome!', $compare->comments[1]->comment);
+        $this->assertSame('Nice post', $compare->comments[0]->comment);
+        $this->assertSame('Awesome!', $compare->comments[1]->comment);
     }
 
     /**
@@ -698,7 +698,7 @@ class IndexTest extends TestCase
             }
         );
         $this->assertTrue($this->index->delete($doc));
-        $this->assertEquals(2, $called);
+        $this->assertSame(2, $called);
     }
 
     /**
@@ -766,11 +766,11 @@ class IndexTest extends TestCase
             function ($event, $validator, $name) use (&$called) {
                 $called++;
                 $this->assertInstanceOf('Cake\Validation\Validator', $validator);
-                $this->assertEquals('default', $name);
+                $this->assertSame('default', $name);
             }
         );
         $this->index->getValidator();
-        $this->assertEquals(1, $called, 'Event not triggered');
+        $this->assertSame(1, $called, 'Event not triggered');
     }
 
     /**
@@ -796,7 +796,7 @@ class IndexTest extends TestCase
         $this->connection->getIndex($this->index->getName())->refresh();
 
         $this->assertSame(1, $result);
-        $this->assertEquals(0, $this->index->find()->count());
+        $this->assertSame(0, $this->index->find()->count());
     }
 
     /**
@@ -811,7 +811,7 @@ class IndexTest extends TestCase
         $this->connection->getIndex($this->index->getName())->refresh();
 
         $this->assertSame(1, $result);
-        $this->assertEquals(1, $this->index->find()->count());
+        $this->assertSame(1, $this->index->find()->count());
     }
 
     /**
@@ -847,7 +847,7 @@ class IndexTest extends TestCase
     public function testAlias()
     {
         $this->assertEquals($this->index->getName(), $this->index->getAlias());
-        $this->assertEquals('articles', $this->index->getAlias());
+        $this->assertSame('articles', $this->index->getAlias());
     }
 
     /**
@@ -859,8 +859,8 @@ class IndexTest extends TestCase
     {
         $index = IndexRegistry::get('TestPlugin.Comments');
 
-        $this->assertEquals('articles', $this->index->getRegistryAlias());
-        $this->assertEquals('TestPlugin.Comments', $index->getRegistryAlias());
+        $this->assertSame('articles', $this->index->getRegistryAlias());
+        $this->assertSame('TestPlugin.Comments', $index->getRegistryAlias());
     }
 
     /**

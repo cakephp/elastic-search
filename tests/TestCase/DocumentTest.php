@@ -126,8 +126,8 @@ class DocumentTest extends TestCase
 
         $document = new Document($result);
         $this->assertSame($data + ['id' => 1], $document->toArray());
-        $this->assertEquals('things', $document->type());
-        $this->assertEquals(3, $document->version());
+        $this->assertSame('things', $document->type());
+        $this->assertSame(3, $document->version());
         $this->assertEquals(['highlights array'], $document->highlights());
         $this->assertEquals(['explanation array'], $document->explanation());
     }

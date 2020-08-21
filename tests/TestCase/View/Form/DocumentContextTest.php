@@ -266,16 +266,16 @@ class DocumentContextTest extends TestCase
         );
 
         $result = $context->val('0.title');
-        $this->assertEquals('First post', $result);
+        $this->assertSame('First post', $result);
 
         $result = $context->val('0.user.username');
-        $this->assertEquals('mark', $result);
+        $this->assertSame('mark', $result);
 
         $result = $context->val('1.title');
-        $this->assertEquals('Second post', $result);
+        $this->assertSame('Second post', $result);
 
         $result = $context->val('1.user.username');
-        $this->assertEquals('jose', $result);
+        $this->assertSame('jose', $result);
 
         $this->assertNull($context->val('nope'));
         $this->assertNull($context->val('99.title'));
@@ -570,7 +570,7 @@ class DocumentContextTest extends TestCase
 
         $this->assertEquals($this->textField, $context->type('title'));
         $this->assertEquals($this->textField, $context->type('body'));
-        $this->assertEquals('integer', $context->type('user_id'));
+        $this->assertSame('integer', $context->type('user_id'));
         $this->assertNull($context->type('nope'));
     }
 

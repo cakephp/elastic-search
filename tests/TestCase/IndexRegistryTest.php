@@ -89,11 +89,11 @@ class IndexRegistryTest extends TestCase
             ]
         );
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
-        $this->assertEquals('my_articles', $result->getName());
+        $this->assertSame('my_articles', $result->getName());
 
         $result2 = IndexRegistry::get('Articles');
         $this->assertSame($result, $result2);
-        $this->assertEquals('my_articles', $result->getName());
+        $this->assertSame('my_articles', $result->getName());
     }
 
     /**
@@ -105,11 +105,11 @@ class IndexRegistryTest extends TestCase
     {
         $result = IndexRegistry::get('Droids');
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
-        $this->assertEquals('droids', $result->getName());
+        $this->assertSame('droids', $result->getName());
 
         $result = IndexRegistry::get('R2D2', ['className' => 'Droids']);
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
-        $this->assertEquals(
+        $this->assertSame(
             'r2_d2',
             $result->getName(),
             'The name should be derived from the alias'
@@ -120,19 +120,19 @@ class IndexRegistryTest extends TestCase
             ['className' => 'Droids', 'name' => 'droids']
         );
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
-        $this->assertEquals('droids', $result->getName(), 'The name should be taken from options');
+        $this->assertSame('droids', $result->getName(), 'The name should be taken from options');
 
         $result = IndexRegistry::get('Funky.Chipmunks');
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
-        $this->assertEquals('chipmunks', $result->getName(), 'The name should be derived from the alias');
+        $this->assertSame('chipmunks', $result->getName(), 'The name should be derived from the alias');
 
         $result = IndexRegistry::get('Awesome', ['className' => 'Funky.Monkies']);
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
-        $this->assertEquals('awesome', $result->getName(), 'The name should be derived from the alias');
+        $this->assertSame('awesome', $result->getName(), 'The name should be derived from the alias');
 
         $result = IndexRegistry::get('Stuff', ['className' => 'Cake\ElasticSearch\Index']);
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
-        $this->assertEquals('stuff', $result->getName(), 'The name should be derived from the alias');
+        $this->assertSame('stuff', $result->getName(), 'The name should be derived from the alias');
     }
 
     /**

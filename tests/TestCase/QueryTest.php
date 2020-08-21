@@ -578,7 +578,7 @@ class QueryTest extends TestCase
         $this->assertArrayHasKey('pre_tags', $compiled['highlight']);
         $this->assertArrayHasKey('post_tags', $compiled['highlight']);
         $this->assertArrayHasKey('fields', $compiled['highlight']);
-        $this->assertEquals(100, $compiled['highlight']['fields']['contents']['fragment_size']);
+        $this->assertSame(100, $compiled['highlight']['fields']['contents']['fragment_size']);
     }
 
     /**

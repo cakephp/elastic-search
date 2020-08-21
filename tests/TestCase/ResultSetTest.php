@@ -86,7 +86,7 @@ class ResultSetTest extends TestCase
         $this->assertSame($data + ['id' => 99], $document->toArray());
         $this->assertFalse($document->isDirty());
         $this->assertFalse($document->isNew());
-        $this->assertEquals('things', $document->type());
+        $this->assertSame('things', $document->type());
     }
 
     /**
