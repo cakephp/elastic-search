@@ -50,9 +50,9 @@ class EmbeddedDocumentTest extends TestCase
         $assocs = $this->index->embedded();
         $this->assertCount(1, $assocs);
         $this->assertInstanceOf('Cake\ElasticSearch\Association\EmbedOne', $assocs[0]);
-        $this->assertEquals('TestApp\Model\Document\Address', $assocs[0]->getEntityClass());
-        $this->assertEquals('Cake\ElasticSearch\Index', $assocs[0]->getIndexClass());
-        $this->assertEquals('address', $assocs[0]->getProperty());
+        $this->assertSame('TestApp\Model\Document\Address', $assocs[0]->getEntityClass());
+        $this->assertSame('Cake\ElasticSearch\Index', $assocs[0]->getIndexClass());
+        $this->assertSame('address', $assocs[0]->getProperty());
     }
 
     /**
@@ -65,7 +65,7 @@ class EmbeddedDocumentTest extends TestCase
         $this->index->embedOne('Address');
         $result = $this->index->get(1);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->address);
-        $this->assertEquals('123 street', $result->address->street);
+        $this->assertSame('123 street', $result->address->street);
     }
 
     /**
@@ -102,7 +102,7 @@ class EmbeddedDocumentTest extends TestCase
         $this->index->embedOne('Address', $options);
         $result = $this->index->get(1);
         $this->assertInstanceOf($expected, $result->address);
-        $this->assertEquals('123 street', $result->address->street);
+        $this->assertSame('123 street', $result->address->street);
     }
 
     /**
@@ -129,9 +129,9 @@ class EmbeddedDocumentTest extends TestCase
         $assocs = $this->index->embedded();
         $this->assertCount(1, $assocs);
         $this->assertInstanceOf('Cake\ElasticSearch\Association\EmbedMany', $assocs[0]);
-        $this->assertEquals('TestApp\Model\Document\Address', $assocs[0]->getEntityClass());
-        $this->assertEquals('Cake\ElasticSearch\Index', $assocs[0]->getIndexClass());
-        $this->assertEquals('address', $assocs[0]->getProperty());
+        $this->assertSame('TestApp\Model\Document\Address', $assocs[0]->getEntityClass());
+        $this->assertSame('Cake\ElasticSearch\Index', $assocs[0]->getIndexClass());
+        $this->assertSame('address', $assocs[0]->getProperty());
     }
 
     /**
@@ -194,7 +194,7 @@ class EmbeddedDocumentTest extends TestCase
         $this->index->embedOne('InvalidDocumentName');
         $assocs = $this->index->embedded();
         $this->assertCount(1, $assocs);
-        $this->assertEquals('Cake\ElasticSearch\Document', $assocs[0]->getEntityClass());
-        $this->assertEquals('invalid_document_name', $assocs[0]->getProperty());
+        $this->assertSame('Cake\ElasticSearch\Document', $assocs[0]->getEntityClass());
+        $this->assertSame('invalid_document_name', $assocs[0]->getProperty());
     }
 }

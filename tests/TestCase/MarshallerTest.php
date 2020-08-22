@@ -170,7 +170,7 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $marshaller->one($data);
 
-        $this->assertEquals(1, $called, 'method should be called');
+        $this->assertSame(1, $called, 'method should be called');
     }
 
     /**
@@ -190,7 +190,7 @@ class MarshallerTest extends TestCase
         });
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
-        $this->assertEquals('Mutated', $result->title);
+        $this->assertSame('Mutated', $result->title);
     }
 
     /**
@@ -493,7 +493,7 @@ class MarshallerTest extends TestCase
         $doc = new Document(['title' => 'original', 'body' => 'original']);
         $marshaller->merge($doc, $data);
 
-        $this->assertEquals(1, $called, 'method should be called');
+        $this->assertSame(1, $called, 'method should be called');
     }
 
     /**
@@ -514,7 +514,7 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $doc = new Document(['title' => 'original', 'body' => 'original']);
         $result = $marshaller->merge($doc, $data);
-        $this->assertEquals('Mutated', $result->title);
+        $this->assertSame('Mutated', $result->title);
     }
 
     /**
@@ -729,7 +729,7 @@ class MarshallerTest extends TestCase
         $result = $marshaller->mergeMany($entities, $data);
 
         $this->assertCount(2, $result);
-        $this->assertEquals($data[0]['title'], $result[0]->title);
+        $this->assertSame($data[0]['title'], $result[0]->title);
         $this->assertFalse($result[0]->isNew());
         $this->assertTrue($result[0]->isDirty());
         $this->assertTrue($result[0]->isDirty('title'));
