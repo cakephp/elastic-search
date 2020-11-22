@@ -22,7 +22,7 @@ jobs:
 
     services:
       elasticsearch:
-        image: elasticsearch
+        image: elasticsearch:6.8.13
         ports:
           - 9200/tcp
 
