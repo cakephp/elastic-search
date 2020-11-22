@@ -513,7 +513,7 @@ class QueryBuilderTest extends TestCase
         // The result varies a bit depending on the elasticsearch driver versions.
         $this->assertArrayHasKey('script', $data);
         $this->assertArrayHasKey('script', $data['script']);
-        $this->assertEquals(["doc['foo'] > 2"], array_values($data['script']['script']));
+        $this->assertSame(["doc['foo'] > 2"], array_values($data['script']['script']));
     }
 
     /**
