@@ -55,11 +55,11 @@ Log::setConfig('debug', [
     'file' => 'debug',
 ]);
 
-if (!getenv('db_dsn')) {
-    putenv('db_dsn=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection');
+if (!getenv('DB_URL')) {
+    putenv('DB_URL=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection');
 }
 
-ConnectionManager::setConfig('test', ['url' => getenv('db_dsn')]);
-ConnectionManager::setConfig('test_elastic', ['url' => getenv('db_dsn')]);
+ConnectionManager::setConfig('test', ['url' => getenv('DB_URL')]);
+ConnectionManager::setConfig('test_elastic', ['url' => getenv('DB_URL')]);
 
 Router::reload();

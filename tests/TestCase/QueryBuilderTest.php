@@ -508,10 +508,12 @@ class QueryBuilderTest extends TestCase
     {
         $builder = new QueryBuilder();
         $result = $builder->script("doc['foo'] > 2");
-        $expected = [
-            'script' => ['script' => ['source' => "doc['foo'] > 2"]],
-        ];
-        $this->assertEquals($expected, $result->toArray());
+
+        $data = $result->toArray();
+        // The result varies a bit depending on the elasticsearch driver versions.
+        $this->assertArrayHasKey('script', $data);
+        $this->assertArrayHasKey('script', $data['script']);
+        $this->assertSame(["doc['foo'] > 2"], array_values($data['script']['script']));
     }
 
     /**
