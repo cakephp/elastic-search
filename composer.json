@@ -18,10 +18,10 @@
         "source": "https://github.com/cakephp/elastic-search"
     },
     "require": {
+        "cakephp/cakephp": "^4.0",
         "ruflin/elastica": "^6.0"
     },
     "require-dev": {
-        "cakephp/cakephp": "^4.0",
         "cakephp/cakephp-codesniffer": "^4.0",
         "phpunit/phpunit": "^8.5"
     },
