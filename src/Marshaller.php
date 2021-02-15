@@ -293,14 +293,16 @@ class Marshaller
     public function mergeMany(array $entities, array $data, array $options = [])
     {
         $indexed = (new Collection($data))
-            ->groupBy('id')
+            ->groupBy(function ($element) {
+                return $element['id'] ?? '';
+            })
             ->map(function ($element, $key) {
                 return $key === '' ? $element : $element[0];
             })
             ->toArray();
 
-        $new = $indexed[null] ?? [];
-        unset($indexed[null]);
+        $new = $indexed[''] ?? [];
+        unset($indexed['']);
 
         $output = [];
         foreach ($entities as $record) {
