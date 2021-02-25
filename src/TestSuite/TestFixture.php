@@ -21,8 +21,8 @@ use Cake\Datasource\ConnectionInterface;
 use Cake\Datasource\FixtureInterface;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\Utility\Inflector;
+use Elastica\Mapping as ElasticaMapping;
 use Elastica\Query\MatchAll;
-use Elastica\Type\Mapping as ElasticaMapping;
 
 /**
  * A Test fixture implementation for elastic search.
@@ -133,12 +133,10 @@ class TestFixture implements FixtureInterface
         }
         $esIndex->create();
 
-        $type = $esIndex->getType($this->getIndex()->getType());
         $mapping = new ElasticaMapping();
-        $mapping->setType($type);
         $mapping->setProperties($this->schema);
 
-        $response = $mapping->send();
+        $response = $mapping->send($esIndex);
         if (!$response->isOk()) {
             $msg = sprintf(
                 'Fixture creation for "%s" failed "%s"',
@@ -169,7 +167,6 @@ class TestFixture implements FixtureInterface
         }
         $documents = [];
         $esIndex = $db->getIndex($this->getIndex()->getName());
-        $type = $esIndex->getType($this->getIndex()->getType());
 
         foreach ($this->records as $data) {
             $id = '';
@@ -177,9 +174,9 @@ class TestFixture implements FixtureInterface
                 $id = $data['id'];
             }
             unset($data['id']);
-            $documents[] = $type->createDocument($id, $data);
+            $documents[] = $esIndex->createDocument($id, $data);
         }
-        $type->addDocuments($documents);
+        $esIndex->addDocuments($documents);
         $esIndex->refresh();
     }
 
@@ -212,8 +209,7 @@ class TestFixture implements FixtureInterface
     {
         $query = new MatchAll();
         $esIndex = $db->getIndex($this->getIndex()->getName());
-        $type = $esIndex->getType($this->getIndex()->getType());
-        $type->deleteByQuery($query);
+        $esIndex->deleteByQuery($query);
         $esIndex->refresh();
 
         return true;

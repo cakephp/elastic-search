@@ -18,9 +18,4 @@ class UsersIndex extends Index
     {
         return 'users';
     }
-
-    public function getType()
-    {
-        return 'users';
-    }
 }

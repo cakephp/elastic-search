@@ -174,15 +174,14 @@ class QueryBuilder
      *
      * @param string $field The field to compare.
      * @param string $id The ID of the document containing the pre-indexed shape.
-     * @param string $type Index type where the pre-indexed shape is.
      * @param string $index Name of the index where the pre-indexed shape is.
      * @param string $path The field specified as path containing the pre-indexed shape.
      * @return \Elastica\Query\GeoShapePreIndexed
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
-    public function geoShapeIndex($field, $id, $type, $index = 'shapes', $path = 'shape')
+    public function geoShapeIndex($field, $id, $index = 'shapes', $path = 'shape')
     {
-        return new Elastica\Query\GeoShapePreIndexed($field, $id, $type, $index, $path);
+        return new Elastica\Query\GeoShapePreIndexed($field, $id, $index, $path);
     }
 
     /**
@@ -493,24 +492,6 @@ class QueryBuilder
     public function terms($field, $values)
     {
         return new Elastica\Query\Terms($field, $values);
-    }
-
-    /**
-     * Returns a Type query object that query documents matching the provided document/mapping type.
-     *
-     * ### Example:
-     *
-     * {{{
-     *  $builder->type('products');
-     * }}}
-     *
-     * @param string $type The type name
-     * @return \Elastica\Query\Type
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
-     */
-    public function type($type)
-    {
-        return new Elastica\Query\Type($type);
     }
 
     /**

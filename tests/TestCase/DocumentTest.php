@@ -80,7 +80,7 @@ class DocumentTest extends TestCase
     public function testNewWithNoResult()
     {
         $document = new Document();
-        $this->assertNull($document->type());
+        $this->assertNull($document->index());
         $this->assertSame(1, $document->version());
         $this->assertEquals([], $document->highlights());
         $this->assertEquals([], $document->explanation());
@@ -95,7 +95,7 @@ class DocumentTest extends TestCase
     public function testTypeWithResult()
     {
         $result = $this->getMockBuilder('Elastica\Result')
-            ->setMethods(['getData', 'getId', 'getType', 'getVersion', 'getHighlights', 'getExplanation'])
+            ->setMethods(['getData', 'getId', 'getIndex', 'getVersion', 'getHighlights', 'getExplanation'])
             ->disableOriginalConstructor()
             ->getMock();
         $data = ['a' => 'b'];
@@ -109,7 +109,7 @@ class DocumentTest extends TestCase
             ->will($this->returnValue(1));
 
         $result
-            ->method('getType')
+            ->method('getIndex')
             ->will($this->returnValue('things'));
 
         $result
@@ -126,7 +126,7 @@ class DocumentTest extends TestCase
 
         $document = new Document($result);
         $this->assertSame($data + ['id' => 1], $document->toArray());
-        $this->assertSame('things', $document->type());
+        $this->assertSame('things', $document->index());
         $this->assertSame(3, $document->version());
         $this->assertEquals(['highlights array'], $document->highlights());
         $this->assertEquals(['explanation array'], $document->explanation());

@@ -96,16 +96,16 @@ class Document implements EntityInterface
     }
 
     /**
-     * Returns the Elasticsearch type name from which this document came from.
+     * Returns the Elasticsearch index name from which this document came from.
      *
      * If this is a new document, this function returns null
      *
      * @return string|null
      */
-    public function type()
+    public function index()
     {
         if ($this->_result) {
-            return $this->_result->getType();
+            return $this->_result->getIndex();
         }
 
         return null;

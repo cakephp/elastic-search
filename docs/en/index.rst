@@ -59,11 +59,6 @@ class in elasticsearch::
     {
     }
 
-Index objects will assume that the type mapping name for your index is the
-singular version of the index name. In our example the type mapping would be
-``article``. If you need to change the type mapping name use the ``setType()``
-method.
-
 You can then use your index class in your controllers::
 
     public function beforeFilter(Event $event)
@@ -230,7 +225,7 @@ use ``embedOne`` and ``embedMany`` to define embedded documents::
 
     use Cake\ElasticSearch\Index;
 
-    class ArticlesType extends Index
+    class ArticlesIndex extends Index
     {
         public function initialize()
         {

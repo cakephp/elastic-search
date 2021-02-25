@@ -183,14 +183,13 @@ class QueryBuilderTest extends TestCase
     public function testGeoShapeIndex()
     {
         $builder = new QueryBuilder();
-        $result = $builder->geoShapeIndex('location', 'DEU', 'countries', 'shapes', 'location');
+        $result = $builder->geoShapeIndex('location', 'DEU', 'shapes', 'location');
         $expected = [
             'geo_shape' => [
                 'location' => [
                     'relation' => 'intersects',
                     'indexed_shape' => [
                         'id' => 'DEU',
-                        'type' => 'countries',
                         'index' => 'shapes',
                         'path' => 'location',
                     ],
@@ -557,21 +556,6 @@ class QueryBuilderTest extends TestCase
         $result = $builder->terms('user.name', ['mark', 'jose']);
         $expected = [
             'terms' => ['user.name' => ['mark', 'jose']],
-        ];
-        $this->assertEquals($expected, $result->toArray());
-    }
-
-    /**
-     * Tests the type() filter
-     *
-     * @return void
-     */
-    public function testType()
-    {
-        $builder = new QueryBuilder();
-        $result = $builder->type('products');
-        $expected = [
-            'type' => ['value' => 'products'],
         ];
         $this->assertEquals($expected, $result->toArray());
     }

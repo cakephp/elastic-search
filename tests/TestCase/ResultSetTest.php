@@ -20,6 +20,8 @@ use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\ResultSet;
 use Cake\TestSuite\TestCase;
+use Elastica\Query as ElasticaQuery;
+use Elastica\Response as ElasticaResponse;
 use TestApp\Model\Document\MyTestDocument;
 
 /**
@@ -67,14 +69,14 @@ class ResultSetTest extends TestCase
         [$resultSet, $elasticaSet] = $resultSets;
         $data = ['foo' => 1, 'bar' => 2];
         $result = $this->getMockBuilder('Elastica\Result')
-            ->setMethods(['getId', 'getData', 'getType'])
+            ->setMethods(['getId', 'getData', 'getIndex'])
             ->disableOriginalConstructor()
             ->getMock();
         $result->method('getData')
             ->will($this->returnValue($data));
         $result->method('getId')
             ->will($this->returnValue(99));
-        $result->method('getType')
+        $result->method('getIndex')
             ->will($this->returnValue('things'));
 
         $elasticaSet->expects($this->once())
@@ -86,7 +88,7 @@ class ResultSetTest extends TestCase
         $this->assertSame($data + ['id' => 99], $document->toArray());
         $this->assertFalse($document->isDirty());
         $this->assertFalse($document->isNew());
-        $this->assertSame('things', $document->type());
+        $this->assertSame('things', $document->index());
     }
 
     /**
@@ -118,6 +120,21 @@ class ResultSetTest extends TestCase
         $query->expects($this->once())->method('getRepository')
             ->will($this->returnValue($type));
 
+        $returnValues = [
+            'hasSuggests' => false,
+            'getSuggests' => [],
+            'hasAggregations' => false,
+            'getAggregations' => [],
+            'getAggregation' => [],
+            'getTotalHits' => 23,
+            'getMaxScore' => 5.2,
+            'getTotalTime' => 25,
+            'hasTimedOut' => false,
+            'getResponse' => new ElasticaResponse(''),
+            'getQuery' => new ElasticaQuery(),
+            'countSuggests' => 0,
+        ];
+
         $requireParam = ['getAggregation' => 'foo'];
         $resultSet = new ResultSet($elasticaSet, $query);
         foreach ($methods as $method) {
@@ -129,7 +146,7 @@ class ResultSetTest extends TestCase
                 $param = $requireParam[$method];
             }
 
-            $return = 'something';
+            $return = $returnValues[$method] ?? 'something';
             $expect->will($this->returnValue($return));
 
             $this->assertSame($return, $resultSet->{$method}($param), "The {$method} method did not have a matching return.");

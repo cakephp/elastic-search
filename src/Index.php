@@ -84,15 +84,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     protected $_name;
 
     /**
-     * The name of the Elasticsearch mapping type which this class represents
-     *
-     * For default, the mapping type is equal to index name for easy use.
-     *
-     * @var string
-     */
-    protected $_type;
-
-    /**
      * Registry key used to create this index object
      *
      * @var string
@@ -145,15 +136,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         if (!empty($config['name'])) {
             $this->setName($config['name']);
         }
-        if (!empty($config['type'])) {
-            $this->setType($config['type']);
-        }
         $eventManager = null;
         if (isset($config['eventManager'])) {
             $eventManager = $config['eventManager'];
         }
         $this->_eventManager = $eventManager ?: new EventManager();
-        $this->setType($this->_name);
         $this->initialize($config);
         $this->_eventManager->on($this);
         $this->dispatchEvent('Model.initialize');
@@ -336,35 +323,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Sets the mapping type name
-     *
-     * @param string $type Mapping type name
-     * @return $this
-     */
-    public function setType($type)
-    {
-        $this->_type = $type;
-
-        return $this;
-    }
-
-    /**
-     * Returns the mapping type name
-     *
-     * If not defined, use the same as index name
-     *
-     * @return string
-     */
-    public function getType()
-    {
-        if ($this->_type === null) {
-            $this->_type = Inflector::singularize($this->getName());
-        }
-
-        return $this->_type;
-    }
-
-    /**
      * Creates a new Query for this repository and applies some defaults based on the
      * type of search that was selected.
      *
@@ -438,8 +396,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function get($primaryKey, $options = []): EntityInterface
     {
-        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
-        $result = $type->getDocument($primaryKey, $options);
+        $esIndex = $this->getConnection()->getIndex($this->getName());
+        $result = $esIndex->getDocument($primaryKey, $options);
         $class = $this->getEntityClass();
 
         $options = [
@@ -512,8 +470,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $query = $this->query();
         $query->where($conditions);
-        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
-        $response = $type->deleteByQuery($query->compileQuery());
+        $esIndex = $this->getConnection()->getIndex($this->getName());
+        $response = $esIndex->deleteByQuery($query->compileQuery());
 
         return (int)$response->isOk();
     }
@@ -600,11 +558,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $documents[$key] = $doc;
         }
 
-        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
-        $type->addDocuments($documents);
+        $esIndex = $this->getConnection()->getIndex($this->getName());
+        $esIndex->addDocuments($documents);
 
         if ($options['refresh']) {
-            $type->getIndex()->refresh();
+            $esIndex->refresh();
         }
 
         foreach ($documents as $key => $document) {
@@ -666,7 +624,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return false;
         }
 
-        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
+        $esIndex = $this->getConnection()->getIndex($this->getName());
         $id = $entity->id ?: null;
 
         $data = $entity->toArray();
@@ -678,10 +636,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $doc->setRouting($options['routing']);
         }
 
-        $type->addDocument($doc);
+        $esIndex->addDocument($doc);
 
         if ($options['refresh']) {
-            $type->getIndex()->refresh();
+            $esIndex->refresh();
         }
 
         $entity->id = $doc->getId();
@@ -739,11 +697,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $doc = new ElasticaDocument($entity->id, $data);
 
-        $type = $this->getConnection()->getIndex($this->getName())->getType($this->getType());
-        $result = $type->deleteDocument($doc);
+        $esIndex = $this->getConnection()->getIndex($this->getName());
+        $result = $esIndex->deleteById($doc->getId());
 
         if ($options['refresh']) {
-            $type->getIndex()->refresh();
+            $esIndex->refresh();
         }
 
         $this->dispatchEvent('Model.afterDelete', [
@@ -925,8 +883,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return $this->schema;
         }
         $index = $this->getName();
-        $type = $this->getConnection()->getIndex($index)->getType($this->getType());
-        $this->schema = new MappingSchema($this->getType(), $type->getMapping());
+        $esIndex = $this->getConnection()->getIndex($index);
+        $this->schema = new MappingSchema($index, $esIndex->getMapping());
 
         return $this->schema;
     }

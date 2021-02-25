@@ -18,9 +18,4 @@ class AccountsIndex extends Index
     {
         return 'accounts';
     }
-
-    public function getType()
-    {
-        return 'accounts';
-    }
 }
