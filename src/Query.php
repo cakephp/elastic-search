@@ -18,6 +18,7 @@ namespace Cake\ElasticSearch;
 
 use Cake\Datasource\QueryInterface;
 use Cake\Datasource\QueryTrait;
+use Cake\Datasource\ResultSetInterface;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
@@ -618,7 +619,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @return \Cake\ElasticSearch\ResultSet The results of the query
      */
-    protected function _execute()
+    protected function _execute(): ResultSetInterface
     {
         $connection = $this->_repository->getConnection();
         $index = $this->_repository->getName();
