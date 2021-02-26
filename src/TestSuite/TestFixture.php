@@ -48,6 +48,13 @@ class TestFixture implements FixtureInterface
     public $connection = 'test';
 
     /**
+     * The index settings used to create the underlying index.
+     *
+     * @var array
+     */
+    public $indexSettings = [];
+
+    /**
      * The Elastic search type mapping definition for this type.
      *
      * The schema defined here should be compatible with Elasticsearch's
@@ -131,7 +138,12 @@ class TestFixture implements FixtureInterface
         if ($esIndex->exists()) {
             $esIndex->delete();
         }
-        $esIndex->create();
+
+        $args = [];
+        if (!empty($this->indexSettings)) {
+            $args['settings'] = $this->indexSettings;
+        }
+        $esIndex->create($args);
 
         $mapping = new ElasticaMapping();
         $mapping->setProperties($this->schema);
