@@ -592,6 +592,6 @@ class QueryTest extends TestCase
         $query = new Query($index);
         $this->assertSame($query, $query->withMinScore(1));
         $elasticQuery = $query->compileQuery()->toArray();
-        $this->assertSame(1, $elasticQuery['min_score']);
+        $this->assertSame(1.0, $elasticQuery['min_score']);
     }
 }

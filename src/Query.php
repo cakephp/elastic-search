@@ -18,6 +18,7 @@ namespace Cake\ElasticSearch;
 
 use Cake\Datasource\QueryInterface;
 use Cake\Datasource\QueryTrait;
+use Cake\Datasource\ResultSetInterface;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
@@ -81,7 +82,7 @@ class Query implements IteratorAggregate, QueryInterface
     protected $_dirty = false;
 
     /**
-     * Additional options for Elastica\Type::search()
+     * Additional options for Elastica\Index::search()
      *
      * @see \Elastica\Search::OPTION_SEARCH_* constants
      * @var array
@@ -618,15 +619,15 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @return \Cake\ElasticSearch\ResultSet The results of the query
      */
-    protected function _execute()
+    protected function _execute(): ResultSetInterface
     {
         $connection = $this->_repository->getConnection();
         $index = $this->_repository->getName();
-        $type = $connection->getIndex($index)->getType($this->_repository->getType());
+        $esIndex = $connection->getIndex($index);
 
         $query = $this->compileQuery();
 
-        return new ResultSet($type->search($query, $this->_searchOptions), $this);
+        return new ResultSet($esIndex->search($query, $this->_searchOptions), $this);
     }
 
     /**
@@ -706,12 +707,12 @@ class Query implements IteratorAggregate, QueryInterface
     {
         $connection = $this->_repository->getConnection();
         $index = $this->_repository->getName();
-        $type = $connection->getIndex($index)->getType($this->_repository->getType());
+        $esIndex = $connection->getIndex($index);
 
         $query = clone $this->compileQuery();
         $query->setSize(0);
         $query->setSource(false);
 
-        return $type->search($query)->getTotalHits();
+        return $esIndex->search($query)->getTotalHits();
     }
 }

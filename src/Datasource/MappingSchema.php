@@ -29,7 +29,7 @@ class MappingSchema
     protected $data;
 
     /**
-     * The name of the type this mapping data is for.
+     * The name of the index this mapping data is for.
      *
      * @var string
      */
@@ -38,20 +38,20 @@ class MappingSchema
     /**
      * Constructor
      *
-     * @param string $name The name of the type of the mapping data
+     * @param string $name The name of the index of the mapping data
      * @param array $data The mapping data from elasticsearch
      */
     public function __construct($name, array $data)
     {
         $this->name = $name;
-        if (isset($data[$name]['properties'])) {
-            $data = $data[$name]['properties'];
+        if (isset($data['properties'])) {
+            $data = $data['properties'];
         }
         $this->data = $data;
     }
 
     /**
-     * Get the name of the type for this mapping.
+     * Get the name of the index for this mapping.
      *
      * @return string
      */

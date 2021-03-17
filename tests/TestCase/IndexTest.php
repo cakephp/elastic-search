@@ -205,22 +205,14 @@ class IndexTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $internalType = $this->getMockBuilder('Elastica\Type')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $connection->expects($this->once())
             ->method('getIndex')
             ->will($this->returnValue($internalIndex));
 
-        $internalIndex->expects($this->once())
-            ->method('getType')
-            ->will($this->returnValue($internalType));
-
         $document = $this->getMockBuilder('Elastica\Document')
             ->setMethods(['getId', 'getData'])
             ->getMock();
-        $internalType->expects($this->once())
+        $internalIndex->expects($this->once())
             ->method('getDocument')
             ->with('foo', ['bar' => 'baz'])
             ->will($this->returnValue($document));
@@ -588,7 +580,7 @@ class IndexTest extends TestCase
         $this->assertFalse($this->index->save($doc), 'Save should fail');
 
         $doc->clean();
-        $doc->id = 12345;
+        $doc->id = '12345';
         $doc->setNew(false);
         $this->assertSame($doc, $this->index->save($doc), 'Save should pass, not new anymore.');
     }

@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.2', '7.4']
+        php-version: ['7.2', '7.4', '8.0']
         prefer-lowest: ['']
         include:
           - php-version: '7.2'
@@ -22,9 +22,10 @@ jobs:
 
     services:
       elasticsearch:
-        image: elasticsearch:6.8.13
+        image: elasticsearch:7.10.1
         ports:
           - 9200/tcp
+        options: -e "discovery.type=single-node"
 
     steps:
     - uses: actions/checkout@v1
