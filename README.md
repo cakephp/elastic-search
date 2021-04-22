@@ -1,6 +1,6 @@
 # Elasticsearch Datasource for CakePHP
 
-[![Build Status](https://img.shields.io/travis/com/cakephp/elastic-search?style=flat-square)](https://travis-ci.com/cakephp/elastic-search)
+![Build Status](https://github.com/cakephp/elastic-search/actions/workflows/ci.yml/badge.svg?branch=master)
 [![Latest Stable Version](https://img.shields.io/github/v/release/cakephp/elastic-search?sort=semver&style=flat-square)](https://packagist.org/packages/cakephp/elastic-search)
 [![Total Downloads](https://img.shields.io/packagist/dt/cakephp/elastic-search?style=flat-square)](https://packagist.org/packages/cakephp/elastic-search/stats)
 [![Code Coverage](https://img.shields.io/coveralls/cakephp/elastic-search/master.svg?style=flat-square)](https://coveralls.io/r/cakephp/elastic-search?branch=master)
