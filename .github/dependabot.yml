@@ -1,0 +1,14 @@
+version: 2
+updates:
+- package-ecosystem: composer
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: phpunit/phpunit
+    versions:
+    - "> 6.0"
+  - dependency-name: ruflin/elastica
+    versions:
+    - ">= 7.a, < 8"
