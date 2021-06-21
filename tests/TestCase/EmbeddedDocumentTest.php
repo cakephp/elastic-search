@@ -19,6 +19,7 @@ namespace Cake\ElasticSearch\Test\TestCase;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Index;
+use Cake\ElasticSearch\TestSuite\ElasticStateReset;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -26,6 +27,8 @@ use Cake\TestSuite\TestCase;
  */
 class EmbeddedDocumentTest extends TestCase
 {
+    protected $stateResetStrategy = ElasticStateReset::class;
+
     public $fixtures = ['plugin.Cake/ElasticSearch.Profiles'];
 
     public function setUp(): void

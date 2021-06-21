@@ -31,8 +31,7 @@ define('LOGS', TMP . 'logs' . DS);
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
-use Cake\Log\Engine\FileLog;
-use Cake\Log\Log;
+use Cake\ElasticSearch\TestSuite\MappingGenerator;
 use Cake\Routing\Router;
 
 Configure::write('debug', true);
@@ -48,18 +47,14 @@ Cache::setConfig('_cake_core_', [
     'path' => sys_get_temp_dir(),
 ]);
 
-Log::setConfig('debug', [
-    'engine' => FileLog::class,
-    'levels' => ['notice', 'info', 'debug'],
-    'path' => LOGS,
-    'file' => 'debug',
-]);
-
 if (!getenv('DB_URL')) {
     putenv('DB_URL=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection');
 }
 
 ConnectionManager::setConfig('test', ['url' => getenv('DB_URL')]);
 ConnectionManager::setConfig('test_elastic', ['url' => getenv('DB_URL')]);
+
+$schema = new MappingGenerator('./tests/mappings.php', 'test');
+$schema->reload();
 
 Router::reload();
