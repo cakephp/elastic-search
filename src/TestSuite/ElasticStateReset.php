@@ -66,7 +66,12 @@ class ElasticStateReset implements StateResetStrategyInterface
             if ($db instanceof Connection) {
                 $loaded = $this->loader->getInserted();
                 foreach ($loaded as $fixture) {
-                    $index = IndexRegistry::get($fixture);
+                    try {
+                        $index = IndexRegistry::get($fixture);
+                    } catch (\Exception $e) {
+                        // Fixture is likely not an elastic search one.
+                        continue;
+                    }
 
                     $query = new MatchAll();
                     $esIndex = $db->getIndex($index->getName());
