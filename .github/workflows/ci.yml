@@ -27,6 +27,7 @@ jobs:
           - 9200/tcp
         env:
           discovery.type: single-node
+          ES_JAVA_OPTS: -Xms500m -Xmx500m
 
     steps:
     - uses: actions/checkout@v2
