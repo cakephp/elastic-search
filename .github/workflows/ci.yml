@@ -70,7 +70,7 @@ jobs:
       env:
         DB_URL: Cake\ElasticSearch\Datasource\Connection://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}?driver=Cake\ElasticSearch\Datasource\Connection
       run: |
-        echo 'db url' $DB_URL
+        curl http://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}
         if [[ ${{ matrix.php-version }} == '7.4' ]]; then
           export CODECOVERAGE=1 && vendor/bin/phpunit --verbose --coverage-clover=coverage.xml
         else
