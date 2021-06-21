@@ -7,12 +7,12 @@ use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Rule\IsUnique;
-use Cake\ElasticSearch\TestSuite\ElasticStateReset;
+use Cake\ElasticSearch\TestSuite\Fixture\DeleteQueryStrategy;
 use Cake\TestSuite\TestCase;
 
 class RulesCheckerTest extends TestCase
 {
-    protected $stateResetStrategy = ElasticStateReset::class;
+    protected $stateResetStrategy = DeleteQueryStrategy::class;
 
     public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 

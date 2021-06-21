@@ -19,7 +19,7 @@ namespace Cake\ElasticSearch\Test\TestCase;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\ResultSet;
-use Cake\ElasticSearch\TestSuite\ElasticStateReset;
+use Cake\ElasticSearch\TestSuite\Fixture\DeleteQueryStrategy;
 use Cake\TestSuite\TestCase;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Response as ElasticaResponse;
@@ -30,7 +30,7 @@ use TestApp\Model\Document\MyTestDocument;
  */
 class ResultSetTest extends TestCase
 {
-    protected $stateResetStrategy = ElasticStateReset::class;
+    protected $stateResetStrategy = DeleteQueryStrategy::class;
 
     public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cake\ElasticSearch\TestSuite;
+namespace Cake\ElasticSearch\TestSuite\Fixture;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;

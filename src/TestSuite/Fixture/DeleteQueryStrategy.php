@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @since         4.0.0
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\TestSuite;
+namespace Cake\ElasticSearch\TestSuite\Fixture;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
@@ -23,7 +23,7 @@ use Cake\TestSuite\Fixture\FixtureLoader;
 use Cake\TestSuite\Fixture\StateResetStrategyInterface;
 use Elastica\Query\MatchAll;
 
-class ElasticStateReset implements StateResetStrategyInterface
+class DeleteQueryStrategy implements StateResetStrategyInterface
 {
     /**
      * @var \Cake\TestSuite\Fixture\FixtureLoader

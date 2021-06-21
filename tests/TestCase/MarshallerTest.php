@@ -21,7 +21,7 @@ use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Marshaller;
-use Cake\ElasticSearch\TestSuite\ElasticStateReset;
+use Cake\ElasticSearch\TestSuite\Fixture\DeleteQueryStrategy;
 use Cake\TestSuite\TestCase;
 use TestApp\Model\Document\ProtectedArticle;
 use TestApp\Model\Index\AccountsIndex;
@@ -31,7 +31,7 @@ use TestApp\Model\Index\AccountsIndex;
  */
 class MarshallerTest extends TestCase
 {
-    protected $stateResetStrategy = ElasticStateReset::class;
+    protected $stateResetStrategy = DeleteQueryStrategy::class;
 
     /**
      * Fixtures for this test.
