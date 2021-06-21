@@ -28,6 +28,11 @@ jobs:
         env:
           discovery.type: single-node
           ES_JAVA_OPTS: -Xms500m -Xmx500m
+        options: >-
+          --health-cmd "curl http://127.0.0.1:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
     - uses: actions/checkout@v2
@@ -70,7 +75,6 @@ jobs:
       env:
         DB_URL: Cake\ElasticSearch\Datasource\Connection://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}?driver=Cake\ElasticSearch\Datasource\Connection
       run: |
-        curl http://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}
         if [[ ${{ matrix.php-version }} == '7.4' ]]; then
           export CODECOVERAGE=1 && vendor/bin/phpunit --verbose --coverage-clover=coverage.xml
         else
