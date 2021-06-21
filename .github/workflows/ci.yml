@@ -25,7 +25,14 @@ jobs:
         image: elasticsearch:7.11.1
         ports:
           - 9200/tcp
-        options: -e "discovery.type=single-node"
+        env:
+          discovery.type: single-node
+          ES_JAVA_OPTS: -Xms500m -Xmx500m
+        options: >-
+          --health-cmd "curl http://127.0.0.1:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
     - uses: actions/checkout@v2
