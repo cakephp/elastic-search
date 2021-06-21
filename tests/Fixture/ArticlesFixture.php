@@ -29,29 +29,6 @@ class ArticlesFixture extends TestFixture
     public $table = 'articles';
 
     /**
-     * The index settings used to create the underlying index.
-     *
-     * @var array
-     */
-    public $indexSettings = [
-        'number_of_shards' => 2,
-        'number_of_routing_shards' => 2,
-    ];
-
-    /**
-     * The mapping data.
-     *
-     * @var array
-     */
-    public $schema = [
-        'id' => ['type' => 'integer'],
-        'title' => ['type' => 'text'],
-        'user_id' => ['type' => 'integer'],
-        'body' => ['type' => 'text'],
-        'created' => ['type' => 'date'],
-    ];
-
-    /**
      * The fixture records
      *
      * @var array
