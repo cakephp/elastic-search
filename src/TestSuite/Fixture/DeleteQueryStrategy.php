@@ -20,10 +20,10 @@ use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\TestSuite\Fixture\FixtureLoader;
-use Cake\TestSuite\Fixture\StateResetStrategyInterface;
+use Cake\TestSuite\Fixture\ResetStrategyInterface;
 use Elastica\Query\MatchAll;
 
-class DeleteQueryStrategy implements StateResetStrategyInterface
+class DeleteQueryStrategy implements ResetStrategyInterface
 {
     /**
      * @var \Cake\TestSuite\Fixture\FixtureLoader
