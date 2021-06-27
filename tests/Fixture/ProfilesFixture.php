@@ -29,25 +29,6 @@ class ProfilesFixture extends TestFixture
     public $table = 'profiles';
 
     /**
-     * The mapping data.
-     *
-     * @var array
-     */
-    public $schema = [
-        'id' => ['type' => 'integer'],
-        'username' => ['type' => 'text'],
-        'address' => [
-            'type' => 'nested',
-            'properties' => [
-                'street' => ['type' => 'text'],
-                'city' => ['type' => 'text'],
-                'province' => ['type' => 'text'],
-                'country' => ['type' => 'text'],
-            ],
-        ],
-    ];
-
-    /**
      * The fixture records
      *
      * @var array

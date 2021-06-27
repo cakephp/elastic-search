@@ -22,6 +22,7 @@ use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\Log\Log;
 use Cake\TestSuite\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * Tests the connection class
@@ -78,7 +79,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection($opts);
 
         $this->assertTrue($connection->isQueryLoggingEnabled());
-        $this->assertInstanceOf('\Cake\Log\Engine\FileLog', $connection->getLogger());
+        $this->assertInstanceOf(LoggerInterface::class, $connection->getLogger());
     }
 
     /**
@@ -94,8 +95,10 @@ class ConnectionTest extends TestCase
 
         $connection = ConnectionManager::get('test');
         $connection->enableQueryLogging();
+        $connection->setLogger(Log::engine('elasticsearch'));
+
         $result = $connection->request('_stats');
-        $connection->disableQueryLogging(false);
+        $connection->disableQueryLogging();
 
         $this->assertNotEmpty($result);
 
@@ -107,7 +110,7 @@ class ConnectionTest extends TestCase
             'path' => '_stats',
             'data' => [],
         ], JSON_PRETTY_PRINT);
-        $this->assertSame('debug ' . $message, $logs[0]);
+        $this->assertSame('debug: ' . $message, $logs[0]);
     }
 
     /**
@@ -132,12 +135,13 @@ class ConnectionTest extends TestCase
         $connection = ConnectionManager::get('test');
         $connection->setLogger($logger);
         $connection->enableQueryLogging();
+
         $result = $connection->request('_stats');
         $connection->disableQueryLogging();
 
         $logs = Log::engine('elasticsearch')->read();
         $this->assertCount(1, $logs);
-        $this->assertStringStartsWith('debug ', $logs[0]);
+        $this->assertStringStartsWith('debug: ', $logs[0]);
         $this->assertStringContainsString('duration=', $logs[0]);
         $this->assertStringContainsString('rows=', $logs[0]);
     }

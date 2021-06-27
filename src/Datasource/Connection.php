@@ -22,9 +22,9 @@ use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
 use Cake\ElasticSearch\Exception\NotImplementedException;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
-use Elastica\Log as ElasticaLog;
 use Elastica\Query\BoolQuery;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Psr\SimpleCache\CacheInterface;
 use RuntimeException;
 
@@ -243,7 +243,7 @@ class Connection implements ConnectionInterface
             $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
 
             if (!$engine) {
-                $engine = new ElasticaLog();
+                $engine = new NullLogger();
             }
 
             $this->setLogger($engine);
