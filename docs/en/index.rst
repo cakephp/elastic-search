@@ -273,9 +273,48 @@ when you are using mock objects, or modifying a index's dependencies::
 Test Fixtures
 =============
 
-The ElasticSearch plugin provides seamless test suite integration. Just like
-database fixtures, you can create test fixtures for elasticsearch. We could
-define a test fixture for our Articles index with the following::
+The ElasticSearch plugin provides a seamless test suite integration. Just like
+database fixtures, you can create test schema and fixture data elasticsearch.
+Much like database fixtures we load our Elasticsearch mappings during
+``tests/bootstrap.php`` of our application::
+
+    // In tests/bootstrap.php
+    use Cake\Elasticsearch\TestSuite\Fixture\MappingGenerator;
+
+    $generator = new MappingGenerator('tests/mappings.php', 'test_elastic');
+    $generator->reload();
+
+The above will create the indexes and mappings defined in ``tests/mapping.php``
+and insert them into the ``test_elastic`` connection. The mappings in your
+``mappings.php`` should return a list of mappings to create::
+
+    // in tests/mappings.php
+    return [
+        [
+            // The name of the index and mapping.
+            'name' => 'articles',
+            // The schema for the mapping.
+            'mapping' => [
+                'id' => ['type' => 'integer'],
+                'title' => ['type' => 'text'],
+                'user_id' => ['type' => 'integer'],
+                'body' => ['type' => 'text'],
+                'created' => ['type' => 'date'],
+            ],
+            // Additional index settings.
+            'settings' => [
+                'number_of_shards' => 2,
+                'number_of_routing_shards' => 2,
+            ],
+        ],
+        // ...
+    ];
+
+Mappings use the `native elasticsearch mapping format
+<https://www.elastic.co/guide/en/elasticsearch/reference/1.5/mapping.html>`_.
+You can safely omit the type name and top level ``properties`` key.  With our
+mappings loaded, we can define a test fixture for our Articles index with the
+following::
 
     namespace App\Test\Fixture;
 
@@ -293,23 +332,6 @@ define a test fixture for our Articles index with the following::
          */
         public $table = 'articles';
 
-        /**
-         * The mapping data.
-         *
-         * @var array
-         */
-        public $schema = [
-            'id' => ['type' => 'integer'],
-            'user' => [
-                'type' => 'nested',
-                'properties' => [
-                    'username' => ['type' => 'string'],
-                ]
-            ]
-            'title' => ['type' => 'string'],
-            'body' => ['type' => 'string'],
-        ];
-
         public $records = [
             [
                 'user' => [
@@ -321,10 +343,11 @@ define a test fixture for our Articles index with the following::
         ];
     }
 
-The ``schema`` property uses the `native elasticsearch mapping format
-<https://www.elastic.co/guide/en/elasticsearch/reference/1.5/mapping.html>`_.
-You can safely omit the type name and top level ``properties`` key. Once your
-fixtures are created you can use them in your test cases by including them in
-your test's ``fixtures`` properties::
+.. versionchanged:: 3.3.0
+    Prior to CakePHP 4.3.0 schema was defined on each fixture in the ``$schema``
+    property.
+
+Once your fixtures are created you can use them in your test cases by including
+them in your test's ``fixtures`` properties::
 
     public $fixtures = ['app.Articles'];
