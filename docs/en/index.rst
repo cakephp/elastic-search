@@ -343,7 +343,7 @@ following::
         ];
     }
 
-.. versionchanged:: 3.3.0
+.. versionchanged:: 3.4.0
     Prior to CakePHP 4.3.0 schema was defined on each fixture in the ``$schema``
     property.
 
