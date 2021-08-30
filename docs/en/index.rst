@@ -252,6 +252,28 @@ will return objects with the correct embedded document classes::
     // Array of App\Model\Document\Comment instances
     $article->comments;
 
+Configuring Connections
+=======================
+
+By default all index instances use the ``elastic`` connection. If your
+application uses multiple connections you will want to configure which
+index use which connections. This is the ``defaultConnectionName()`` method::
+
+    namespace App\Model\Index;
+
+    use Cake\ElasticSearch\Index;
+
+    class ArticlesIndex extends Index
+    {
+        public static function defaultConnectionName() {
+            return 'replica_db';
+        }
+    }
+
+.. note::
+
+    The ``defaultConnectionName()`` method **must** be static.
+    
 Getting Index Instances
 ======================
 
