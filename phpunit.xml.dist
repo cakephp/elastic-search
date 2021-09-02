@@ -13,7 +13,7 @@
          stopOnSkipped="false">
 
     <extensions>
-        <extension class="Cake\TestSuite\FixtureSchemaExtension" />
+        <extension class="Cake\TestSuite\Fixture\PHPUnitExtension" />
     </extensions>
 
     <testsuites>
