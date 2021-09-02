@@ -351,4 +351,12 @@ class IndexRegistryTest extends TestCase
 
         $this->assertSame($plugin, $plugin3, 'Should be the same TestPluginTwo.Comments object');
     }
+
+    public function testSetFallbackClassName(): void
+    {
+        IndexRegistry::setFallbackClassName('TestApp\Model\Index\UsersIndex');
+
+        $result = IndexRegistry::get('Droids');
+        $this->assertInstanceOf('TestApp\Model\Index\UsersIndex', $result);
+    }
 }
