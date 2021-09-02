@@ -50,7 +50,7 @@ class IndexRegistry
      *
      * @var string
      */
-    protected $fallbackClassName = Index::class;
+    protected static $fallbackClassName = Index::class;
 
     /**
      * Set fallback class name.
@@ -60,13 +60,11 @@ class IndexRegistry
      * `Cake\ElasticSearch\Index`.
      *
      * @param string $className Fallback class name
-     * @return $this
+     * @return void
      */
-    public function setFallbackClassName($className)
+    public static function setFallbackClassName($className)
     {
-        $this->fallbackClassName = $className;
-
-        return $this;
+        static::$fallbackClassName = $className;
     }
 
     /**
@@ -107,7 +105,7 @@ class IndexRegistry
                 [, $name] = pluginSplit($options['className']);
                 $options['name'] = Inflector::underscore($name);
             }
-            $options['className'] = $this->fallbackClassName;
+            $options['className'] = static::$fallbackClassName;
         }
 
         if (empty($options['connection'])) {
