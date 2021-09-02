@@ -19,16 +19,13 @@ namespace Cake\ElasticSearch\Test\TestCase;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Index;
-use Cake\ElasticSearch\TestSuite\Fixture\DeleteQueryStrategy;
-use Cake\TestSuite\TestCase;
+use Cake\ElasticSearch\TestSuite\TestCase;
 
 /**
  * Tests features around embeded documents.
  */
 class EmbeddedDocumentTest extends TestCase
 {
-    protected $stateResetStrategy = DeleteQueryStrategy::class;
-
     public $fixtures = ['plugin.Cake/ElasticSearch.Profiles'];
 
     public function setUp(): void

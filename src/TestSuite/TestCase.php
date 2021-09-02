@@ -14,31 +14,23 @@ declare(strict_types=1);
  * @since         4.0.0
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Test\TestCase\TestSuite\Fixture;
 
-use Cake\ElasticSearch\IndexRegistry;
+namespace Cake\ElasticSearch\TestSuite;
+
 use Cake\ElasticSearch\TestSuite\Fixture\DeleteQueryStrategy;
-use Cake\ElasticSearch\TestSuite\TestCase;
+use Cake\TestSuite\Fixture\FixtureStrategyInterface;
+use Cake\TestSuite\TestCase as CakeTestCase;
 
 /**
- * Test for DeleteQueryStrategy
+ * Elastic-search TestCase that uses DeleteQueryStrategy.
  */
-class DeleteQueryStrategyTest extends TestCase
+class TestCase extends CakeTestCase
 {
     /**
-     * Test teardown
-     *
-     * @return void
+     * @inheritDoc
      */
-    public function testTeardownTest()
+    public function getFixtureStrategy(): FixtureStrategyInterface
     {
-        $articleIndex = IndexRegistry::get('Articles');
-
-        $strategy = new DeleteQueryStrategy();
-        $strategy->setupTest(['plugin.Cake/ElasticSearch.Articles']);
-        $this->assertCount(2, $articleIndex->find()->all());
-
-        $strategy->teardownTest();
-        $this->assertCount(0, $articleIndex->find()->all());
+        return new DeleteQueryStrategy();
     }
 }

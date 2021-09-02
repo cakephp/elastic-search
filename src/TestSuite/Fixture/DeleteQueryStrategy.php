@@ -16,38 +16,47 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\TestSuite\Fixture;
 
-use Cake\Datasource\ConnectionManager;
+use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Connection;
-use Cake\ElasticSearch\IndexRegistry;
-use Cake\TestSuite\Fixture\FixtureLoader;
-use Cake\TestSuite\Fixture\ResetStrategyInterface;
+use Cake\TestSuite\Fixture\FixtureHelper;
+use Cake\TestSuite\Fixture\FixtureStrategyInterface;
 use Elastica\Query\MatchAll;
 
-class DeleteQueryStrategy implements ResetStrategyInterface
+class DeleteQueryStrategy implements FixtureStrategyInterface
 {
     /**
-     * @var \Cake\TestSuite\Fixture\FixtureLoader
+     * @var \Cake\TestSuite\Fixture\FixtureHelper
      */
-    protected $loader;
+    protected $helper;
 
     /**
-     * Constructor.
-     *
-     * @param \Cake\TestSuite\Fixture\FixtureLoader $loader The fixture loader being used.
-     * @return void
+     * @var array<\Cake\Datasource\FixtureInterface>
      */
-    public function __construct(FixtureLoader $loader)
+    protected $fixtures = [];
+
+    /**
+     * Initialize strategy.
+     */
+    public function __construct()
     {
-        $this->loader = $loader;
+        $this->helper = new FixtureHelper();
     }
 
     /**
-     * No-op implemented for interface.
-     *
-     * @return void
+     * @inheritDoc
      */
-    public function setupTest(): void
+    public function setupTest(array $fixtureNames): void
     {
+        $this->fixtures = $this->helper->loadFixtures($fixtureNames);
+        $this->helper->runPerConnection(function (ConnectionInterface $connection, array $fixtures) {
+            if (!$connection instanceof Connection) {
+                return;
+            }
+
+            foreach ($fixtures as $fixture) {
+                $fixture->insert($connection);
+            }
+        }, $this->fixtures);
     }
 
     /**
@@ -57,28 +66,18 @@ class DeleteQueryStrategy implements ResetStrategyInterface
      */
     public function teardownTest(): void
     {
-        $connections = ConnectionManager::configured();
-        foreach ($connections as $name) {
-            if (strpos($name, 'test') !== 0) {
-                continue;
+        $this->helper->runPerConnection(function (ConnectionInterface $connection, array $fixtures) {
+            if (!$connection instanceof Connection) {
+                return;
             }
-            $db = ConnectionManager::get($name);
-            if ($db instanceof Connection) {
-                $loaded = $this->loader->getInserted();
-                foreach ($loaded as $fixture) {
-                    try {
-                        $index = IndexRegistry::get($fixture);
-                    } catch (\Exception $e) {
-                        // Fixture is likely not an elastic search one.
-                        continue;
-                    }
 
-                    $query = new MatchAll();
-                    $esIndex = $db->getIndex($index->getName());
-                    $esIndex->deleteByQuery($query);
-                    $esIndex->refresh();
-                }
+            /** @var \Cake\ElasticSearch\TestSuite\TestFixture $fixture */
+            foreach ($fixtures as $fixture) {
+                /** @var \Cake\ElasticSearch\Datasource\Connection $connection */
+                $esIndex = $connection->getIndex($fixture->getIndex()->getName());
+                $esIndex->deleteByQuery(new MatchAll());
+                $esIndex->refresh();
             }
-        }
+        }, $this->fixtures);
     }
 }

@@ -21,9 +21,8 @@ use Cake\Datasource\EntityInterface;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
-use Cake\ElasticSearch\TestSuite\Fixture\DeleteQueryStrategy;
+use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\Event\EventInterface;
-use Cake\TestSuite\TestCase;
 use Elastica\Exception\NotFoundException;
 
 /**
@@ -31,8 +30,6 @@ use Elastica\Exception\NotFoundException;
  */
 class IndexTest extends TestCase
 {
-    protected $stateResetStrategy = DeleteQueryStrategy::class;
-
     public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     public function setUp(): void

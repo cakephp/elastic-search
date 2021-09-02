@@ -23,10 +23,9 @@ use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
-use Cake\ElasticSearch\TestSuite\Fixture\DeleteQueryStrategy;
+use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Http\ServerRequest;
-use Cake\TestSuite\TestCase;
 use Cake\Validation\Validator;
 use TestApp\Model\Document\Article;
 
@@ -35,8 +34,6 @@ use TestApp\Model\Document\Article;
  */
 class DocumentContextTest extends TestCase
 {
-    protected $stateResetStrategy = DeleteQueryStrategy::class;
-
     /**
      * Fixtures to use.
      *
