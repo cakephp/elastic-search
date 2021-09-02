@@ -446,7 +446,7 @@ class IndexTest extends TestCase
         );
 
         $query = $this->index->find();
-        $match = $query->firstMatch([ 'id' => $document->id ]);
+        $match = $query->all()->firstMatch([ 'id' => $document->id ]);
 
         $this->assertCount(3, $query);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $match);
