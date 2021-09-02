@@ -14,9 +14,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.2', '7.4', '8.0']
+        php-version: ['7.2', '8.0']
         prefer-lowest: ['']
         include:
+          - php-version: '8.1'
           - php-version: '7.2'
             prefer-lowest: 'prefer-lowest'
 
@@ -63,8 +64,10 @@ jobs:
       run: |
         if ${{ matrix.prefer-lowest == 'prefer-lowest' }}; then
           composer update --prefer-lowest --prefer-stable
+        elif ${{ matrix.php-version == '8.1' }}; then
+          composer update --ignore-platform-reqs
         else
-          composer install
+          composer update
         fi
 
     - name: Setup problem matchers for PHPUnit
