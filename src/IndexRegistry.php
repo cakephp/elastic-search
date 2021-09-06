@@ -46,6 +46,28 @@ class IndexRegistry
     protected static $options = [];
 
     /**
+     * Fallback class to use
+     *
+     * @var string
+     */
+    protected static $fallbackClassName = Index::class;
+
+    /**
+     * Set fallback class name.
+     *
+     * The class that should be used to create a index instance if a concrete
+     * class for alias used in `get()` could not be found. Defaults to
+     * `Cake\ElasticSearch\Index`.
+     *
+     * @param string $className Fallback class name
+     * @return void
+     */
+    public static function setFallbackClassName($className)
+    {
+        static::$fallbackClassName = $className;
+    }
+
+    /**
      * Get/Create an instance from the registry.
      *
      * When getting an instance, if it does not already exist,
@@ -83,7 +105,7 @@ class IndexRegistry
                 [, $name] = pluginSplit($options['className']);
                 $options['name'] = Inflector::underscore($name);
             }
-            $options['className'] = 'Cake\ElasticSearch\Index';
+            $options['className'] = static::$fallbackClassName;
         }
 
         if (empty($options['connection'])) {
