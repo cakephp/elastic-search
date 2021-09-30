@@ -169,6 +169,7 @@ convert your data into a ``Document`` that can be indexed::
     if ($this->Articles->save($article)) {
         // Document was indexed
     }
+ 
 
 When marshalling a document, you can specify which embedded documents you wish
 to marshall using the ``associated`` key::
@@ -198,6 +199,23 @@ them::
         $doc->set($newProperties);
         $this->Articles->save($doc);
     }
+ 
+Additionally Elasticsearch ``refresh`` request can be triggered by passing
+``'refresh' => true`` in the ``$options`` argument. A refresh makes recent
+operations performed on one or more indices available for search::
+
+    $this->Articles->save($article, ['refresh' => true]);
+
+Saving Multiple Documents
+========================
+
+Using this method you can bulk save multiple documents::
+
+    $result = $this->Articles->saveMany($documents);
+
+Here ``$documents`` is an array of documents. The result will be ``true`` on success or ``false`` on failure.
+``saveMany`` can have second argument with the same options as accepted by ``save()``.
+
 
 Deleting Documents
 ==================
