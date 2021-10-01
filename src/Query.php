@@ -125,7 +125,7 @@ class Query implements IteratorAggregate, QueryInterface
 
     /**
      * Sets the maximum number of results to return for this query.
-     * This sets the `size` option for the Elastic Search query.
+     * This sets the `size` option for the Elasticsearch query.
      *
      * @param int $limit The number of documents to return.
      * @return $this
@@ -288,14 +288,14 @@ class Query implements IteratorAggregate, QueryInterface
      *   $query->where(['name' => 'jose']);
      * }}}
      *
-     * You can have as many conditions in the array as you'd like, Operators are also allowe in
-     * the field side of the array:
+     * You can have as many conditions in the array as you'd like, Operators are also allowed
+     * in the field side of the array:
      *
      * {{{
      *   $query->where(['name' => 'jose', 'age >' => 30, 'interests in' => ['php', 'cake']);
      * }}}
      *
-     * You can read about the available operators and how they translate to Elastic Search
+     * You can read about the available operators and how they translate to Elasticsearch
      * queries in the `Cake\ElasticSearch\QueryBuilder::parse()` method documentation.
      *
      * Additionally, it is possible to use a closure as first argument. The closure will receive
@@ -321,10 +321,6 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function where($conditions = null, array $types = [], bool $overwrite = false)
     {
-        if (is_bool($types)) {
-            $overwrite = $types;
-        }
-
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
 
