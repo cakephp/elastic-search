@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Core\Configure;
+use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\TestSuite\TestCase;
 
@@ -358,5 +359,7 @@ class IndexRegistryTest extends TestCase
 
         $result = IndexRegistry::get('Droids');
         $this->assertInstanceOf('TestApp\Model\Index\UsersIndex', $result);
+
+        IndexRegistry::setFallbackClassName(Index::class);
     }
 }

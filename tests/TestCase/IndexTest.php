@@ -36,12 +36,11 @@ class IndexTest extends TestCase
     {
         parent::setUp();
         $this->connection = ConnectionManager::get('test');
-        $this->index = new Index(
-            [
+        $this->index = new Index([
             'name' => 'articles',
             'connection' => $this->connection,
-            ]
-        );
+        ]);
+        IndexRegistry::clear();
     }
 
     /**
@@ -194,12 +193,10 @@ class IndexTest extends TestCase
             ->setMethods(['getIndex'])
             ->getMock();
 
-        $index = new Index(
-            [
+        $index = new Index([
             'name' => 'foo',
             'connection' => $connection,
-            ]
-        );
+        ]);
 
         $internalIndex = $this->getMockBuilder('Elastica\Index')
             ->disableOriginalConstructor()
@@ -242,12 +239,10 @@ class IndexTest extends TestCase
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
             ->setMethods(['getIndex'])
             ->getMock();
-        $index = new Index(
-            [
+        $index = new Index([
             'name' => 'articles',
             'connection' => $connection,
-            ]
-        );
+        ]);
         $data = [
             'title' => 'A newer title',
         ];
@@ -267,12 +262,10 @@ class IndexTest extends TestCase
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
             ->setMethods(['getIndex'])
             ->getMock();
-        $index = new Index(
-            [
+        $index = new Index([
             'name' => 'articles',
             'connection' => $connection,
-            ]
-        );
+        ]);
         $data = [
             [
                 'title' => 'A newer title',
@@ -299,21 +292,17 @@ class IndexTest extends TestCase
         $entities = [
             new Document(
                 [
-                'title' => 'First',
-                'body' => 'Some new content',
+                    'title' => 'First',
+                    'body' => 'Some new content',
                 ],
-                [
-                'markNew' => true,
-                ]
+                ['markNew' => true]
             ),
             new Document(
                 [
-                'title' => 'Second',
-                'body' => 'Some new content',
+                    'title' => 'Second',
+                    'body' => 'Some new content',
                 ],
-                [
-                'markNew' => true,
-                ]
+                ['markNew' => true]
             ),
         ];
 
@@ -330,8 +319,8 @@ class IndexTest extends TestCase
     {
         $doc = new Document(
             [
-            'title' => 'A brand new article',
-            'body' => 'Some new content',
+                'title' => 'A brand new article',
+                'body' => 'Some new content',
             ],
             ['markNew' => true]
         );
@@ -389,9 +378,9 @@ class IndexTest extends TestCase
     {
         $doc = new Document(
             [
-            'id' => '123',
-            'title' => 'A brand new article',
-            'body' => 'Some new content',
+                'id' => '123',
+                'title' => 'A brand new article',
+                'body' => 'Some new content',
             ],
             ['markNew' => false]
         );
@@ -410,9 +399,9 @@ class IndexTest extends TestCase
     {
         $doc = new Document(
             [
-            'id' => '123',
-            'title' => 'A brand new article',
-            'body' => 'Some new content',
+                'id' => '123',
+                'title' => 'A brand new article',
+                'body' => 'Some new content',
             ],
             ['markNew' => false]
         );
@@ -429,21 +418,19 @@ class IndexTest extends TestCase
     {
         $doc = new Document(
             [
-            'title' => 'A brand new article',
-            'body' => 'Some new content',
+                'title' => 'A brand new article',
+                'body' => 'Some new content',
             ],
             ['markNew' => true]
         );
 
         $document = $this->index->save(
             $doc,
-            [
-            'refresh' => true,
-            ]
+            ['refresh' => true]
         );
 
         $query = $this->index->find();
-        $match = $query->all()->firstMatch([ 'id' => $document->id ]);
+        $match = $query->all()->firstMatch(['id' => $document->id]);
 
         $this->assertCount(3, $query);
         $this->assertInstanceOf('Cake\ElasticSearch\Document', $match);
@@ -515,13 +502,11 @@ class IndexTest extends TestCase
      */
     public function testSaveEmbedOne()
     {
-        $entity = new Document(
-            [
+        $entity = new Document([
             'title' => 'A brand new article',
             'body' => 'Some new content',
             'user' => new Document(['username' => 'sarah']),
-            ]
-        );
+        ]);
         $this->index->embedOne('User');
         $this->index->save($entity);
 
@@ -537,16 +522,14 @@ class IndexTest extends TestCase
      */
     public function testSaveEmbedMany()
     {
-        $entity = new Document(
-            [
+        $entity = new Document([
             'title' => 'A brand new article',
             'body' => 'Some new content',
             'comments' => [
                 new Document(['comment' => 'Nice post']),
                 new Document(['comment' => 'Awesome!']),
             ],
-            ]
-        );
+        ]);
         $this->index->embedMany('Comments');
         $this->index->save($entity);
 
@@ -617,8 +600,8 @@ class IndexTest extends TestCase
     {
         $doc = new Document(
             [
-            'title' => 'A brand new article',
-            'body' => 'Some new content',
+                'title' => 'A brand new article',
+                'body' => 'Some new content',
             ],
             ['markNew' => true]
         );
