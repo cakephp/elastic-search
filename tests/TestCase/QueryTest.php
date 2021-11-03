@@ -20,6 +20,9 @@ use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Query;
 use Cake\ElasticSearch\QueryBuilder;
 use Cake\TestSuite\TestCase;
+use Elastica\Aggregation\Max as MaxAggregation;
+use Elastica\Aggregation\Min as MinAggregation;
+use Elastica\Collapse;
 
 /**
  * Tests the Query class
@@ -552,6 +555,53 @@ class QueryTest extends TestCase
         $this->assertSame($query, $query->offset(0));
         $elasticQuery = $query->compileQuery()->toArray();
         $this->assertSame(0, $elasticQuery['from']);
+    }
+
+    /**
+     * Test setting collapse.
+     *
+     * @return void
+     */
+    public function testCollapse()
+    {
+        $index = new Index();
+        $query = new Query($index);
+
+        $query->collapse('username');
+        $compiled = $query->compileQuery()->toArray();
+        $this->assertSame(['field' => 'username'], $compiled['collapse']);
+
+        $query->collapse((new Collapse())->setFieldname('email'));
+        $compiled = $query->compileQuery()->toArray();
+        $this->assertSame(['field' => 'email'], $compiled['collapse']);
+    }
+
+    /**
+     * Test setting aggregations.
+     *
+     * @return void
+     */
+    public function testAggregations()
+    {
+        $index = new Index();
+        $query = new Query($index);
+
+        $maxAggregation = (new MaxAggregation('max_id'))->setField('id');
+        $maxCompiled = ['max_id' => ['max' => ['field' => 'id']]];
+        $minAggregation = (new MinAggregation('min_id'))->setField('id');
+        $minCompiled = ['min_id' => ['min' => ['field' => 'id']]];
+
+        $query->aggregate((new MaxAggregation('max_id'))->setField('id'));
+        $compiled = $query->compileQuery()->toArray();
+        $this->assertSame($maxCompiled, $compiled['aggs']);
+
+        $query->aggregate((new MinAggregation('min_id'))->setField('id'));
+        $compiled = $query->compileQuery()->toArray();
+        $this->assertSame($maxCompiled + $minCompiled, $compiled['aggs']);
+
+        $query = new Query($index);
+        $query->aggregate([$maxAggregation, $minAggregation]);
+        $this->assertSame($maxCompiled + $minCompiled, $compiled['aggs']);
     }
 
     /**

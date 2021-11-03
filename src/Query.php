@@ -19,6 +19,7 @@ namespace Cake\ElasticSearch;
 use Cake\Datasource\QueryInterface;
 use Cake\Datasource\QueryTrait;
 use Cake\Datasource\ResultSetInterface;
+use Elastica\Collapse;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
 use IteratorAggregate;
@@ -68,6 +69,7 @@ class Query implements IteratorAggregate, QueryInterface
         'offset' => null,
         'order' => [],
         'highlight' => null,
+        'collapse' => null,
         'aggregations' => [],
         'query' => null,
         'filter' => null,
@@ -448,6 +450,23 @@ class Query implements IteratorAggregate, QueryInterface
     }
 
     /**
+     * Add collapse to the elastic query object
+     *
+     * @param string|\Elastica\Collapse $collapse Collapse field or elastic collapse object
+     * @return $this
+     */
+    public function collapse($collapse)
+    {
+        if (is_string($collapse)) {
+            $collapse = (new Collapse())->setFieldname($collapse);
+        }
+
+        $this->_queryParts['collapse'] = $collapse;
+
+        return $this;
+    }
+
+    /**
      * Add an aggregation to the elastic query object
      *
      * @param  array|\Elastica\Aggregation\AbstractAggregation $aggregation One or multiple facets
@@ -651,6 +670,10 @@ class Query implements IteratorAggregate, QueryInterface
 
         if ($this->_queryParts['highlight']) {
             $this->_elasticQuery->setHighlight($this->_queryParts['highlight']);
+        }
+
+        if ($this->_queryParts['collapse']) {
+            $this->_elasticQuery->setCollapse($this->_queryParts['collapse']);
         }
 
         if ($this->_queryParts['aggregations']) {
