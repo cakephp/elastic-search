@@ -118,6 +118,7 @@ class ElasticLogger extends AbstractLogger
             $logData = [
                 'method' => $context['request']['method'],
                 'path' => $context['request']['path'],
+                'query' => $context['request']['query'],
                 'data' => $context['request']['data'],
             ];
         }
