@@ -263,7 +263,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      */
     public function __serialize(): array
     {
-        return [ $this->resultSet, $this->queryObject ];
+        return [$this->resultSet, $this->queryObject];
     }
 
     /**
