@@ -219,6 +219,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return \Cake\ElasticSearch\Document
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         $class = $this->entityClass;
@@ -256,6 +257,16 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     }
 
     /**
+     * Magic method for serializing the ResultSet instance
+     *
+     * @return array
+     */
+    public function __serialize(): array
+    {
+        return [$this->resultSet, $this->queryObject];
+    }
+
+    /**
      * Unserializes the passed string and rebuilds the ResultSet instance
      *
      * @param string $serialized The serialized ResultSet information
@@ -264,6 +275,17 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     public function unserialize($serialized)
     {
         $this->__construct(...unserialize($serialized));
+    }
+
+    /**
+     * Magic method for unserializing the ResultSet instance
+     *
+     * @param array $data The serialized data
+     * @return void
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->__construct(...$data);
     }
 
     /**
