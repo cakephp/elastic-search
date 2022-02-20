@@ -26,14 +26,14 @@ class ArticlesFixture extends TestFixture
      *
      * @var string
      */
-    public $table = 'articles';
+    public string $table = 'articles';
 
     /**
      * The fixture records
      *
      * @var array
      */
-    public $records = [
+    public array $records = [
         [
             'id' => '1',
             'title' => 'First article',

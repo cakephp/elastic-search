@@ -26,7 +26,7 @@ use Cake\ElasticSearch\TestSuite\TestCase;
  */
 class EmbeddedDocumentTest extends TestCase
 {
-    public $fixtures = ['plugin.Cake/ElasticSearch.Profiles'];
+    public array $fixtures = ['plugin.Cake/ElasticSearch.Profiles'];
 
     public function setUp(): void
     {

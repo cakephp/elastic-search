@@ -309,5 +309,5 @@ ElasticSearch プラグインは、シームレスなテストスイートの統
 フィクスチャーが作成されたら、あなたのテストの ``fixtures`` プロパティーに含めることによって、
 あなたのテストケースで使用することができます。 ::
 
-    public $fixtures = ['app.Articles'];
+    public array $fixtures = ['app.Articles'];
 

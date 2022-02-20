@@ -19,9 +19,12 @@ namespace Cake\ElasticSearch;
 use Cake\Datasource\QueryInterface;
 use Cake\Datasource\QueryTrait;
 use Cake\Datasource\ResultSetInterface;
+use Closure;
+use Elastica\Aggregation\AbstractAggregation;
 use Elastica\Collapse;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
+use InvalidArgumentException;
 use IteratorAggregate;
 
 class Query implements IteratorAggregate, QueryInterface
@@ -55,7 +58,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @var \Elastica\Query
      */
-    protected $_elasticQuery;
+    protected ElasticaQuery $_elasticQuery;
 
     /**
      * The various query builder parts that will
@@ -63,7 +66,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @var array
      */
-    protected $_queryParts = [
+    protected array $_queryParts = [
         'fields' => [],
         'limit' => null,
         'offset' => null,
@@ -81,7 +84,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @var bool
      */
-    protected $_dirty = false;
+    protected bool $_dirty = false;
 
     /**
      * Additional options for Elastica\Index::search()
@@ -89,7 +92,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @see \Elastica\Search::OPTION_SEARCH_* constants
      * @var array
      */
-    protected $_searchOptions = [];
+    protected array $_searchOptions = [];
 
     /**
      * Query constructor
@@ -103,20 +106,14 @@ class Query implements IteratorAggregate, QueryInterface
     }
 
     /**
-     * Adds fields to be selected from _source.
-     *
-     * Calling this function multiple times will append more fields to the
-     * list of fields to be selected from _source.
-     *
-     * If `true` is passed in the second argument, any previous selections
-     * will be overwritten with the list passed in the first argument.
-     *
-     * @param array $fields The list of fields to select from _source.
-     * @param bool $overwrite Whether or not to replace previous selections.
-     * @return $this
+     * @inheritDoc
      */
-    public function select($fields, bool $overwrite = false)
+    public function select(callable|array|string|float|int $fields, bool $overwrite = false)
     {
+        if (!is_array($fields)) {
+            throw new InvalidArgumentException('Unsuppoted type for $fields. Expected array.');
+        }
+
         if (!$overwrite) {
             $fields = array_merge($this->_queryParts['fields'], $fields);
         }
@@ -129,12 +126,12 @@ class Query implements IteratorAggregate, QueryInterface
      * Sets the maximum number of results to return for this query.
      * This sets the `size` option for the Elasticsearch query.
      *
-     * @param int $limit The number of documents to return.
+     * @param int|null $limit The number of documents to return.
      * @return $this
      */
-    public function limit($limit)
+    public function limit(?int $limit)
     {
-        $this->_queryParts['limit'] = (int)$limit;
+        $this->_queryParts['limit'] = $limit;
 
         return $this;
     }
@@ -143,12 +140,12 @@ class Query implements IteratorAggregate, QueryInterface
      * Sets the number of records that should be skipped from the original result set
      * This is commonly used for paginating large results. Accepts an integer.
      *
-     * @param int $num The number of records to be skipped
+     * @param int|null $num The number of records to be skipped
      * @return $this
      */
-    public function offset($num)
+    public function offset(?int $num)
     {
-        $this->_queryParts['offset'] = (int)$num;
+        $this->_queryParts['offset'] = $num;
 
         return $this;
     }
@@ -207,7 +204,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param string $name name of the clause to be returned
      * @return mixed
      */
-    public function clause($name)
+    public function clause(string $name): mixed
     {
         return $this->_queryParts[$name];
     }
@@ -221,26 +218,30 @@ class Query implements IteratorAggregate, QueryInterface
      * - ['name' => 'asc', 'price' => 'desc']
      * - 'field1' (defaults to order => 'desc')
      *
-     * @param string|array $order The sorting order to use.
+     * @param \Closure|array|string $order The sorting order to use.
      * @param bool $overwrite Whether or not to replace previous sorting.
      * @return $this
      */
-    public function order($order, $overwrite = false)
+    public function order(Closure|array|string $fields, bool $overwrite = false)
     {
+        if (!(is_array($fields) || is_string($fields))) {
+            throw new InvalidArgumentException('Unsupported type for $fields. Expected array|string.');
+        }
+
         // [['field' => [...]], ['field2' => [...]]]
-        if (is_array($order) && is_numeric(key($order))) {
+        if (is_array($fields) && is_numeric(key($fields))) {
             if ($overwrite) {
-                $this->_queryParts['order'] = $order;
+                $this->_queryParts['order'] = $fields;
 
                 return $this;
             }
-            $this->_queryParts['order'] = array_merge($order, $this->_queryParts['order']);
+            $this->_queryParts['order'] = array_merge($fields, $this->_queryParts['order']);
 
             return $this;
         }
 
-        if (is_string($order)) {
-            $order = [$order => ['order' => 'desc']];
+        if (is_string($fields)) {
+            $fields = [$fields => ['order' => 'desc']];
         }
 
         $normalizer = function ($order, $key) {
@@ -252,25 +253,21 @@ class Query implements IteratorAggregate, QueryInterface
             return [$key => $order];
         };
 
-        $order = collection($order)->map($normalizer)->toList();
+        $fields = collection($fields)->map($normalizer)->toList();
 
         if (!$overwrite) {
-            $order = array_merge($this->_queryParts['order'], $order);
+            $fields = array_merge($this->_queryParts['order'], $fields);
         }
 
-        $this->_queryParts['order'] = $order;
+        $this->_queryParts['order'] = $fields;
 
         return $this;
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @param string $finder The finder method to use.
-     * @param array $options The options for the finder.
-     * @return \Cake\ElasticSearch\Query
+     * @inheritDoc
      */
-    public function find($finder = 'all', array $options = [])
+    public function find(string $finder = 'all', array $options = []): static
     {
         return $this->_repository->callFinder($finder, $this, $options);
     }
@@ -315,14 +312,17 @@ class Query implements IteratorAggregate, QueryInterface
      *   $query->where(new \Elastica\Filter\Term('name.first', 'jose'));
      * }}{
      *
-     * @param array|null|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
+     * @param \Elastica\Query\AbstractQuery|\Closure|array|string|null $conditions The list of conditions.
      * @param array $types Not used, required to comply with QueryInterface.
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
      * @see \Cake\ElasticSearch\QueryBuilder
      */
-    public function where($conditions = null, array $types = [], bool $overwrite = false)
-    {
+    public function where(
+        AbstractQuery|Closure|array|string|null $conditions = null,
+        array $types = [],
+        bool $overwrite = false
+    ) {
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
 
@@ -376,13 +376,13 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * `WHERE (title = 'Foo') AND (author_id = 1 OR author_id = 2)`
      *
-     * @param array|null|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
+     * @param \Elastica\Query\AbstractQuery|\Closure|array|null $conditions The list of conditions.
      * @param array $types Not used, required to comply with QueryInterface.
      * @see \Cake\ElasticSearch\Query::where()
      * @see \Cake\ElasticSearch\QueryBuilder
      * @return $this
      */
-    public function andWhere($conditions, array $types = [])
+    public function andWhere(AbstractQuery|Closure|array|string|null $conditions, array $types = [])
     {
         return $this->_buildBoolQuery('filter', $conditions, false, 'addMust');
     }
@@ -394,11 +394,11 @@ class Query implements IteratorAggregate, QueryInterface
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions
+     * @param \Elastica\Query\AbstractQuery|\Closure|array $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
-     * @return \Cake\ElasticSearch\Query
+     * @return $this
      */
-    public function queryMust($conditions, $overwrite = false)
+    public function queryMust(AbstractQuery|Closure|array $conditions, bool $overwrite = false)
     {
         return $this->_buildBoolQuery('query', $conditions, $overwrite);
     }
@@ -410,11 +410,11 @@ class Query implements IteratorAggregate, QueryInterface
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions
+     * @param \Elastica\Query\AbstractQuery|\Closure|array $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
-     * @return \Cake\ElasticSearch\Query
+     * @return $this
      */
-    public function queryShould($conditions, $overwrite = false)
+    public function queryShould(AbstractQuery|Closure|array $conditions, bool $overwrite = false)
     {
         return $this->_buildBoolQuery('query', $conditions, $overwrite, 'addShould');
     }
@@ -426,12 +426,12 @@ class Query implements IteratorAggregate, QueryInterface
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
+     * @param \Elastica\Query\AbstractQuery|\Closure|array $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous filters.
      * @return $this
      * @see \Cake\ElasticSearch\Query::where()
      */
-    public function postFilter($conditions, $overwrite = false)
+    public function postFilter(AbstractQuery|Closure|array $conditions, bool $overwrite = false)
     {
         return $this->_buildBoolQuery('postFilter', $conditions, $overwrite);
     }
@@ -452,10 +452,10 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Add collapse to the elastic query object
      *
-     * @param string|\Elastica\Collapse $collapse Collapse field or elastic collapse object
+     * @param \Elastica\Collapse|string $collapse Collapse field or elastic collapse object
      * @return $this
      */
-    public function collapse($collapse)
+    public function collapse(Collapse|string $collapse)
     {
         if (is_string($collapse)) {
             $collapse = (new Collapse())->setFieldname($collapse);
@@ -469,10 +469,10 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Add an aggregation to the elastic query object
      *
-     * @param  array|\Elastica\Aggregation\AbstractAggregation $aggregation One or multiple facets
+     * @param \Elastica\Aggregation\AbstractAggregation|array $aggregation One or multiple facets
      * @return $this
      */
-    public function aggregate($aggregation)
+    public function aggregate(AbstractAggregation|array $aggregation)
     {
         if (is_array($aggregation)) {
             foreach ($aggregation as $aggregationItem) {
@@ -488,7 +488,7 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Set or get the search options
      *
-     * @param  null|array $options An array of additional search options
+     * @param array|null $options An array of additional search options
      * @return $this|array
      */
     public function searchOptions(?array $options = null)
@@ -507,13 +507,17 @@ class Query implements IteratorAggregate, QueryInterface
      * variable.
      *
      * @param string $partType The name of the part in which the bool query will be stored
-     * @param array|callable|\Elastica\Query\AbstractQuery $conditions The list of conditions.
+     * @param \Elastica\Query\AbstractQuery|\Closure|array $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous query.
      * @param string $type The method to use for appending the conditions to the Query
      * @return $this
      */
-    protected function _buildBoolQuery($partType, $conditions, $overwrite, $type = 'addMust')
-    {
+    protected function _buildBoolQuery(
+        string $partType,
+        AbstractQuery|Closure|array $conditions,
+        bool $overwrite,
+        string $type = 'addMust'
+    ) {
         if ($this->_queryParts[$partType] === null || $overwrite) {
             $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
         }
@@ -622,7 +626,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param float $score The minimum score to observe
      * @return $this
      */
-    public function withMinScore($score)
+    public function withMinScore(float $score)
     {
         $this->_elasticQuery->setMinScore($score);
 
@@ -648,9 +652,9 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Compile the Elasticsearch query.
      *
-     * @return string The Elasticsearch query.
+     * @return \Elastica\Query The Elasticsearch query.
      */
-    public function compileQuery()
+    public function compileQuery(): ElasticaQuery
     {
         if ($this->_queryParts['fields']) {
             $this->_elasticQuery->setSource($this->_queryParts['fields']);
@@ -714,7 +718,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function aliasFields(array $fields, ?string $defaultAlias = null): array
     {
-        return array_map([$this, 'aliasField', $fields]);
+        return array_map([$this, 'aliasField'], $fields);
     }
 
     /**

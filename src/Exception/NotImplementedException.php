@@ -28,5 +28,5 @@ class NotImplementedException extends Exception
     /**
      * @var string
      */
-    protected $_messageTemplate = 'Method %s has not been implemented in this context.';
+    protected string $_messageTemplate = 'Method %s has not been implemented in this context.';
 }

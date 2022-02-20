@@ -329,4 +329,4 @@ supérieur ``properties``. Une fois que vos fixtures sont créées, vous pouvez 
 utiliser dans vos cas de test en les incluant dans vos propriétés de test
 ``fixtures``::
 
-    public $fixtures = ['app.articles'];
+    public array $fixtures = ['app.articles'];

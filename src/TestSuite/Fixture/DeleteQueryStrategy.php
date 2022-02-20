@@ -27,12 +27,12 @@ class DeleteQueryStrategy implements FixtureStrategyInterface
     /**
      * @var \Cake\TestSuite\Fixture\FixtureHelper
      */
-    protected $helper;
+    protected FixtureHelper $helper;
 
     /**
      * @var array<\Cake\Datasource\FixtureInterface>
      */
-    protected $fixtures = [];
+    protected array $fixtures = [];
 
     /**
      * Initialize strategy.
@@ -48,7 +48,7 @@ class DeleteQueryStrategy implements FixtureStrategyInterface
     public function setupTest(array $fixtureNames): void
     {
         $this->fixtures = $this->helper->loadFixtures($fixtureNames);
-        $this->helper->runPerConnection(function (ConnectionInterface $connection, array $fixtures) {
+        $this->helper->runPerConnection(function (ConnectionInterface $connection, array $fixtures): void {
             if (!$connection instanceof Connection) {
                 return;
             }
@@ -66,7 +66,7 @@ class DeleteQueryStrategy implements FixtureStrategyInterface
      */
     public function teardownTest(): void
     {
-        $this->helper->runPerConnection(function (ConnectionInterface $connection, array $fixtures) {
+        $this->helper->runPerConnection(function (ConnectionInterface $connection, array $fixtures): void {
             if (!$connection instanceof Connection) {
                 return;
             }

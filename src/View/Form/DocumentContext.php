@@ -17,11 +17,13 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\View\Form;
 
 use Cake\Collection\Collection;
+use Cake\Datasource\EntityInterface;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\Http\ServerRequest;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
+use Cake\Validation\Validator;
 use Cake\View\Form\ContextInterface;
 use RuntimeException;
 use Traversable;
@@ -36,21 +38,21 @@ class DocumentContext implements ContextInterface
      *
      * @var \Cake\Http\ServerRequest
      */
-    protected $_request;
+    protected ServerRequest $_request;
 
     /**
      * The context data
      *
      * @var array
      */
-    protected $_context;
+    protected array $_context;
 
     /**
      * The name of the top level entity/index object.
      *
      * @var string
      */
-    protected $_rootName;
+    protected string $_rootName;
 
     /**
      * Boolean to track whether or not the entity is a
@@ -58,7 +60,7 @@ class DocumentContext implements ContextInterface
      *
      * @var bool
      */
-    protected $_isCollection = false;
+    protected bool $_isCollection = false;
 
     /**
      * Constructor.
@@ -93,7 +95,7 @@ class DocumentContext implements ContextInterface
      * @return void
      * @throws \RuntimeException When a table object cannot be located/inferred.
      */
-    protected function _prepare()
+    protected function _prepare(): void
     {
         $index = $this->_context['index'];
         $entity = $this->_context['entity'];
@@ -165,7 +167,7 @@ class DocumentContext implements ContextInterface
     /**
      * @inheritDoc
      */
-    public function val(string $field, array $options = [])
+    public function val(string $field, array $options = []): mixed
     {
         $val = $this->_request->getData($field);
         if ($val !== null) {
@@ -186,16 +188,18 @@ class DocumentContext implements ContextInterface
         if ($this->_context['entity'] instanceof Document) {
             return Hash::get($this->_context['entity'], $field);
         }
+
+        return null;
     }
 
     /**
      * Get the entity that is closest to $path.
      *
-     * @param  array $path The to get an entity for.
-     * @return \Cake\Datasource\EntityInterface|false The entity or false.
+     * @param array $path The to get an entity for.
+     * @return \Cake\Datasource\EntityInterface|iterable|null The entity or null
      * @throws \RuntimeException when no entity can be found.
      */
-    protected function entity($path)
+    protected function entity(array $path): EntityInterface|iterable|null
     {
         if ($path === null) {
             return $this->_context['entity'];
@@ -203,7 +207,7 @@ class DocumentContext implements ContextInterface
 
         $oneElement = count($path) === 1;
         if ($oneElement && $this->_isCollection) {
-            return false;
+            return null;
         }
 
         $entity = $this->_context['entity'];
@@ -223,7 +227,7 @@ class DocumentContext implements ContextInterface
             $isLast = ($i === $last);
 
             if (!$isLast && $next === null && $prop !== '_ids') {
-                return false;
+                return null;
             }
 
             $isTraversable = (
@@ -253,7 +257,7 @@ class DocumentContext implements ContextInterface
      * @param string $field The next field to fetch.
      * @return mixed
      */
-    protected function getProp($target, $field)
+    protected function getProp(mixed $target, string $field): mixed
     {
         if (is_array($target) && isset($target[$field])) {
             return $target[$field];
@@ -270,8 +274,10 @@ class DocumentContext implements ContextInterface
                 }
             }
 
-            return false;
+            return null;
         }
+
+        return null;
     }
 
     /**
@@ -360,7 +366,7 @@ class DocumentContext implements ContextInterface
      *
      * @return \Cake\Validation\Validator The validator for the index.
      */
-    protected function getValidator()
+    protected function getValidator(): Validator
     {
         return $this->_context['index']->getValidator($this->_context['validator']);
     }

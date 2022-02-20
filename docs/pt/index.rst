@@ -328,5 +328,5 @@ Você pode seguramente omitir o *type name* e a chave ``propertires``. Uma vez
 que suas *fixtures* estejam criadas, você pode usá-las nos seus casos de testes
 ao incluí-las nas propriedades dos seus ``fixtures`` de testes::
 
-    public $fixtures = ['app.articles'];
+    public array $fixtures = ['app.articles'];
 

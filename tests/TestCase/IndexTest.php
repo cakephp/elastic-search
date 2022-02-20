@@ -30,7 +30,7 @@ use Elastica\Exception\NotFoundException;
  */
 class IndexTest extends TestCase
 {
-    public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
+    public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     public function setUp(): void
     {
@@ -492,7 +492,7 @@ class IndexTest extends TestCase
                 $this->fail('Should not be fired');
             }
         );
-        $this->assertSame('kaboom', $this->index->save($doc));
+        $this->assertSame(false, $this->index->save($doc));
     }
 
     /**

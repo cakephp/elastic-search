@@ -7,14 +7,14 @@ use Cake\ElasticSearch\Index;
 
 class AccountsIndex extends Index
 {
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
         $this->embedMany('User', ['property' => 'users']);
     }
 
-    public function getName()
+    public function getName(): string
     {
         return 'accounts';
     }

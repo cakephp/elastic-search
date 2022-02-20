@@ -169,7 +169,7 @@ convert your data into a ``Document`` that can be indexed::
     if ($this->Articles->save($article)) {
         // Document was indexed
     }
- 
+
 
 When marshalling a document, you can specify which embedded documents you wish
 to marshall using the ``associated`` key::
@@ -199,7 +199,7 @@ them::
         $doc->set($newProperties);
         $this->Articles->save($doc);
     }
- 
+
 Additionally Elasticsearch ``refresh`` request can be triggered by passing
 ``'refresh' => true`` in the ``$options`` argument. A refresh makes recent
 operations performed on one or more indices available for search::
@@ -291,7 +291,7 @@ index use which connections. This is the ``defaultConnectionName()`` method::
 .. note::
 
     The ``defaultConnectionName()`` method **must** be static.
-    
+
 Getting Index Instances
 ======================
 
@@ -390,4 +390,4 @@ following::
 Once your fixtures are created you can use them in your test cases by including
 them in your test's ``fixtures`` properties::
 
-    public $fixtures = ['app.Articles'];
+    public array $fixtures = ['app.Articles'];

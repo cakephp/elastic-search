@@ -23,6 +23,7 @@ use Cake\TestSuite\TestCase;
 use Elastica\Aggregation\Max as MaxAggregation;
 use Elastica\Aggregation\Min as MinAggregation;
 use Elastica\Collapse;
+use Elastica\Query\Term;
 
 /**
  * Tests the Query class
@@ -52,7 +53,7 @@ class QueryTest extends TestCase
         $query = new Query($index);
 
         $finder = $query->find()->find();
-        $this->assertInstanceOf(\Cake\ElasticSearch\Query::class, $finder);
+        $this->assertInstanceOf(Query::class, $finder);
     }
 
     /**
@@ -65,7 +66,7 @@ class QueryTest extends TestCase
 
         $query
             ->where(['name' => 'test'])
-            ->setFullQuery(new \Elastica\Query\Term(['name' => 'cake']));
+            ->setFullQuery(new Term(['name' => 'cake']));
 
         $expected = ['query' => [
             'term' => [

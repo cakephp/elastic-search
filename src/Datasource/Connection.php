@@ -22,6 +22,7 @@ use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
 use Cake\ElasticSearch\Exception\NotImplementedException;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
+use Elastica\Index;
 use Elastica\Query\BoolQuery;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -35,35 +36,35 @@ class Connection implements ConnectionInterface
      *
      * @var bool
      */
-    protected $logQueries = false;
+    protected bool $logQueries = false;
 
     /**
      * The connection name in the connection manager.
      *
      * @var string
      */
-    protected $configName = '';
+    protected string $configName = '';
 
     /**
      * Elastica client instance
      *
      * @var \Elastica\Client;
      */
-    protected $_client;
+    protected ElasticaClient $_client;
 
     /**
      * Logger object instance.
      *
-     * @var \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface
+     * @var \Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    protected LoggerInterface $_logger;
 
     /**
      * Instance of ElasticLogger
      *
      * @var \Cake\ElasticSearch\Datasource\Log\ElasticLogger
      */
-    protected $_esLogger;
+    protected ElasticLogger $_esLogger;
 
     /**
      * Constructor.
@@ -72,7 +73,7 @@ class Connection implements ConnectionInterface
      * @param callable $callback Callback function which can be used to be notified
      * about errors (for example connection down)
      */
-    public function __construct(array $config = [], $callback = null)
+    public function __construct(array $config = [], ?callable $callback = null)
     {
         if (isset($config['name'])) {
             $this->configName = $config['name'];
@@ -92,7 +93,7 @@ class Connection implements ConnectionInterface
      * @param array $attributes Method attributes
      * @return mixed
      */
-    public function __call($name, $attributes)
+    public function __call(string $name, array $attributes): mixed
     {
         if (method_exists($this->_client, $name)) {
             return call_user_func_array([$this->_client, $name], $attributes);
@@ -105,7 +106,7 @@ class Connection implements ConnectionInterface
      *
      * @return \Cake\ElasticSearch\Datasource\SchemaCollection
      */
-    public function getSchemaCollection()
+    public function getSchemaCollection(): SchemaCollection
     {
         return new SchemaCollection($this);
     }
@@ -217,17 +218,12 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * Sets a logger
-     *
-     * @param \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog $logger Logger instance
-     * @return $this
+     * @inheritDoc
      */
-    public function setLogger($logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->_logger = $logger;
         $this->getEsLogger()->setLogger($logger);
-
-        return $this;
     }
 
     /**
@@ -239,7 +235,7 @@ class Connection implements ConnectionInterface
      */
     public function getLogger(): LoggerInterface
     {
-        if ($this->_logger === null) {
+        if (!isset($this->_logger)) {
             $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
 
             if (!$engine) {
@@ -257,9 +253,9 @@ class Connection implements ConnectionInterface
      *
      * @return \Cake\ElasticSearch\Datasource\Log\ElasticLogger
      */
-    public function getEsLogger()
+    public function getEsLogger(): ElasticLogger
     {
-        if ($this->_esLogger === null) {
+        if (!isset($this->_esLogger)) {
             $this->_esLogger = new ElasticLogger($this->getLogger(), $this);
         }
 
@@ -281,7 +277,7 @@ class Connection implements ConnectionInterface
      */
     public function getCacher(): CacheInterface
     {
-        if ($this->cacher !== null) {
+        if (!isset($this->cacher)) {
             return $this->cacher;
         }
 
@@ -330,7 +326,7 @@ class Connection implements ConnectionInterface
      * @see \Cake\Datasource\ConnectionInterface::getDriver()
      * @return \Elastica\Client
      */
-    public function getDriver()
+    public function getDriver(): ElasticaClient
     {
         return $this->_client;
     }
@@ -360,11 +356,11 @@ class Connection implements ConnectionInterface
     /**
      * Returns the index for the given connection
      *
-     * @param  string $name Index name to create connection to, if no value is passed
+     * @param string $name Index name to create connection to, if no value is passed
      * it will use the default index name for the connection.
      * @return \Elastica\Index Index for the given name
      */
-    public function getIndex($name = null)
+    public function getIndex(?string $name = null): Index
     {
         return $this->_client->getIndex($name ?: $this->getConfig('index'));
     }

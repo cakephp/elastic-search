@@ -16,7 +16,9 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch;
 
+use ArrayAccess;
 use ArrayObject;
+use BadMethodCallException;
 use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
@@ -24,6 +26,7 @@ use Cake\Datasource\RulesAwareTrait;
 use Cake\Datasource\RulesChecker;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Association\EmbedOne;
+use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\Event\EventDispatcherInterface;
@@ -32,9 +35,11 @@ use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
+use Closure;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 use RuntimeException;
+use Traversable;
 
 /**
  * Base class for index.
@@ -74,42 +79,42 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @var \Cake\ElasticSearch\Datasource\Connection
      */
-    protected $_connection;
+    protected Connection $_connection;
 
     /**
      * The name of the Elasticsearch index this class represents
      *
      * @var string
      */
-    protected $_name;
+    protected string $_name;
 
     /**
      * Registry key used to create this index object
      *
      * @var string
      */
-    protected $_registryAlias;
+    protected string $_registryAlias;
 
     /**
      * The name of the class that represent a single document for this type
      *
      * @var string
      */
-    protected $_documentClass;
+    protected string $_documentClass;
 
     /**
      * Collection of Embedded sub documents this type has.
      *
      * @var array
      */
-    protected $embeds = [];
+    protected array $embeds = [];
 
     /**
      * The mapping schema for this type.
      *
      * @var \Cake\ElasticSearch\Datasource\MappingSchema
      */
-    protected $schema;
+    protected MappingSchema $schema;
 
     /**
      * Constructor
@@ -162,7 +167,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $config Configuration options passed to the constructor
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
     }
 
@@ -176,7 +181,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options The options for the embedded document.
      * @return void
      */
-    public function embedOne($name, $options = [])
+    public function embedOne(string $name, array $options = []): void
     {
         $this->embeds[] = new EmbedOne($name, $options);
     }
@@ -193,7 +198,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options The options for the embedded document.
      * @return void
      */
-    public function embedMany($name, $options = [])
+    public function embedMany(string $name, array $options = []): void
     {
         $this->embeds[] = new EmbedMany($name, $options);
     }
@@ -203,7 +208,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return array
      */
-    public function embedded()
+    public function embedded(): array
     {
         return $this->embeds;
     }
@@ -214,7 +219,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param \Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
      * @return $this
      */
-    public function setConnection($conn)
+    public function setConnection(Connection $conn)
     {
         $this->_connection = $conn;
 
@@ -226,7 +231,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return \Cake\ElasticSearch\Datasource\Connection
      */
-    public function getConnection()
+    public function getConnection(): Connection
     {
         return $this->_connection;
     }
@@ -251,7 +256,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getRegistryAlias(): string
     {
-        if ($this->_registryAlias === null) {
+        if (!isset($this->_registryAlias)) {
             $this->_registryAlias = $this->getAlias();
         }
 
@@ -264,7 +269,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $name Index name
      * @return $this
      */
-    public function setName($name)
+    public function setName(string $name)
     {
         $this->_name = $name;
 
@@ -278,9 +283,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
-        if ($this->_name === null) {
+        if (!isset($this->_name)) {
             $name = namespaceSplit(static::class);
             $name = substr(end($name), 0, -5);
             $this->_name = Inflector::underscore($name);
@@ -296,7 +301,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
-    public function getTable()
+    public function getTable(): string
     {
         return $this->getName();
     }
@@ -335,7 +340,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options An array that will be passed to Query::applyOptions
      * @return \Cake\ElasticSearch\Query
      */
-    public function find(string $type = 'all', $options = [])
+    public function find(string $type = 'all', array $options = []): Query
     {
         $query = $this->query();
 
@@ -349,7 +354,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options An array of options to be used for query logic
      * @return \Cake\ElasticSearch\Query
      */
-    public function findAll(Query $query, array $options = [])
+    public function findAll(Query $query, array $options = []): Query
     {
         return $query;
     }
@@ -364,7 +369,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @return \Cake\ElasticSearch\Query
      * @throws \BadMethodCallException
      */
-    public function callFinder($type, Query $query, $options = [])
+    public function callFinder(string $type, Query $query, array $options = []): Query
     {
         $query->applyOptions($options);
         $options = $query->getOptions();
@@ -374,7 +379,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return $this->{$finder}($query, $options);
         }
 
-        throw new \BadMethodCallException(
+        throw new BadMethodCallException(
             sprintf('Unknown finder method "%s"', $type)
         );
     }
@@ -423,7 +428,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return \Cake\ElasticSearch\Query
      */
-    public function query()
+    public function query(): Query
     {
         return new Query($this);
     }
@@ -433,40 +438,23 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return \Cake\ElasticSearch\Marshaller
      */
-    public function marshaller()
+    public function marshaller(): Marshaller
     {
         return new Marshaller($this);
     }
 
     /**
-     * Update all matching records.
-     *
-     * Sets the $fields to the provided values based on $conditions.
-     * This method will *not* trigger beforeSave/afterSave events. If you need those
-     * first load a collection of records and update them.
-     *
-     * @param array $fields A hash of field => new value.
-     * @param array $conditions An array of conditions, similar to those used with find()
-     * @return int
+     * @inheritDoc
      */
-    public function updateAll($fields, $conditions): int
+    public function updateAll(Closure|array|string $fields, Closure|array|string|null $conditions): int
     {
         throw new RuntimeException('Not implemented yet');
     }
 
     /**
-     * Delete all matching records.
-     *
-     * Deletes all records matching the provided conditions.
-     *
-     * This method will *not* trigger beforeDelete/afterDelete events. If you
-     * need those first load a collection of records and delete them.
-     *
-     * @param array $conditions An array of conditions, similar to those used with find()
-     * @return int Success Returns 1 if one or more documents are effected.
-     * @see RepositoryInterface::delete()
+     * @inheritDoc
      */
-    public function deleteAll($conditions): int
+    public function deleteAll(Closure|array|string|null $conditions): int
     {
         $query = $this->query();
         $query->where($conditions);
@@ -477,13 +465,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * Returns true if there is any record in this repository matching the specified
-     * conditions.
-     *
-     * @param array $conditions list of conditions to pass to the query
-     * @return bool
+     * @inheritDoc
      */
-    public function exists($conditions): bool
+    public function exists(Closure|array|string|null $conditions): bool
     {
         $query = $this->query();
         if (count($conditions) && isset($conditions['id'])) {
@@ -510,7 +494,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options An array of options to be used for the event
      * @return bool
      */
-    public function saveMany($entities, $options = [])
+    public function saveMany(array $entities, array $options = []): bool
     {
         $options += [
             'checkRules' => true,
@@ -594,10 +578,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * - `routing` Defaults to null. If set, this is used as the routing key for storing the document.
      *
      * @param \Cake\Datasource\EntityInterface $entity The entity to be saved
-     * @param array $options An array of options to be used for the event
-     * @return \Cake\Datasource\EntityInterface|bool
+     * @param \ArrayAccess|array $options An array of options to be used for the event
+     * @return \Cake\Datasource\EntityInterface|false
      */
-    public function save(EntityInterface $entity, $options = [])
+    public function save(EntityInterface $entity, ArrayAccess|array $options = []): EntityInterface|false
     {
         $options += [
             'checkRules' => true,
@@ -611,7 +595,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         ]);
 
         if ($event->isStopped()) {
-            return $event->getResult();
+            return false;
         }
 
         if ($entity->getErrors()) {
@@ -665,10 +649,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * Triggers the `Model.beforeDelete` and `Model.afterDelete` events.
      *
      * @param \Cake\Datasource\EntityInterface $entity The entity to remove.
-     * @param array $options The options for the delete.
+     * @param \ArrayAccess|array $options The options for the delete.
      * @return bool success
      */
-    public function delete(EntityInterface $entity, $options = []): bool
+    public function delete(EntityInterface $entity, ArrayAccess|array $options = []): bool
     {
         if (!$entity->has('id')) {
             $msg = 'Deleting requires an "id" value.';
@@ -775,7 +759,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getEntityClass(): string
     {
-        if (!$this->_documentClass) {
+        if (!isset($this->_documentClass)) {
             $default = Document::class;
             $self = static::class;
             $parts = explode('\\', $self);
@@ -856,13 +840,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * $article = $this->Articles->patchEntities($articles, $this->request->data());
      * ```
      *
-     * @param array|\Traversable $entities the entities that will get the
+     * @param \Traversable|array $entities the entities that will get the
      * data merged in
      * @param array $data list of arrays to be merged into the entities
      * @param array $options A list of options for the objects hydration.
      * @return array
      */
-    public function patchEntities($entities, array $data, array $options = []): array
+    public function patchEntities(array|Traversable $entities, array $data, array $options = []): array
     {
         $marshaller = $this->marshaller();
 
@@ -879,7 +863,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function schema(): MappingSchema
     {
-        if ($this->schema !== null) {
+        if (isset($this->schema)) {
             return $this->schema;
         }
         $index = $this->getName();

@@ -28,14 +28,14 @@ class SchemaCollection
      *
      * @var \Cake\ElasticSearch\Datasource\Connection
      */
-    protected $connection;
+    protected Connection $connection;
 
     /**
      * Constructor
      *
      * @param \Cake\ElasticSearch\Datasource\Connection $connection The connection instance to use.
      */
-    public function __construct($connection)
+    public function __construct(Connection $connection)
     {
         $this->connection = $connection;
     }
@@ -45,7 +45,7 @@ class SchemaCollection
      *
      * @return array An empty array
      */
-    public function listTables()
+    public function listTables(): array
     {
         try {
             $indexes = $this->connection->getStatus()->getIndexNames();
