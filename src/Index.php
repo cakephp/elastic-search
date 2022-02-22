@@ -875,9 +875,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * This will fetch the schema from Elasticsearch the first
      * time this method is called.
      *
-     * @return array
+     * @return \Cake\ElasticSearch\Datasource\MappingSchema
      */
-    public function schema()
+    public function schema(): MappingSchema
     {
         if ($this->schema !== null) {
             return $this->schema;
@@ -951,7 +951,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
-    public static function defaultConnectionName()
+    public static function defaultConnectionName(): string
     {
         return 'elastic';
     }
