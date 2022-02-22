@@ -877,7 +877,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return array
      */
-    public function schema()
+    public function schema(): string
     {
         if ($this->schema !== null) {
             return $this->schema;
@@ -951,7 +951,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
-    public static function defaultConnectionName()
+    public static function defaultConnectionName(): string
     {
         return 'elastic';
     }
