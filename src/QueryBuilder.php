@@ -448,12 +448,12 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param string $value The match to find in field.
-     * @return \Elastica\Query\Match
+     * @return \Elastica\Query\MatchQuery
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html
      */
     public function match($field, $value)
     {
-        return new Elastica\Query\Match($field, $value);
+        return new Elastica\Query\MatchQuery($field, $value);
     }
 
     /**
