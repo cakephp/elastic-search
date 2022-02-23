@@ -20,8 +20,6 @@ use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\ResultSet;
 use Cake\ElasticSearch\TestSuite\TestCase;
-use Elastica\Query as ElasticaQuery;
-use Elastica\Response as ElasticaResponse;
 use ReflectionProperty;
 use TestApp\Model\Document\MyTestDocument;
 
