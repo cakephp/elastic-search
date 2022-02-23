@@ -20,8 +20,7 @@ use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\ResultSet;
 use Cake\ElasticSearch\TestSuite\TestCase;
-use Elastica\Query as ElasticaQuery;
-use Elastica\Response as ElasticaResponse;
+use ReflectionProperty;
 use TestApp\Model\Document\MyTestDocument;
 
 /**
@@ -98,59 +97,30 @@ class ResultSetTest extends TestCase
      */
     public function testDecoratedMethods()
     {
-        $methods = get_class_methods('Elastica\ResultSet');
-        $exclude = [
-            '__construct', 'offsetSet', 'offsetGet', 'offsetExists', 'offsetUnset',
-            'current', 'next', 'key', 'valid', 'rewind', 'create', 'setClass',
-            'count',
-        ];
-        $methods = array_diff($methods, $exclude);
+        $connection = ConnectionManager::get('test');
+        $index = new Index([
+            'name' => 'articles',
+            'connection' => $connection,
+        ]);
+        /** @var \Cake\ElasticSearch\ResultSet $results */
+        $results = $index->find('all')->all();
 
-        $elasticaSet = $this->getMockBuilder('Elastica\ResultSet')
-            ->disableOriginalConstructor()
-            ->setMethods($methods)
-            ->getMock();
-        $type = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
-        $type->method('embedded')
-            ->will($this->returnValue([]));
-        $query = $this->getMockBuilder('Cake\ElasticSearch\Query')
-            ->setConstructorArgs([$type])
-            ->getMock();
+        // Read the wrapped results so we can compare method outputs.
+        // This is not ideal but better than using mocks.
+        $reflect = new ReflectionProperty($results, 'resultSet');
+        $reflect->setAccessible(true);
+        $elasticResult = $reflect->getValue($results);
 
-        $query->expects($this->once())->method('getRepository')
-            ->will($this->returnValue($type));
-
-        $returnValues = [
-            'hasSuggests' => false,
-            'getSuggests' => [],
-            'hasAggregations' => false,
-            'getAggregations' => [],
-            'getAggregation' => [],
-            'getTotalHits' => 23,
-            'getMaxScore' => 5.2,
-            'getTotalTime' => 25,
-            'hasTimedOut' => false,
-            'getResponse' => new ElasticaResponse(''),
-            'getQuery' => new ElasticaQuery(),
-            'countSuggests' => 0,
-        ];
-
-        $requireParam = ['getAggregation' => 'foo'];
-        $resultSet = new ResultSet($elasticaSet, $query);
-        foreach ($methods as $method) {
-            $expect = $elasticaSet->expects($this->once())->method($method);
-            $param = null;
-
-            if (isset($requireParam[$method])) {
-                $expect->with($requireParam[$method]);
-                $param = $requireParam[$method];
-            }
-
-            $return = $returnValues[$method] ?? 'something';
-            $expect->will($this->returnValue($return));
-
-            $this->assertSame($return, $resultSet->{$method}($param), "The {$method} method did not have a matching return.");
-        }
+        $this->assertSame($elasticResult->getResults(), $results->getResults());
+        $this->assertSame($elasticResult->hasSuggests(), $results->hasSuggests());
+        $this->assertSame($elasticResult->getAggregations(), $results->getAggregations());
+        $this->assertSame($elasticResult->getTotalHits(), $results->getTotalHits());
+        $this->assertSame($elasticResult->getMaxScore(), $results->getMaxScore());
+        $this->assertSame($elasticResult->getTotalTime(), $results->getTotalTime());
+        $this->assertSame($elasticResult->hasTimedOut(), $results->hasTimedOut());
+        $this->assertSame($elasticResult->getResponse(), $results->getResponse());
+        $this->assertSame($elasticResult->getQuery(), $results->getQuery());
+        $this->assertSame($elasticResult->countSuggests(), $results->countSuggests());
     }
 
     /**
