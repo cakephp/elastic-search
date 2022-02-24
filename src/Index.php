@@ -565,7 +565,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $esIndex->refresh();
         }
 
-        foreach ($documents as $key => $document) {
+        foreach ($documents as $key => $doc) {
             $entities[$key]->id = $doc->getId();
             $entities[$key]->_version = $doc->getVersion();
             $entities[$key]->setNew(false);
