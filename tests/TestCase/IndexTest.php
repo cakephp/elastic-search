@@ -308,6 +308,49 @@ class IndexTest extends TestCase
 
         $result = $this->index->saveMany($entities);
         $this->assertTrue($result);
+
+        foreach ($entities as $entity) {
+            $this->assertFalse($entity->isDirty());
+            $this->assertFalse($entity->isNew());
+            $this->assertSame('articles', $entity->getSource());
+        }
+        $ids = array_map(function ($doc) {
+            return $doc->id;
+        }, $entities);
+        $this->assertCount(2, array_unique($ids));
+    }
+
+    /**
+     * Test that saveMany() triggers afterSave event
+     */
+    public function testSaveManyAfterSave()
+    {
+        $entities = [
+            new Document(
+                [
+                    'title' => 'First',
+                    'body' => 'Some new content',
+                ],
+                ['markNew' => true]
+            ),
+            new Document(
+                [
+                    'title' => 'Second',
+                    'body' => 'Some new content',
+                ],
+                ['markNew' => true]
+            ),
+        ];
+        $called = 0;
+        $this->index->getEventManager()->on('Model.afterSave', function ($event, $entity) use (&$called) {
+            $called++;
+            $this->assertInstanceOf(Document::class, $entity);
+            $this->assertFalse($entity->isDirty());
+            $this->assertFalse($entity->isNew());
+        });
+        $result = $this->index->saveMany($entities);
+        $this->assertTrue($result);
+        $this->assertSame(2, $called);
     }
 
     /**
