@@ -39,7 +39,8 @@ Vue d'Ensemble
 ==============
 
 Le plugin elasticsearch facilite l'interaction avec un index elasticsearch
-et fournit une interface similaire à celle de l':doc:`/orm`. Pour commencer,
+et fournit une interface similaire à celle de l'`ORM
+<https://book.cakephp.org/3/fr/orm.html>`__. Pour commencer,
 vous devrez créer un objet ``Type``. Les objets ``Type`` sont le "Repository"
 ou la classe de type table dans elasticsearch::
 

@@ -48,7 +48,8 @@ Overview
 ========
 
 The ElasticSearch plugin makes it easier to interact with an elasticsearch index
-and provides an interface similar to the :doc:`/orm`. To get started you should
+and provides an interface similar to the `ORM
+<https://book.cakephp.org/3/en/orm.html>`__. To get started you should
 create a ``Index`` object. ``Index`` objects are the "Repository" or table-like
 class in elasticsearch::
 
@@ -264,7 +265,7 @@ will return objects with the correct embedded document classes::
     $article->comments;
 
 Getting Index Instances
-======================
+=======================
 
 Like the ORM, the ElasticSearch plugin provides a factory/registry for getting
 ``Index`` instances::
