@@ -46,7 +46,8 @@ Overview
 ========
 
 The ElasticSearch plugin makes it easier to interact with an elasticsearch index
-and provides an interface similar to the :doc:`/orm`. To get started you should
+and provides an interface similar to the `ORM
+<https://book.cakephp.org/3/en/orm.html>`__. To get started you should
 create an ``Index`` object. ``Index`` objects are the "Repository" or table-like
 class in elasticsearch::
 
@@ -169,7 +170,6 @@ convert your data into a ``Document`` that can be indexed::
     if ($this->Articles->save($article)) {
         // Document was indexed
     }
- 
 
 When marshalling a document, you can specify which embedded documents you wish
 to marshall using the ``associated`` key::
@@ -199,7 +199,7 @@ them::
         $doc->set($newProperties);
         $this->Articles->save($doc);
     }
- 
+
 Additionally Elasticsearch ``refresh`` request can be triggered by passing
 ``'refresh' => true`` in the ``$options`` argument. A refresh makes recent
 operations performed on one or more indices available for search::
@@ -207,7 +207,7 @@ operations performed on one or more indices available for search::
     $this->Articles->save($article, ['refresh' => true]);
 
 Saving Multiple Documents
-========================
+=========================
 
 Using this method you can bulk save multiple documents::
 
@@ -291,9 +291,9 @@ index use which connections. This is the ``defaultConnectionName()`` method::
 .. note::
 
     The ``defaultConnectionName()`` method **must** be static.
-    
+
 Getting Index Instances
-======================
+=======================
 
 Like the ORM, the ElasticSearch plugin provides a factory/registry for getting
 ``Index`` instances::
