@@ -41,7 +41,8 @@ Visão geral
 ===========
 
 O plugin ElasticSearch torna fácil interagir com um índice do *elasticsearch* e
-disponibiliza uma interface similar ao :doc:`/orm`. Para começar, você deve
+disponibiliza uma interface similar ao `ORM
+<https://book.cakephp.org/3/pt/orm.html>`__. Para começar, você deve
 criar um objeto ``Index``. Objetos ``Index`` são a classe similar a um
 "repositório" ou "tabela" no *elasticsearch*::
 
@@ -261,7 +262,7 @@ incorporados corretas::
     $article->comments;
 
 Recebendo instâncias Index
-=========================
+==========================
 
 Como no ORM, o plugin ElasticSearch disponibiliza um *factory/registry* para
 receber instâncias ``Index``::
