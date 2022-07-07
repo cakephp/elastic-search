@@ -22,7 +22,14 @@ RUN apt-get update && \
 RUN LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php && \
   apt-get update && \
   apt-get install -y \
-    php8.1-cli php8.1-mbstring php8.1-xml php8.1-zip php8.1-intl php8.1-opcache php8.1-sqlite php8.1-curl \
+    php8.1-cli \
+    php8.1-mbstring \
+    php8.1-xml \
+    php8.1-zip \
+    php8.1-intl \
+    php8.1-opcache \
+    php8.1-sqlite \
+    php8.1-curl \
     composer
 
 RUN composer self-update && \
