@@ -151,6 +151,25 @@ class CommentsIndex extends Index
 
 ## Running tests
 
+We recommend using the included `docker-compose.yml` for doing local
+development. The `Dockerfile` contains the development environment, and an
+Elasticsearch container will be downloaded and started on port 9200.
+
+```bash
+# Start elasticsearch
+docker-compose up -d
+
+# Open an terminal in the development environment
+docker-compose run console bash
+```
+
+Once inside the container you can install dependencies and run tests.
+
+```bash
+./composer.phar install
+vendor/bin/phpunit
+```
+
 **Warning**: Please, be very carefully when running tests as the Fixture will
 create and drop Elasticsearch indexes for its internal structure. Don't run tests
 in production or development machines where you have important data into your
