@@ -13,12 +13,12 @@ declare(strict_types=1);
  * @since     3.5.0
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\Elasticsearch\Datasource;
+namespace Cake\ElasticSearch\Datasource;
 
 use Cake\Core\App;
 use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\Locator\AbstractLocator;
-use Cake\Elasticsearch\Index;
+use Cake\ElasticSearch\Index;
 use Cake\Utility\Inflector;
 
 /**
