@@ -4,7 +4,30 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch;
 
 use Elastica;
+use Elastica\Query;
 use Elastica\Query\AbstractQuery;
+use Elastica\Query\BoolQuery;
+use Elastica\Query\Exists;
+use Elastica\Query\GeoBoundingBox;
+use Elastica\Query\GeoDistance;
+use Elastica\Query\GeoPolygon;
+use Elastica\Query\GeoShapePreIndexed;
+use Elastica\Query\GeoShapeProvided;
+use Elastica\Query\HasChild;
+use Elastica\Query\HasParent;
+use Elastica\Query\Ids;
+use Elastica\Query\Limit;
+use Elastica\Query\MatchAll;
+use Elastica\Query\MatchQuery;
+use Elastica\Query\Nested;
+use Elastica\Query\Prefix;
+use Elastica\Query\Range;
+use Elastica\Query\Regexp;
+use Elastica\Query\Script;
+use Elastica\Query\SimpleQueryString;
+use Elastica\Query\Term;
+use Elastica\Query\Terms;
+use Elastica\Script\AbstractScript;
 
 class QueryBuilder
 {
@@ -18,7 +41,7 @@ class QueryBuilder
      * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
-    public function between($field, $from, $to)
+    public function between(string $field, mixed $from, mixed $to): Range
     {
         return $this->range($field, [
             'gte' => $from,
@@ -33,7 +56,7 @@ class QueryBuilder
      * @return \Elastica\Query\BoolQuery
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
      */
-    public function bool()
+    public function bool(): BoolQuery
     {
         return new Elastica\Query\BoolQuery();
     }
@@ -46,7 +69,7 @@ class QueryBuilder
      * @return \Elastica\Query\Exists
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html
      */
-    public function exists($field)
+    public function exists(string $field): Exists
     {
         return new Elastica\Query\Exists($field);
     }
@@ -75,7 +98,7 @@ class QueryBuilder
      * @return \Elastica\Query\GeoBoundingBox
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-bounding-box-query.html
      */
-    public function geoBoundingBox($field, $topLeft, $bottomRight)
+    public function geoBoundingBox(string $field, array|string $topLeft, array|string $bottomRight): GeoBoundingBox
     {
         return new Elastica\Query\GeoBoundingBox($field, [$topLeft, $bottomRight]);
     }
@@ -98,7 +121,7 @@ class QueryBuilder
      * @return \Elastica\Query\GeoDistance
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-query.html
      */
-    public function geoDistance($field, $location, $distance)
+    public function geoDistance(string $field, array|string $location, string $distance): GeoDistance
     {
         return new Elastica\Query\GeoDistance($field, $location, $distance);
     }
@@ -128,7 +151,7 @@ class QueryBuilder
      * @return \Elastica\Query\GeoPolygon
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-query.html
      */
-    public function geoPolygon($field, array $geoPoints)
+    public function geoPolygon(string $field, array $geoPoints): GeoPolygon
     {
         return new Elastica\Query\GeoPolygon($field, $geoPoints);
     }
@@ -157,7 +180,7 @@ class QueryBuilder
      * @return \Elastica\Query\GeoShapeProvided
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
-    public function geoShape($field, array $geoPoints, $type = Elastica\Query\GeoShapeProvided::TYPE_ENVELOPE)
+    public function geoShape(string $field, array $geoPoints, string $type = Elastica\Query\GeoShapeProvided::TYPE_ENVELOPE): GeoShapeProvided
     {
         return new Elastica\Query\GeoShapeProvided($field, $geoPoints, $type);
     }
@@ -179,7 +202,7 @@ class QueryBuilder
      * @return \Elastica\Query\GeoShapePreIndexed
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
-    public function geoShapeIndex($field, $id, $index = 'shapes', $path = 'shape')
+    public function geoShapeIndex(string $field, string $id, string $index = 'shapes', string $path = 'shape'): GeoShapePreIndexed
     {
         return new Elastica\Query\GeoShapePreIndexed($field, $id, $index, $path);
     }
@@ -193,7 +216,7 @@ class QueryBuilder
      * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
-    public function gt($field, $value)
+    public function gt(string $field, mixed $value): Range
     {
         return $this->range($field, ['gt' => $value]);
     }
@@ -207,7 +230,7 @@ class QueryBuilder
      * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
-    public function gte($field, $value)
+    public function gte(string $field, mixed $value): Range
     {
         return $this->range($field, ['gte' => $value]);
     }
@@ -216,12 +239,12 @@ class QueryBuilder
      * Accepts a query and the child type to run against, and results in parent
      * documents that have child docs matching the query.
      *
-     * @param string|\Elastica\Query|\Elastica\Query\AbstractQuery $query The query.
+     * @param \Elastica\Query|\Elastica\Query\AbstractQuery|string $query The query.
      * @param string $type The child type to query against.
      * @return \Elastica\Query\HasChild
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-query.html
      */
-    public function hasChild($query, $type)
+    public function hasChild(string|Query|AbstractQuery $query, string $type): HasChild
     {
         return new Elastica\Query\HasChild($query, $type);
     }
@@ -229,12 +252,12 @@ class QueryBuilder
     /**
      * Query by child documents having parent documents matching the query
      *
-     * @param string|\Elastica\Query|\Elastica\Query\AbstractQuery $query The query.
+     * @param \Elastica\Query|\Elastica\Query\AbstractQuery|string $query The query.
      * @param string $type The parent type to query against.
      * @return \Elastica\Query\HasParent
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-query.html
      */
-    public function hasParent($query, $type)
+    public function hasParent(string|Query|AbstractQuery $query, string $type): HasParent
     {
         return new Elastica\Query\HasParent($query, $type);
     }
@@ -246,7 +269,7 @@ class QueryBuilder
      * @return \Elastica\Query\Ids
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-query.html
      */
-    public function ids(array $ids = [])
+    public function ids(array $ids = []): Ids
     {
         return new Elastica\Query\Ids($ids);
     }
@@ -258,7 +281,7 @@ class QueryBuilder
      * @return \Elastica\Query\Limit
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-limit-query.html
      */
-    public function limit($limit)
+    public function limit(int $limit): Limit
     {
         return new Elastica\Query\Limit((int)$limit);
     }
@@ -269,7 +292,7 @@ class QueryBuilder
      * @return \Elastica\Query\MatchAll
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html
      */
-    public function matchAll()
+    public function matchAll(): MatchAll
     {
         return new Elastica\Query\MatchAll();
     }
@@ -283,7 +306,7 @@ class QueryBuilder
      * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
-    public function lt($field, $value)
+    public function lt(string $field, mixed $value): Range
     {
         return $this->range($field, ['lt' => $value]);
     }
@@ -297,7 +320,7 @@ class QueryBuilder
      * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
-    public function lte($field, $value)
+    public function lte(string $field, mixed $value): Range
     {
         return $this->range($field, ['lte' => $value]);
     }
@@ -316,7 +339,7 @@ class QueryBuilder
      * @return \Elastica\Query\Nested
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-query.html
      */
-    public function nested($path, $query)
+    public function nested(string $path, AbstractQuery $query): Nested
     {
         $nested = new Elastica\Query\Nested();
         $nested->setPath($path);
@@ -333,7 +356,7 @@ class QueryBuilder
      * @return \Elastica\Query\BoolQuery
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
      */
-    public function not($query)
+    public function not(AbstractQuery|array $query): BoolQuery
     {
         $boolQuery = new Elastica\Query\BoolQuery();
         $boolQuery->addMustNot($query);
@@ -351,7 +374,7 @@ class QueryBuilder
      * @return \Elastica\Query\Prefix
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html
      */
-    public function prefix($field, $prefix, $boost = 1.0)
+    public function prefix(string $field, string $prefix, float $boost = 1.0): Prefix
     {
         $prefixQuery = new Elastica\Query\Prefix();
         $prefixQuery->setPrefix($field, $prefix, $boost);
@@ -375,7 +398,7 @@ class QueryBuilder
      * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
-    public function range($field, array $args)
+    public function range(string $field, array $args): Range
     {
         return new Elastica\Query\Range($field, $args);
     }
@@ -395,7 +418,7 @@ class QueryBuilder
      * @return \Elastica\Query\Regexp
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html
      */
-    public function regexp($field, $regexp, $boost = 1.0)
+    public function regexp(string $field, string $regexp, float $boost = 1.0): Regexp
     {
         return new Elastica\Query\Regexp($field, $regexp, $boost);
     }
@@ -409,11 +432,11 @@ class QueryBuilder
      *  $builder->script("doc['price'].value > 1");
      * }}}
      *
-     * @param array|string|\Elastica\Script\AbstractScript $script The script.
+     * @param \Elastica\Script\AbstractScript|array|string $script The script.
      * @return \Elastica\Query\Script
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-query.html
      */
-    public function script($script)
+    public function script(array|string|AbstractScript $script): Script
     {
         return new Elastica\Query\Script($script);
     }
@@ -432,7 +455,7 @@ class QueryBuilder
      * @return \Elastica\Query\SimpleQueryString
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html
      */
-    public function simpleQueryString($fields, $string)
+    public function simpleQueryString(array|string $fields, string $string): SimpleQueryString
     {
         return new Elastica\Query\SimpleQueryString($string, (array)$fields);
     }
@@ -451,7 +474,7 @@ class QueryBuilder
      * @return \Elastica\Query\MatchQuery
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html
      */
-    public function match($field, $value)
+    public function match(string $field, string $value): MatchQuery
     {
         return new Elastica\Query\MatchQuery($field, $value);
     }
@@ -470,7 +493,7 @@ class QueryBuilder
      * @return \Elastica\Query\Term
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
      */
-    public function term($field, $value)
+    public function term(string $field, string $value): Term
     {
         return new Elastica\Query\Term([$field => $value]);
     }
@@ -489,7 +512,7 @@ class QueryBuilder
      * @return \Elastica\Query\Terms
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html
      */
-    public function terms($field, $values)
+    public function terms(string $field, array $values): Terms
     {
         return new Elastica\Query\Terms($field, $values);
     }
@@ -510,7 +533,7 @@ class QueryBuilder
      * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
      * @return \Elastica\Query\BoolQuery
      */
-    public function and(...$queries)
+    public function and(AbstractQuery ...$queries): BoolQuery
     {
         $bool = $this->bool();
 
@@ -536,7 +559,7 @@ class QueryBuilder
      * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
      * @return \Elastica\Query\BoolQuery
      */
-    public function or(...$queries)
+    public function or(AbstractQuery ...$queries): BoolQuery
     {
         $bool = $this->bool();
 
@@ -675,10 +698,10 @@ class QueryBuilder
      *
      * `<`, `>`, `<=`, `>=`, `in`, `not in`, `is`, `is not`, `!=`
      *
-     * @param array|\Elastica\Query\AbstractQuery $conditions The list of conditions to parse.
+     * @param \Elastica\Query\AbstractQuery|array $conditions The list of conditions to parse.
      * @return array
      */
-    public function parse($conditions)
+    public function parse(array|AbstractQuery $conditions): array
     {
         if ($conditions instanceof AbstractQuery) {
             return $conditions;
@@ -734,7 +757,7 @@ class QueryBuilder
      * @param mixed $value The value to pass to the query
      * @return \Elastica\Query\AbstractQuery
      */
-    protected function _parseQuery($field, $value)
+    protected function _parseQuery(string $field, mixed $value): AbstractQuery
     {
         $operator = '=';
         $parts = explode(' ', trim($field), 2);

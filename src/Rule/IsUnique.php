@@ -28,7 +28,7 @@ class IsUnique
      *
      * @var array
      */
-    protected $_fields;
+    protected array $_fields;
 
     /**
      * Constructor.
@@ -54,7 +54,7 @@ class IsUnique
      * @param array $options Options passed to the check,
      * @return bool
      */
-    public function __invoke(EntityInterface $entity, array $options)
+    public function __invoke(EntityInterface $entity, array $options): bool
     {
         if (!$entity->extract($this->_fields, true)) {
             return true;

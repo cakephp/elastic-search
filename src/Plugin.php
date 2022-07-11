@@ -39,7 +39,7 @@ class Plugin extends BasePlugin
         FactoryLocator::add('ElasticSearch', $callback);
 
         // Attach the document context into FormHelper.
-        EventManager::instance()->on('View.beforeRender', function ($event) {
+        EventManager::instance()->on('View.beforeRender', function ($event): void {
             $view = $event->getSubject();
             $view->Form->addContextProvider('elastic', function ($request, $data) {
                 $first = null;

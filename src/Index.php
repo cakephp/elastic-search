@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch;
 
 use ArrayObject;
+use BadMethodCallException;
 use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\RepositoryInterface;
@@ -24,6 +25,7 @@ use Cake\Datasource\RulesAwareTrait;
 use Cake\Datasource\RulesChecker;
 use Cake\ElasticSearch\Association\EmbedMany;
 use Cake\ElasticSearch\Association\EmbedOne;
+use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\Event\EventDispatcherInterface;
@@ -35,6 +37,7 @@ use Cake\Validation\ValidatorAwareTrait;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 use RuntimeException;
+use Traversable;
 
 /**
  * Base class for index.
@@ -74,42 +77,42 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @var \Cake\ElasticSearch\Datasource\Connection
      */
-    protected $_connection;
+    protected Connection $_connection;
 
     /**
      * The name of the Elasticsearch index this class represents
      *
      * @var string
      */
-    protected $_name;
+    protected string $_name;
 
     /**
      * Registry key used to create this index object
      *
      * @var string
      */
-    protected $_registryAlias;
+    protected string $_registryAlias;
 
     /**
      * The name of the class that represent a single document for this type
      *
      * @var string
      */
-    protected $_documentClass;
+    protected string $_documentClass;
 
     /**
      * Collection of Embedded sub documents this type has.
      *
      * @var array
      */
-    protected $embeds = [];
+    protected array $embeds = [];
 
     /**
      * The mapping schema for this type.
      *
      * @var \Cake\ElasticSearch\Datasource\MappingSchema
      */
-    protected $schema;
+    protected MappingSchema $schema;
 
     /**
      * Constructor
@@ -162,7 +165,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $config Configuration options passed to the constructor
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
     }
 
@@ -176,7 +179,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options The options for the embedded document.
      * @return void
      */
-    public function embedOne($name, $options = [])
+    public function embedOne(string $name, array $options = []): void
     {
         $this->embeds[] = new EmbedOne($name, $options);
     }
@@ -193,7 +196,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options The options for the embedded document.
      * @return void
      */
-    public function embedMany($name, $options = [])
+    public function embedMany(string $name, array $options = []): void
     {
         $this->embeds[] = new EmbedMany($name, $options);
     }
@@ -203,7 +206,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return array
      */
-    public function embedded()
+    public function embedded(): array
     {
         return $this->embeds;
     }
@@ -214,7 +217,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param \Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
      * @return $this
      */
-    public function setConnection($conn)
+    public function setConnection(Connection $conn)
     {
         $this->_connection = $conn;
 
@@ -226,7 +229,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return \Cake\ElasticSearch\Datasource\Connection
      */
-    public function getConnection()
+    public function getConnection(): Connection
     {
         return $this->_connection;
     }
@@ -264,7 +267,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $name Index name
      * @return $this
      */
-    public function setName($name)
+    public function setName(string $name)
     {
         $this->_name = $name;
 
@@ -278,7 +281,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         if ($this->_name === null) {
             $name = namespaceSplit(static::class);
@@ -296,7 +299,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return string
      */
-    public function getTable()
+    public function getTable(): string
     {
         return $this->getName();
     }
@@ -335,7 +338,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options An array that will be passed to Query::applyOptions
      * @return \Cake\ElasticSearch\Query
      */
-    public function find(string $type = 'all', $options = [])
+    public function find(string $type = 'all', array $options = []): Query
     {
         $query = $this->query();
 
@@ -349,7 +352,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options An array of options to be used for query logic
      * @return \Cake\ElasticSearch\Query
      */
-    public function findAll(Query $query, array $options = [])
+    public function findAll(Query $query, array $options = []): Query
     {
         return $query;
     }
@@ -364,7 +367,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @return \Cake\ElasticSearch\Query
      * @throws \BadMethodCallException
      */
-    public function callFinder($type, Query $query, $options = [])
+    public function callFinder(string $type, Query $query, array $options = []): Query
     {
         $query->applyOptions($options);
         $options = $query->getOptions();
@@ -374,7 +377,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             return $this->{$finder}($query, $options);
         }
 
-        throw new \BadMethodCallException(
+        throw new BadMethodCallException(
             sprintf('Unknown finder method "%s"', $type)
         );
     }
@@ -423,7 +426,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return \Cake\ElasticSearch\Query
      */
-    public function query()
+    public function query(): Query
     {
         return new Query($this);
     }
@@ -433,7 +436,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @return \Cake\ElasticSearch\Marshaller
      */
-    public function marshaller()
+    public function marshaller(): Marshaller
     {
         return new Marshaller($this);
     }
@@ -449,7 +452,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $conditions An array of conditions, similar to those used with find()
      * @return int
      */
-    public function updateAll($fields, $conditions): int
+    public function updateAll(array $fields, array $conditions): int
     {
         throw new RuntimeException('Not implemented yet');
     }
@@ -466,7 +469,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @return int Success Returns 1 if one or more documents are effected.
      * @see RepositoryInterface::delete()
      */
-    public function deleteAll($conditions): int
+    public function deleteAll(array $conditions): int
     {
         $query = $this->query();
         $query->where($conditions);
@@ -483,7 +486,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $conditions list of conditions to pass to the query
      * @return bool
      */
-    public function exists($conditions): bool
+    public function exists(array $conditions): bool
     {
         $query = $this->query();
         if (count($conditions) && isset($conditions['id'])) {
@@ -510,7 +513,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options An array of options to be used for the event
      * @return bool
      */
-    public function saveMany($entities, $options = [])
+    public function saveMany(array $entities, array $options = []): bool
     {
         $options += [
             'checkRules' => true,
@@ -597,7 +600,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options An array of options to be used for the event
      * @return \Cake\Datasource\EntityInterface|bool
      */
-    public function save(EntityInterface $entity, $options = [])
+    public function save(EntityInterface $entity, array $options = []): EntityInterface|bool
     {
         $options += [
             'checkRules' => true,
@@ -668,7 +671,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options The options for the delete.
      * @return bool success
      */
-    public function delete(EntityInterface $entity, $options = []): bool
+    public function delete(EntityInterface $entity, array $options = []): bool
     {
         if (!$entity->has('id')) {
             $msg = 'Deleting requires an "id" value.';
@@ -856,13 +859,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * $article = $this->Articles->patchEntities($articles, $this->request->data());
      * ```
      *
-     * @param array|\Traversable $entities the entities that will get the
+     * @param \Traversable|array $entities the entities that will get the
      * data merged in
      * @param array $data list of arrays to be merged into the entities
      * @param array $options A list of options for the objects hydration.
      * @return array
      */
-    public function patchEntities($entities, array $data, array $options = []): array
+    public function patchEntities(array|Traversable $entities, array $data, array $options = []): array
     {
         $marshaller = $this->marshaller();
 

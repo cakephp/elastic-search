@@ -28,5 +28,5 @@ class MissingDocumentException extends MissingEntityException
     /**
      * @var string
      */
-    protected $_messageTemplate = 'Document class %s could not be found.';
+    protected string $_messageTemplate = 'Document class %s could not be found.';
 }

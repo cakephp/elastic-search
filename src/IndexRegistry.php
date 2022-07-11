@@ -36,21 +36,21 @@ class IndexRegistry
      *
      * @var array
      */
-    protected static $instances = [];
+    protected static array $instances = [];
 
     /**
      * List of options by alias passed to get.
      *
      * @var array
      */
-    protected static $options = [];
+    protected static array $options = [];
 
     /**
      * Fallback class to use
      *
      * @var string
      */
-    protected static $fallbackClassName = Index::class;
+    protected static string $fallbackClassName = Index::class;
 
     /**
      * Set fallback class name.
@@ -62,7 +62,7 @@ class IndexRegistry
      * @param string $className Fallback class name
      * @return void
      */
-    public static function setFallbackClassName($className)
+    public static function setFallbackClassName(string $className): void
     {
         static::$fallbackClassName = $className;
     }
@@ -77,7 +77,7 @@ class IndexRegistry
      * @param array $options Configuration options for the type constructor.
      * @return \Cake\ElasticSearch\Index
      */
-    public static function get($alias, array $options = [])
+    public static function get(string $alias, array $options = []): Index
     {
         if (isset(static::$instances[$alias])) {
             if (!empty($options) && static::$options[$alias] !== $options) {
@@ -124,7 +124,7 @@ class IndexRegistry
      * @param string $alias The alias to check for.
      * @return bool
      */
-    public static function exists($alias)
+    public static function exists(string $alias): bool
     {
         return isset(static::$instances[$alias]);
     }
@@ -136,7 +136,7 @@ class IndexRegistry
      * @param \Cake\ElasticSearch\Index $object The type to set.
      * @return \Cake\ElasticSearch\Index
      */
-    public static function set($alias, Index $object)
+    public static function set(string $alias, Index $object): Index
     {
         return static::$instances[$alias] = $object;
     }
@@ -146,7 +146,7 @@ class IndexRegistry
      *
      * @return void
      */
-    public static function clear()
+    public static function clear(): void
     {
         static::$instances = [];
     }
@@ -157,7 +157,7 @@ class IndexRegistry
      * @param string $alias The alias to remove.
      * @return void
      */
-    public static function remove($alias)
+    public static function remove(string $alias): void
     {
         unset(static::$instances[$alias]);
     }

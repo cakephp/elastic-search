@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Cake\ElasticSearch\Association;
 
+use Cake\ElasticSearch\Document;
+
 /**
  * Represents an embedded document that only contains
  * multiple instances.
@@ -16,7 +18,7 @@ class EmbedMany extends Embedded
      * @param array $options The options to use in the new document.
      * @return \Cake\ElasticSearch\Document
      */
-    public function hydrate(array $data, $options)
+    public function hydrate(array $data, array $options): Document
     {
         $class = $this->getEntityClass();
         $out = [];

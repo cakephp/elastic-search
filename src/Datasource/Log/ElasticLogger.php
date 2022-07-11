@@ -17,9 +17,13 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Datasource\Log;
 
 use Cake\Database\Log\LoggedQuery;
+use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionInterface;
+use Cake\ElasticSearch\Datasource\Connection;
+use Cake\Log\Engine\BaseLog;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LogLevel;
+use Psr\Log\NullLogger;
 
 /**
  * Adapter to convert elastic logs to QueryLogger readable content
@@ -31,14 +35,14 @@ class ElasticLogger extends AbstractLogger
      *
      * @var \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog
      */
-    protected $_logger;
+    protected QueryLogger|BaseLog $_logger;
 
     /**
      * Holds the connection instance
      *
      * @var \Cake\ElasticSearch\Datasource\Connection
      */
-    protected $_connection;
+    protected Connection $_connection;
 
     /**
      * Constructor, set the QueryLogger instance
@@ -46,7 +50,7 @@ class ElasticLogger extends AbstractLogger
      * @param \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog $logger Instance of the QueryLogger
      * @param \Cake\Datasource\ConnectionInterface $connection Current connection instance
      */
-    public function __construct($logger, ConnectionInterface $connection)
+    public function __construct(QueryLogger|BaseLog $logger, ConnectionInterface $connection)
     {
         $this->setLogger($logger);
         $this->_connection = $connection;
@@ -58,7 +62,7 @@ class ElasticLogger extends AbstractLogger
      * @param \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog $logger Set logger instance to pass logging data to
      * @return $this
      */
-    public function setLogger($logger)
+    public function setLogger(QueryLogger|BaseLog $logger)
     {
         $this->_logger = $logger;
 
@@ -70,7 +74,7 @@ class ElasticLogger extends AbstractLogger
      *
      * @return \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog|\Psr\Log\NullLogger [description]
      */
-    public function getLogger()
+    public function getLogger(): QueryLogger|BaseLog|NullLogger
     {
         return $this->_logger;
     }
@@ -83,7 +87,7 @@ class ElasticLogger extends AbstractLogger
      * @param array $context log context
      * @return void
      */
-    public function log($level, $message, array $context = [])
+    public function log(string $level, string $message, array $context = []): void
     {
         if ($this->_connection->isQueryLoggingEnabled()) {
             $this->_log($level, $message, $context);
@@ -111,7 +115,7 @@ class ElasticLogger extends AbstractLogger
      * @param array $context log context
      * @return void
      */
-    protected function _log($level, $message, array $context = [])
+    protected function _log(string $level, string $message, array $context = []): void
     {
         $logData = $context;
         if (LogLevel::DEBUG && isset($context['request'])) {

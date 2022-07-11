@@ -18,6 +18,7 @@ namespace Cake\ElasticSearch;
 
 use Cake\Collection\CollectionTrait;
 use Cake\Datasource\ResultSetInterface;
+use Elastica\Response;
 use IteratorIterator;
 
 /**
@@ -33,35 +34,35 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @var string
      */
-    protected $resultSet;
+    protected string $resultSet;
 
     /**
      * Holds the Elasticsearch ORM query object
      *
      * @var \Cake\ElasticSearch\Query
      */
-    protected $queryObject;
+    protected Query $queryObject;
 
     /**
      * The full class name of the document class to wrap the results
      *
      * @var \Cake\ElasticSearch\Document
      */
-    protected $entityClass;
+    protected Document $entityClass;
 
     /**
      * Embedded type references
      *
      * @var array
      */
-    protected $embeds = [];
+    protected array $embeds = [];
 
     /**
      * Name of the type that the originating query came from.
      *
      * @var string
      */
-    protected $repoName;
+    protected string $repoName;
 
     /**
      * Decorator's constructor
@@ -69,7 +70,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      * @param \Elastica\ResultSet $resultSet The results from Elastica to wrap
      * @param \Elastica\Query $query The Elasticsearch Query object
      */
-    public function __construct($resultSet, $query)
+    public function __construct(\Elastica\ResultSet $resultSet, \Elastica\Query $query)
     {
         $this->resultSet = $resultSet;
         $this->queryObject = $query;
@@ -85,9 +86,9 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     /**
      * Returns all results
      *
-     * @return \Elastica\Result[] Results
+     * @return array<\Elastica\Result> Results
      */
-    public function getResults()
+    public function getResults(): array
     {
         return $this->resultSet->getResults();
     }
@@ -97,7 +98,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return bool
      */
-    public function hasSuggests()
+    public function hasSuggests(): bool
     {
         return $this->resultSet->hasSuggests();
     }
@@ -107,7 +108,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return array suggest results
      */
-    public function getSuggests()
+    public function getSuggests(): array
     {
         return $this->resultSet->getSuggests();
     }
@@ -117,7 +118,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return array
      */
-    public function getAggregations()
+    public function getAggregations(): array
     {
         return $this->resultSet->getAggregations();
     }
@@ -129,7 +130,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      * @return array
      * @throws \Elastica\Exception\InvalidException if an aggregation by the given name cannot be found
      */
-    public function getAggregation($name)
+    public function getAggregation(string $name): array
     {
         return $this->resultSet->getAggregation($name);
     }
@@ -139,7 +140,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return int Total hits
      */
-    public function getTotalHits()
+    public function getTotalHits(): int
     {
         return $this->resultSet->getTotalHits();
     }
@@ -149,7 +150,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return float Max Score
      */
-    public function getMaxScore()
+    public function getMaxScore(): float
     {
         return $this->resultSet->getMaxScore();
     }
@@ -159,7 +160,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return int Total time
      */
-    public function getTotalTime()
+    public function getTotalTime(): int
     {
         return $this->resultSet->getTotalTime();
     }
@@ -169,7 +170,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return bool Timed out
      */
-    public function hasTimedOut()
+    public function hasTimedOut(): bool
     {
         return $this->resultSet->hasTimedOut();
     }
@@ -179,7 +180,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return \Elastica\Response Response object
      */
-    public function getResponse()
+    public function getResponse(): Response
     {
         return $this->resultSet->getResponse();
     }
@@ -189,7 +190,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return \Elastica\Query
      */
-    public function getQuery()
+    public function getQuery(): \Elastica\Query
     {
         return $this->resultSet->getQuery();
     }
@@ -209,7 +210,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return int Size of suggests
      */
-    public function countSuggests()
+    public function countSuggests(): int
     {
         return $this->resultSet->countSuggests();
     }
@@ -219,8 +220,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return \Cake\ElasticSearch\Document
      */
-    #[\ReturnTypeWillChange]
-    public function current()
+    public function current(): Document
     {
         $class = $this->entityClass;
         $result = $this->resultSet->current();
@@ -251,7 +251,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return string
      */
-    public function serialize()
+    public function serialize(): string
     {
         return serialize([ $this->resultSet, $this->queryObject ]);
     }
@@ -272,7 +272,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      * @param string $serialized The serialized ResultSet information
      * @return void
      */
-    public function unserialize($serialized)
+    public function unserialize(string $serialized): void
     {
         $this->__construct(...unserialize($serialized));
     }
@@ -293,7 +293,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         return [
             'items' => $this->resultSet->getResponse()->getData(),

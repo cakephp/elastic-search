@@ -16,6 +16,7 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch;
 
+use ArrayObject;
 use Cake\Collection\Collection;
 use Cake\Datasource\EntityInterface;
 use Cake\ElasticSearch\Association\Embedded;
@@ -33,7 +34,7 @@ class Marshaller
      *
      * @var \Cake\ElasticSearch\Index
      */
-    protected $index;
+    protected Index $index;
 
     /**
      * Constructor
@@ -59,7 +60,7 @@ class Marshaller
      * @param array $options List of options
      * @return \Cake\ElasticSearch\Document;
      */
-    public function one(array $data, array $options = [])
+    public function one(array $data, array $options = []): Document
     {
         $entityClass = $this->index->getEntityClass();
         $entity = $this->createAndHydrate($entityClass, $data, $options);
@@ -77,7 +78,7 @@ class Marshaller
      * @param string $indexClass Index class to get embeds from (for nesting)
      * @return \Cake\ElasticSearch\Document
      */
-    protected function createAndHydrate($class, array $data, array $options = [], $indexClass = null)
+    protected function createAndHydrate(string $class, array $data, array $options = [], ?string $indexClass = null): Document
     {
         $entity = new $class();
 
@@ -136,9 +137,9 @@ class Marshaller
      * @param \Cake\ElasticSearch\Association\Embedded $embed   The embed definition.
      * @param array                                    $data    The data to marshal
      * @param array                                    $options The options to pass on
-     * @return array|\Cake\ElasticSearch\Document Either a document or an array of documents.
+     * @return \Cake\ElasticSearch\Document|array Either a document or an array of documents.
      */
-    protected function newNested(Embedded $embed, array $data, array $options = [])
+    protected function newNested(Embedded $embed, array $data, array $options = []): array|Document
     {
         $class = $embed->getEntityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
@@ -163,9 +164,9 @@ class Marshaller
      * @param \Cake\ElasticSearch\Association\Embedded $embed The embed definition.
      * @param \Cake\ElasticSearch\Document|array $existing The existing entity or entities.
      * @param array $data The data to marshal
-     * @return array|\Cake\ElasticSearch\Document Either a document or an array of documents.
+     * @return \Cake\ElasticSearch\Document|array Either a document or an array of documents.
      */
-    protected function mergeNested(Embedded $embed, $existing, array $data)
+    protected function mergeNested(Embedded $embed, Document|array $existing, array $data): array|Document
     {
         $class = $embed->getEntityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
@@ -212,7 +213,7 @@ class Marshaller
      * @param array $options Options
      * @return array An array of hydrated entities
      */
-    public function many(array $data, array $options = [])
+    public function many(array $data, array $options = []): array
     {
         $output = [];
         foreach ($data as $record) {
@@ -237,7 +238,7 @@ class Marshaller
      * @param array $options List of options.
      * @return \Cake\Datasource\EntityInterface
      */
-    public function merge(EntityInterface $entity, array $data, array $options = [])
+    public function merge(EntityInterface $entity, array $data, array $options = []): EntityInterface
     {
         $options += ['associated' => []];
         [$data, $options] = $this->_prepareDataAndOptions($data, $options);
@@ -290,7 +291,7 @@ class Marshaller
      * @param array $options Options
      * @return array An array of merged entities
      */
-    public function mergeMany(array $entities, array $data, array $options = [])
+    public function mergeMany(array $entities, array $data, array $options = []): array
     {
         $indexed = (new Collection($data))
             ->groupBy(function ($element) {
@@ -333,7 +334,7 @@ class Marshaller
      * @return array The list of validation errors.
      * @throws \RuntimeException If no validator can be created.
      */
-    protected function _validate($data, $options, $isNew)
+    protected function _validate(array $data, array $options, bool $isNew): array
     {
         if (!$options['validate']) {
             return [];
@@ -361,11 +362,11 @@ class Marshaller
      * @param array $options The options passed to this marshaller.
      * @return array An array containing prepared data and options.
      */
-    protected function _prepareDataAndOptions($data, $options)
+    protected function _prepareDataAndOptions(array $data, array $options): array
     {
         $options += ['validate' => true];
-        $data = new \ArrayObject($data);
-        $options = new \ArrayObject($options);
+        $data = new ArrayObject($data);
+        $options = new ArrayObject($options);
         $this->index->dispatchEvent('Model.beforeMarshal', compact('data', 'options'));
 
         return [(array)$data, (array)$options];

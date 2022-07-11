@@ -26,14 +26,14 @@ class MappingSchema
      *
      * @var array
      */
-    protected $data;
+    protected array $data;
 
     /**
      * The name of the index this mapping data is for.
      *
      * @var string
      */
-    protected $name;
+    protected string $name;
 
     /**
      * Constructor
@@ -41,7 +41,7 @@ class MappingSchema
      * @param string $name The name of the index of the mapping data
      * @param array $data The mapping data from elasticsearch
      */
-    public function __construct($name, array $data)
+    public function __construct(string $name, array $data)
     {
         $this->name = $name;
         if (isset($data['properties'])) {
@@ -55,7 +55,7 @@ class MappingSchema
      *
      * @return string
      */
-    public function name()
+    public function name(): string
     {
         return $this->name;
     }
@@ -68,7 +68,7 @@ class MappingSchema
      * @param string $name The path to the field you want.
      * @return array|null Either field mapping data or null.
      */
-    public function field($name)
+    public function field(string $name): ?array
     {
         if (strpos($name, '.') === false) {
             if (isset($this->data[$name])) {
@@ -97,7 +97,7 @@ class MappingSchema
      * @param string $name The path to the field you want.
      * @return string|null Either type information or null
      */
-    public function fieldType($name)
+    public function fieldType(string $name): ?string
     {
         $field = $this->field($name);
         if (!$field) {
@@ -115,7 +115,7 @@ class MappingSchema
      *
      * @return array
      */
-    public function fields()
+    public function fields(): array
     {
         return array_keys($this->data);
     }
