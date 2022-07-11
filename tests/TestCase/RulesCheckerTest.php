@@ -11,7 +11,7 @@ use Cake\ElasticSearch\TestSuite\TestCase;
 
 class RulesCheckerTest extends TestCase
 {
-    public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
+    public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     public function setUp(): void
     {

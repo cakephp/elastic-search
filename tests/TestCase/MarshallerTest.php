@@ -35,7 +35,7 @@ class MarshallerTest extends TestCase
      *
      * @var array
      */
-    public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
+    public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     /**
      * Setup method.

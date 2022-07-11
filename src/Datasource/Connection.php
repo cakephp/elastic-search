@@ -21,7 +21,6 @@ use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
 use Cake\ElasticSearch\Exception\NotImplementedException;
-use Cake\Log\Engine\BaseLog;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
 use Elastica\Index;
@@ -222,10 +221,10 @@ class Connection implements ConnectionInterface
     /**
      * Sets a logger
      *
-     * @param \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog $logger Logger instance
+     * @param \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface $logger Logger instance
      * @return $this
      */
-    public function setLogger(QueryLogger|BaseLog $logger)
+    public function setLogger(QueryLogger|LoggerInterface $logger)
     {
         $this->_logger = $logger;
         $this->getEsLogger()->setLogger($logger);
@@ -242,7 +241,7 @@ class Connection implements ConnectionInterface
      */
     public function getLogger(): LoggerInterface
     {
-        if ($this->_logger === null) {
+        if (!isset($this->_logger)) {
             $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
 
             if (!$engine) {
@@ -262,7 +261,7 @@ class Connection implements ConnectionInterface
      */
     public function getEsLogger(): ElasticLogger
     {
-        if ($this->_esLogger === null) {
+        if (!isset($this->_esLogger)) {
             $this->_esLogger = new ElasticLogger($this->getLogger(), $this);
         }
 
@@ -322,7 +321,7 @@ class Connection implements ConnectionInterface
     /**
      * @inheritDoc
      */
-    public function prepare($sql)
+    public function prepare(mixed $sql)
     {
         throw new NotImplementedException();
     }
@@ -333,7 +332,7 @@ class Connection implements ConnectionInterface
      * @see \Cake\Datasource\ConnectionInterface::getDriver()
      * @return \Elastica\Client
      */
-    public function getDriver()
+    public function getDriver(): object
     {
         return $this->_client;
     }

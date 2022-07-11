@@ -28,7 +28,7 @@ use TestApp\Model\Document\MyTestDocument;
  */
 class ResultSetTest extends TestCase
 {
-    public $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
+    public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     /**
      * Tests the construction process
