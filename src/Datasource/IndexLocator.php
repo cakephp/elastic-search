@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 /**
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
@@ -18,6 +19,7 @@ namespace Cake\ElasticSearch\Datasource;
 use Cake\Core\App;
 use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\Locator\AbstractLocator;
+use Cake\ElasticSearch\Exception\MissingIndexClassException;
 use Cake\ElasticSearch\Index;
 use Cake\Utility\Inflector;
 
@@ -75,6 +77,9 @@ class IndexLocator extends AbstractLocator
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function createInstance(string $alias, array $options)
     {
         [, $classAlias] = pluginSplit($alias);
@@ -86,12 +91,14 @@ class IndexLocator extends AbstractLocator
         $className = App::className($options['className'], 'Model/Index', 'Index');
         if ($className) {
             $options['className'] = $className;
-        } else {
+        } elseif ($this->allowFallbackClass) {
             if (!isset($options['name']) && strpos($options['className'], '\\') === false) {
                 [, $name] = pluginSplit($options['className']);
                 $options['name'] = Inflector::underscore($name);
             }
             $options['className'] = $this->fallbackClassName;
+        } else {
+            throw new MissingIndexClassException(['name' => $alias]);
         }
 
         if (empty($options['connection'])) {

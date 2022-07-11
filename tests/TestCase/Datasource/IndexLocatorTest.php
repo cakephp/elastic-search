@@ -18,7 +18,10 @@ namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
 use Cake\Core\Configure;
 use Cake\ElasticSearch\Index;
-use Cake\ElasticSearch\Datasource\IndexLocator;;
+use Cake\ElasticSearch\Datasource\IndexLocator;
+use Cake\ElasticSearch\Exception\MissingIndexClassException;
+
+;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -125,6 +128,18 @@ class IndexLocatorTest extends TestCase
         $result = $this->locator->get('Stuff', ['className' => 'Cake\ElasticSearch\Index']);
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame('stuff', $result->getName(), 'The name should be derived from the alias');
+    }
+
+    /**
+     * Test get() with fallbacks disabled
+     *
+     * @return void
+     */
+    public function testGetNoFallback()
+    {
+        $this->locator->allowFallbackClass(false);
+        $this->expectException(MissingIndexClassException::class);
+        $this->locator->get('Articles');
     }
 
     /**
