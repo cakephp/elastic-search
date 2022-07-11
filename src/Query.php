@@ -23,6 +23,7 @@ use Elastica\Aggregation\AbstractAggregation;
 use Elastica\Collapse;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
+use Closure;
 use IteratorAggregate;
 
 class Query implements IteratorAggregate, QueryInterface
@@ -116,7 +117,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param bool $overwrite Whether or not to replace previous selections.
      * @return $this
      */
-    public function select(array $fields, bool $overwrite = false)
+    public function select(Closure|array|string|int|float $fields, bool $overwrite = false)
     {
         if (!$overwrite) {
             $fields = array_merge($this->_queryParts['fields'], $fields);
@@ -133,7 +134,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param int $limit The number of documents to return.
      * @return $this
      */
-    public function limit(int $limit)
+    public function limit(?int $limit)
     {
         $this->_queryParts['limit'] = (int)$limit;
 
@@ -147,7 +148,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param int $num The number of records to be skipped
      * @return $this
      */
-    public function offset(int $num)
+    public function offset(?int $num)
     {
         $this->_queryParts['offset'] = (int)$num;
 
@@ -226,7 +227,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param bool $overwrite Whether or not to replace previous sorting.
      * @return $this
      */
-    public function order(string|array $order, bool $overwrite = false)
+    public function order(Closure|array|string $order, bool $overwrite = false)
     {
         // [['field' => [...]], ['field2' => [...]]]
         if (is_array($order) && is_numeric(key($order))) {
@@ -271,7 +272,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param array $options The options for the finder.
      * @return \Cake\ElasticSearch\Query
      */
-    public function find($finder = 'all', array $options = [])
+    public function find(string $finder = 'all', array $options = []): static
     {
         return $this->_repository->callFinder($finder, $this, $options);
     }
@@ -322,7 +323,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @return $this
      * @see \Cake\ElasticSearch\QueryBuilder
      */
-    public function where(array|callable|AbstractQuery|null $conditions = null, array $types = [], bool $overwrite = false)
+    public function where(Closure|array|string|null|AbstractQuery $conditions = null, array $types = [], bool $overwrite = false)
     {
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }

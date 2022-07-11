@@ -87,6 +87,8 @@ class MappingSchema
                 $pointer = $pointer[$part]['properties'];
             }
         }
+
+        return null;
     }
 
     /**

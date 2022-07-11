@@ -138,9 +138,11 @@ class ElasticLogger extends AbstractLogger
                 $numRows = $context['response']['hits']['total'];
             }
             $message = new LoggedQuery();
-            $message->query = $logData;
-            $message->took = $took;
-            $message->numRows = $numRows;
+            $message->setContext([
+                'query' => $logData,
+                'took' => $took,
+                'numRows' => $numRows,
+            ]);
 
             $context['query'] = $message;
         }

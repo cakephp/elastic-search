@@ -18,6 +18,8 @@ namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\ElasticSearch\QueryBuilder;
 use Cake\TestSuite\TestCase;
+use Elastica\Query\SimpleQueryString;
+use stdClass;
 
 /**
  * Tests the QueryBuilder class
@@ -319,7 +321,7 @@ class QueryBuilderTest extends TestCase
         $builder = new QueryBuilder();
         $result = $builder->matchAll();
         $expected = [
-            'match_all' => new \stdClass(),
+            'match_all' => new stdClass(),
         ];
         $this->assertEquals($expected, $result->toArray());
     }
@@ -393,7 +395,7 @@ class QueryBuilderTest extends TestCase
         $builder = new QueryBuilder();
         $result = $builder->nested(
             'comments',
-            new \Elastica\Query\SimpleQueryString('great')
+            new SimpleQueryString('great')
         );
         $expected = [
             'nested' => [

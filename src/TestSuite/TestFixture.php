@@ -19,6 +19,7 @@ namespace Cake\ElasticSearch\TestSuite;
 use Cake\Core\Exception\Exception as CakeException;
 use Cake\Datasource\ConnectionInterface;
 use Cake\Datasource\FixtureInterface;
+use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\Utility\Inflector;
@@ -39,7 +40,7 @@ class TestFixture implements FixtureInterface
      *
      * @var string
      */
-    public string $table = null;
+    public string $table = '';
 
     /**
      * The connection name to use for this fixture.
@@ -131,6 +132,7 @@ class TestFixture implements FixtureInterface
      */
     public function create(ConnectionInterface $db): bool
     {
+        assert($db instanceof Connection, 'Requires an elasticsearch connection');
         if (empty($this->schema)) {
             return false;
         }
@@ -171,12 +173,13 @@ class TestFixture implements FixtureInterface
      * Insert fixture documents.
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
-     * @return void
+     * @return bool
      */
-    public function insert(ConnectionInterface $db): void
+    public function insert(ConnectionInterface $db): bool
     {
+        assert($db instanceof Connection, 'Requires an elasticsearch connection');
         if (empty($this->records)) {
-            return;
+            return false;
         }
         $documents = [];
         $esIndex = $db->getIndex($this->getIndex()->getName());
@@ -191,6 +194,8 @@ class TestFixture implements FixtureInterface
         }
         $esIndex->addDocuments($documents);
         $esIndex->refresh();
+
+        return true;
     }
 
     /**
@@ -201,6 +206,7 @@ class TestFixture implements FixtureInterface
      */
     public function drop(ConnectionInterface $db): bool
     {
+        assert($db instanceof Connection, 'Requires an elasticsearch connection');
         $esIndex = $db->getIndex($this->getIndex()->getName());
 
         if ($esIndex->exists()) {
@@ -221,6 +227,8 @@ class TestFixture implements FixtureInterface
     public function truncate(ConnectionInterface $db): bool
     {
         $query = new MatchAll();
+        assert($db instanceof Connection, 'Requires an elasticsearch connection');
+
         $esIndex = $db->getIndex($this->getIndex()->getName());
         $esIndex->deleteByQuery($query);
         $esIndex->refresh();

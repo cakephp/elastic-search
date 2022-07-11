@@ -28,7 +28,7 @@ class EmbedOne extends Embedded
     /**
      * @inheritDoc
      */
-    public function type()
+    public function type(): string
     {
         return static::ONE_TO_ONE;
     }

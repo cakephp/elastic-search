@@ -104,7 +104,7 @@ class Document implements EntityInterface
      */
     public function index(): ?string
     {
-        if ($this->_result) {
+        if (isset($this->_result)) {
             return $this->_result->getIndex();
         }
 
@@ -120,7 +120,7 @@ class Document implements EntityInterface
      */
     public function version(): int
     {
-        if ($this->_result) {
+        if (isset($this->_result)) {
             return $this->_result->getVersion();
         }
 
@@ -138,7 +138,7 @@ class Document implements EntityInterface
      */
     public function highlights(): array
     {
-        if ($this->_result) {
+        if (isset($this->_result)) {
             return $this->_result->getHighlights();
         }
 
@@ -155,7 +155,7 @@ class Document implements EntityInterface
      */
     public function explanation(): array
     {
-        if ($this->_result) {
+        if (isset($this->_result)) {
             return $this->_result->getExplanation();
         }
 

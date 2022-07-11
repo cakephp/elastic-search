@@ -7,14 +7,14 @@ use Cake\ElasticSearch\Index;
 
 class UsersIndex extends Index
 {
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
         $this->embedOne('UserType');
     }
 
-    public function getName()
+    public function getName(): string
     {
         return 'users';
     }

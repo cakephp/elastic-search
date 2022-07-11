@@ -88,7 +88,7 @@ abstract class Embedded
      */
     public function getProperty(): string
     {
-        if (!$this->property) {
+        if (!isset($this->property)) {
             $this->property = Inflector::underscore($this->alias);
         }
 
@@ -99,9 +99,9 @@ abstract class Embedded
      * Set the property this embed is attached to.
      *
      * @param string|null $name The property name to set.
-     * @return string The property name.
+     * @return $this
      */
-    public function setProperty(?string $name = null): string
+    public function setProperty(?string $name = null)
     {
         $this->property = $name;
 
@@ -118,6 +118,7 @@ abstract class Embedded
     public function property(?string $name = null): string
     {
         deprecationWarning(
+            '3.3.0',
             static::class . '::property() is deprecated. ' .
             'Use setProperty()/getProperty() instead.'
         );
@@ -136,7 +137,7 @@ abstract class Embedded
      */
     public function getEntityClass(): string
     {
-        if (!$this->entityClass) {
+        if (!isset($this->entityClass)) {
             $default = Document::class;
             $self = static::class;
             $parts = explode('\\', $self);
@@ -182,6 +183,7 @@ abstract class Embedded
     public function entityClass(?string $name = null): string
     {
         deprecationWarning(
+            '3.3',
             static::class . '::entityClass() is deprecated. ' .
             'Use setEntityClass()/getEntityClass() instead.'
         );
@@ -200,7 +202,7 @@ abstract class Embedded
      */
     public function getIndexClass(): string
     {
-        if (!$this->indexClass) {
+        if (!isset($this->indexClass)) {
             $alias = Inflector::pluralize($this->alias);
             $class = App::className($alias . 'Index', 'Model/Index');
 
@@ -242,6 +244,7 @@ abstract class Embedded
     public function indexClass(string|Index|null $name = null): string
     {
         deprecationWarning(
+            '3.3.0',
             static::class . '::indexClass() is deprecated. ' .
             'Use setIndexClass()/getIndexClass() instead.'
         );

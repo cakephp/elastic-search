@@ -22,6 +22,7 @@ use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\Log\Log;
 use Cake\TestSuite\TestCase;
+use Elastica\Exception\InvalidException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -43,7 +44,7 @@ class ConnectionTest extends TestCase
      */
     public function testGetEmptyIndex()
     {
-        $this->expectException(\Elastica\Exception\InvalidException::class);
+        $this->expectException(InvalidException::class);
 
         $connection = new Connection();
         $connection->getIndex();
@@ -126,11 +127,16 @@ class ConnectionTest extends TestCase
         $logger = new QueryLogger();
 
         $query = new LoggedQuery();
-        $query->query = json_encode([
-            'method' => 'GET',
-            'path' => '_stats',
-            'data' => [],
-        ], JSON_PRETTY_PRINT);
+        $query->setContext([
+            'query' => json_encode(
+                [
+                    'method' => 'GET',
+                    'path' => '_stats',
+                    'data' => [],
+                ],
+                JSON_PRETTY_PRINT
+            ),
+        ]);
 
         $connection = ConnectionManager::get('test');
         $connection->setLogger($logger);

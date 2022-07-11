@@ -34,6 +34,7 @@ use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
+use Closure;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 use RuntimeException;
@@ -452,7 +453,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $conditions An array of conditions, similar to those used with find()
      * @return int
      */
-    public function updateAll(array $fields, array $conditions): int
+    public function updateAll(Closure|array|string $fields, Closure|array|string|null $conditions): int
     {
         throw new RuntimeException('Not implemented yet');
     }
@@ -469,7 +470,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @return int Success Returns 1 if one or more documents are effected.
      * @see RepositoryInterface::delete()
      */
-    public function deleteAll(array $conditions): int
+    public function deleteAll(Closure|array|string|null $conditions): int
     {
         $query = $this->query();
         $query->where($conditions);
@@ -486,7 +487,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $conditions list of conditions to pass to the query
      * @return bool
      */
-    public function exists(array $conditions): bool
+    public function exists(Closure|array|string|null $conditions): bool
     {
         $query = $this->query();
         if (count($conditions) && isset($conditions['id'])) {
@@ -600,7 +601,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options An array of options to be used for the event
      * @return \Cake\Datasource\EntityInterface|bool
      */
-    public function save(EntityInterface $entity, array $options = []): EntityInterface|bool
+    public function save(EntityInterface $entity, array $options = []): EntityInterface|false
     {
         $options += [
             'checkRules' => true,
@@ -778,7 +779,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getEntityClass(): string
     {
-        if (!$this->_documentClass) {
+        if (!isset($this->_documentClass)) {
             $default = Document::class;
             $self = static::class;
             $parts = explode('\\', $self);
