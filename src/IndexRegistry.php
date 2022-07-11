@@ -16,11 +16,7 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch;
 
-use Cake\Core\App;
-use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\IndexLocator;
-use Cake\Utility\Inflector;
-use RuntimeException;
 
 /**
  * Factory/Registry class for Index objects.
@@ -29,6 +25,7 @@ use RuntimeException;
  * created and that the correct connection is injected in.
  *
  * Provides an interface similar to Cake\ORM\TableRegistry.
+ *
  * @deprecated 3.4.3 Statically accesible registry is deprecated. Prefer using `IndexLocator`
  *   alongside the `LocatorTrait` in CakePHP.
  */
@@ -37,10 +34,15 @@ class IndexRegistry
     /**
      * The locator that the global registy is wrapping.
      *
-     * @var Cake\ElasticSearch\Datasource\IndexLocator
+     * @var \Cake\ElasticSearch\Cake\ElasticSearch\Datasource\IndexLocator
      */
     protected static $locator;
 
+    /**
+     * Get the wrapped locator.
+     *
+     * @return \Cake\ElasticSearch\IndexLocator
+     */
     protected static function getLocator(): IndexLocator
     {
         if (static::$locator === null) {
@@ -110,7 +112,7 @@ class IndexRegistry
      */
     public static function clear()
     {
-        return static::getLocator()->clear();
+        static::getLocator()->clear();
     }
 
     /**
@@ -121,6 +123,6 @@ class IndexRegistry
      */
     public static function remove($alias)
     {
-        return static::getLocator()->remove($alias);
+        static::getLocator()->remove($alias);
     }
 }

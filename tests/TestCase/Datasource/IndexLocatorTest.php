@@ -17,11 +17,9 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
 use Cake\Core\Configure;
-use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Datasource\IndexLocator;
 use Cake\ElasticSearch\Exception\MissingIndexClassException;
-
-;
+use Cake\ElasticSearch\Index;
 use Cake\TestSuite\TestCase;
 
 /**
