@@ -493,7 +493,7 @@ class QueryBuilder
      * @return \Elastica\Query\Term
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
      */
-    public function term(string $field, string $value): Term
+    public function term(string $field, string|int|float $value): Term
     {
         return new Elastica\Query\Term([$field => $value]);
     }
@@ -701,7 +701,7 @@ class QueryBuilder
      * @param \Elastica\Query\AbstractQuery|array $conditions The list of conditions to parse.
      * @return array
      */
-    public function parse(array|AbstractQuery $conditions): array
+    public function parse(array|AbstractQuery $conditions): AbstractQuery|array
     {
         if ($conditions instanceof AbstractQuery) {
             return $conditions;

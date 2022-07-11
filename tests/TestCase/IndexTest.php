@@ -526,7 +526,7 @@ class IndexTest extends TestCase
             function (EventInterface $event, EntityInterface $entity, $options) use ($doc) {
                 $event->stopPropagation();
 
-                return 'kaboom';
+                return false;
             }
         );
         $this->index->getEventManager()->on(
@@ -535,7 +535,7 @@ class IndexTest extends TestCase
                 $this->fail('Should not be fired');
             }
         );
-        $this->assertSame('kaboom', $this->index->save($doc));
+        $this->assertFalse($this->index->save($doc));
     }
 
     /**

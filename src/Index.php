@@ -255,7 +255,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getRegistryAlias(): string
     {
-        if ($this->_registryAlias === null) {
+        if (!isset($this->_registryAlias)) {
             $this->_registryAlias = $this->getAlias();
         }
 
@@ -284,7 +284,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getName(): string
     {
-        if ($this->_name === null) {
+        if (!isset($this->_name)) {
             $name = namespaceSplit(static::class);
             $name = substr(end($name), 0, -5);
             $this->_name = Inflector::underscore($name);
@@ -883,7 +883,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function schema(): MappingSchema
     {
-        if ($this->schema !== null) {
+        if (isset($this->schema)) {
             return $this->schema;
         }
         $index = $this->getName();

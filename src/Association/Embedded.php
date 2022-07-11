@@ -168,7 +168,7 @@ abstract class Embedded
     public function setEntityClass(string $name)
     {
         $class = App::className($name, 'Model/Document');
-        $this->entityClass = $class;
+        $this->entityClass = $class ?? Document::class;
 
         return $this;
     }

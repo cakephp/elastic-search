@@ -19,6 +19,7 @@ namespace Cake\ElasticSearch;
 use Cake\Collection\CollectionTrait;
 use Cake\Datasource\ResultSetInterface;
 use Elastica\Response;
+use Elastica\ResultSet as ElasticaResultSet;
 use IteratorIterator;
 
 /**
@@ -32,9 +33,9 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     /**
      * Holds the original instance of the result set
      *
-     * @var string
+     * @var \Elastica\ResultSet
      */
-    protected string $resultSet;
+    protected ElasticaResultSet $resultSet;
 
     /**
      * Holds the Elasticsearch ORM query object
@@ -46,9 +47,9 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     /**
      * The full class name of the document class to wrap the results
      *
-     * @var \Cake\ElasticSearch\Document
+     * @var string
      */
-    protected Document $entityClass;
+    protected string $entityClass;
 
     /**
      * Embedded type references
@@ -68,9 +69,9 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      * Decorator's constructor
      *
      * @param \Elastica\ResultSet $resultSet The results from Elastica to wrap
-     * @param \Elastica\Query $query The Elasticsearch Query object
+     * @param \Cake\ElasticSearch\Query $query The Elasticsearch Query object
      */
-    public function __construct(\Elastica\ResultSet $resultSet, \Elastica\Query $query)
+    public function __construct(ElasticaResultSet $resultSet, Query $query)
     {
         $this->resultSet = $resultSet;
         $this->queryObject = $query;

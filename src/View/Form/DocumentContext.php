@@ -167,7 +167,7 @@ class DocumentContext implements ContextInterface
     /**
      * @inheritDoc
      */
-    public function val(string $field, array $options = [])
+    public function val(string $field, array $options = []): mixed
     {
         $val = $this->_request->getData($field);
         if ($val !== null) {
@@ -188,16 +188,18 @@ class DocumentContext implements ContextInterface
         if ($this->_context['entity'] instanceof Document) {
             return Hash::get($this->_context['entity'], $field);
         }
+
+        return null;
     }
 
     /**
      * Get the entity that is closest to $path.
      *
      * @param array $path The to get an entity for.
-     * @return \Cake\Datasource\EntityInterface|false The entity or false.
+     * @return \Cake\Datasource\EntityInterface|array|false The entity or false.
      * @throws \RuntimeException when no entity can be found.
      */
-    protected function entity(array $path): EntityInterface|false
+    protected function entity(array $path): object|array|false
     {
         if ($path === null) {
             return $this->_context['entity'];
@@ -274,6 +276,8 @@ class DocumentContext implements ContextInterface
 
             return false;
         }
+
+        return null;
     }
 
     /**

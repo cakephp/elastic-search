@@ -516,7 +516,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     protected function _buildBoolQuery(string $partType, array|callable|AbstractQuery $conditions, bool $overwrite, string $type = 'addMust')
     {
-        if ($this->_queryParts[$partType] === null || $overwrite) {
+        if (!isset($this->_queryParts[$partType]) || $overwrite) {
             $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
         }
 
@@ -650,9 +650,9 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Compile the Elasticsearch query.
      *
-     * @return string The Elasticsearch query.
+     * @return Elastica\Query The Elasticsearch query.
      */
-    public function compileQuery(): string
+    public function compileQuery(): ElasticaQuery
     {
         if ($this->_queryParts['fields']) {
             $this->_elasticQuery->setSource($this->_queryParts['fields']);
@@ -684,17 +684,17 @@ class Query implements IteratorAggregate, QueryInterface
             }
         }
 
-        if ($this->_queryParts['query'] === null) {
+        if (!isset($this->_queryParts['query'])) {
             $this->_queryParts['query'] = new ElasticaQuery\BoolQuery();
         }
 
         $query = clone $this->_queryParts['query'];
 
-        if ($query instanceof ElasticaQuery\BoolQuery && $this->_queryParts['filter'] !== null) {
+        if ($query instanceof ElasticaQuery\BoolQuery && isset($this->_queryParts['filter'])) {
             $query->addFilter($this->_queryParts['filter']);
         }
 
-        if ($this->_queryParts['postFilter'] !== null) {
+        if (isset($this->_queryParts['postFilter'])) {
             $this->_elasticQuery->setPostFilter($this->_queryParts['postFilter']);
         }
 

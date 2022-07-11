@@ -283,7 +283,7 @@ class Connection implements ConnectionInterface
      */
     public function getCacher(): CacheInterface
     {
-        if ($this->cacher !== null) {
+        if (isset($this->cacher)) {
             return $this->cacher;
         }
 

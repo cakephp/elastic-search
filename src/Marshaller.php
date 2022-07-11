@@ -166,7 +166,7 @@ class Marshaller
      * @param array $data The data to marshal
      * @return \Cake\ElasticSearch\Document|array Either a document or an array of documents.
      */
-    protected function mergeNested(Embedded $embed, Document|array $existing, array $data): array|Document
+    protected function mergeNested(Embedded $embed, Document|array|null $existing, array $data): array|Document
     {
         $class = $embed->getEntityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
