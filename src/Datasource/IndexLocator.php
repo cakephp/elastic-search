@@ -52,7 +52,7 @@ class IndexLocator extends AbstractLocator
      * @return $this
      * @psalm-param class-string<\Cake\Elasticsearch\Index> $className
      */
-    public function setFallbackClassName($className)
+    public function setFallbackClassName(string $className)
     {
         $this->fallbackClassName = $className;
 
