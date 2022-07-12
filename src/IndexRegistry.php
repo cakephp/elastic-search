@@ -16,10 +16,7 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch;
 
-use Cake\Core\App;
-use Cake\Datasource\ConnectionManager;
-use Cake\Utility\Inflector;
-use RuntimeException;
+use Cake\ElasticSearch\Datasource\IndexLocator;
 
 /**
  * Factory/Registry class for Index objects.
@@ -28,29 +25,32 @@ use RuntimeException;
  * created and that the correct connection is injected in.
  *
  * Provides an interface similar to Cake\ORM\TableRegistry.
+ *
+ * @deprecated 3.4.3 Statically accesible registry is deprecated. Prefer using `IndexLocator`
+ *   alongside the `LocatorTrait` in CakePHP.
  */
 class IndexRegistry
 {
     /**
-     * The map of instances in the registry.
+     * The locator that the global registy is wrapping.
      *
-     * @var array
+     * @var \Cake\ElasticSearch\Cake\ElasticSearch\Datasource\IndexLocator
      */
-    protected static $instances = [];
+    protected static $locator;
 
     /**
-     * List of options by alias passed to get.
+     * Get the wrapped locator.
      *
-     * @var array
+     * @return \Cake\ElasticSearch\IndexLocator
      */
-    protected static $options = [];
+    protected static function getLocator(): IndexLocator
+    {
+        if (static::$locator === null) {
+            static::$locator = new IndexLocator();
+        }
 
-    /**
-     * Fallback class to use
-     *
-     * @var string
-     */
-    protected static $fallbackClassName = Index::class;
+        return static::$locator;
+    }
 
     /**
      * Set fallback class name.
@@ -64,7 +64,7 @@ class IndexRegistry
      */
     public static function setFallbackClassName($className)
     {
-        static::$fallbackClassName = $className;
+        static::getLocator()->setFallbackClassName($className);
     }
 
     /**
@@ -79,43 +79,7 @@ class IndexRegistry
      */
     public static function get($alias, array $options = [])
     {
-        if (isset(static::$instances[$alias])) {
-            if (!empty($options) && static::$options[$alias] !== $options) {
-                throw new RuntimeException(sprintf(
-                    'You cannot configure "%s", it already exists in the registry.',
-                    $alias
-                ));
-            }
-
-            return static::$instances[$alias];
-        }
-
-        static::$options[$alias] = $options;
-        [, $classAlias] = pluginSplit($alias);
-        $options += ['name' => Inflector::underscore($classAlias)];
-
-        if (empty($options['className'])) {
-            $options['className'] = Inflector::camelize($alias);
-        }
-        $className = App::className($options['className'], 'Model/Index', 'Index');
-        if ($className) {
-            $options['className'] = $className;
-        } else {
-            if (!isset($options['name']) && strpos($options['className'], '\\') === false) {
-                [, $name] = pluginSplit($options['className']);
-                $options['name'] = Inflector::underscore($name);
-            }
-            $options['className'] = static::$fallbackClassName;
-        }
-
-        if (empty($options['connection'])) {
-            $connectionName = $options['className']::defaultConnectionName();
-            $options['connection'] = ConnectionManager::get($connectionName);
-        }
-        $options['registryAlias'] = $alias;
-        static::$instances[$alias] = new $options['className']($options);
-
-        return static::$instances[$alias];
+        return static::getLocator()->get($alias, $options);
     }
 
     /**
@@ -126,7 +90,7 @@ class IndexRegistry
      */
     public static function exists($alias)
     {
-        return isset(static::$instances[$alias]);
+        return static::getLocator()->exists($alias);
     }
 
     /**
@@ -138,7 +102,7 @@ class IndexRegistry
      */
     public static function set($alias, Index $object)
     {
-        return static::$instances[$alias] = $object;
+        return static::getLocator()->set($alias, $object);
     }
 
     /**
@@ -148,7 +112,7 @@ class IndexRegistry
      */
     public static function clear()
     {
-        static::$instances = [];
+        static::getLocator()->clear();
     }
 
     /**
@@ -159,6 +123,6 @@ class IndexRegistry
      */
     public static function remove($alias)
     {
-        unset(static::$instances[$alias]);
+        static::getLocator()->remove($alias);
     }
 }
