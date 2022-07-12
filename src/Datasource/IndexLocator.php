@@ -83,11 +83,10 @@ class IndexLocator extends AbstractLocator
     protected function createInstance(string $alias, array $options)
     {
         [, $classAlias] = pluginSplit($alias);
-        $options += ['name' => Inflector::underscore($classAlias)];
-
-        if (empty($options['className'])) {
-            $options['className'] = Inflector::camelize($alias);
-        }
+        $options += [
+            'name' => Inflector::underscore($classAlias),
+            'className' => Inflector::camelize($alias),
+        ];
         $className = App::className($options['className'], 'Model/Index', 'Index');
         if ($className) {
             $options['className'] = $className;
