@@ -20,11 +20,9 @@ use Cake\Database\Log\LoggedQuery;
 use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Connection;
-use Cake\Log\Engine\BaseLog;
 use Psr\Log\AbstractLogger;
-use Psr\Log\LogLevel;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
+use Psr\Log\LogLevel;
 use Stringable;
 
 /**
@@ -85,11 +83,11 @@ class ElasticLogger extends AbstractLogger
      * Format log messages from the Elastica client _log method
      *
      * @param string $level The log level
-     * @param Stringable|string $message The log message
+     * @param \Stringable|string $message The log message
      * @param array $context log context
      * @return void
      */
-    public function log($level, Stringable|string $message, array $context = []): void
+    public function log(string $level, Stringable|string $message, array $context = []): void
     {
         if ($this->_connection->isQueryLoggingEnabled()) {
             $this->_log($level, $message, $context);

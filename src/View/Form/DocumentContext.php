@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\View\Form;
 
 use Cake\Collection\Collection;
-use Cake\Datasource\EntityInterface;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\IndexRegistry;
 use Cake\Http\ServerRequest;

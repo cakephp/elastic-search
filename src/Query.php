@@ -19,11 +19,11 @@ namespace Cake\ElasticSearch;
 use Cake\Datasource\QueryInterface;
 use Cake\Datasource\QueryTrait;
 use Cake\Datasource\ResultSetInterface;
+use Closure;
 use Elastica\Aggregation\AbstractAggregation;
 use Elastica\Collapse;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
-use Closure;
 use IteratorAggregate;
 
 class Query implements IteratorAggregate, QueryInterface
@@ -323,7 +323,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @return $this
      * @see \Cake\ElasticSearch\QueryBuilder
      */
-    public function where(Closure|array|string|null|AbstractQuery $conditions = null, array $types = [], bool $overwrite = false)
+    public function where(Closure|array|string|AbstractQuery|null $conditions = null, array $types = [], bool $overwrite = false)
     {
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
@@ -650,7 +650,7 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Compile the Elasticsearch query.
      *
-     * @return Elastica\Query The Elasticsearch query.
+     * @return \Cake\ElasticSearch\Elastica\Query The Elasticsearch query.
      */
     public function compileQuery(): ElasticaQuery
     {
