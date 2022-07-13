@@ -45,7 +45,7 @@ class Document implements EntityInterface
      * @param array $options An array of options to set the state of the
      *  document
      */
-    public function __construct(array|Result $data = [], array $options = [])
+    public function __construct(Result|array $data = [], array $options = [])
     {
         if ($data instanceof Result) {
             $options['result'] = $data;

@@ -460,7 +460,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param \Elastica\Collapse|string $collapse Collapse field or elastic collapse object
      * @return $this
      */
-    public function collapse(string|Collapse $collapse)
+    public function collapse(Collapse|string $collapse)
     {
         if (is_string($collapse)) {
             $collapse = (new Collapse())->setFieldname($collapse);
@@ -477,7 +477,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param \Elastica\Aggregation\AbstractAggregation|array $aggregation One or multiple facets
      * @return $this
      */
-    public function aggregate(array|AbstractAggregation $aggregation)
+    public function aggregate(AbstractAggregation|array $aggregation)
     {
         if (is_array($aggregation)) {
             foreach ($aggregation as $aggregationItem) {
@@ -519,7 +519,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     protected function _buildBoolQuery(
         string $partType,
-        array|callable|AbstractQuery $conditions,
+        AbstractQuery|callable|array $conditions,
         bool $overwrite,
         string $type = 'addMust'
     ) {

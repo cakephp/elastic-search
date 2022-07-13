@@ -251,7 +251,7 @@ class QueryBuilder
      * @return \Elastica\Query\HasChild
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-query.html
      */
-    public function hasChild(string|Query|AbstractQuery $query, string $type): HasChild
+    public function hasChild(Query|AbstractQuery|string $query, string $type): HasChild
     {
         return new Elastica\Query\HasChild($query, $type);
     }
@@ -264,7 +264,7 @@ class QueryBuilder
      * @return \Elastica\Query\HasParent
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-query.html
      */
-    public function hasParent(string|Query|AbstractQuery $query, string $type): HasParent
+    public function hasParent(Query|AbstractQuery|string $query, string $type): HasParent
     {
         return new Elastica\Query\HasParent($query, $type);
     }
@@ -443,7 +443,7 @@ class QueryBuilder
      * @return \Elastica\Query\Script
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-query.html
      */
-    public function script(array|string|AbstractScript $script): Script
+    public function script(AbstractScript|array|string $script): Script
     {
         return new Elastica\Query\Script($script);
     }

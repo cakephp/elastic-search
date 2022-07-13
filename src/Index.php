@@ -866,7 +866,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param array $options A list of options for the objects hydration.
      * @return array
      */
-    public function patchEntities(array|Traversable $entities, array $data, array $options = []): array
+    public function patchEntities(Traversable|array $entities, array $data, array $options = []): array
     {
         $marshaller = $this->marshaller();
 
