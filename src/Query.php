@@ -113,7 +113,7 @@ class Query implements IteratorAggregate, QueryInterface
      * If `true` is passed in the second argument, any previous selections
      * will be overwritten with the list passed in the first argument.
      *
-     * @param array $fields The list of fields to select from _source.
+     * @param \Closure|array|string|float|int $fields The list of fields to select from _source.
      * @param bool $overwrite Whether or not to replace previous selections.
      * @return $this
      */
@@ -131,7 +131,7 @@ class Query implements IteratorAggregate, QueryInterface
      * Sets the maximum number of results to return for this query.
      * This sets the `size` option for the Elasticsearch query.
      *
-     * @param int $limit The number of documents to return.
+     * @param int|null $limit The number of documents to return.
      * @return $this
      */
     public function limit(?int $limit)
@@ -223,7 +223,7 @@ class Query implements IteratorAggregate, QueryInterface
      * - ['name' => 'asc', 'price' => 'desc']
      * - 'field1' (defaults to order => 'desc')
      *
-     * @param array|string $order The sorting order to use.
+     * @param \Closure|array|string $order The sorting order to use.
      * @param bool $overwrite Whether or not to replace previous sorting.
      * @return $this
      */
@@ -270,7 +270,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param string $finder The finder method to use.
      * @param array $options The options for the finder.
-     * @return self
+     * @return static
      */
     public function find(string $finder = 'all', array $options = []): static
     {
@@ -317,7 +317,7 @@ class Query implements IteratorAggregate, QueryInterface
      *   $query->where(new \Elastica\Filter\Term('name.first', 'jose'));
      * }}{
      *
-     * @param \Elastica\Query\AbstractQuery|callable|array|null $conditions The list of conditions.
+     * @param \Elastica\Query\AbstractQuery|\Closure|array|null $conditions The list of conditions.
      * @param array $types Not used, required to comply with QueryInterface.
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
