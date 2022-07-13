@@ -34,18 +34,18 @@ class Document implements EntityInterface
      *
      * @var \Elastica\Result
      */
-    protected $_result;
+    protected Result $_result;
 
     /**
      * Takes either an array or a Result object form a search and constructs
      * a document representing an entity in a elastic search index,
      *
-     * @param array|\Elastica\Result $data An array or Result object that
+     * @param \Elastica\Result|array $data An array or Result object that
      *  represents an Elasticsearch document
      * @param array $options An array of options to set the state of the
      *  document
      */
-    public function __construct($data = [], $options = [])
+    public function __construct(Result|array $data = [], array $options = [])
     {
         if ($data instanceof Result) {
             $options['result'] = $data;
@@ -102,9 +102,9 @@ class Document implements EntityInterface
      *
      * @return string|null
      */
-    public function index()
+    public function index(): ?string
     {
-        if ($this->_result) {
+        if (isset($this->_result)) {
             return $this->_result->getIndex();
         }
 
@@ -118,9 +118,9 @@ class Document implements EntityInterface
      *
      * @return int
      */
-    public function version()
+    public function version(): int
     {
-        if ($this->_result) {
+        if (isset($this->_result)) {
             return $this->_result->getVersion();
         }
 
@@ -136,9 +136,9 @@ class Document implements EntityInterface
      *
      * @return array
      */
-    public function highlights()
+    public function highlights(): array
     {
-        if ($this->_result) {
+        if (isset($this->_result)) {
             return $this->_result->getHighlights();
         }
 
@@ -153,9 +153,9 @@ class Document implements EntityInterface
      *
      * @return array
      */
-    public function explanation()
+    public function explanation(): array
     {
-        if ($this->_result) {
+        if (isset($this->_result)) {
             return $this->_result->getExplanation();
         }
 

@@ -35,12 +35,12 @@ class MappingGenerator
     /**
      * @var string
      */
-    protected $file;
+    protected string $file;
 
     /**
      * @var string
      */
-    protected $connection;
+    protected string $connection;
 
     /**
      * Constructor
@@ -57,7 +57,7 @@ class MappingGenerator
     /**
      * Drop and re-create indexes defined in the mapping schema file.
      *
-     * @param string[] $indexes A subset of indexes to reload. Used for testing.
+     * @param array<string> $indexes A subset of indexes to reload. Used for testing.
      * @return void
      */
     public function reload(?array $indexes = null): void

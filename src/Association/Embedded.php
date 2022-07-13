@@ -34,28 +34,28 @@ abstract class Embedded
      *
      * @var string
      */
-    protected $alias;
+    protected string $alias;
 
     /**
      * The class to use for the embeded document.
      *
      * @var string
      */
-    protected $entityClass;
+    protected string $entityClass;
 
     /**
      * The property the embedded document is located under.
      *
      * @var string
      */
-    protected $property;
+    protected string $property;
 
     /**
      * The index class this embed is linked to
      *
      * @var string
      */
-    protected $indexClass;
+    protected string $indexClass;
 
     /**
      * Constructor
@@ -63,7 +63,7 @@ abstract class Embedded
      * @param string $alias The alias/name for the embedded document.
      * @param array $options The options for the embedded document.
      */
-    public function __construct($alias, $options = [])
+    public function __construct(string $alias, array $options = [])
     {
         $this->alias = $alias;
         $properties = [
@@ -86,9 +86,9 @@ abstract class Embedded
      *
      * @return string The property name.
      */
-    public function getProperty()
+    public function getProperty(): string
     {
-        if (!$this->property) {
+        if (!isset($this->property)) {
             $this->property = Inflector::underscore($this->alias);
         }
 
@@ -99,9 +99,9 @@ abstract class Embedded
      * Set the property this embed is attached to.
      *
      * @param string|null $name The property name to set.
-     * @return string The property name.
+     * @return $this
      */
-    public function setProperty($name = null)
+    public function setProperty(?string $name = null)
     {
         $this->property = $name;
 
@@ -115,9 +115,10 @@ abstract class Embedded
      * @param string|null $name The property name to set.
      * @return string The property name.
      */
-    public function property($name = null)
+    public function property(?string $name = null): string
     {
         deprecationWarning(
+            '3.3.0',
             static::class . '::property() is deprecated. ' .
             'Use setProperty()/getProperty() instead.'
         );
@@ -134,9 +135,9 @@ abstract class Embedded
      *
      * @return string The class name.
      */
-    public function getEntityClass()
+    public function getEntityClass(): string
     {
-        if (!$this->entityClass) {
+        if (!isset($this->entityClass)) {
             $default = Document::class;
             $self = static::class;
             $parts = explode('\\', $self);
@@ -164,10 +165,10 @@ abstract class Embedded
      * @param string $name The name of the class to use
      * @return $this
      */
-    public function setEntityClass($name)
+    public function setEntityClass(string $name)
     {
         $class = App::className($name, 'Model/Document');
-        $this->entityClass = $class;
+        $this->entityClass = $class ?? Document::class;
 
         return $this;
     }
@@ -179,9 +180,10 @@ abstract class Embedded
      * @param string|null $name The class name to set.
      * @return string The class name.
      */
-    public function entityClass($name = null)
+    public function entityClass(?string $name = null): string
     {
         deprecationWarning(
+            '3.3',
             static::class . '::entityClass() is deprecated. ' .
             'Use setEntityClass()/getEntityClass() instead.'
         );
@@ -198,9 +200,9 @@ abstract class Embedded
      *
      * @return string The class name.
      */
-    public function getIndexClass()
+    public function getIndexClass(): string
     {
-        if (!$this->indexClass) {
+        if (!isset($this->indexClass)) {
             $alias = Inflector::pluralize($this->alias);
             $class = App::className($alias . 'Index', 'Model/Index');
 
@@ -217,10 +219,10 @@ abstract class Embedded
     /**
      * Set the index class used for this embed.
      *
-     * @param string|null|\Cake\ElasticSearch\Index $name The class name to set.
+     * @param \Cake\ElasticSearch\Index|string|null $name The class name to set.
      * @return $this
      */
-    public function setIndexClass($name)
+    public function setIndexClass(string|Index|null $name)
     {
         if ($name instanceof Index) {
             $this->indexClass = get_class($name);
@@ -236,12 +238,13 @@ abstract class Embedded
      * Get/set the index class used for this embed.
      *
      * @deprecated 3.2.0 Use setIndexClass()/getIndexClass() instead.
-     * @param string|null|\Cake\ElasticSearch\Index $name The class name to set.
+     * @param \Cake\ElasticSearch\Index|string|null $name The class name to set.
      * @return string The class name.
      */
-    public function indexClass($name = null)
+    public function indexClass(string|Index|null $name = null): string
     {
         deprecationWarning(
+            '3.3.0',
             static::class . '::indexClass() is deprecated. ' .
             'Use setIndexClass()/getIndexClass() instead.'
         );
@@ -258,7 +261,7 @@ abstract class Embedded
      *
      * @return string
      */
-    public function getAlias()
+    public function getAlias(): string
     {
         return $this->alias;
     }
@@ -270,7 +273,7 @@ abstract class Embedded
      * @param array $options The options to use in the new document.
      * @return \Cake\ElasticSearch\Document|array
      */
-    abstract public function hydrate(array $data, $options);
+    abstract public function hydrate(array $data, array $options): Document|array;
 
     /**
      * Get the type of association this is.
@@ -279,5 +282,5 @@ abstract class Embedded
      *
      * @return string
      */
-    abstract public function type();
+    abstract public function type(): string;
 }

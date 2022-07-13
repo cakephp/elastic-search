@@ -17,9 +17,13 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Datasource\Log;
 
 use Cake\Database\Log\LoggedQuery;
+use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionInterface;
+use Cake\ElasticSearch\Datasource\Connection;
 use Psr\Log\AbstractLogger;
+use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Stringable;
 
 /**
  * Adapter to convert elastic logs to QueryLogger readable content
@@ -29,24 +33,24 @@ class ElasticLogger extends AbstractLogger
     /**
      * Holds the logger instance
      *
-     * @var \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog
+     * @var \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface
      */
-    protected $_logger;
+    protected QueryLogger|LoggerInterface $_logger;
 
     /**
      * Holds the connection instance
      *
      * @var \Cake\ElasticSearch\Datasource\Connection
      */
-    protected $_connection;
+    protected Connection $_connection;
 
     /**
      * Constructor, set the QueryLogger instance
      *
-     * @param \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog $logger Instance of the QueryLogger
+     * @param \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface $logger Instance of the QueryLogger
      * @param \Cake\Datasource\ConnectionInterface $connection Current connection instance
      */
-    public function __construct($logger, ConnectionInterface $connection)
+    public function __construct(QueryLogger|LoggerInterface $logger, ConnectionInterface $connection)
     {
         $this->setLogger($logger);
         $this->_connection = $connection;
@@ -55,10 +59,10 @@ class ElasticLogger extends AbstractLogger
     /**
      * Set the current cake logger
      *
-     * @param \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog $logger Set logger instance to pass logging data to
+     * @param \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface $logger Set logger instance to pass logging data to
      * @return $this
      */
-    public function setLogger($logger)
+    public function setLogger(QueryLogger|LoggerInterface $logger)
     {
         $this->_logger = $logger;
 
@@ -68,9 +72,9 @@ class ElasticLogger extends AbstractLogger
     /**
      * Return the current logger
      *
-     * @return \Cake\Database\Log\QueryLogger|\Cake\Log\Engine\BaseLog|\Psr\Log\NullLogger [description]
+     * @return \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface [description]
      */
-    public function getLogger()
+    public function getLogger(): QueryLogger|LoggerInterface
     {
         return $this->_logger;
     }
@@ -78,12 +82,12 @@ class ElasticLogger extends AbstractLogger
     /**
      * Format log messages from the Elastica client _log method
      *
-     * @param string $level The log level
-     * @param string $message The log message
+     * @param mixed $level The log level
+     * @param \Stringable|string $message The log message
      * @param array $context log context
      * @return void
      */
-    public function log($level, $message, array $context = [])
+    public function log(mixed $level, Stringable|string $message, array $context = []): void
     {
         if ($this->_connection->isQueryLoggingEnabled()) {
             $this->_log($level, $message, $context);
@@ -111,7 +115,7 @@ class ElasticLogger extends AbstractLogger
      * @param array $context log context
      * @return void
      */
-    protected function _log($level, $message, array $context = [])
+    protected function _log(string $level, string $message, array $context = []): void
     {
         $logData = $context;
         if (LogLevel::DEBUG && isset($context['request'])) {
@@ -132,9 +136,11 @@ class ElasticLogger extends AbstractLogger
                 $numRows = $context['response']['hits']['total'];
             }
             $message = new LoggedQuery();
-            $message->query = $logData;
-            $message->took = $took;
-            $message->numRows = $numRows;
+            $message->setContext([
+                'query' => $logData,
+                'took' => $took,
+                'numRows' => $numRows,
+            ]);
 
             $context['query'] = $message;
         }

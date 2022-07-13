@@ -14,9 +14,9 @@ class EmbedMany extends Embedded
      *
      * @param array $data The data to use in the embedded document.
      * @param array $options The options to use in the new document.
-     * @return \Cake\ElasticSearch\Document
+     * @return array<\Cake\ElasticSearch\Document>
      */
-    public function hydrate(array $data, $options)
+    public function hydrate(array $data, array $options): array
     {
         $class = $this->getEntityClass();
         $out = [];
@@ -32,7 +32,7 @@ class EmbedMany extends Embedded
     /**
      * @inheritDoc
      */
-    public function type()
+    public function type(): string
     {
         return static::ONE_TO_MANY;
     }

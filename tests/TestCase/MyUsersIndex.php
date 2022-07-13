@@ -28,5 +28,5 @@ class MyUsersIndex extends Index
      *
      * @var string
      */
-    protected $_name = 'users';
+    protected string $_name = 'users';
 }
