@@ -180,8 +180,11 @@ class QueryBuilder
      * @return \Elastica\Query\GeoShapeProvided
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
-    public function geoShape(string $field, array $geoPoints, string $type = Elastica\Query\GeoShapeProvided::TYPE_ENVELOPE): GeoShapeProvided
-    {
+    public function geoShape(
+        string $field,
+        array $geoPoints,
+        string $type = Elastica\Query\GeoShapeProvided::TYPE_ENVELOPE
+    ): GeoShapeProvided {
         return new Elastica\Query\GeoShapeProvided($field, $geoPoints, $type);
     }
 
@@ -202,8 +205,12 @@ class QueryBuilder
      * @return \Elastica\Query\GeoShapePreIndexed
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
-    public function geoShapeIndex(string $field, string $id, string $index = 'shapes', string $path = 'shape'): GeoShapePreIndexed
-    {
+    public function geoShapeIndex(
+        string $field,
+        string $id,
+        string $index = 'shapes',
+        string $path = 'shape'
+    ): GeoShapePreIndexed {
         return new Elastica\Query\GeoShapePreIndexed($field, $id, $index, $path);
     }
 

@@ -57,7 +57,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @var \Elastica\Query
      */
-    protected \Elastica\Query $_elasticQuery;
+    protected ElasticaQuery $_elasticQuery;
 
     /**
      * The various query builder parts that will
@@ -270,7 +270,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param string $finder The finder method to use.
      * @param array $options The options for the finder.
-     * @return \Cake\ElasticSearch\Query
+     * @return self
      */
     public function find(string $finder = 'all', array $options = []): static
     {
@@ -323,8 +323,11 @@ class Query implements IteratorAggregate, QueryInterface
      * @return $this
      * @see \Cake\ElasticSearch\QueryBuilder
      */
-    public function where(Closure|array|string|AbstractQuery|null $conditions = null, array $types = [], bool $overwrite = false)
-    {
+    public function where(
+        Closure|array|string|AbstractQuery|null $conditions = null,
+        array $types = [],
+        bool $overwrite = false
+    ) {
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
 
@@ -398,9 +401,9 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param \Elastica\Query\AbstractQuery|callable|array $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
-     * @return \Cake\ElasticSearch\Query
+     * @return $this
      */
-    public function queryMust(array|callable|AbstractQuery $conditions, bool $overwrite = false): Query
+    public function queryMust(array|callable|AbstractQuery $conditions, bool $overwrite = false)
     {
         return $this->_buildBoolQuery('query', $conditions, $overwrite);
     }
@@ -414,9 +417,9 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param \Elastica\Query\AbstractQuery|callable|array $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
-     * @return \Cake\ElasticSearch\Query
+     * @return $this
      */
-    public function queryShould(array|callable|AbstractQuery $conditions, bool $overwrite = false): Query
+    public function queryShould(array|callable|AbstractQuery $conditions, bool $overwrite = false)
     {
         return $this->_buildBoolQuery('query', $conditions, $overwrite, 'addShould');
     }
@@ -514,8 +517,12 @@ class Query implements IteratorAggregate, QueryInterface
      * @param string $type The method to use for appending the conditions to the Query
      * @return $this
      */
-    protected function _buildBoolQuery(string $partType, array|callable|AbstractQuery $conditions, bool $overwrite, string $type = 'addMust')
-    {
+    protected function _buildBoolQuery(
+        string $partType,
+        array|callable|AbstractQuery $conditions,
+        bool $overwrite,
+        string $type = 'addMust'
+    ) {
         if (!isset($this->_queryParts[$partType]) || $overwrite) {
             $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
         }

@@ -18,6 +18,7 @@ namespace Cake\ElasticSearch;
 
 use Cake\Collection\CollectionTrait;
 use Cake\Datasource\ResultSetInterface;
+use Elastica\Query as ElasticaQuery;
 use Elastica\Response;
 use Elastica\ResultSet as ElasticaResultSet;
 use IteratorIterator;
@@ -191,7 +192,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      *
      * @return \Elastica\Query
      */
-    public function getQuery(): \Elastica\Query
+    public function getQuery(): ElasticaQuery
     {
         return $this->resultSet->getQuery();
     }

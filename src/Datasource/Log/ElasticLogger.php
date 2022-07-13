@@ -82,12 +82,12 @@ class ElasticLogger extends AbstractLogger
     /**
      * Format log messages from the Elastica client _log method
      *
-     * @param string $level The log level
+     * @param mixed $level The log level
      * @param \Stringable|string $message The log message
      * @param array $context log context
      * @return void
      */
-    public function log(string $level, Stringable|string $message, array $context = []): void
+    public function log(mixed $level, Stringable|string $message, array $context = []): void
     {
         if ($this->_connection->isQueryLoggingEnabled()) {
             $this->_log($level, $message, $context);

@@ -78,8 +78,12 @@ class Marshaller
      * @param string $indexClass Index class to get embeds from (for nesting)
      * @return \Cake\ElasticSearch\Document
      */
-    protected function createAndHydrate(string $class, array $data, array $options = [], ?string $indexClass = null): Document
-    {
+    protected function createAndHydrate(
+        string $class,
+        array $data,
+        array $options = [],
+        ?string $indexClass = null
+    ): Document {
         $entity = new $class();
 
         $options += ['associated' => []];
