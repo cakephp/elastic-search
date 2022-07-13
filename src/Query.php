@@ -131,7 +131,7 @@ class Query implements IteratorAggregate, QueryInterface
      * Sets the maximum number of results to return for this query.
      * This sets the `size` option for the Elasticsearch query.
      *
-     * @param int|null $limit The number of documents to return.
+     * @param ?int $limit The number of documents to return.
      * @return $this
      */
     public function limit(?int $limit)
@@ -145,7 +145,7 @@ class Query implements IteratorAggregate, QueryInterface
      * Sets the number of records that should be skipped from the original result set
      * This is commonly used for paginating large results. Accepts an integer.
      *
-     * @param int $num The number of records to be skipped
+     * @param ?int $num The number of records to be skipped
      * @return $this
      */
     public function offset(?int $num)

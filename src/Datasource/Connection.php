@@ -332,7 +332,7 @@ class Connection implements ConnectionInterface
      * @see \Cake\Datasource\ConnectionInterface::getDriver()
      * @return \Elastica\Client
      */
-    public function getDriver(): Client
+    public function getDriver(): ElasticaClient
     {
         return $this->_client;
     }
