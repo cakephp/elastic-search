@@ -829,25 +829,6 @@ class Query implements IteratorAggregate, QueryInterface
     }
 
     /**
-     * Set the result set for a query.
-     *
-     * Setting the resultset of a query will make execute() a no-op. Instead
-     * of executing the SQL query and fetching results, the ResultSet provided to this
-     * method will be returned.
-     *
-     * This method is most useful when combined with results stored in a persistent cache.
-     *
-     * @param iterable $results The results this query should return.
-     * @return $this
-     */
-    public function setResult(iterable $results)
-    {
-        $this->_results = $results;
-
-        return $this;
-    }
-
-    /**
      * Executes this query and returns a results iterator. This function is required
      * for implementing the IteratorAggregate interface and allows the query to be
      * iterated without having to call execute() manually, thus making it look like
