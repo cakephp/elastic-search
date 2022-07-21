@@ -27,8 +27,8 @@ use Elastica\Aggregation\AbstractAggregation;
 use Elastica\Collapse;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
-use IteratorAggregate;
 use InvalidArgumentException;
+use IteratorAggregate;
 use Psr\SimpleCache\CacheInterface;
 use Traversable;
 
