@@ -1,7 +1,7 @@
 # Basic docker based environment
 # Necessary to trick dokku into building the documentation
 # using dockerfile instead of herokuish
-FROM ubuntu:21.10
+FROM ubuntu:22.04
 
 ENV TZ="Etc/UTC"
 RUN apt-get update && \
@@ -32,9 +32,8 @@ RUN LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php && \
     php8.1-curl \
     composer
 
-RUN composer self-update && \
-  # This prevents permission errors with the mounted vendor directory.
-  git config --global --add safe.directory /code/vendor/cakephp/cakephp
+# This prevents permission errors with the mounted vendor directory.
+RUN git config --global --add safe.directory /code/vendor/cakephp/cakephp
 
 WORKDIR /code
 
