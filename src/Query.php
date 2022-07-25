@@ -986,12 +986,6 @@ class Query implements IteratorAggregate, QueryInterface
      * modified at will. The second one being the query instance on which the formatter
      * callback is being applied.
      *
-     * Usually the query instance received by the formatter callback is the same query
-     * instance on which the callback was attached to, except for in a joined
-     * association, in that case the callback will be invoked on the association source
-     * side query, and it will receive that query instance instead of the one on which
-     * the callback was originally attached to - see the examples below!
-     *
      * ### Examples:
      *
      * Return all results from the table indexed by id:
@@ -1010,49 +1004,6 @@ class Query implements IteratorAggregate, QueryInterface
      *         $row['age'] = $row['birth_date']->diff(new DateTime)->y;
      *
      *         return $row;
-     *     });
-     * });
-     * ```
-     *
-     * Add a new column to the results with respect to the query's hydration configuration:
-     *
-     * ```
-     * $query->formatResults(function ($results, $query) {
-     *     return $results->map(function ($row) use ($query) {
-     *         $data = [
-     *             'bar' => 'baz',
-     *         ];
-     *
-     *         if ($query->isHydrationEnabled()) {
-     *             $row['foo'] = new Foo($data)
-     *         } else {
-     *             $row['foo'] = $data;
-     *         }
-     *
-     *         return $row;
-     *     });
-     * });
-     * ```
-     *
-     * Retaining access to the association target query instance of joined associations,
-     * by inheriting the contain callback's query argument:
-     *
-     * ```
-     * // Assuming a `Articles belongsTo Authors` association that uses the join strategy
-     *
-     * $articlesQuery->contain('Authors', function ($authorsQuery) {
-     *     return $authorsQuery->formatResults(function ($results, $query) use ($authorsQuery) {
-     *         // Here `$authorsQuery` will always be the instance
-     *         // where the callback was attached to.
-     *
-     *         // The instance passed to the callback in the second
-     *         // argument (`$query`), will be the one where the
-     *         // callback is actually being applied to, in this
-     *         // example that would be `$articlesQuery`.
-     *
-     *         // ...
-     *
-     *         return $results;
      *     });
      * });
      * ```
