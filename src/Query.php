@@ -146,13 +146,6 @@ class Query implements IteratorAggregate, QueryInterface
     protected array $_options = [];
 
     /**
-     * Whether the query is standalone or the product of an eager load operation.
-     *
-     * @var bool
-     */
-    protected bool $_eagerLoaded = false;
-
-    /**
      * Query constructor
      *
      * @param \Cake\ElasticSearch\Index $repository The type of document.
@@ -885,30 +878,6 @@ class Query implements IteratorAggregate, QueryInterface
             return $this;
         }
         $this->_cache = new QueryCacher($key, $config);
-
-        return $this;
-    }
-
-    /**
-     * Returns the current configured query `_eagerLoaded` value
-     *
-     * @return bool
-     */
-    public function isEagerLoaded(): bool
-    {
-        return $this->_eagerLoaded;
-    }
-
-    /**
-     * Sets the query instance to be an eager loaded query. If no argument is
-     * passed, the current configured query `_eagerLoaded` value is returned.
-     *
-     * @param bool $value Whether to eager load.
-     * @return $this
-     */
-    public function eagerLoaded(bool $value)
-    {
-        $this->_eagerLoaded = $value;
 
         return $this;
     }
