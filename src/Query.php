@@ -16,20 +16,24 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch;
 
+use Cake\Collection\Iterator\MapReduce;
+use Cake\Datasource\Exception\RecordNotFoundException;
+use Cake\Datasource\QueryCacher;
 use Cake\Datasource\QueryInterface;
-use Cake\Datasource\QueryTrait;
+use Cake\Datasource\RepositoryInterface;
 use Cake\Datasource\ResultSetInterface;
 use Closure;
 use Elastica\Aggregation\AbstractAggregation;
 use Elastica\Collapse;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
+use InvalidArgumentException;
 use IteratorAggregate;
+use Psr\SimpleCache\CacheInterface;
+use Traversable;
 
 class Query implements IteratorAggregate, QueryInterface
 {
-    use QueryTrait;
-
     /**
      * Indicates that the operation should append to the list
      *
@@ -92,6 +96,54 @@ class Query implements IteratorAggregate, QueryInterface
      * @var array
      */
     protected array $_searchOptions = [];
+
+    /**
+     * Instance of a repository object this query is bound to.
+     *
+     * @var \Cake\ElasticSearch\Index
+     */
+    protected Index $_repository;
+
+    /**
+     * A ResultSet.
+     *
+     * When set, query execution will be bypassed.
+     *
+     * @var iterable|null
+     * @see \Cake\Datasource\QueryTrait::setResult()
+     */
+    protected ?iterable $_results = null;
+
+    /**
+     * List of map-reduce routines that should be applied over the query
+     * result
+     *
+     * @var array
+     */
+    protected array $_mapReduce = [];
+
+    /**
+     * List of formatter classes or callbacks that will post-process the
+     * results when fetched
+     *
+     * @var array<\Closure>
+     */
+    protected array $_formatters = [];
+
+    /**
+     * A query cacher instance if this query has caching enabled.
+     *
+     * @var \Cake\Datasource\QueryCacher|null
+     */
+    protected ?QueryCacher $_cache = null;
+
+    /**
+     * Holds any custom options passed using applyOptions that could not be processed
+     * by any method in this class.
+     *
+     * @var array
+     */
+    protected array $_options = [];
 
     /**
      * Query constructor
@@ -742,5 +794,363 @@ class Query implements IteratorAggregate, QueryInterface
         $query->setSource(false);
 
         return $esIndex->search($query)->getTotalHits();
+    }
+
+    /**
+     * Set the default repository object that will be used by this query.
+     *
+     * @param \Cake\Datasource\RepositoryInterface $repository The default repository object to use.
+     * @return $this
+     */
+    public function repository(RepositoryInterface $repository)
+    {
+        assert($repository instanceof Index, 'ElasticSearch\Query requires an Index subclass');
+        $this->_repository = $repository;
+
+        return $this;
+    }
+
+    /**
+     * Returns the default repository object that will be used by this query,
+     * that is, the table that will appear in the from clause.
+     *
+     * @return \Cake\Datasource\RepositoryInterface
+     */
+    public function getRepository(): RepositoryInterface
+    {
+        return $this->_repository;
+    }
+
+    /**
+     * Executes this query and returns a results iterator. This function is required
+     * for implementing the IteratorAggregate interface and allows the query to be
+     * iterated without having to call execute() manually, thus making it look like
+     * a result set instead of the query itself.
+     *
+     * @return \Traversable
+     */
+    public function getIterator(): Traversable
+    {
+        return $this->all();
+    }
+
+    /**
+     * Enable result caching for this query.
+     *
+     * If a query has caching enabled, it will do the following when executed:
+     *
+     * - Check the cache for $key. If there are results no SQL will be executed.
+     *   Instead the cached results will be returned.
+     * - When the cached data is stale/missing the result set will be cached as the query
+     *   is executed.
+     *
+     * ### Usage
+     *
+     * ```
+     * // Simple string key + config
+     * $query->cache('my_key', 'db_results');
+     *
+     * // Function to generate key.
+     * $query->cache(function ($q) {
+     *   $key = serialize($q->clause('select'));
+     *   $key .= serialize($q->clause('where'));
+     *   return md5($key);
+     * });
+     *
+     * // Using a pre-built cache engine.
+     * $query->cache('my_key', $engine);
+     *
+     * // Disable caching
+     * $query->cache(false);
+     * ```
+     *
+     * @param \Closure|string|false $key Either the cache key or a function to generate the cache key.
+     *   When using a function, this query instance will be supplied as an argument.
+     * @param \Psr\SimpleCache\CacheInterface|string $config Either the name of the cache config to use, or
+     *   a cache engine instance.
+     * @return $this
+     */
+    public function cache(Closure|string|false $key, CacheInterface|string $config = 'default')
+    {
+        if ($key === false) {
+            $this->_cache = null;
+
+            return $this;
+        }
+        $this->_cache = new QueryCacher($key, $config);
+
+        return $this;
+    }
+
+    /**
+     * Fetch the results for this query.
+     *
+     * Will return either the results set through setResult(), or execute this query
+     * and return the ResultSetDecorator object ready for streaming of results.
+     *
+     * ResultSetDecorator is a traversable object that implements the methods found
+     * on Cake\Collection\Collection.
+     *
+     * @return \Cake\Datasource\ResultSetInterface
+     */
+    public function all(): ResultSetInterface
+    {
+        if ($this->_results !== null) {
+            if (!($this->_results instanceof ResultSetInterface)) {
+                $this->_results = $this->decorateResults($this->_results);
+            }
+
+            return $this->_results;
+        }
+
+        $results = null;
+        if ($this->_cache) {
+            $results = $this->_cache->fetch($this);
+        }
+        if ($results === null) {
+            $results = $this->decorateResults($this->_execute());
+            if ($this->_cache) {
+                $this->_cache->store($this, $results);
+            }
+        }
+        $this->_results = $results;
+
+        return $this->_results;
+    }
+
+    /**
+     * Returns an array representation of the results after executing the query.
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return $this->all()->toArray();
+    }
+
+    /**
+     * Register a new MapReduce routine to be executed on top of the database results
+     *
+     * The MapReduce routing will only be run when the query is executed and the first
+     * result is attempted to be fetched.
+     *
+     * If the third argument is set to true, it will erase previous map reducers
+     * and replace it with the arguments passed.
+     *
+     * @param \Closure|null $mapper The mapper function
+     * @param \Closure|null $reducer The reducing function
+     * @param bool $overwrite Set to true to overwrite existing map + reduce functions.
+     * @return $this
+     * @see \Cake\Collection\Iterator\MapReduce for details on how to use emit data to the map reducer.
+     */
+    public function mapReduce(?Closure $mapper = null, ?Closure $reducer = null, bool $overwrite = false)
+    {
+        if ($overwrite) {
+            $this->_mapReduce = [];
+        }
+        if ($mapper === null) {
+            if (!$overwrite) {
+                throw new InvalidArgumentException('$mapper can be null only when $overwrite is true.');
+            }
+
+            return $this;
+        }
+        $this->_mapReduce[] = compact('mapper', 'reducer');
+
+        return $this;
+    }
+
+    /**
+     * Returns the list of previously registered map reduce routines.
+     *
+     * @return array
+     */
+    public function getMapReducers(): array
+    {
+        return $this->_mapReduce;
+    }
+
+    /**
+     * Registers a new formatter callback function that is to be executed when trying
+     * to fetch the results from the database.
+     *
+     * If the second argument is set to true, it will erase previous formatters
+     * and replace them with the passed first argument.
+     *
+     * Callbacks are required to return an iterator object, which will be used as
+     * the return value for this query's result. Formatter functions are applied
+     * after all the `MapReduce` routines for this query have been executed.
+     *
+     * Formatting callbacks will receive two arguments, the first one being an object
+     * implementing `\Cake\Collection\CollectionInterface`, that can be traversed and
+     * modified at will. The second one being the query instance on which the formatter
+     * callback is being applied.
+     *
+     * ### Examples:
+     *
+     * Return all results from the table indexed by id:
+     *
+     * ```
+     * $query->select(['id', 'name'])->formatResults(function ($results) {
+     *     return $results->indexBy('id');
+     * });
+     * ```
+     *
+     * Add a new column to the ResultSet:
+     *
+     * ```
+     * $query->select(['name', 'birth_date'])->formatResults(function ($results) {
+     *     return $results->map(function ($row) {
+     *         $row['age'] = $row['birth_date']->diff(new DateTime)->y;
+     *
+     *         return $row;
+     *     });
+     * });
+     * ```
+     *
+     * @param \Closure|null $formatter The formatting function
+     * @param int|bool $mode Whether to overwrite, append or prepend the formatter.
+     * @return $this
+     * @throws \InvalidArgumentException
+     */
+    public function formatResults(?Closure $formatter = null, int|bool $mode = self::APPEND)
+    {
+        if ($mode === self::OVERWRITE) {
+            $this->_formatters = [];
+        }
+        if ($formatter === null) {
+            /** @psalm-suppress RedundantCondition */
+            if ($mode !== self::OVERWRITE) {
+                throw new InvalidArgumentException('$formatter can be null only when $mode is overwrite.');
+            }
+
+            return $this;
+        }
+
+        if ($mode === self::PREPEND) {
+            array_unshift($this->_formatters, $formatter);
+
+            return $this;
+        }
+
+        $this->_formatters[] = $formatter;
+
+        return $this;
+    }
+
+    /**
+     * Returns the list of previously registered format routines.
+     *
+     * @return array<\Closure>
+     */
+    public function getResultFormatters(): array
+    {
+        return $this->_formatters;
+    }
+
+    /**
+     * Returns the first result out of executing this query, if the query has not been
+     * executed before, it will set the limit clause to 1 for performance reasons.
+     *
+     * ### Example:
+     *
+     * ```
+     * $singleUser = $query->select(['id', 'username'])->first();
+     * ```
+     *
+     * @return mixed The first result from the ResultSet.
+     */
+    public function first(): mixed
+    {
+        if ($this->_dirty) {
+            $this->limit(1);
+        }
+
+        return $this->all()->first();
+    }
+
+    /**
+     * Get the first result from the executing query or raise an exception.
+     *
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When there is no first record.
+     * @return mixed The first result from the ResultSet.
+     */
+    public function firstOrFail(): mixed
+    {
+        $entity = $this->first();
+        if (!$entity) {
+            $table = $this->getRepository();
+            throw new RecordNotFoundException(sprintf(
+                'Record not found in table "%s"',
+                $table->getTable()
+            ));
+        }
+
+        return $entity;
+    }
+
+    /**
+     * Returns an array with the custom options that were applied to this query
+     * and that were not already processed by another method in this class.
+     *
+     * ### Example:
+     *
+     * ```
+     *  $query->applyOptions(['doABarrelRoll' => true, 'fields' => ['id', 'name']);
+     *  $query->getOptions(); // Returns ['doABarrelRoll' => true]
+     * ```
+     *
+     * @see \Cake\Datasource\QueryInterface::applyOptions() to read about the options that will
+     * be processed by this class and not returned by this function
+     * @return array
+     * @see applyOptions()
+     */
+    public function getOptions(): array
+    {
+        return $this->_options;
+    }
+
+    /**
+     * Decorates the results iterator with MapReduce routines and formatters
+     *
+     * @param iterable $result Original results
+     * @return \Cake\Datasource\ResultSetInterface
+     */
+    protected function decorateResults(iterable $result): ResultSetInterface
+    {
+        $decorator = $this->decoratorClass();
+
+        if (!empty($this->_mapReduce)) {
+            foreach ($this->_mapReduce as $functions) {
+                $result = new MapReduce($result, $functions['mapper'], $functions['reducer']);
+            }
+            $result = new $decorator($result);
+        }
+
+        if (!($result instanceof ResultSetInterface)) {
+            $result = new $decorator($result);
+        }
+
+        if (!empty($this->_formatters)) {
+            foreach ($this->_formatters as $formatter) {
+                $result = $formatter($result, $this);
+            }
+
+            if (!($result instanceof ResultSetInterface)) {
+                $result = new $decorator($result);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Returns the name of the class to be used for decorating results
+     *
+     * @return class-string<\Cake\Datasource\ResultSetInterface>
+     */
+    protected function decoratorClass(): string
+    {
+        return ResultSetDecorator::class;
     }
 }
