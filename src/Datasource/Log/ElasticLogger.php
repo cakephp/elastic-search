@@ -124,19 +124,20 @@ class ElasticLogger extends AbstractLogger
         $logData = json_encode($logData, JSON_PRETTY_PRINT);
 
         if (isset($context['request'], $context['response'])) {
-            $took = $numRows = 0;
+            $took = 0;
+            $numRows = $context['response']['hits']['total']['value'] ?? $context['response']['hits']['total'] ?? 0;
             if (isset($context['response']['took'])) {
                 $took = $context['response']['took'];
-            }
-            if (isset($context['response']['hits']['total'])) {
-                $numRows = $context['response']['hits']['total'];
             }
             $message = new LoggedQuery();
             $message->query = $logData;
             $message->took = $took;
             $message->numRows = $numRows;
-
             $context['query'] = $message;
+        }
+        $exception = $context['exception'] ?? null;
+        if ($exception instanceof \Exception) {
+            throw $exception;
         }
         $this->getLogger()->log($level, $logData, $context);
     }
