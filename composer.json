@@ -22,7 +22,7 @@
         "ruflin/elastica": "^7.1"
     },
     "require-dev": {
-        "cakephp/cakephp-codesniffer": "^4.0",
+        "cakephp/cakephp-codesniffer": "^5.0",
         "phpunit/phpunit": "^8.5"
     },
     "autoload": {
