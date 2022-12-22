@@ -558,12 +558,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $documents[$key] = $doc;
         }
 
-        $esIndex = $this->getConnection()->getIndex($this->getName());
-        $esIndex->addDocuments($documents);
-
+        $requestParams = [];
         if ($options['refresh']) {
-            $esIndex->refresh();
+            $requestParams['refresh'] = $options['refresh'];
         }
+
+        $esIndex = $this->getConnection()->getIndex($this->getName());
+        $esIndex->addDocuments($documents, $requestParams);
 
         foreach ($documents as $key => $doc) {
             $entities[$key]->id = $doc->getId();
@@ -636,11 +637,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $doc->setRouting($options['routing']);
         }
 
-        $esIndex->addDocument($doc);
-
         if ($options['refresh']) {
-            $esIndex->refresh();
+            $doc->setRefresh($options['refresh']);
         }
+
+        $esIndex->addDocument($doc);
 
         $entity->id = $doc->getId();
         $entity->_version = $doc->getVersion();
@@ -697,12 +698,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $doc = new ElasticaDocument($entity->id, $data);
 
-        $esIndex = $this->getConnection()->getIndex($this->getName());
-        $result = $esIndex->deleteById($doc->getId());
-
+        $requestParams = [];
         if ($options['refresh']) {
-            $esIndex->refresh();
+            $requestParams['refresh'] = $options['refresh'];
         }
+
+        $esIndex = $this->getConnection()->getIndex($this->getName());
+        $result = $esIndex->deleteById($doc->getId(), $requestParams);
 
         $this->dispatchEvent('Model.afterDelete', [
             'entity' => $entity,
