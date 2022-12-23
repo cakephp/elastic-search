@@ -24,12 +24,13 @@ And run `php composer.phar update`
 
 ### Versions Table
 
-| Cake\ElasticSearch                                           | CakePHP   | ElasticSearch |
-| ---                                                          | ---       | ---           |
-| [1.x](https://github.com/cakephp/elastic-search/tree/1.0)    | 3.0 - 3.5 | 2.x - 5.x     |
-| [2.x](https://github.com/cakephp/elastic-search/tree/2.x)    | 3.6+      | 6.x           |
-| [3.x](https://github.com/cakephp/elastic-search/tree/3.x)    | 4.0+      | 6.x           |
-| [4.x](https://github.com/cakephp/elastic-search/tree/master) | 4.0+      | 7.x           |
+| Cake\ElasticSearch                                                 | CakePHP   | ElasticSearch |
+| ---                                                                | ---       | ---           |
+| [1.x](https://github.com/cakephp/elastic-search/tree/1.0)          | 3.0 - 3.5 | 2.x - 5.x     |
+| [2.x](https://github.com/cakephp/elastic-search/tree/2.x)          | 3.6+      | 6.x           |
+| [>3, <3.4.0](https://github.com/cakephp/elastic-search/tree/3.3.0) | 4.0+      | 6.x           |
+| [3.4.0>=](https://github.com/cakephp/elastic-search/tree/3.x)      | 4.0+      | 7.x           |
+| [4.x](https://github.com/cakephp/elastic-search/tree/5.x)          | 5.0+      | 7.x           |
 
 You are seeing the 3.x version.
 
