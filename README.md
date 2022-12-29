@@ -8,12 +8,12 @@
 
 Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 4.0+.
 
-You can [find the documentation for the plugin in the Cake Book](http://book.cakephp.org/elasticsearch).
+You can [find the documentation for the plugin in the Cake Book](https://book.cakephp.org/elasticsearch).
 
 ## Installing Elasticsearch via composer
 
 You can install Elasticsearch into your project using
-[composer](http://getcomposer.org). For existing applications you can add the
+[composer](https://getcomposer.org). For existing applications you can add the
 following to your `composer.json` file:
 
     "require": {
@@ -158,7 +158,7 @@ in production or development machines where you have important data into your
 Elasticsearch instance.
 
 Assuming you have PHPUnit installed system wide using one of the methods stated
-[here](http://phpunit.de/manual/current/en/installation.html), you can run the
+[here](https://phpunit.de/manual/current/en/installation.html), you can run the
 tests for CakePHP by doing the following:
 
 1. Copy `phpunit.xml.dist` to `phpunit.xml`
