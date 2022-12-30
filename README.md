@@ -3,16 +3,16 @@
 [![Build Status](https://api.travis-ci.org/cakephp/elastic-search.png)](https://travis-ci.org/cakephp/elastic-search)
 [![License](https://poser.pugx.org/cakephp/elastic-search/license.svg)](https://packagist.org/packages/cakephp/elastic-search)
 
-This is a pre-alpha version of an alternative ORM for CakePHP 3.0 using [Elastic Search](http://www.elasticsearch.org/)
+This is a pre-alpha version of an alternative ORM for CakePHP 3.0 using [Elastic Search](https://www.elasticsearch.org/)
 as its backend. It is currently under development and is only being used to test the
 interfaces exposed in CakePHP 3.0.
 
-You can [find the documentation for the plugin in the Cake Book](http://book.cakephp.org/3.0/en/elasticsearch.html).
+You can [find the documentation for the plugin in the Cake Book](https://book.cakephp.org/3.0/en/elasticsearch.html).
 
 ## Installing ElasticSearch via composer
 
 You can install ElasticSearch into your project using
-[composer](http://getcomposer.org). For existing applications you can add the
+[composer](https://getcomposer.org). For existing applications you can add the
 following to your `composer.json` file:
 
     "require": {
@@ -71,14 +71,14 @@ $comments = TypeRegistry::get('Comments');
 
 ## Delete by Query Plugin (ElasticSearch 1.x => 2.x)
 
-To be able to delete records via criteria other than `_id` you need the ElasticSearch [delete-by-query plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/2.2/plugins-delete-by-query.html). 
+To be able to delete records via criteria other than `_id` you need the ElasticSearch [delete-by-query plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/2.2/plugins-delete-by-query.html).
 
 _NOTE: Without the plugin you will get at least 2 test failures_
 
 ## Running tests
 
 Assuming you have PHPUnit installed system wide using one of the methods stated
-[here](http://phpunit.de/manual/current/en/installation.html), you can run the
+[here](https://phpunit.de/manual/current/en/installation.html), you can run the
 tests for CakePHP by doing the following:
 
 1. Copy `phpunit.xml.dist` to `phpunit.xml`
