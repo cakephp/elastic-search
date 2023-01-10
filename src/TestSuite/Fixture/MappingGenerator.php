@@ -28,7 +28,7 @@ use RuntimeException;
  * The `settings` key can contain Elastica compatible index creation
  * settings.
  *
- * @see http://elastica.io/getting-started/storing-and-indexing-documents.html#define-mapping
+ * @see https://elastica.io/getting-started/storing-and-indexing-documents.html#define-mapping
  */
 class MappingGenerator
 {
