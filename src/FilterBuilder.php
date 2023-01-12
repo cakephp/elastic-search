@@ -17,7 +17,7 @@ class FilterBuilder
      * @param mixed $from The lower bound value.
      * @param mixed $to The upper bound value.
      * @return Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
      */
     public function between($field, $from, $to)
     {
@@ -32,7 +32,7 @@ class FilterBuilder
      * and `addMustNot()` methods.
      *
      * @return Elastica\Filter\Bool
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-filter.html
      */
     public function bool()
     {
@@ -45,7 +45,7 @@ class FilterBuilder
      *
      * @param string $field The field to check for existance.
      * @return Elastica\Filter\Exists
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
      */
     public function exists($field)
     {
@@ -74,7 +74,7 @@ class FilterBuilder
      * @param array|string $topLeft The top left coordinate.
      * @param array|string $bottomRight The bottom right coordinate.
      * @return Elastica\Filter\GeoBoundingBox
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-bounding-box-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-bounding-box-filter.html
      */
     public function geoBoundingBox($field, $topLeft, $bottomRight)
     {
@@ -97,7 +97,7 @@ class FilterBuilder
      * @param array|string $location The coordinate from which to compare.
      * @param string $distance The distance radius.
      * @return Elastica\Filter\GeoDistance
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-range-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-range-filter.html
      */
     public function geoDistance($field, $location, $distance)
     {
@@ -121,7 +121,7 @@ class FilterBuilder
      * @param string $from The initial distance radius.
      * @param string $to The ending distance radius.
      * @return Elastica\Filter\GeoDistanceRange
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-filter.html
      */
     public function geoDistanceRange($field, $location, $from, $to)
     {
@@ -154,7 +154,7 @@ class FilterBuilder
      * @param string $field The field to compare.
      * @param array $geoPoints List of geo points that form the polygon
      * @return Elastica\Filter\GeoPolygon
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-filter.html
      */
     public function geoPolygon($field, array $geoPoints)
     {
@@ -177,13 +177,13 @@ class FilterBuilder
      * }}}
      *
      * You can read about the supported shapes and how they are created here:
-     * http://www.elastic.co/guide/en/elasticsearch/reference/1.x/mapping-geo-shape-type.html
+     * https://www.elastic.co/guide/en/elasticsearch/reference/1.x/mapping-geo-shape-type.html
      *
      * @param string $field The field to compare.
      * @param array $geoPoints List of geo points that form the shape.
      * @param string $type The shape type to use (envelope, linestring, polygon, multipolygon...)
      * @return Elastica\Filter\GeoShapeProvided
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
      */
     public function geoShape($field, array $geoPoints, $type = 'envelope')
     {
@@ -206,7 +206,7 @@ class FilterBuilder
      * @param string $index Name of the index where the pre-indexed shape is.
      * @param string $path The field specified as path containing the pre-indexed shape.
      * @return Elastica\Filter\GeoShapePreIndex
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-filter.html
      */
     public function geoShapeIndex($field, $id, $type, $index = 'shapes', $path = 'shape')
     {
@@ -228,7 +228,7 @@ class FilterBuilder
      * @param int|string $precision Length of geohash prefix or distance (3, or "50m")
      * @param bool $neighbors If true, filters cells next to the given cell.
      * @return Elastica\Filter\GeohashCell
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geohash-cell-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geohash-cell-filter.html
      */
     public function geoHashCell($field, $location, $precision = -1, $neighbors = false)
     {
@@ -242,7 +242,7 @@ class FilterBuilder
      * @param string $field The field to filter by.
      * @param mixed $value The value to compare with.
      * @return Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
      */
     public function gt($field, $value)
     {
@@ -256,7 +256,7 @@ class FilterBuilder
      * @param string $field The field to filter by.
      * @param mixed $value The value to compare with.
      * @return Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
      */
     public function gte($field, $value)
     {
@@ -270,7 +270,7 @@ class FilterBuilder
      * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
      * @param string $type The child type to query against.
      * @return Elastica\Filter\HasChild
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-filter.html
      */
     public function hasChild($query, $type)
     {
@@ -283,7 +283,7 @@ class FilterBuilder
      * @param string|\Elastica\Query|\Elastica\Filter\AbstractFilter $query The filtering conditions.
      * @param string $type The parent type to query against.
      * @return Elastica\Filter\HasParent
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-filter.html
      */
     public function hasParent($query, $type)
     {
@@ -296,7 +296,7 @@ class FilterBuilder
      * @param array $ids The list of ids to filter by.
      * @param string|array $type A single or multiple types in which the ids should be searched.
      * @return Elastica\Filter\Ids
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-filter.html
      */
     public function ids(array $ids = [], $type = null)
     {
@@ -324,7 +324,7 @@ class FilterBuilder
      * @param \Elastica\Filter\AbstractFilter $noMatch Filter to apply to documents not present
      * in the specified indices.
      * @return Elastica\Filter\Indices
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-indices-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-indices-filter.html
      */
     public function indices(array $indices, AbstractFilter $match, AbstractFilter $noMatch)
     {
@@ -336,7 +336,7 @@ class FilterBuilder
      *
      * @param int $limit The maximum number of documents to filter.
      * @return Elastica\Filter\Limit
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-limit-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-limit-filter.html
      */
     public function limit($limit)
     {
@@ -347,7 +347,7 @@ class FilterBuilder
      * A filter that returns all documents.
      *
      * @return Elastica\Filter\MatchAll
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-filter.html
      */
     public function matchAll()
     {
@@ -361,7 +361,7 @@ class FilterBuilder
      * @param string $field The field to filter by.
      * @param mixed $value The value to compare with.
      * @return Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
      */
     public function lt($field, $value)
     {
@@ -375,7 +375,7 @@ class FilterBuilder
      * @param string $field The field to filter by.
      * @param mixed $value The value to compare with.
      * @return Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
      */
     public function lte($field, $value)
     {
@@ -388,7 +388,7 @@ class FilterBuilder
      *
      * @param string $field The field to check for existance.
      * @return Elastica\Filter\Missing
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-filter.html
      */
     public function missing($field = '')
     {
@@ -413,7 +413,7 @@ class FilterBuilder
      * @param string $path A dot separated string denoting the path to the property to filter.
      * @param Elastica\Query\AbstractQuery|Elastica\Filter\AbstractFilter $filter The filtering conditions.
      * @return Elastica\Filter\Nested
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-filter.html
      */
     public function nested($path, $filter)
     {
@@ -435,7 +435,7 @@ class FilterBuilder
      *
      * @param Elastica\Filter\AbstractFilter $filter The filter to negate
      * @return Elastica\Filter\BoolNot
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-not-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-not-filter.html
      */
     public function not($filter)
     {
@@ -449,7 +449,7 @@ class FilterBuilder
      * @param string $field The field to filter by.
      * @param string $prefix The prefix to check for.
      * @return Elastica\Filter\Prefix
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-filter.html
      */
     public function prefix($field, $prefix)
     {
@@ -467,7 +467,7 @@ class FilterBuilder
      *
      * @param array|\Elastica\Query\AbstractQuery $query The Query to wrap as a filter
      * @return Elastica\Filter\Query
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-filter.html
      */
     public function query($query)
     {
@@ -488,7 +488,7 @@ class FilterBuilder
      * @param string $field The field to filter by.
      * @param array $args An array describing the search range
      * @return Elastica\Filter\Range
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-filter.html
      */
     public function range($field, array $args)
     {
@@ -508,7 +508,7 @@ class FilterBuilder
      * @param string $regexp The regular expression.
      * @param array $options Regultar expression flags or options.
      * @return Elastica\Filter\Regexp
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
      */
     public function regexp($field, $regexp, array $options = [])
     {
@@ -526,7 +526,7 @@ class FilterBuilder
      *
      * @param string $script The script.
      * @return Elastica\Filter\Regexp
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-filter.html
      */
     public function script($script)
     {
@@ -545,7 +545,7 @@ class FilterBuilder
      * @param string $field The field to filter by.
      * @param string $value The term to find in field.
      * @return Elastica\Filter\Term
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-filter.html
      */
     public function term($field, $value)
     {
@@ -564,7 +564,7 @@ class FilterBuilder
      * @param string $field The field to filter by.
      * @param array $values The list of terms to find in field.
      * @return Elastica\Filter\Terms
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-filter.html
      */
     public function terms($field, $values)
     {
@@ -582,7 +582,7 @@ class FilterBuilder
      *
      * @param string $type The type name
      * @return Elastica\Filter\Type
-     * @see http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-filter.html
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-filter.html
      */
     public function type($type)
     {
