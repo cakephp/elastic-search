@@ -34,9 +34,9 @@ class Plugin extends BasePlugin
      */
     public function bootstrap(PluginApplicationInterface $app): void
     {
-        $callback = ['Cake\ElasticSearch\IndexRegistry', 'get'];
-        FactoryLocator::add('Elastic', $callback);
-        FactoryLocator::add('ElasticSearch', $callback);
+        $indexRegistry = new IndexRegistry();
+        FactoryLocator::add('Elastic', $indexRegistry);
+        FactoryLocator::add('ElasticSearch', $indexRegistry);
 
         // Attach the document context into FormHelper.
         EventManager::instance()->on('View.beforeRender', function ($event): void {

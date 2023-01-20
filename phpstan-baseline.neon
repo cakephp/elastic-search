@@ -1,0 +1,16 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Access to an undefined property Cake\\\\Datasource\\\\EntityInterface\\:\\:\\$version\\.$#"
+			count: 1
+			path: src/Index.php
+
+		-
+			message: "#^Method Cake\\\\ElasticSearch\\\\Query\\:\\:find\\(\\) should return static\\(Cake\\\\ElasticSearch\\\\Query\\<TSubject of array\\|Cake\\\\ElasticSearch\\\\Document\\>\\) but returns Cake\\\\ElasticSearch\\\\Query\\<Cake\\\\ElasticSearch\\\\Document\\>\\.$#"
+			count: 1
+			path: src/Query.php
+
+		-
+			message: "#^PHPDoc tag @return with type Cake\\\\ElasticSearch\\\\Query\\<TSubject of array\\|Cake\\\\ElasticSearch\\\\Document\\> is not subtype of native type static\\(Cake\\\\ElasticSearch\\\\Query\\<TSubject of array\\|Cake\\\\ElasticSearch\\\\Document\\>\\)\\.$#"
+			count: 1
+			path: src/Query.php

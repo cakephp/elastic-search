@@ -21,6 +21,7 @@ use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Datasource\QueryCacher;
 use Cake\Datasource\QueryInterface;
 use Cake\Datasource\RepositoryInterface;
+use Cake\Datasource\ResultSetDecorator;
 use Cake\Datasource\ResultSetInterface;
 use Closure;
 use Elastica\Aggregation\AbstractAggregation;
@@ -32,6 +33,10 @@ use IteratorAggregate;
 use Psr\SimpleCache\CacheInterface;
 use Traversable;
 
+/**
+ * @template TSubject of \Cake\ElasticSearch\Document|array
+ * @implements \IteratorAggregate<TSubject>
+ */
 class Query implements IteratorAggregate, QueryInterface
 {
     /**
@@ -152,7 +157,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function __construct(Index $repository)
     {
-        $this->repository($repository);
+        $this->setRepository($repository);
         $this->_elasticQuery = new ElasticaQuery();
     }
 
@@ -197,12 +202,12 @@ class Query implements IteratorAggregate, QueryInterface
      * Sets the number of records that should be skipped from the original result set
      * This is commonly used for paginating large results. Accepts an integer.
      *
-     * @param ?int $num The number of records to be skipped
+     * @param ?int $offset The number of records to be skipped
      * @return $this
      */
-    public function offset(?int $num)
+    public function offset(?int $offset)
     {
-        $this->_queryParts['offset'] = (int)$num;
+        $this->_queryParts['offset'] = (int)$offset;
 
         return $this;
     }
@@ -275,46 +280,64 @@ class Query implements IteratorAggregate, QueryInterface
      * - ['name' => 'asc', 'price' => 'desc']
      * - 'field1' (defaults to order => 'desc')
      *
-     * @param \Closure|array|string $order The sorting order to use.
+     * @param \Closure|array|string $fields The sorting order to use.
+     * @param bool $overwrite Whether or not to replace previous sorting.
+     * @return $this
+     * @deprecated 4.0.0 Use orderBy() instead.
+     */
+    public function order(Closure|array|string $fields, bool $overwrite = false)
+    {
+        return $this->orderBy($fields, $overwrite);
+    }
+
+    /**
+     * Sets the sorting options for the result set.
+     *
+     * The accepted format for the $order parameter is:
+     *
+     * - [['name' => ['order'=> 'asc', ...]], ['price' => ['order'=> 'asc', ...]]]
+     * - ['name' => 'asc', 'price' => 'desc']
+     * - 'field1' (defaults to order => 'desc')
+     *
+     * @param \Closure|array|string $fields The sorting order to use.
      * @param bool $overwrite Whether or not to replace previous sorting.
      * @return $this
      */
-    public function order(Closure|array|string $order, bool $overwrite = false)
+    public function orderBy(array|Closure|string $fields, bool $overwrite = false)
     {
-        // [['field' => [...]], ['field2' => [...]]]
-        if (is_array($order) && is_numeric(key($order))) {
+        if (is_array($fields) && is_numeric(key($fields))) {
             if ($overwrite) {
-                $this->_queryParts['order'] = $order;
+                $this->_queryParts['order'] = $fields;
 
                 return $this;
             }
-            $this->_queryParts['order'] = array_merge($order, $this->_queryParts['order']);
+            $this->_queryParts['order'] = array_merge($fields, $this->_queryParts['order']);
 
             return $this;
         }
 
-        if (is_string($order)) {
-            $order = [$order => ['order' => 'desc']];
+        if (is_string($fields)) {
+            $fields = [$fields => ['order' => 'desc']];
         }
 
-        $normalizer = function ($order, $key) {
-            // ['field' => 'asc|desc']
-            if (is_string($order)) {
-                return [$key => ['order' => $order]];
+        $normalizer = function ($fields, $key) {
+          // ['field' => 'asc|desc']
+            if (is_string($fields)) {
+                return [$key => ['order' => $fields]];
             }
 
-            return [$key => $order];
+            return [$key => $fields];
         };
 
-        $order = collection($order)->map($normalizer)->toList();
+        $fields = collection($fields)->map($normalizer)->toList();
 
         if (!$overwrite) {
-            $order = array_merge($this->_queryParts['order'], $order);
+            $fields = array_merge($this->_queryParts['order'], $fields);
         }
 
-        $this->_queryParts['order'] = $order;
+        $this->_queryParts['order'] = $fields;
 
-        return $this;
+        return $this; // [['field' => [...]], ['field2' => [...]]]
     }
 
     /**
@@ -322,7 +345,8 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param string $finder The finder method to use.
      * @param array $options The options for the finder.
-     * @return static
+     * @return static<TSubject> Returns a modified query.
+     * @psalm-suppress MoreSpecificReturnType
      */
     public function find(string $finder = 'all', array $options = []): static
     {
@@ -369,14 +393,14 @@ class Query implements IteratorAggregate, QueryInterface
      *   $query->where(new \Elastica\Filter\Term('name.first', 'jose'));
      * }}{
      *
-     * @param \Elastica\Query\AbstractQuery|\Closure|array|null $conditions The list of conditions.
+     * @param \Closure|array|string|null $conditions The list of conditions.
      * @param array $types Not used, required to comply with QueryInterface.
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
      * @see \Cake\ElasticSearch\QueryBuilder
      */
     public function where(
-        Closure|array|string|AbstractQuery|null $conditions = null,
+        Closure|array|string|null $conditions = null,
         array $types = [],
         bool $overwrite = false
     ) {
@@ -709,7 +733,7 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Compile the Elasticsearch query.
      *
-     * @return \Cake\ElasticSearch\Elastica\Query The Elasticsearch query.
+     * @return \Elastica\Query The Elasticsearch query.
      */
     public function compileQuery(): ElasticaQuery
     {
@@ -775,7 +799,16 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function aliasFields(array $fields, ?string $defaultAlias = null): array
     {
-        return array_map([$this, 'aliasField', $fields]);
+        $aliased = [];
+        foreach ($fields as $alias => $field) {
+            if (is_numeric($alias) && is_string($field)) {
+                $aliased += $this->aliasField($field, $defaultAlias);
+                continue;
+            }
+            $aliased[$alias] = $field;
+        }
+
+        return $aliased;
     }
 
     /**
@@ -801,8 +834,20 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param \Cake\Datasource\RepositoryInterface $repository The default repository object to use.
      * @return $this
+     * @deprecated 4.0.0 Use setRepository() instead.
      */
     public function repository(RepositoryInterface $repository)
+    {
+        return $this->setRepository($repository);
+    }
+
+    /**
+     * Set the default repository object that will be used by this query.
+     *
+     * @param \Cake\Datasource\RepositoryInterface $repository The default repository object to use.
+     * @return $this
+     */
+    public function setRepository(RepositoryInterface $repository)
     {
         assert($repository instanceof Index, 'ElasticSearch\Query requires an Index subclass');
         $this->_repository = $repository;
@@ -814,9 +859,9 @@ class Query implements IteratorAggregate, QueryInterface
      * Returns the default repository object that will be used by this query,
      * that is, the table that will appear in the from clause.
      *
-     * @return \Cake\Datasource\RepositoryInterface
+     * @return \Cake\ElasticSearch\Index
      */
-    public function getRepository(): RepositoryInterface
+    public function getRepository(): Index
     {
         return $this->_repository;
     }

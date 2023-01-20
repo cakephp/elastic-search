@@ -27,6 +27,8 @@ class Document implements EntityInterface
 {
     use EntityTrait;
 
+    public int|string $version;
+
     /**
      * Holds an instance of a Result object that's passed into the constructor
      * from a search query. It can contain extra information about this document
@@ -121,7 +123,7 @@ class Document implements EntityInterface
     public function version(): int
     {
         if (isset($this->_result)) {
-            return $this->_result->getVersion();
+            return intval($this->_result->getVersion());
         }
 
         return 1;

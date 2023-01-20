@@ -17,6 +17,8 @@ declare(strict_types=1);
 
 namespace Cake\ElasticSearch\TestSuite;
 
+use Cake\Datasource\FactoryLocator;
+use Cake\Datasource\Locator\LocatorInterface;
 use Cake\ElasticSearch\TestSuite\Fixture\DeleteQueryStrategy;
 use Cake\TestSuite\Fixture\FixtureStrategyInterface;
 use Cake\TestSuite\TestCase as CakeTestCase;
@@ -26,6 +28,17 @@ use Cake\TestSuite\TestCase as CakeTestCase;
  */
 class TestCase extends CakeTestCase
 {
+    protected LocatorInterface $ElasticLocator;
+
+    /**
+     * @return void
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->ElasticLocator = FactoryLocator::get('Elastic');
+    }
+
     /**
      * @inheritDoc
      */

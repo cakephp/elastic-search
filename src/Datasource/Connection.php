@@ -24,7 +24,6 @@ use Cake\ElasticSearch\Exception\NotImplementedException;
 use Cake\Log\Log;
 use Elastica\Client as ElasticaClient;
 use Elastica\Index;
-use Elastica\Query\BoolQuery;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Psr\SimpleCache\CacheInterface;
@@ -34,38 +33,30 @@ class Connection implements ConnectionInterface
 {
     /**
      * Whether or not query logging is enabled.
-     *
-     * @var bool
      */
     protected bool $logQueries = false;
 
     /**
      * The connection name in the connection manager.
-     *
-     * @var string
      */
     protected string $configName = '';
 
     /**
      * Elastica client instance
-     *
-     * @var \Elastica\Client;
      */
     protected ElasticaClient $_client;
 
     /**
      * Logger object instance.
-     *
-     * @var \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface
      */
     protected QueryLogger|LoggerInterface $_logger;
 
     /**
      * Instance of ElasticLogger
-     *
-     * @var \Cake\ElasticSearch\Datasource\Log\ElasticLogger
      */
     protected ElasticLogger $_esLogger;
+
+    protected CacheInterface $cacher;
 
     /**
      * Constructor.
@@ -99,6 +90,8 @@ class Connection implements ConnectionInterface
         if (method_exists($this->_client, $name)) {
             return call_user_func_array([$this->_client, $name], $attributes);
         }
+
+        throw new NotImplementedException($name);
     }
 
     /**
@@ -118,35 +111,6 @@ class Connection implements ConnectionInterface
     public function configName(): string
     {
         return $this->configName;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function enabled()
-    {
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function beginTransaction()
-    {
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function disableForeignKeys()
-    {
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function enableForeignKeys()
-    {
     }
 
     /**
@@ -182,14 +146,6 @@ class Connection implements ConnectionInterface
     public function isQueryLoggingEnabled(): bool
     {
         return $this->logQueries;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function transactional(callable $callable)
-    {
-        return $callable($this);
     }
 
     /**
@@ -303,60 +259,14 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public function execute($query, $params = [], array $types = [])
-    {
-        throw new NotImplementedException();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function query(string $sql)
-    {
-        throw new NotImplementedException();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function prepare(mixed $sql)
-    {
-        throw new NotImplementedException();
-    }
-
-    /**
      * {@inheritDoc}
      *
      * @see \Cake\Datasource\ConnectionInterface::getDriver()
      * @return \Elastica\Client
      */
-    public function getDriver(): ElasticaClient
+    public function getDriver(string $role = self::ROLE_WRITE): ElasticaClient
     {
         return $this->_client;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see \Cake\Datasource\ConnectionInterface::supportsDynamicConstraints()
-     * @return bool
-     */
-    public function supportsDynamicConstraints()
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see \Cake\Datasource\ConnectionInterface::newQuery()
-     * @return \Elastica\Query\BoolQuery
-     */
-    public function newQuery()
-    {
-        return new BoolQuery();
     }
 
     /**
@@ -368,6 +278,8 @@ class Connection implements ConnectionInterface
      */
     public function getIndex(?string $name = null): Index
     {
-        return $this->_client->getIndex($name ?: $this->getConfig('index'));
+        $defaultIndex = $this->config()['index'] ?? $this->configName;
+
+        return $this->_client->getIndex($name ?: $defaultIndex);
     }
 }

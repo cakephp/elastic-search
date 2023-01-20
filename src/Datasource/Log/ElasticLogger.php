@@ -18,7 +18,6 @@ namespace Cake\ElasticSearch\Datasource\Log;
 
 use Cake\Database\Log\LoggedQuery;
 use Cake\Database\Log\QueryLogger;
-use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Connection;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
@@ -48,9 +47,9 @@ class ElasticLogger extends AbstractLogger
      * Constructor, set the QueryLogger instance
      *
      * @param \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface $logger Instance of the QueryLogger
-     * @param \Cake\Datasource\ConnectionInterface $connection Current connection instance
+     * @param \Cake\ElasticSearch\Datasource\Connection $connection Current connection instance
      */
-    public function __construct(QueryLogger|LoggerInterface $logger, ConnectionInterface $connection)
+    public function __construct(QueryLogger|LoggerInterface $logger, Connection $connection)
     {
         $this->setLogger($logger);
         $this->_connection = $connection;
@@ -118,7 +117,7 @@ class ElasticLogger extends AbstractLogger
     protected function _log(string $level, string $message, array $context = []): void
     {
         $logData = $context;
-        if (LogLevel::DEBUG && isset($context['request'])) {
+        if ($level === LogLevel::DEBUG && isset($context['request'])) {
             $logData = [
                 'method' => $context['request']['method'],
                 'path' => $context['request']['path'],

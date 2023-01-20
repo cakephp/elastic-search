@@ -48,7 +48,7 @@ class SchemaCollection
     public function listTables(): array
     {
         try {
-            $indexes = $this->connection->getStatus()->getIndexNames();
+            $indexes = $this->connection->getDriver()->getStatus()->getIndexNames();
         } catch (ResponseException $e) {
             return [];
         }

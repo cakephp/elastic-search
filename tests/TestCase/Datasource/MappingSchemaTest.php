@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
 use Cake\ElasticSearch\Datasource\MappingSchema;
-use Cake\TestSuite\TestCase;
+use Cake\ElasticSearch\TestSuite\TestCase;
 
 /**
  * Test case for the MappingSchema

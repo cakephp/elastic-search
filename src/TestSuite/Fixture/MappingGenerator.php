@@ -122,7 +122,7 @@ class MappingGenerator
         if (!$response->isOk()) {
             $msg = sprintf(
                 'Fixture creation for "%s" failed "%s"',
-                $this->table,
+                $mapping['name'],
                 $response->getError()
             );
             throw new RuntimeException($msg);

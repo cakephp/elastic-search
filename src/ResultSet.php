@@ -26,6 +26,9 @@ use IteratorIterator;
 /**
  * Decorates the Elastica ResultSet in order to hydrate results with the
  * correct class and provide a Collection interface to the returned results.
+ *
+ * @template-extends \IteratorIterator<mixed, mixed, \Traversable<mixed>>
+ * @implements \Cake\Datasource\ResultSetInterface<\Cake\ElasticSearch\Document>
  */
 class ResultSet extends IteratorIterator implements ResultSetInterface
 {
@@ -224,7 +227,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      */
     public function current(): Document
     {
-        $class = $this->entityClass;
         $result = $this->resultSet->current();
         $options = [
             'markClean' => true,
@@ -242,9 +244,8 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
                 $data[$property] = $embed->hydrate($data[$property], $options);
             }
         }
-        $document = new $class($data, $options);
 
-        return $document;
+        return new $this->entityClass($data, $options);
     }
 
     /**

@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\ElasticSearch\Document;
-use Cake\TestSuite\TestCase;
+use Cake\ElasticSearch\TestSuite\TestCase;
 
 /**
  * Tests the Document class

@@ -19,7 +19,7 @@ namespace Cake\ElasticSearch\Test\TestCase;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Query;
 use Cake\ElasticSearch\QueryBuilder;
-use Cake\TestSuite\TestCase;
+use Cake\ElasticSearch\TestSuite\TestCase;
 use Elastica\Aggregation\Max as MaxAggregation;
 use Elastica\Aggregation\Min as MinAggregation;
 use Elastica\Collapse;
@@ -181,7 +181,7 @@ class QueryTest extends TestCase
         $query->offset(100);
         $this->assertSame(100, $query->clause('offset'));
 
-        $query->order('price');
+        $query->orderBy('price');
         $this->assertSame([ 0 => [
             'price' => [
                 'order' => 'desc',
@@ -240,13 +240,13 @@ class QueryTest extends TestCase
     {
         $index = new Index();
         $query = new Query($index);
-        $this->assertSame($query, $query->order('price'));
+        $this->assertSame($query, $query->orderBy('price'));
 
         $elasticQuery = $query->compileQuery()->toArray();
         $expected = [['price' => ['order' => 'desc']]];
         $this->assertEquals($expected, $elasticQuery['sort']);
 
-        $query->order(['created' => 'asc']);
+        $query->orderBy(['created' => 'asc']);
         $elasticQuery = $query->compileQuery()->toArray();
         $expected = [
             ['price' => ['order' => 'desc']],
@@ -254,7 +254,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $elasticQuery['sort']);
 
-        $query->order(['modified' => 'desc', 'score' => 'asc']);
+        $query->orderBy(['modified' => 'desc', 'score' => 'asc']);
         $elasticQuery = $query->compileQuery()->toArray();
         $expected = [
             ['price' => ['order' => 'desc']],
@@ -264,7 +264,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $elasticQuery['sort']);
 
-        $query->order(['clicks' => ['mode' => 'avg', 'order' => 'asc']]);
+        $query->orderBy(['clicks' => ['mode' => 'avg', 'order' => 'asc']]);
         $elasticQuery = $query->compileQuery()->toArray();
         $expected = [
             ['price' => ['order' => 'desc']],
@@ -275,7 +275,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $elasticQuery['sort']);
 
-        $query->order(['created' => 'asc'], true);
+        $query->orderBy(['created' => 'asc'], true);
         $elasticQuery = $query->compileQuery()->toArray();
         $expected = [
             ['created' => ['order' => 'asc']],

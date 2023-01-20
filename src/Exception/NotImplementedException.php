@@ -18,12 +18,12 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\Exception;
 
-use Cake\Core\Exception\Exception;
+use Cake\Core\Exception\CakeException;
 
 /**
  * Exception raised when a method has not been implemented.
  */
-class NotImplementedException extends Exception
+class NotImplementedException extends CakeException
 {
     /**
      * @var string

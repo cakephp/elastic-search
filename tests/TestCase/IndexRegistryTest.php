@@ -18,8 +18,7 @@ namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Core\Configure;
 use Cake\ElasticSearch\Index;
-use Cake\ElasticSearch\IndexRegistry;
-use Cake\TestSuite\TestCase;
+use Cake\ElasticSearch\TestSuite\TestCase;
 
 /**
  * Test case for IndexRegistry
@@ -45,7 +44,7 @@ class IndexRegistryTest extends TestCase
     public function tearDown(): void
     {
         parent::tearDown();
-        IndexRegistry::clear();
+        $this->ElasticLocator->clear();
     }
 
     /**
@@ -55,10 +54,10 @@ class IndexRegistryTest extends TestCase
      */
     public function testExists()
     {
-        $this->assertFalse(IndexRegistry::exists('Articles'));
+        $this->assertFalse($this->ElasticLocator->exists('Articles'));
 
-        IndexRegistry::get('Articles', ['name' => 'articles']);
-        $this->assertTrue(IndexRegistry::exists('Articles'));
+        $this->ElasticLocator->get('Articles', ['name' => 'articles']);
+        $this->assertTrue($this->ElasticLocator->exists('Articles'));
     }
 
     /**
@@ -68,12 +67,12 @@ class IndexRegistryTest extends TestCase
      */
     public function testExistsPlugin()
     {
-        $this->assertFalse(IndexRegistry::exists('Comments'));
-        $this->assertFalse(IndexRegistry::exists('TestPlugin.Comments'));
+        $this->assertFalse($this->ElasticLocator->exists('Comments'));
+        $this->assertFalse($this->ElasticLocator->exists('TestPlugin.Comments'));
 
-        IndexRegistry::get('TestPlugin.Comments', ['name' => 'comments']);
-        $this->assertFalse(IndexRegistry::exists('Comments'), 'The Comments key should not be populated');
-        $this->assertTrue(IndexRegistry::exists('TestPlugin.Comments'), 'The plugin.alias key should now be populated');
+        $this->ElasticLocator->get('TestPlugin.Comments', ['name' => 'comments']);
+        $this->assertFalse($this->ElasticLocator->exists('Comments'), 'The Comments key should not be populated');
+        $this->assertTrue($this->ElasticLocator->exists('TestPlugin.Comments'), 'The plugin.alias key should now be populated');
     }
 
     /**
@@ -83,7 +82,7 @@ class IndexRegistryTest extends TestCase
      */
     public function testGet()
     {
-        $result = IndexRegistry::get(
+        $result = $this->ElasticLocator->get(
             'Articles',
             [
                 'name' => 'my_articles',
@@ -92,7 +91,7 @@ class IndexRegistryTest extends TestCase
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame('my_articles', $result->getName());
 
-        $result2 = IndexRegistry::get('Articles');
+        $result2 = $this->ElasticLocator->get('Articles');
         $this->assertSame($result, $result2);
         $this->assertSame('my_articles', $result->getName());
     }
@@ -104,11 +103,11 @@ class IndexRegistryTest extends TestCase
      */
     public function testGetFallbacks()
     {
-        $result = IndexRegistry::get('Droids');
+        $result = $this->ElasticLocator->get('Droids');
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame('droids', $result->getName());
 
-        $result = IndexRegistry::get('R2D2', ['className' => 'Droids']);
+        $result = $this->ElasticLocator->get('R2D2', ['className' => 'Droids']);
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame(
             'r2_d2',
@@ -116,22 +115,22 @@ class IndexRegistryTest extends TestCase
             'The name should be derived from the alias'
         );
 
-        $result = IndexRegistry::get(
+        $result = $this->ElasticLocator->get(
             'C3P0',
             ['className' => 'Droids', 'name' => 'droids']
         );
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame('droids', $result->getName(), 'The name should be taken from options');
 
-        $result = IndexRegistry::get('Funky.Chipmunks');
+        $result = $this->ElasticLocator->get('Funky.Chipmunks');
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame('chipmunks', $result->getName(), 'The name should be derived from the alias');
 
-        $result = IndexRegistry::get('Awesome', ['className' => 'Funky.Monkies']);
+        $result = $this->ElasticLocator->get('Awesome', ['className' => 'Funky.Monkies']);
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame('awesome', $result->getName(), 'The name should be derived from the alias');
 
-        $result = IndexRegistry::get('Stuff', ['className' => 'Cake\ElasticSearch\Index']);
+        $result = $this->ElasticLocator->get('Stuff', ['className' => 'Cake\ElasticSearch\Index']);
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame('stuff', $result->getName(), 'The name should be derived from the alias');
     }
@@ -145,8 +144,8 @@ class IndexRegistryTest extends TestCase
     {
         $this->expectException('RuntimeException');
         $this->expectExceptionMessage('You cannot configure "Users", it already exists in the registry.');
-        $users = IndexRegistry::get('Users');
-        IndexRegistry::get('Users', ['name' => 'my_users']);
+        $users = $this->ElasticLocator->get('Users');
+        $this->ElasticLocator->get('Users', ['name' => 'my_users']);
     }
 
     /**
@@ -157,8 +156,8 @@ class IndexRegistryTest extends TestCase
      */
     public function testGetWithSameOption()
     {
-        $result = IndexRegistry::get('Users', ['className' => MyUsersIndex::class]);
-        $result2 = IndexRegistry::get('Users', ['className' => MyUsersIndex::class]);
+        $result = $this->ElasticLocator->get('Users', ['className' => MyUsersIndex::class]);
+        $result2 = $this->ElasticLocator->get('Users', ['className' => MyUsersIndex::class]);
         $this->assertEquals($result, $result2);
     }
 
@@ -170,19 +169,19 @@ class IndexRegistryTest extends TestCase
     public function testGetPlugin()
     {
         $this->loadPlugins(['TestPlugin']);
-        $table = IndexRegistry::get('TestPlugin.Comments');
+        $table = $this->ElasticLocator->get('TestPlugin.Comments');
 
         $this->assertInstanceOf('TestPlugin\Model\Index\CommentsIndex', $table);
         $this->assertFalse(
-            IndexRegistry::exists('Comments'),
+            $this->ElasticLocator->exists('Comments'),
             'Short form should NOT exist'
         );
         $this->assertTrue(
-            IndexRegistry::exists('TestPlugin.Comments'),
+            $this->ElasticLocator->exists('TestPlugin.Comments'),
             'Long form should exist'
         );
 
-        $second = IndexRegistry::get('TestPlugin.Comments');
+        $second = $this->ElasticLocator->get('TestPlugin.Comments');
         $this->assertSame($table, $second, 'Can fetch long form');
     }
 
@@ -197,17 +196,17 @@ class IndexRegistryTest extends TestCase
     {
         $this->loadPlugins(['TestPlugin', 'TestPluginTwo']);
 
-        $app = IndexRegistry::get('Comments');
-        $plugin1 = IndexRegistry::get('TestPlugin.Comments');
-        $plugin2 = IndexRegistry::get('TestPluginTwo.Comments');
+        $app = $this->ElasticLocator->get('Comments');
+        $plugin1 = $this->ElasticLocator->get('TestPlugin.Comments');
+        $plugin2 = $this->ElasticLocator->get('TestPluginTwo.Comments');
 
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $app, 'Should be a generic instance');
         $this->assertInstanceOf('TestPlugin\Model\Index\CommentsIndex', $plugin1, 'Should be a concrete class');
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $plugin2, 'Should be a plugin 2 generic instance');
 
-        $plugin2 = IndexRegistry::get('TestPluginTwo.Comments');
-        $plugin1 = IndexRegistry::get('TestPlugin.Comments');
-        $app = IndexRegistry::get('Comments');
+        $plugin2 = $this->ElasticLocator->get('TestPluginTwo.Comments');
+        $plugin1 = $this->ElasticLocator->get('TestPlugin.Comments');
+        $app = $this->ElasticLocator->get('Comments');
 
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $app, 'Should still be a generic instance');
         $this->assertInstanceOf('TestPlugin\Model\Index\CommentsIndex', $plugin1, 'Should still be a concrete class');
@@ -222,7 +221,7 @@ class IndexRegistryTest extends TestCase
     public function testGetPluginWithClassNameOption()
     {
         $this->loadPlugins(['TestPlugin']);
-        $table = IndexRegistry::get(
+        $table = $this->ElasticLocator->get(
             'MyComments',
             [
             'className' => 'TestPlugin.Comments',
@@ -230,11 +229,11 @@ class IndexRegistryTest extends TestCase
         );
         $class = 'TestPlugin\Model\Index\CommentsIndex';
         $this->assertInstanceOf($class, $table);
-        $this->assertFalse(IndexRegistry::exists('Comments'), 'Class name should not exist');
-        $this->assertFalse(IndexRegistry::exists('TestPlugin.Comments'), 'Full class alias should not exist');
-        $this->assertTrue(IndexRegistry::exists('MyComments'), 'Class name should exist');
+        $this->assertFalse($this->ElasticLocator->exists('Comments'), 'Class name should not exist');
+        $this->assertFalse($this->ElasticLocator->exists('TestPlugin.Comments'), 'Full class alias should not exist');
+        $this->assertTrue($this->ElasticLocator->exists('MyComments'), 'Class name should exist');
 
-        $second = IndexRegistry::get('MyComments');
+        $second = $this->ElasticLocator->get('MyComments');
         $this->assertSame($table, $second);
     }
 
@@ -247,13 +246,13 @@ class IndexRegistryTest extends TestCase
     {
         $this->loadPlugins(['TestPlugin']);
         $class = 'TestPlugin\Model\Index\CommentsIndex';
-        $table = IndexRegistry::get(
+        $table = $this->ElasticLocator->get(
             'Comments',
             ['className' => $class]
         );
         $this->assertInstanceOf($class, $table);
-        $this->assertFalse(IndexRegistry::exists('TestPlugin.Comments'), 'Full class alias should not exist');
-        $this->assertTrue(IndexRegistry::exists('Comments'), 'Class name should exist');
+        $this->assertFalse($this->ElasticLocator->exists('TestPlugin.Comments'), 'Full class alias should not exist');
+        $this->assertTrue($this->ElasticLocator->exists('Comments'), 'Class name should exist');
     }
 
     /**
@@ -264,8 +263,8 @@ class IndexRegistryTest extends TestCase
     public function testSet()
     {
         $mock = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
-        $this->assertSame($mock, IndexRegistry::set('Articles', $mock));
-        $this->assertSame($mock, IndexRegistry::get('Articles'));
+        $this->assertSame($mock, $this->ElasticLocator->set('Articles', $mock));
+        $this->assertSame($mock, $this->ElasticLocator->get('Articles'));
     }
 
     /**
@@ -280,8 +279,8 @@ class IndexRegistryTest extends TestCase
         $mock = $this->getMockBuilder('TestPlugin\Model\Index\CommentsIndex')
             ->getMock();
 
-        $this->assertSame($mock, IndexRegistry::set('TestPlugin.Comments', $mock));
-        $this->assertSame($mock, IndexRegistry::get('TestPlugin.Comments'));
+        $this->assertSame($mock, $this->ElasticLocator->set('TestPlugin.Comments', $mock));
+        $this->assertSame($mock, $this->ElasticLocator->get('TestPlugin.Comments'));
     }
 
     /**
@@ -291,21 +290,21 @@ class IndexRegistryTest extends TestCase
      */
     public function testRemove()
     {
-        $first = IndexRegistry::get('Comments');
+        $first = $this->ElasticLocator->get('Comments');
 
-        $this->assertTrue(IndexRegistry::exists('Comments'));
+        $this->assertTrue($this->ElasticLocator->exists('Comments'));
 
-        IndexRegistry::remove('Comments');
-        $this->assertFalse(IndexRegistry::exists('Comments'));
+        $this->ElasticLocator->remove('Comments');
+        $this->assertFalse($this->ElasticLocator->exists('Comments'));
 
-        $second = IndexRegistry::get('Comments');
+        $second = $this->ElasticLocator->get('Comments');
 
         $this->assertNotSame(
             $first,
             $second,
             'Should be different, as the reference to the first was destroyed'
         );
-        $this->assertTrue(IndexRegistry::exists('Comments'));
+        $this->assertTrue($this->ElasticLocator->exists('Comments'));
     }
 
     /**
@@ -322,44 +321,44 @@ class IndexRegistryTest extends TestCase
     {
         $this->loadPlugins(['TestPlugin', 'TestPluginTwo']);
 
-        $app = IndexRegistry::get('Comments');
-        IndexRegistry::get('TestPlugin.Comments');
-        $plugin = IndexRegistry::get('TestPluginTwo.Comments');
+        $app = $this->ElasticLocator->get('Comments');
+        $this->ElasticLocator->get('TestPlugin.Comments');
+        $plugin = $this->ElasticLocator->get('TestPluginTwo.Comments');
 
-        $this->assertTrue(IndexRegistry::exists('Comments'));
-        $this->assertTrue(IndexRegistry::exists('TestPlugin.Comments'));
-        $this->assertTrue(IndexRegistry::exists('TestPluginTwo.Comments'));
+        $this->assertTrue($this->ElasticLocator->exists('Comments'));
+        $this->assertTrue($this->ElasticLocator->exists('TestPlugin.Comments'));
+        $this->assertTrue($this->ElasticLocator->exists('TestPluginTwo.Comments'));
 
-        IndexRegistry::remove('TestPlugin.Comments');
+        $this->ElasticLocator->remove('TestPlugin.Comments');
 
-        $this->assertTrue(IndexRegistry::exists('Comments'));
-        $this->assertFalse(IndexRegistry::exists('TestPlugin.Comments'));
-        $this->assertTrue(IndexRegistry::exists('TestPluginTwo.Comments'));
+        $this->assertTrue($this->ElasticLocator->exists('Comments'));
+        $this->assertFalse($this->ElasticLocator->exists('TestPlugin.Comments'));
+        $this->assertTrue($this->ElasticLocator->exists('TestPluginTwo.Comments'));
 
-        $app2 = IndexRegistry::get('Comments');
-        $plugin2 = IndexRegistry::get('TestPluginTwo.Comments');
+        $app2 = $this->ElasticLocator->get('Comments');
+        $plugin2 = $this->ElasticLocator->get('TestPluginTwo.Comments');
 
         $this->assertSame($app, $app2, 'Should be the same Comments object');
         $this->assertSame($plugin, $plugin2, 'Should be the same TestPluginTwo.Comments object');
 
-        IndexRegistry::remove('Comments');
+        $this->ElasticLocator->remove('Comments');
 
-        $this->assertFalse(IndexRegistry::exists('Comments'));
-        $this->assertFalse(IndexRegistry::exists('TestPlugin.Comments'));
-        $this->assertTrue(IndexRegistry::exists('TestPluginTwo.Comments'));
+        $this->assertFalse($this->ElasticLocator->exists('Comments'));
+        $this->assertFalse($this->ElasticLocator->exists('TestPlugin.Comments'));
+        $this->assertTrue($this->ElasticLocator->exists('TestPluginTwo.Comments'));
 
-        $plugin3 = IndexRegistry::get('TestPluginTwo.Comments');
+        $plugin3 = $this->ElasticLocator->get('TestPluginTwo.Comments');
 
         $this->assertSame($plugin, $plugin3, 'Should be the same TestPluginTwo.Comments object');
     }
 
     public function testSetFallbackClassName(): void
     {
-        IndexRegistry::setFallbackClassName('TestApp\Model\Index\UsersIndex');
+        $this->ElasticLocator->setFallbackClassName('TestApp\Model\Index\UsersIndex');
 
-        $result = IndexRegistry::get('Droids');
+        $result = $this->ElasticLocator->get('Droids');
         $this->assertInstanceOf('TestApp\Model\Index\UsersIndex', $result);
 
-        IndexRegistry::setFallbackClassName(Index::class);
+        $this->ElasticLocator->setFallbackClassName(Index::class);
     }
 }

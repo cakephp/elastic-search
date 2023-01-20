@@ -20,7 +20,6 @@ use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\EntityInterface;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
-use Cake\ElasticSearch\IndexRegistry;
 use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\Event\EventInterface;
 use Elastica\Exception\NotFoundException;
@@ -40,7 +39,7 @@ class IndexTest extends TestCase
             'name' => 'articles',
             'connection' => $this->connection,
         ]);
-        IndexRegistry::clear();
+        $this->ElasticLocator->clear();
     }
 
     /**
@@ -93,7 +92,7 @@ class IndexTest extends TestCase
      */
     public function testGetEntityClassCustom()
     {
-        $index = IndexRegistry::get('TestPlugin.Comments');
+        $index = $this->ElasticLocator->get('TestPlugin.Comments');
 
         $this->assertSame('TestPlugin\Model\Document\Comment', $index->getEntityClass());
     }
@@ -106,7 +105,7 @@ class IndexTest extends TestCase
      */
     public function testGetEntityClassDynamic()
     {
-        $index = IndexRegistry::get('Accounts');
+        $index = $this->ElasticLocator->get('Accounts');
 
         $this->assertSame(Document::class, $index->getEntityClass());
     }
@@ -369,7 +368,7 @@ class IndexTest extends TestCase
         );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
-        $this->assertNotEmpty($doc->_version, 'Should get a version');
+        $this->assertNotEmpty($doc->version, 'Should get a version');
         $this->assertFalse($doc->isNew(), 'Not new anymore.');
         $this->assertFalse($doc->isDirty(), 'Not dirty anymore.');
 
@@ -395,7 +394,7 @@ class IndexTest extends TestCase
         );
         $this->assertSame($doc, $this->index->save($doc, ['routing' => 'abcd']));
         $this->assertNotEmpty($doc->id, 'Should get an id');
-        $this->assertNotEmpty($doc->_version, 'Should get a version');
+        $this->assertNotEmpty($doc->version, 'Should get a version');
         $this->assertFalse($doc->isNew(), 'Not new anymore.');
         $this->assertFalse($doc->isDirty(), 'Not dirty anymore.');
 
@@ -650,11 +649,11 @@ class IndexTest extends TestCase
         );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
-        $this->assertNotEmpty($doc->_version, 'Should get a version');
+        $this->assertNotEmpty($doc->version, 'Should get a version');
 
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
-        $this->assertNotEmpty($doc->_version, 'Should get a version');
+        $this->assertNotEmpty($doc->version, 'Should get a version');
     }
 
     /**
@@ -875,7 +874,7 @@ class IndexTest extends TestCase
      */
     public function testRegistryAlias()
     {
-        $index = IndexRegistry::get('TestPlugin.Comments');
+        $index = $this->ElasticLocator->get('TestPlugin.Comments');
 
         $this->assertSame('articles', $this->index->getRegistryAlias());
         $this->assertSame('TestPlugin.Comments', $index->getRegistryAlias());
