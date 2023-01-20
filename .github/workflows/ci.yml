@@ -97,32 +97,22 @@ jobs:
       with:
         php-version: '8.1'
         extensions: mbstring, intl, apcu
-        tools: cs2pr
+        tools: cs2pr, phive
         coverage: none
 
     - name: Composer install
       uses: ramsey/composer-install@v2
 
-    - name: Install PHIVE
-      uses: szepeviktor/phive@v1
-      with:
-        home: ${{ runner.temp }}/.phive
-        binPath: ${{ github.workspace }}/tools/phive
-
     - name: Stan setup
-      uses: szepeviktor/phive-install@v1
-      with:
-        home: ${{ runner.temp }}/.phive
-        binPath: ${{ github.workspace }}/tools/phive
-        trustGpgKeys: "4AA394086372C20A,CF1A108D0E7AE720,E82B2FB314E9906E"
+      run: script -e -c "composer stan-setup"
 
     - name: Run PHP CodeSniffer
       run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
 
     - name: Run psalm
       if: always()
-      run: psalm --output-format=github
+      run: tools/psalm --output-format=github
 
     - name: Run phpstan
       if: always()
-      run: phpstan analyse --error-format=github
+      run: tools/phpstan analyse --error-format=github
