@@ -59,7 +59,7 @@
         ],
         "phpstan": "tools/phpstan analyse",
         "psalm": "tools/psalm --show-info=false",
-        "stan-baseline": "tools/phpstan --generate-baseline",
+        "phpstan-baseline": "tools/phpstan --generate-baseline",
         "psalm-baseline": "tools/psalm  --set-baseline=psalm-baseline.xml",
         "stan-setup": "phive install"
     }
