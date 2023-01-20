@@ -120,9 +120,13 @@ jobs:
       run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
 
     - name: Run psalm
+      env:
+        DB_URL: Cake\ElasticSearch\Datasource\Connection://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}?driver=Cake\ElasticSearch\Datasource\Connection
       if: always()
       run: tools/psalm --output-format=github
 
     - name: Run phpstan
+      env:
+        DB_URL: Cake\ElasticSearch\Datasource\Connection://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}?driver=Cake\ElasticSearch\Datasource\Connection
       if: always()
       run: tools/phpstan analyse --error-format=github
