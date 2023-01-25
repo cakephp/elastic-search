@@ -20,9 +20,8 @@ use Cake\Database\Log\LoggedQuery;
 use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
+use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\Log\Log;
-use Cake\TestSuite\TestCase;
-use Elastica\Exception\InvalidException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -34,20 +33,6 @@ class ConnectionTest extends TestCase
     {
         parent::tearDown();
         Log::drop('elasticsearch');
-    }
-
-    /**
-     * Tests the getIndex method that calling it with no arguments,
-     * which is not supported
-     *
-     * @return void
-     */
-    public function testGetEmptyIndex()
-    {
-        $this->expectException(InvalidException::class);
-
-        $connection = new Connection();
-        $connection->getIndex();
     }
 
     /**
@@ -138,6 +123,7 @@ class ConnectionTest extends TestCase
             ),
         ]);
 
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test');
         $connection->setLogger($logger);
         $connection->enableQueryLogging();

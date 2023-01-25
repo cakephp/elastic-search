@@ -16,12 +16,13 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\TestSuite;
 
-use Cake\Core\Exception\Exception as CakeException;
+use Cake\Core\Exception\CakeException;
 use Cake\Datasource\ConnectionInterface;
 use Cake\Datasource\FixtureInterface;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\IndexRegistry;
+use Cake\Log\Log;
 use Cake\Utility\Inflector;
 use Elastica\Mapping as ElasticaMapping;
 use Elastica\Query\MatchAll;
@@ -84,7 +85,7 @@ class TestFixture implements FixtureInterface
     /**
      * Instantiate the fixture.
      *
-     * @throws \Cake\Core\Exception\Exception on invalid datasource usage.
+     * @throws \Cake\Core\Exception\CakeException on invalid datasource usage.
      */
     public function __construct()
     {
@@ -121,7 +122,7 @@ class TestFixture implements FixtureInterface
     {
         $name = Inflector::camelize($this->table);
 
-        return IndexRegistry::get($name);
+        return (new IndexRegistry())->get($name);
     }
 
     /**
@@ -172,17 +173,17 @@ class TestFixture implements FixtureInterface
     /**
      * Insert fixture documents.
      *
-     * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
+     * @param \Cake\Datasource\ConnectionInterface $connection The Elasticsearch connection
      * @return bool
      */
-    public function insert(ConnectionInterface $db): bool
+    public function insert(ConnectionInterface $connection): bool
     {
-        assert($db instanceof Connection, 'Requires an elasticsearch connection');
+        assert($connection instanceof Connection, 'Requires an elasticsearch connection');
         if (empty($this->records)) {
             return false;
         }
         $documents = [];
-        $esIndex = $db->getIndex($this->getIndex()->getName());
+        $esIndex = $connection->getIndex($this->getIndex()->getName());
 
         foreach ($this->records as $data) {
             $id = '';
@@ -221,15 +222,15 @@ class TestFixture implements FixtureInterface
     /**
      * Truncate the fixture type.
      *
-     * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
+     * @param \Cake\Datasource\ConnectionInterface $connection The Elasticsearch connection
      * @return bool
      */
-    public function truncate(ConnectionInterface $db): bool
+    public function truncate(ConnectionInterface $connection): bool
     {
         $query = new MatchAll();
-        assert($db instanceof Connection, 'Requires an elasticsearch connection');
+        assert($connection instanceof Connection, 'Requires an elasticsearch connection');
 
-        $esIndex = $db->getIndex($this->getIndex()->getName());
+        $esIndex = $connection->getIndex($this->getIndex()->getName());
         $esIndex->deleteByQuery($query);
         $esIndex->refresh();
 

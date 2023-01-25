@@ -706,7 +706,7 @@ class QueryBuilder
      * `<`, `>`, `<=`, `>=`, `in`, `not in`, `is`, `is not`, `!=`
      *
      * @param \Elastica\Query\AbstractQuery|array $conditions The list of conditions to parse.
-     * @return array
+     * @return \Elastica\Query\AbstractQuery|array
      */
     public function parse(array|AbstractQuery $conditions): AbstractQuery|array
     {
@@ -749,9 +749,7 @@ class QueryBuilder
                 continue;
             }
 
-            if (!$numericKey) {
-                $result[] = $this->_parseQuery($k, $c);
-            }
+            $result[] = $this->_parseQuery($k, $c);
         }
 
         return $result;

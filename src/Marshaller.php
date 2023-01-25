@@ -19,6 +19,7 @@ namespace Cake\ElasticSearch;
 use ArrayObject;
 use Cake\Collection\Collection;
 use Cake\Datasource\EntityInterface;
+use Cake\Datasource\FactoryLocator;
 use Cake\ElasticSearch\Association\Embedded;
 use RuntimeException;
 
@@ -104,7 +105,8 @@ class Marshaller
         if ($indexClass === null) {
             $embeds = $this->index->embedded();
         } else {
-            $index = IndexRegistry::get($indexClass);
+            /** @var \Cake\ElasticSearch\Index $index */
+            $index = FactoryLocator::get('Elastic')->get($indexClass);
             $embeds = $index->embedded();
         }
 
@@ -148,9 +150,7 @@ class Marshaller
         $class = $embed->getEntityClass();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
             return $this->createAndHydrate($class, $data, $options, $embed->getIndexClass());
-        }
-
-        if ($embed->type() === Embedded::ONE_TO_MANY) {
+        } else {
             $children = [];
             foreach ($data as $row) {
                 if (is_array($row)) {
@@ -180,9 +180,7 @@ class Marshaller
             $existing->set($data);
 
             return $existing;
-        }
-
-        if ($embed->type() === Embedded::ONE_TO_MANY) {
+        } else {
             if (!is_array($existing)) {
                 $existing = [];
             }
@@ -290,12 +288,12 @@ class Marshaller
      * * fieldList: A whitelist of fields to be assigned to the entity. If not present,
      *   the accessible fields list in the entity will be used.
      *
-     * @param array $entities An array of Elasticsearch entities
+     * @param iterable $entities An array of Elasticsearch entities
      * @param array $data A list of entity data you want converted into objects.
      * @param array $options Options
      * @return array An array of merged entities
      */
-    public function mergeMany(array $entities, array $data, array $options = []): array
+    public function mergeMany(iterable $entities, array $data, array $options = []): array
     {
         $indexed = (new Collection($data))
             ->groupBy(function ($element) {

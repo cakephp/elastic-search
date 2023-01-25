@@ -22,7 +22,6 @@ use Cake\Collection\Collection;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
-use Cake\ElasticSearch\IndexRegistry;
 use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Http\ServerRequest;
@@ -64,7 +63,7 @@ class DocumentContextTest extends TestCase
     public function tearDown(): void
     {
         parent::tearDown();
-        IndexRegistry::clear();
+        $this->ElasticLocator->clear();
     }
 
     /**
@@ -609,7 +608,7 @@ class DocumentContextTest extends TestCase
      */
     protected function setupIndex()
     {
-        $articles = IndexRegistry::get('Articles');
+        $articles = $this->ElasticLocator->get('Articles');
         $articles->embedOne('User');
         $articles->embedMany('Comments');
 

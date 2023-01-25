@@ -5,6 +5,7 @@ namespace Cake\ElasticSearch\Association;
 
 use Cake\Core\App;
 use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\ElasticSearch\Index;
 use Cake\Utility\Inflector;
 
@@ -153,6 +154,9 @@ abstract class Embedded
             }
 
             $class = App::className($name, 'Model/Document');
+            if (!$class) {
+                throw new MissingDocumentException([$name]);
+            }
             $this->entityClass = $class;
         }
 

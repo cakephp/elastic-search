@@ -19,7 +19,7 @@ namespace Cake\ElasticSearch\Test\TestCase;
 use Cake\ElasticSearch\Index;
 
 /**
- * Used to test correct class is instantiated when using IndexRegistry::get();
+ * Used to test correct class is instantiated when using $this->ElasticLocator->get();
  */
 class MyUsersIndex extends Index
 {

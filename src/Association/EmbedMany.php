@@ -15,6 +15,7 @@ class EmbedMany extends Embedded
      * @param array $data The data to use in the embedded document.
      * @param array $options The options to use in the new document.
      * @return array<\Cake\ElasticSearch\Document>
+     * @psalm-suppress MoreSpecificReturnType
      */
     public function hydrate(array $data, array $options): array
     {

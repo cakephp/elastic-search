@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\View\Form;
 
 use Cake\Collection\Collection;
+use Cake\Datasource\FactoryLocator;
 use Cake\ElasticSearch\Document;
-use Cake\ElasticSearch\IndexRegistry;
 use Cake\Http\ServerRequest;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
@@ -107,13 +107,13 @@ class DocumentContext implements ContextInterface
             if ($isDocument) {
                 $index = $entity->getSource();
             }
-            if (!$index && $isDocument && get_class($entity) !== 'Cake\ElasticSearch\Document') {
+            if (!$index && $isDocument) {
                 [, $entityClass] = namespaceSplit(get_class($entity));
                 $index = Inflector::pluralize($entityClass);
             }
         }
         if (is_string($index)) {
-            $index = IndexRegistry::get($index);
+            $index = FactoryLocator::get('Elastic')->get($index);
         }
 
         if (!is_object($index)) {
@@ -200,10 +200,6 @@ class DocumentContext implements ContextInterface
      */
     protected function entity(array $path): object|array|false
     {
-        if ($path === null) {
-            return $this->_context['entity'];
-        }
-
         $oneElement = count($path) === 1;
         if ($oneElement && $this->_isCollection) {
             return false;
@@ -316,7 +312,7 @@ class DocumentContext implements ContextInterface
     {
         $parts = explode('.', $field);
 
-        $validator = $this->_getValidator($parts);
+        $validator = $this->getValidator();
         $fieldName = array_pop($parts);
         if (!$validator->hasField($fieldName)) {
             return null;
@@ -346,7 +342,7 @@ class DocumentContext implements ContextInterface
     public function getMaxLength(string $field): ?int
     {
         $parts = explode('.', $field);
-        $validator = $this->_getValidator($parts);
+        $validator = $this->getValidator();
         $fieldName = array_pop($parts);
         if (!$validator->hasField($fieldName)) {
             return null;
@@ -428,6 +424,6 @@ class DocumentContext implements ContextInterface
             $errors = Hash::extract($entityErrors, $field) ?: [];
         }
 
-        return $errors;
+        return (array)$errors;
     }
 }

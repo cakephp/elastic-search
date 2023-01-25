@@ -81,7 +81,7 @@ class MappingSchema
         $pointer = $this->data;
         foreach ($parts as $part) {
             if (isset($pointer[$part]['type']) && $pointer[$part]['type'] !== 'nested') {
-                return $pointer[$part];
+                return (array)$pointer[$part];
             }
             if (isset($pointer[$part]['properties'])) {
                 $pointer = $pointer[$part]['properties'];

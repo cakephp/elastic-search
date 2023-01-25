@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="dev-master@">
+  <file src="src/Datasource/Connection.php">
+    <InvalidReturnStatement occurrences="1">
+      <code>$this-&gt;_client-&gt;getConfig()</code>
+    </InvalidReturnStatement>
+    <InvalidReturnType occurrences="1">
+      <code>array</code>
+    </InvalidReturnType>
+    <LessSpecificImplementedReturnType occurrences="1">
+      <code>array</code>
+    </LessSpecificImplementedReturnType>
+  </file>
+  <file src="src/Index.php">
+    <NoInterfaceProperties occurrences="5">
+      <code>$entity-&gt;version</code>
+      <code>$entity-&gt;id</code>
+      <code>$entity-&gt;id</code>
+      <code>$entity-&gt;id</code>
+      <code>$entity-&gt;id</code>
+    </NoInterfaceProperties>
+  </file>
+  <file src="src/Marshaller.php">
+    <InvalidDocblock occurrences="1">
+      <code>public function one(array $data, array $options = []): Document</code>
+    </InvalidDocblock>
+    <NoInterfaceProperties occurrences="1">
+      <code>$record-&gt;id</code>
+    </NoInterfaceProperties>
+  </file>
+  <file src="src/Query.php">
+    <InvalidArgument occurrences="3">
+      <code>$query</code>
+      <code>$query</code>
+      <code>false</code>
+    </InvalidArgument>
+    <LessSpecificImplementedReturnType occurrences="1">
+      <code>\Traversable</code>
+    </LessSpecificImplementedReturnType>
+  </file>
+</files>

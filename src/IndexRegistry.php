@@ -18,6 +18,8 @@ namespace Cake\ElasticSearch;
 
 use Cake\Core\App;
 use Cake\Datasource\ConnectionManager;
+use Cake\Datasource\Locator\LocatorInterface;
+use Cake\Datasource\RepositoryInterface;
 use Cake\Utility\Inflector;
 use RuntimeException;
 
@@ -29,7 +31,7 @@ use RuntimeException;
  *
  * Provides an interface similar to Cake\ORM\TableRegistry.
  */
-class IndexRegistry
+class IndexRegistry implements LocatorInterface
 {
     /**
      * The map of instances in the registry.
@@ -77,7 +79,7 @@ class IndexRegistry
      * @param array $options Configuration options for the type constructor.
      * @return \Cake\ElasticSearch\Index
      */
-    public static function get(string $alias, array $options = []): Index
+    public function get(string $alias, array $options = []): Index
     {
         if (isset(static::$instances[$alias])) {
             if (!empty($options) && static::$options[$alias] !== $options) {
@@ -124,7 +126,7 @@ class IndexRegistry
      * @param string $alias The alias to check for.
      * @return bool
      */
-    public static function exists(string $alias): bool
+    public function exists(string $alias): bool
     {
         return isset(static::$instances[$alias]);
     }
@@ -133,12 +135,13 @@ class IndexRegistry
      * Set an instance.
      *
      * @param string $alias The alias to set.
-     * @param \Cake\ElasticSearch\Index $object The type to set.
+     * @param \Cake\Datasource\RepositoryInterface $repository The type to set.
      * @return \Cake\ElasticSearch\Index
+     * @psalm-return \Cake\Datasource\RepositoryInterface
      */
-    public static function set(string $alias, Index $object): Index
+    public function set(string $alias, RepositoryInterface $repository): RepositoryInterface
     {
-        return static::$instances[$alias] = $object;
+        return static::$instances[$alias] = $repository;
     }
 
     /**
@@ -146,7 +149,7 @@ class IndexRegistry
      *
      * @return void
      */
-    public static function clear(): void
+    public function clear(): void
     {
         static::$instances = [];
     }
@@ -157,7 +160,7 @@ class IndexRegistry
      * @param string $alias The alias to remove.
      * @return void
      */
-    public static function remove(string $alias): void
+    public function remove(string $alias): void
     {
         unset(static::$instances[$alias]);
     }

@@ -38,16 +38,20 @@ use Closure;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 use RuntimeException;
-use Traversable;
 
 /**
  * Base class for index.
  *
  * A index in elastic search is approximately equivalent to a table or collection
  * in a relational datastore. This ODM maps each index to a class.
+ *
+ * @implements \Cake\Event\EventDispatcherInterface<\Cake\ElasticSearch\Index>
  */
 class Index implements RepositoryInterface, EventListenerInterface, EventDispatcherInterface
 {
+    /**
+     * @use \Cake\Event\EventDispatcherTrait<\Cake\ElasticSearch\Index>
+     */
     use EventDispatcherTrait;
     use RulesAwareTrait;
     use ValidatorAwareTrait;
@@ -365,7 +369,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $type name of the finder to be called
      * @param \Cake\ElasticSearch\Query $query The query object to apply the finder options to
      * @param array $options List of options to pass to the finder
-     * @return \Cake\ElasticSearch\Query
+     * @return \Cake\ElasticSearch\Query<\Cake\ElasticSearch\Document>
      * @throws \BadMethodCallException
      */
     public function callFinder(string $type, Query $query, array $options = []): Query
@@ -393,12 +397,12 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * This method will not trigger the Model.beforeFind callback as it does not use
      * queries for the search, but a faster key lookup to the search index.
      *
-     * @param string $primaryKey The document's primary key
+     * @param mixed $primaryKey The document's primary key
      * @param array $options An array of options
      * @throws \Elastica\Exception\NotFoundException if no document exist with such id
      * @return \Cake\ElasticSearch\Document A new Elasticsearch document entity
      */
-    public function get($primaryKey, $options = []): EntityInterface
+    public function get(mixed $primaryKey, $options = []): EntityInterface
     {
         $esIndex = $this->getConnection()->getIndex($this->getName());
         $result = $esIndex->getDocument($primaryKey, $options);
@@ -449,8 +453,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * This method will *not* trigger beforeSave/afterSave events. If you need those
      * first load a collection of records and update them.
      *
-     * @param array $fields A hash of field => new value.
-     * @param array $conditions An array of conditions, similar to those used with find()
+     * @param \Closure|array|string $fields A hash of field => new value.
+     * @param \Closure|array|string|null $conditions An array of conditions, similar to those used with find()
      * @return int
      */
     public function updateAll(Closure|array|string $fields, Closure|array|string|null $conditions): int
@@ -466,7 +470,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * This method will *not* trigger beforeDelete/afterDelete events. If you
      * need those first load a collection of records and delete them.
      *
-     * @param array $conditions An array of conditions, similar to those used with find()
+     * @param \Closure|array|string|null $conditions An array of conditions, similar to those used with find()
      * @return int Success Returns 1 if one or more documents are effected.
      * @see RepositoryInterface::delete()
      */
@@ -484,13 +488,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * Returns true if there is any record in this repository matching the specified
      * conditions.
      *
-     * @param array $conditions list of conditions to pass to the query
+     * @param \Closure|array|string|null $conditions list of conditions to pass to the query
      * @return bool
      */
     public function exists(Closure|array|string|null $conditions): bool
     {
         $query = $this->query();
-        if (count($conditions) && isset($conditions['id'])) {
+        if (count($conditions) && is_array($conditions) && isset($conditions['id'])) {
             $query->where(function ($builder) use ($conditions) {
                 return $builder->ids((array)$conditions['id']);
             });
@@ -599,7 +603,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param \Cake\Datasource\EntityInterface $entity The entity to be saved
      * @param array $options An array of options to be used for the event
-     * @return \Cake\Datasource\EntityInterface|bool
+     * @return \Cake\Datasource\EntityInterface|false
      */
     public function save(EntityInterface $entity, array $options = []): EntityInterface|false
     {
@@ -647,7 +651,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
 
         $entity->id = $doc->getId();
-        $entity->_version = $doc->getVersion();
+        $entity->version = $doc->getVersion();
         $entity->setNew(false);
         $entity->setSource($this->getRegistryAlias());
         $entity->clean();
@@ -740,7 +744,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * on the primary key data existing in the database when the entity
      * is saved. Until the entity is saved, it will be a detached record.
      *
-     * @param array|null $data The data to build an entity with.
+     * @param array $data The data to build an entity with.
      * @param array $options A list of options for the object hydration.
      * @return \Cake\Datasource\EntityInterface
      */
@@ -762,8 +766,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * The hydrated entities can then be iterated and saved.
      *
      * @param array $data The data to build an entity with.
-     * @param array $options A list of options for the objects hydration.
-     * @return array An array of hydrated records.
+     * @param array<string, mixed> $options A list of options for the objects hydration.
+     * @return array<\Cake\Datasource\EntityInterface> An array of hydrated records.
      */
     public function newEntities(array $data, array $options = []): array
     {
@@ -860,13 +864,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * $article = $this->Articles->patchEntities($articles, $this->request->data());
      * ```
      *
-     * @param \Traversable|array $entities the entities that will get the
+     * @param iterable $entities the entities that will get the
      * data merged in
      * @param array $data list of arrays to be merged into the entities
      * @param array $options A list of options for the objects hydration.
-     * @return array
+     * @return array<\Cake\Datasource\EntityInterface>
      */
-    public function patchEntities(Traversable|array $entities, array $data, array $options = []): array
+    public function patchEntities(iterable $entities, array $data, array $options = []): array
     {
         $marshaller = $this->marshaller();
 
@@ -924,7 +928,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * - Model.beforeRules => beforeRules
      * - Model.afterRules => afterRules
      *
-     * @return array
+     * @return array<string,mixed>
      */
     public function implementedEvents(): array
     {

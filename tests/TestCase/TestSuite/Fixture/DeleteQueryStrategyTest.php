@@ -16,7 +16,6 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\Test\TestCase\TestSuite\Fixture;
 
-use Cake\ElasticSearch\IndexRegistry;
 use Cake\ElasticSearch\TestSuite\Fixture\DeleteQueryStrategy;
 use Cake\ElasticSearch\TestSuite\TestCase;
 
@@ -32,7 +31,7 @@ class DeleteQueryStrategyTest extends TestCase
      */
     public function testTeardownTest()
     {
-        $articleIndex = IndexRegistry::get('Articles');
+        $articleIndex = $this->ElasticLocator->get('Articles');
 
         $strategy = new DeleteQueryStrategy();
         $strategy->setupTest(['plugin.Cake/ElasticSearch.Articles']);
