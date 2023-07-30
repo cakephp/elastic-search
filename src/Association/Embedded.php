@@ -8,6 +8,7 @@ use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\ElasticSearch\Index;
 use Cake\Utility\Inflector;
+use function Cake\Core\deprecationWarning;
 
 /**
  * Represents an embedded document.

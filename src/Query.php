@@ -345,7 +345,7 @@ class Query implements IteratorAggregate, QueryInterface
      * {@inheritDoc}
      *
      * @param string $finder The finder method to use.
-     * @param array $options The options for the finder.
+     * @param array $args The options for the finder.
      * @return static<TSubject> Returns a modified query.
      * @psalm-suppress MoreSpecificReturnType
      */

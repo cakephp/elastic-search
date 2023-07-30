@@ -39,15 +39,21 @@ use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
 use RuntimeException;
+use function Cake\Core\namespaceSplit;
 
 /**
  * Base class for index.
  *
  * A index in elastic search is approximately equivalent to a table or collection
  * in a relational datastore. This ODM maps each index to a class.
+ *
+ * @implements \Cake\Event\EventDispatcherInterface<\Cake\ORM\Table>
  */
 class Index implements RepositoryInterface, EventListenerInterface, EventDispatcherInterface
 {
+    /**
+     * @use \Cake\Event\EventDispatcherTrait<\Cake\ElasticSearch\Index>
+     */
     use EventDispatcherTrait;
     use RulesAwareTrait;
     use ValidatorAwareTrait;
@@ -336,8 +342,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * listeners. Any listener can set a valid result set using $query
      *
      * @param string $type the type of query to perform
-     * @param array ...$args Additional arguments for the find operation
-     * @param array $options An array that will be passed to Query::applyOptions
+     * @param mixed ...$args Additional arguments for the find operation
      * @return \Cake\ElasticSearch\Query
      */
     public function find(string $type = 'all', mixed ...$args): Query

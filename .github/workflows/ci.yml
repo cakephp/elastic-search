@@ -76,7 +76,7 @@ jobs:
         DB_URL: Cake\ElasticSearch\Datasource\Connection://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}?driver=Cake\ElasticSearch\Datasource\Connection
       run: |
         if [[ ${{ matrix.php-version }} == '8.1' ]]; then
-          export CODECOVERAGE=1 && vendor/bin/phpunit --verbose --coverage-clover=coverage.xml
+          export CODECOVERAGE=1 && vendor/bin/phpunit --display-incomplete --display-skipped --coverage-clover=coverage.xml
         else
           vendor/bin/phpunit
         fi

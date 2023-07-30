@@ -530,7 +530,7 @@ class DocumentContextTest extends TestCase
      */
     public function testFieldNames()
     {
-        $articles = $this->setupIndex();
+        $this->setupIndex();
         $context = new DocumentContext(
             $this->request,
             [

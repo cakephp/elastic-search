@@ -780,7 +780,7 @@ class MarshallerTest extends TestCase
      */
     public function testMergeManyBadEntityData()
     {
-        $doc = $this->index->get(1);
+        $this->index->get(1);
         $entities = ['text', ['herp' => 'derp']];
 
         $data = [

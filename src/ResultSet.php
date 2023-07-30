@@ -27,7 +27,9 @@ use IteratorIterator;
  * Decorates the Elastica ResultSet in order to hydrate results with the
  * correct class and provide a Collection interface to the returned results.
  *
+ * @template T of \Cake\Datasource\EntityInterface|array
  * @template-extends \IteratorIterator<mixed, mixed, \Traversable<mixed>>
+ * @implements \Cake\Datasource\ResultSetInterface<T>
  */
 class ResultSet extends IteratorIterator implements ResultSetInterface
 {

@@ -128,7 +128,7 @@ class ConnectionTest extends TestCase
         $connection->setLogger($logger);
         $connection->enableQueryLogging();
 
-        $result = $connection->request('_stats');
+        $connection->request('_stats');
         $connection->disableQueryLogging();
 
         $logs = Log::engine('elasticsearch')->read();
