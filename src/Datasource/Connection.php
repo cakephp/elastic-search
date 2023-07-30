@@ -32,6 +32,11 @@ use RuntimeException;
 class Connection implements ConnectionInterface
 {
     /**
+     * Compatibility shim for ConnectionInterface
+     */
+    public const ROLE_WRITE = 'write';
+
+    /**
      * Whether or not query logging is enabled.
      */
     protected bool $logQueries = false;

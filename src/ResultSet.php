@@ -28,7 +28,6 @@ use IteratorIterator;
  * correct class and provide a Collection interface to the returned results.
  *
  * @template-extends \IteratorIterator<mixed, mixed, \Traversable<mixed>>
- * @implements \Cake\Datasource\ResultSetInterface<\Cake\ElasticSearch\Document>
  */
 class ResultSet extends IteratorIterator implements ResultSetInterface
 {

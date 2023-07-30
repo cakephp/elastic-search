@@ -33,16 +33,16 @@ class IndexLocator extends AbstractLocator
      * Fallback class to use
      *
      * @var string
-     * @psalm-var class-string<\Cake\Elasticsearch\Index>
+     * @psalm-var class-string<\Cake\ElasticSearch\Index>
      */
-    protected $fallbackClassName = Index::class;
+    protected string $fallbackClassName = Index::class;
 
     /**
      * Whether fallback class should be used if a Index class could not be found.
      *
      * @var bool
      */
-    protected $allowFallbackClass = true;
+    protected bool $allowFallbackClass = true;
 
     /**
      * Set fallback class name.
@@ -53,7 +53,7 @@ class IndexLocator extends AbstractLocator
      *
      * @param string $className Fallback class name
      * @return $this
-     * @psalm-param class-string<\Cake\Elasticsearch\Index> $className
+     * @psalm-param class-string<\Cake\ElasticSearch\Index> $className
      */
     public function setFallbackClassName(string $className)
     {

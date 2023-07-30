@@ -19,6 +19,7 @@ namespace Cake\ElasticSearch\Datasource\Log;
 use Cake\Database\Log\LoggedQuery;
 use Cake\Database\Log\QueryLogger;
 use Cake\ElasticSearch\Datasource\Connection;
+use Exception;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -142,7 +143,7 @@ class ElasticLogger extends AbstractLogger
             $context['query'] = $message;
         }
         $exception = $context['exception'] ?? null;
-        if ($exception instanceof \Exception) {
+        if ($exception instanceof Exception) {
             throw $exception;
         }
         $this->getLogger()->log($level, $logData, $context);

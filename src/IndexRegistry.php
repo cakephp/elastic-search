@@ -18,7 +18,7 @@ namespace Cake\ElasticSearch;
 
 use Cake\Datasource\Locator\LocatorInterface;
 use Cake\Datasource\RepositoryInterface;
-use Cake\Elasticsearch\Datasource\IndexLocator;
+use Cake\ElasticSearch\Datasource\IndexLocator;
 
 /**
  * Factory/Registry class for Index objects.
@@ -36,14 +36,14 @@ class IndexRegistry implements LocatorInterface
     /**
      * The locator that the global registy is wrapping.
      *
-     * @var \Cake\ElasticSearch\Cake\ElasticSearch\Datasource\IndexLocator
+     * @var \Cake\ElasticSearch\Datasource\IndexLocator
      */
     protected static IndexLocator $locator;
 
     /**
      * Get the wrapped locator.
      *
-     * @return \Cake\ElasticSearch\IndexLocator
+     * @return \Cake\ElasticSearch\Datasource\IndexLocator
      */
     protected static function getLocator(): IndexLocator
     {
@@ -81,7 +81,10 @@ class IndexRegistry implements LocatorInterface
      */
     public function get(string $alias, array $options = []): Index
     {
-        return static::getLocator()->get($alias, $options);
+        $instance = static::getLocator()->get($alias, $options);
+        assert($instance instanceof Index);
+
+        return $instance;
     }
 
     /**
@@ -101,11 +104,13 @@ class IndexRegistry implements LocatorInterface
      * @param string $alias The alias to set.
      * @param \Cake\Datasource\RepositoryInterface $repository The type to set.
      * @return \Cake\ElasticSearch\Index
-     * @psalm-return \Cake\Datasource\RepositoryInterface
      */
-    public function set(string $alias, RepositoryInterface $repository): RepositoryInterface
+    public function set(string $alias, RepositoryInterface $repository): Index
     {
-        return static::getLocator()->set($alias, $repository);
+        $instance = static::getLocator()->set($alias, $repository);
+        assert($instance instanceof Index);
+
+        return $instance;
     }
 
     /**

@@ -44,14 +44,9 @@ use RuntimeException;
  *
  * A index in elastic search is approximately equivalent to a table or collection
  * in a relational datastore. This ODM maps each index to a class.
- *
- * @implements \Cake\Event\EventDispatcherInterface<\Cake\ElasticSearch\Index>
  */
 class Index implements RepositoryInterface, EventListenerInterface, EventDispatcherInterface
 {
-    /**
-     * @use \Cake\Event\EventDispatcherTrait<\Cake\ElasticSearch\Index>
-     */
     use EventDispatcherTrait;
     use RulesAwareTrait;
     use ValidatorAwareTrait;
