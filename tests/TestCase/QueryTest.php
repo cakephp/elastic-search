@@ -52,7 +52,7 @@ class QueryTest extends TestCase
         $index = new Index();
         $query = new Query($index);
 
-        $finder = $query->find()->find();
+        $finder = $query->find('all')->find('all');
         $this->assertInstanceOf(Query::class, $finder);
     }
 

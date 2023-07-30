@@ -143,13 +143,13 @@ class IndexLocatorTest extends TestCase
     /**
      * Test get with config throws an exception if the alias exists already.
      *
-     * @return                   void
+     * @return void
      */
     public function testGetExistingWithConfigData()
     {
         $this->expectException('RuntimeException');
-        $this->expectExceptionMessage('You cannot configure "Users", it already exists in the registry.');
-        $users = $this->locator->get('Users');
+        $this->expectExceptionMessage('You cannot configure `Users`, it already exists in the registry.');
+        $this->locator->get('Users');
         $this->locator->get('Users', ['name' => 'my_users']);
     }
 

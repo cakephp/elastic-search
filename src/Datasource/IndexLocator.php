@@ -23,6 +23,7 @@ use Cake\Datasource\RepositoryInterface;
 use Cake\ElasticSearch\Exception\MissingIndexClassException;
 use Cake\ElasticSearch\Index;
 use Cake\Utility\Inflector;
+use function Cake\Core\pluginSplit;
 
 /**
  * Datasource FactoryLocator compatible locater implementation.

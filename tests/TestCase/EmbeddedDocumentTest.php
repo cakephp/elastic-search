@@ -73,8 +73,7 @@ class EmbeddedDocumentTest extends TestCase
      *
      * @return array
      */
-
-    public function embedTypeProvider()
+    public static function embedTypeProvider()
     {
         return [
             // Test to make sure entityClass is derived from Alias

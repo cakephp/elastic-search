@@ -143,8 +143,8 @@ class IndexRegistryTest extends TestCase
     public function testGetExistingWithConfigData()
     {
         $this->expectException('RuntimeException');
-        $this->expectExceptionMessage('You cannot configure "Users", it already exists in the registry.');
-        $users = $this->ElasticLocator->get('Users');
+        $this->expectExceptionMessage('You cannot configure `Users`, it already exists in the registry.');
+        $this->ElasticLocator->get('Users');
         $this->ElasticLocator->get('Users', ['name' => 'my_users']);
     }
 

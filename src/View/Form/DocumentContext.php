@@ -26,6 +26,7 @@ use Cake\Validation\Validator;
 use Cake\View\Form\ContextInterface;
 use RuntimeException;
 use Traversable;
+use function Cake\Core\namespaceSplit;
 
 /**
  * Provides a context provider for Elasticsearch documents.

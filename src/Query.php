@@ -32,6 +32,7 @@ use InvalidArgumentException;
 use IteratorAggregate;
 use Psr\SimpleCache\CacheInterface;
 use Traversable;
+use function Cake\Collection\collection;
 
 /**
  * @template TSubject of \Cake\ElasticSearch\Document|array
@@ -348,9 +349,9 @@ class Query implements IteratorAggregate, QueryInterface
      * @return static<TSubject> Returns a modified query.
      * @psalm-suppress MoreSpecificReturnType
      */
-    public function find(string $finder = 'all', array $options = []): static
+    public function find(string $finder, mixed ...$args): static
     {
-        return $this->_repository->callFinder($finder, $this, $options);
+        return $this->_repository->callFinder($finder, $this, $args);
     }
 
     /**

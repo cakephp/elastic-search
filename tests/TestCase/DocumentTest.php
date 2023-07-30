@@ -46,7 +46,7 @@ class DocumentTest extends TestCase
     {
         $data = ['foo' => 1, 'bar' => 2];
         $result = $this->getMockBuilder('Elastica\Result')
-            ->setMethods(['getData'])
+            ->onlyMethods(['getData'])
             ->disableOriginalConstructor()
             ->getMock();
         $result->expects($this->once())->method('getData')
@@ -64,7 +64,7 @@ class DocumentTest extends TestCase
     {
         $data = ['foo' => 1, 'bar' => 2];
         $result = $this->getMockBuilder('Elastica\Result')
-            ->setMethods(['getData'])
+            ->onlyMethods(['getData'])
             ->disableOriginalConstructor()
             ->getMock();
         $document = new Document($data, ['result' => $result]);
@@ -95,7 +95,7 @@ class DocumentTest extends TestCase
     public function testTypeWithResult()
     {
         $result = $this->getMockBuilder('Elastica\Result')
-            ->setMethods(['getData', 'getId', 'getIndex', 'getVersion', 'getHighlights', 'getExplanation'])
+            ->onlyMethods(['getData', 'getId', 'getIndex', 'getVersion', 'getHighlights', 'getExplanation'])
             ->disableOriginalConstructor()
             ->getMock();
         $data = ['a' => 'b'];

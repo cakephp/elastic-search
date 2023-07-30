@@ -118,8 +118,8 @@ class IndexTest extends TestCase
      */
     public function testSetEntityClassInApp()
     {
-        $class = $this->getMockClass('Cake\ElasticSearch\Document');
-        class_alias($class, 'TestApp\Model\Document\TestUser');
+        $class = $this->getMockBuilder('Cake\ElasticSearch\Document')->getMock();
+        class_alias(get_class($class), 'TestApp\Model\Document\TestUser');
 
         $index = new Index();
         $index->setEntityClass('TestUser');
@@ -137,8 +137,8 @@ class IndexTest extends TestCase
      */
     public function testsetEntityClassInPlugin()
     {
-        $class = $this->getMockClass('\Cake\ElasticSearch\Document');
-        class_alias($class, 'MyPlugin\Model\Document\SuperUser');
+        $class = $this->getMockBuilder('\Cake\ElasticSearch\Document')->getMock();
+        class_alias(get_class($class), 'MyPlugin\Model\Document\SuperUser');
 
         $index = new Index();
         $this->assertSame($index, $index->setEntityClass('MyPlugin.SuperUser'));
@@ -171,8 +171,8 @@ class IndexTest extends TestCase
      */
     public function testSetInvalidDocumentClassButWithEntity()
     {
-        $class = $this->getMockClass('\Cake\ORM\Entity');
-        class_alias($class, 'TestApp\Model\Entity\Doge');
+        $class = $this->getMockBuilder('\Cake\ORM\Entity')->getMock();
+        class_alias(get_class($class), 'TestApp\Model\Entity\Doge');
 
         $index = new Index();
 
@@ -189,7 +189,7 @@ class IndexTest extends TestCase
     public function testGet()
     {
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
-            ->setMethods(['getIndex'])
+            ->onlyMethods(['getIndex'])
             ->getMock();
 
         $index = new Index([
@@ -206,7 +206,7 @@ class IndexTest extends TestCase
             ->will($this->returnValue($internalIndex));
 
         $document = $this->getMockBuilder('Elastica\Document')
-            ->setMethods(['getId', 'getData'])
+            ->onlyMethods(['getId', 'getData'])
             ->getMock();
         $internalIndex->expects($this->once())
             ->method('getDocument')
@@ -236,7 +236,7 @@ class IndexTest extends TestCase
     public function testNewEntity()
     {
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
-            ->setMethods(['getIndex'])
+            ->onlyMethods(['getIndex'])
             ->getMock();
         $index = new Index([
             'name' => 'articles',
@@ -259,7 +259,7 @@ class IndexTest extends TestCase
     public function testNewEntities()
     {
         $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
-            ->setMethods(['getIndex'])
+            ->onlyMethods(['getIndex'])
             ->getMock();
         $index = new Index([
             'name' => 'articles',
@@ -901,7 +901,7 @@ class IndexTest extends TestCase
         $this->assertInstanceOf('Cake\Event\EventListenerInterface', $this->index);
 
         $index = $this->getMockBuilder('Cake\ElasticSearch\Index')
-            ->setMethods(['beforeFind', 'beforeSave', 'afterSave', 'beforeDelete', 'afterDelete'])
+            ->addMethods(['beforeFind', 'beforeSave', 'afterSave', 'beforeDelete', 'afterDelete'])
             ->getMock();
         $result = $index->implementedEvents();
         $expected = [
@@ -922,7 +922,7 @@ class IndexTest extends TestCase
     public function testOwnEvents()
     {
         $index = $this->getMockBuilder('Cake\ElasticSearch\Index')
-            ->setMethods(['beforeSave'])
+            ->addMethods(['beforeSave'])
             ->getMock();
 
         $this->assertCount(1, $index->getEventManager()->listeners('Model.beforeSave'));

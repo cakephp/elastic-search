@@ -18,8 +18,6 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 define('CAKE', dirname(__DIR__) . '/vendor/cakephp/cakephp/src/');
 
-require CAKE . 'basics.php';
-
 define('ROOT', dirname(__DIR__));
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
@@ -53,8 +51,8 @@ if (!getenv('DB_URL')) {
     putenv('DB_URL=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection');
 }
 
+ConnectionManager::setConfig('elastic', ['url' => getenv('DB_URL')]);
 ConnectionManager::setConfig('test', ['url' => getenv('DB_URL')]);
-ConnectionManager::setConfig('test_elastic', ['url' => getenv('DB_URL')]);
 
 $schema = new MappingGenerator('./tests/mappings.php', 'test');
 $schema->reload();

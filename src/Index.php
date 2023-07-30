@@ -37,6 +37,7 @@ use Cake\Validation\ValidatorAwareTrait;
 use Closure;
 use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
+use Psr\SimpleCache\CacheInterface;
 use RuntimeException;
 
 /**
@@ -335,14 +336,15 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * listeners. Any listener can set a valid result set using $query
      *
      * @param string $type the type of query to perform
+     * @param array ...$args Additional arguments for the find operation
      * @param array $options An array that will be passed to Query::applyOptions
      * @return \Cake\ElasticSearch\Query
      */
-    public function find(string $type = 'all', array $options = []): Query
+    public function find(string $type = 'all', mixed ...$args): Query
     {
         $query = $this->query();
 
-        return $this->callFinder($type, $query, $options);
+        return $this->callFinder($type, $query, $args);
     }
 
     /**
@@ -393,14 +395,24 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * queries for the search, but a faster key lookup to the search index.
      *
      * @param mixed $primaryKey The document's primary key
-     * @param array $options An array of options
+     * @param array|string $finder The finder name or options. Providing a finder name is unsupported.
+     * @param \Psr\SimpleCache\CacheInterface|string|null $cache Caching results is unsupported.
      * @throws \Elastica\Exception\NotFoundException if no document exist with such id
      * @return \Cake\ElasticSearch\Document A new Elasticsearch document entity
      */
-    public function get(mixed $primaryKey, $options = []): EntityInterface
-    {
+    public function get(
+        mixed $primaryKey,
+        array|string $finder = 'all',
+        CacheInterface|string|null $cache = null,
+        Closure|string|null $cacheKey = null,
+        mixed ...$args
+    ): EntityInterface {
         $esIndex = $this->getConnection()->getIndex($this->getName());
-        $result = $esIndex->getDocument($primaryKey, $options);
+        $esOptions = [];
+        if (is_array($finder)) {
+            $esOptions = $finder;
+        }
+        $result = $esIndex->getDocument($primaryKey, $esOptions);
         $class = $this->getEntityClass();
 
         $options = [
@@ -419,6 +431,17 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
 
         return new $class($data, $options);
+    }
+
+    /**
+     * No-op method in elasticsearch
+     *
+     * @param string $field The field to alias
+     * @return string
+     */
+    public function aliasField(string $field): string
+    {
+        return $field;
     }
 
     /**

@@ -68,7 +68,7 @@ class ResultSetTest extends TestCase
         [$resultSet, $elasticaSet] = $resultSets;
         $data = ['foo' => 1, 'bar' => 2];
         $result = $this->getMockBuilder('Elastica\Result')
-            ->setMethods(['getId', 'getData', 'getIndex'])
+            ->onlyMethods(['getId', 'getData', 'getIndex'])
             ->disableOriginalConstructor()
             ->getMock();
         $result->method('getData')

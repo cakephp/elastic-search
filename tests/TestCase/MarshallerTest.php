@@ -233,7 +233,7 @@ class MarshallerTest extends TestCase
      *
      * @return array
      */
-    public function oneEmbeddedOneWithOptionProvider()
+    public static function oneEmbeddedOneWithOptionProvider()
     {
         return [
             // Test both embeds with options
@@ -313,7 +313,7 @@ class MarshallerTest extends TestCase
      *
      * @return array
      */
-    public function oneEmbeddedManyWithOptionsProvider()
+    public static function oneEmbeddedManyWithOptionsProvider()
     {
         return [
             // Test both embeds with options
