@@ -18,7 +18,7 @@
         "source": "https://github.com/cakephp/elastic-search"
     },
     "require": {
-        "cakephp/cakephp": "5.x-dev as 5.0.0",
+        "cakephp/cakephp": "^5.0.0",
         "ruflin/elastica": "^7.1"
     },
     "require-dev": {
@@ -43,8 +43,6 @@
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "scripts": {
         "check": [
             "@test",
