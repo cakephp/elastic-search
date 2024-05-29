@@ -19,7 +19,7 @@
     },
     "require": {
         "cakephp/cakephp": "^5.0.0",
-        "ruflin/elastica": "^7.1"
+        "ruflin/elastica": "^8.0"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "^5.0",
