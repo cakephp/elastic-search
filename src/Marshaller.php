@@ -52,10 +52,10 @@ class Marshaller
      *
      * ### Options:
      *
-     * * fieldList: A whitelist of fields to be assigned to the entity. If not present,
+     * - fieldList: A whitelist of fields to be assigned to the entity. If not present,
      *   the accessible fields list in the entity will be used.
-     * * accessibleFields: A list of fields to allow or deny in entity accessible fields.
-     * * associated: A list of embedded documents you want to marshal.
+     * - accessibleFields: A list of fields to allow or deny in entity accessible fields.
+     * - associated: A list of embedded documents you want to marshal.
      *
      * @param array<string, mixed> $data The data to hydrate.
      * @param array<string, mixed> $options List of options
@@ -207,9 +207,9 @@ class Marshaller
      *
      * ### Options:
      *
-     * * fieldList: A whitelist of fields to be assigned to the entity. If not present,
+     * - fieldList: A whitelist of fields to be assigned to the entity. If not present,
      *   the accessible fields list in the entity will be used.
-     * * accessibleFields: A list of fields to allow or deny in entity accessible fields.
+     * - accessibleFields: A list of fields to allow or deny in entity accessible fields.
      *
      * @param array $data The data to hydrate.
      * @param array<string, mixed> $options List of options
@@ -230,9 +230,9 @@ class Marshaller
      *
      * ### Options:
      *
-     * * fieldList: A whitelist of fields to be assigned to the entity. If not present
+     * - fieldList: A whitelist of fields to be assigned to the entity. If not present
      *   the accessible fields list in the entity will be used.
-     * * associated: A list of embedded documents you want to marshal.
+     * - associated: A list of embedded documents you want to marshal.
      *
      * @param \Cake\Datasource\EntityInterface $entity the entity that will get the
      * data merged in
@@ -283,7 +283,7 @@ class Marshaller
      *
      * ### Options:
      *
-     * * fieldList: An allowed list of fields to be assigned to the entity. If not present,
+     * - fieldList: An allowed list of fields to be assigned to the entity. If not present,
      *   the accessible fields list in the entity will be used.
      *
      * @param iterable<\Cake\Datasource\EntityInterface> $entities the entities that will get the
