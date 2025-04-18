@@ -63,34 +63,11 @@ class Marshaller
      */
     public function one(array $data, array $options = []): Document
     {
-        $entityClass = $this->index->getEntityClass();
-        $entity = $this->createAndHydrate($entityClass, $data, $options);
-        $entity->setSource($this->index->getRegistryAlias());
-
-        return $entity;
-    }
-
-    /**
-     * Creates and Hydrates Document whilst honouring accessibleFields etc
-     *
-     * @param string $class Class name of Document to create
-     * @param array<string, mixed> $data The data to hydrate with
-     * @param array $options Options to control the hydration
-     * @param string|null $indexClass Index class to get embeds from (for nesting)
-     * @return \Cake\ElasticSearch\Document
-     */
-    protected function createAndHydrate(
-        string $class,
-        array $data,
-        array $options = [],
-        ?string $indexClass = null
-    ): Document {
-        $entity = new $class();
-
         $options += ['associated' => []];
 
         [$data, $options] = $this->_prepareDataAndOptions($data, $options);
 
+        $entity = $this->index->newEmptyEntity();
         if (isset($options['accessibleFields'])) {
             foreach ((array)$options['accessibleFields'] as $key => $value) {
                 $entity->setAccess($key, $value);
@@ -102,13 +79,7 @@ class Marshaller
             unset($data[$badKey]);
         }
 
-        if ($indexClass === null) {
-            $embeds = $this->index->embedded();
-        } else {
-            /** @var \Cake\ElasticSearch\Index $index */
-            $index = FactoryLocator::get('Elastic')->get($indexClass);
-            $embeds = $index->embedded();
-        }
+        $embeds = $this->index->embedded();
 
         foreach ($embeds as $embed) {
             $property = $embed->getProperty();
@@ -117,7 +88,7 @@ class Marshaller
                 if (isset($options['associated'][$alias])) {
                     $entity->set($property, $this->newNested($embed, $data[$property], $options['associated'][$alias]));
                     unset($data[$property]);
-                } elseif (in_array($alias, $options['associated'])) {
+                } elseif (in_array($alias, $options['associated'], true)) {
                     $entity->set($property, $this->newNested($embed, $data[$property]));
                     unset($data[$property]);
                 }
@@ -147,19 +118,12 @@ class Marshaller
      */
     protected function newNested(Embedded $embed, array $data, array $options = []): Document|array
     {
-        $class = $embed->getEntityClass();
+        $marshaller = $embed->getIndex()->marshaller();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
-            return $this->createAndHydrate($class, $data, $options, $embed->getIndexClass());
-        } else {
-            $children = [];
-            foreach ($data as $row) {
-                if (is_array($row)) {
-                    $children[] = $this->createAndHydrate($class, $row, $options, $embed->getIndexClass());
-                }
-            }
-
-            return $children;
+            return $marshaller->one($data, $options);
         }
+
+        return $marshaller->many($data, $options);
     }
 
     /**
@@ -172,10 +136,10 @@ class Marshaller
      */
     protected function mergeNested(Embedded $embed, Document|array|null $existing, array $data): Document|array
     {
-        $class = $embed->getEntityClass();
+        $index = $embed->getIndex();
         if ($embed->type() === Embedded::ONE_TO_ONE) {
             if (!($existing instanceof EntityInterface)) {
-                $existing = new $class();
+                $existing = $index->newEmptyEntity();
             }
             $existing->set($data);
 
@@ -192,7 +156,7 @@ class Marshaller
             }
             foreach ($data as $row) {
                 if (is_array($row)) {
-                    $new = new $class();
+                    $new = $index->newEmptyEntity();
                     $new->set($row);
                     $existing[] = $new;
                 }
@@ -219,6 +183,9 @@ class Marshaller
     {
         $output = [];
         foreach ($data as $record) {
+            if (!is_array($record)) {
+                continue;
+            }
             $output[] = $this->one($record, $options);
         }
 
@@ -244,7 +211,9 @@ class Marshaller
     {
         $options += ['associated' => []];
         [$data, $options] = $this->_prepareDataAndOptions($data, $options);
-        $errors = $this->_validate($data, $options, $entity->isNew());
+
+        $isNew = $entity->isNew();
+        $errors = $this->_validate($data, $options, $isNew);
         $entity->setErrors($errors);
 
         foreach (array_keys($errors) as $badKey) {
@@ -253,7 +222,7 @@ class Marshaller
 
         foreach ($this->index->embedded() as $embed) {
             $property = $embed->getProperty();
-            if (in_array($embed->getAlias(), $options['associated']) && isset($data[$property])) {
+            if (in_array($embed->getAlias(), $options['associated'], true) && isset($data[$property])) {
                 $data[$property] = $this->mergeNested($embed, $entity->{$property}, $data[$property]);
             }
         }
@@ -265,6 +234,7 @@ class Marshaller
         }
 
         foreach ((array)$options['fieldList'] as $field) {
+            assert(is_string($field));
             if (array_key_exists($field, $data)) {
                 $entity->set($field, $data[$field]);
             }
@@ -305,22 +275,25 @@ class Marshaller
 
         $new = $indexed[''] ?? [];
         unset($indexed['']);
-
         $output = [];
-        foreach ($entities as $record) {
-            if (!($record instanceof EntityInterface)) {
+
+        foreach ($entities as $entity) {
+            if (!($entity instanceof EntityInterface)) {
                 continue;
             }
-            $id = $record->id;
+
+            $id = $entity->id;
             if (!isset($indexed[$id])) {
                 continue;
             }
-            $output[] = $this->merge($record, $indexed[$id], $options);
+
+            $output[] = $this->merge($entity, $indexed[$id], $options);
             unset($indexed[$id]);
         }
+
         $new = array_merge($indexed, $new);
-        foreach ($new as $newRecord) {
-            $output[] = $this->one($newRecord, $options);
+        foreach ($new as $value) {
+            $output[] = $this->one($value, $options);
         }
 
         return $output;

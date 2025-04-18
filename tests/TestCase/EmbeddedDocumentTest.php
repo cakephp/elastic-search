@@ -18,11 +18,13 @@ namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
+use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\TestSuite\TestCase;
+use TestApp\Model\Index\UsersIndex;
 
 /**
- * Tests features around embeded documents.
+ * Tests features around embedded documents.
  */
 class EmbeddedDocumentTest extends TestCase
 {
@@ -188,12 +190,25 @@ class EmbeddedDocumentTest extends TestCase
      *
      * @return void
      */
-    public function testEmbededMissingDocument()
+    public function testEmbeddedMissingDocument()
     {
         $this->index->embedOne('InvalidDocumentName');
         $assocs = $this->index->embedded();
         $this->assertCount(1, $assocs);
         $this->assertSame('Cake\ElasticSearch\Document', $assocs[0]->getEntityClass());
         $this->assertSame('invalid_document_name', $assocs[0]->getProperty());
+    }
+
+    /**
+     * Test setIndex/getIndex
+     * is used.
+     *
+     * @return void
+     */
+    public function testSetIndex()
+    {
+        $embed = new EmbedOne('Test');
+        $embed->setIndex(new UsersIndex());
+        $this->assertSame('TestApp\Model\Index\UsersIndex', $embed->getIndex()::class);
     }
 }
