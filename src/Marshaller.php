@@ -19,7 +19,6 @@ namespace Cake\ElasticSearch;
 use ArrayObject;
 use Cake\Collection\Collection;
 use Cake\Datasource\EntityInterface;
-use Cake\Datasource\FactoryLocator;
 use Cake\ElasticSearch\Association\Embedded;
 use RuntimeException;
 
