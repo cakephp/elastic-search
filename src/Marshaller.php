@@ -57,8 +57,8 @@ class Marshaller
      * * accessibleFields: A list of fields to allow or deny in entity accessible fields.
      * * associated: A list of embedded documents you want to marshal.
      *
-     * @param array $data The data to hydrate.
-     * @param array $options List of options
+     * @param array<string, mixed> $data The data to hydrate.
+     * @param array<string, mixed> $options List of options
      * @return \Cake\ElasticSearch\Document
      */
     public function one(array $data, array $options = []): Document
@@ -73,10 +73,10 @@ class Marshaller
     /**
      * Creates and Hydrates Document whilst honouring accessibleFields etc
      *
-     * @param string $class      Class name of Document to create
-     * @param array  $data       The data to hydrate with
-     * @param array  $options    Options to control the hydration
-     * @param string $indexClass Index class to get embeds from (for nesting)
+     * @param string $class Class name of Document to create
+     * @param array<string, mixed> $data The data to hydrate with
+     * @param array $options Options to control the hydration
+     * @param string|null $indexClass Index class to get embeds from (for nesting)
      * @return \Cake\ElasticSearch\Document
      */
     protected function createAndHydrate(
@@ -166,8 +166,8 @@ class Marshaller
      * Merge an embedded document.
      *
      * @param \Cake\ElasticSearch\Association\Embedded $embed The embed definition.
-     * @param \Cake\ElasticSearch\Document|array $existing The existing entity or entities.
-     * @param array $data The data to marshal
+     * @param \Cake\ElasticSearch\Document|array|null $existing The existing entity or entities.
+     * @param array<string, mixed> $data The data to marshal
      * @return \Cake\ElasticSearch\Document|array Either a document or an array of documents.
      */
     protected function mergeNested(Embedded $embed, Document|array|null $existing, array $data): Document|array
@@ -211,9 +211,9 @@ class Marshaller
      *   the accessible fields list in the entity will be used.
      * * accessibleFields: A list of fields to allow or deny in entity accessible fields.
      *
-     * @param array $data A list of entity data you want converted into objects.
-     * @param array $options Options
-     * @return array An array of hydrated entities
+     * @param array $data The data to hydrate.
+     * @param array<string, mixed> $options List of options
+     * @return array<\Cake\Datasource\EntityInterface> An array of hydrated records.
      */
     public function many(array $data, array $options = []): array
     {
@@ -237,7 +237,7 @@ class Marshaller
      * @param \Cake\Datasource\EntityInterface $entity the entity that will get the
      * data merged in
      * @param array $data key value list of fields to be merged into the entity
-     * @param array $options List of options.
+     * @param array<string, mixed> $options List of options.
      * @return \Cake\Datasource\EntityInterface
      */
     public function merge(EntityInterface $entity, array $data, array $options = []): EntityInterface
@@ -274,9 +274,7 @@ class Marshaller
     }
 
     /**
-     * Update a collection of entities.
-     *
-     * Merges each of the elements from `$data` into each of the entities in `$entities`.
+     * Merges each of the elements from `$data` into each of the entities in `$entities`
      *
      * Records in `$data` are matched against the entities using the id field.
      * Entries in `$entities` that cannot be matched to any record in
@@ -285,13 +283,14 @@ class Marshaller
      *
      * ### Options:
      *
-     * * fieldList: A whitelist of fields to be assigned to the entity. If not present,
+     * * fieldList: An allowed list of fields to be assigned to the entity. If not present,
      *   the accessible fields list in the entity will be used.
      *
-     * @param iterable $entities An array of Elasticsearch entities
-     * @param array $data A list of entity data you want converted into objects.
-     * @param array $options Options
-     * @return array An array of merged entities
+     * @param iterable<\Cake\Datasource\EntityInterface> $entities the entities that will get the
+     *   data merged in
+     * @param array $data list of arrays to be merged into the entities
+     * @param array<string, mixed> $options List of options.
+     * @return array<\Cake\Datasource\EntityInterface>
      */
     public function mergeMany(iterable $entities, array $data, array $options = []): array
     {
@@ -360,8 +359,8 @@ class Marshaller
     /**
      * Returns data and options prepared to validate and marshall.
      *
-     * @param array $data The data to prepare.
-     * @param array $options The options passed to this marshaller.
+     * @param array<string, mixed> $data The data to prepare.
+     * @param array<string, mixed> $options The options passed to this marshaller.
      * @return array An array containing prepared data and options.
      */
     protected function _prepareDataAndOptions(array $data, array $options): array
