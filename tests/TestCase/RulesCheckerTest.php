@@ -21,7 +21,7 @@ class RulesCheckerTest extends TestCase
             [
                 'name' => 'articles',
                 'connection' => $this->connection,
-            ]
+            ],
         );
     }
 
@@ -36,7 +36,7 @@ class RulesCheckerTest extends TestCase
         $document = new Document(
             [
                 'user_id' => 1,
-            ]
+            ],
         );
 
         $rules = $this->index->rulesChecker();
@@ -46,7 +46,7 @@ class RulesCheckerTest extends TestCase
             [
                 'errorField' => 'user_id',
                 'message' => 'This value is already in use',
-            ]
+            ],
         );
 
         $this->assertFalse($this->index->save($document));

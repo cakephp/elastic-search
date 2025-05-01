@@ -395,7 +395,7 @@ class QueryBuilderTest extends TestCase
         $builder = new QueryBuilder();
         $result = $builder->nested(
             'comments',
-            new SimpleQueryString('great')
+            new SimpleQueryString('great'),
         );
         $expected = [
             'nested' => [
@@ -545,6 +545,24 @@ class QueryBuilderTest extends TestCase
             'term' => ['user.name' => 'jose'],
         ];
         $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->term('user.id', 1);
+        $expected = [
+            'term' => ['user.id' => 1],
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->term('user.rate', 4.5);
+        $expected = [
+            'term' => ['user.rate' => 4.5],
+        ];
+        $this->assertEquals($expected, $result->toArray());
+
+        $result = $builder->term('user.is_enabled', true);
+        $expected = [
+            'term' => ['user.is_enabled' => true],
+        ];
+        $this->assertEquals($expected, $result->toArray());
     }
 
     /**
@@ -573,7 +591,7 @@ class QueryBuilderTest extends TestCase
         $result = $builder->and(
             $builder->term('user', 'jose'),
             $builder->gte('age', 29),
-            $builder->and($builder->term('user', 'maria'))
+            $builder->and($builder->term('user', 'maria')),
         );
         $expected = [
             'bool' => [
@@ -597,7 +615,7 @@ class QueryBuilderTest extends TestCase
         $builder = new QueryBuilder();
         $result = $builder->or(
             $builder->term('user', 'jose'),
-            $builder->gte('age', 29)
+            $builder->gte('age', 29),
         );
         $expected = [
             'bool' => [
@@ -666,7 +684,7 @@ class QueryBuilderTest extends TestCase
         $expected = [
             $builder->or(
                 $builder->term('name', 'jose'),
-                $builder->gt('age', 29)
+                $builder->gt('age', 29),
             ),
         ];
         $this->assertEquals($expected, $filter);
@@ -689,7 +707,7 @@ class QueryBuilderTest extends TestCase
         $expected = [
             $builder->and(
                 $builder->term('name', 'jose'),
-                $builder->gt('age', 29)
+                $builder->gt('age', 29),
             ),
         ];
         $this->assertEquals($expected, $filter);
@@ -713,8 +731,8 @@ class QueryBuilderTest extends TestCase
             $builder->not(
                 $builder->and(
                     $builder->term('name', 'jose'),
-                    $builder->gt('age', 29)
-                )
+                    $builder->gt('age', 29),
+                ),
             ),
         ];
         $this->assertEquals($expected, $filter);
@@ -739,13 +757,13 @@ class QueryBuilderTest extends TestCase
         $expected = [
             $builder->simpleQueryString('name', 'mark'),
             $builder->and(
-                $builder->gt('age', 29)
+                $builder->gt('age', 29),
             ),
             $builder->not(
                 $builder->and(
                     $builder->and($builder->term('name', 'jose')),
-                    $builder->and($builder->gt('age', 35))
-                )
+                    $builder->and($builder->gt('age', 35)),
+                ),
             ),
         ];
         $this->assertEquals($expected, $filter);

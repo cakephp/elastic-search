@@ -403,7 +403,7 @@ class Query implements IteratorAggregate, QueryInterface
     public function where(
         Closure|array|string|null $conditions = null,
         array $types = [],
-        bool $overwrite = false
+        bool $overwrite = false,
     ) {
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
@@ -598,7 +598,7 @@ class Query implements IteratorAggregate, QueryInterface
         string $partType,
         AbstractQuery|callable|array $conditions,
         bool $overwrite,
-        string $type = 'addMust'
+        string $type = 'addMust',
     ) {
         if (!isset($this->_queryParts[$partType]) || $overwrite) {
             $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
@@ -1127,7 +1127,7 @@ class Query implements IteratorAggregate, QueryInterface
             $table = $this->getRepository();
             throw new RecordNotFoundException(sprintf(
                 'Record not found in table "%s"',
-                $table->getTable()
+                $table->getTable(),
             ));
         }
 

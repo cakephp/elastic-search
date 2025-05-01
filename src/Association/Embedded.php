@@ -131,7 +131,7 @@ abstract class Embedded
         deprecationWarning(
             '3.3.0',
             static::class . '::property() is deprecated. ' .
-            'Use setProperty()/getProperty() instead.'
+            'Use setProperty()/getProperty() instead.',
         );
 
         if ($name !== null) {
@@ -199,7 +199,7 @@ abstract class Embedded
         deprecationWarning(
             '3.3',
             static::class . '::entityClass() is deprecated. ' .
-            'Use setEntityClass()/getEntityClass() instead.'
+            'Use setEntityClass()/getEntityClass() instead.',
         );
 
         if ($name !== null) {
@@ -273,7 +273,7 @@ abstract class Embedded
         deprecationWarning(
             '3.3.0',
             static::class . '::indexClass() is deprecated. ' .
-            'Use setIndexClass()/getIndexClass() instead.'
+            'Use setIndexClass()/getIndexClass() instead.',
         );
 
         if ($name !== null) {

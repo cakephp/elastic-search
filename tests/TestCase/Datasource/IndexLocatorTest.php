@@ -79,7 +79,7 @@ class IndexLocatorTest extends TestCase
             'Articles',
             [
                 'name' => 'my_articles',
-            ]
+            ],
         );
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame('my_articles', $result->getName());
@@ -105,12 +105,12 @@ class IndexLocatorTest extends TestCase
         $this->assertSame(
             'r2_d2',
             $result->getName(),
-            'The name should be derived from the alias'
+            'The name should be derived from the alias',
         );
 
         $result = $this->locator->get(
             'C3P0',
-            ['className' => 'Droids', 'name' => 'droids']
+            ['className' => 'Droids', 'name' => 'droids'],
         );
         $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
         $this->assertSame('droids', $result->getName(), 'The name should be taken from options');
@@ -179,11 +179,11 @@ class IndexLocatorTest extends TestCase
         $this->assertInstanceOf('TestPlugin\Model\Index\CommentsIndex', $table);
         $this->assertFalse(
             $this->locator->exists('Comments'),
-            'Short form should NOT exist'
+            'Short form should NOT exist',
         );
         $this->assertTrue(
             $this->locator->exists('TestPlugin.Comments'),
-            'Long form should exist'
+            'Long form should exist',
         );
 
         $second = $this->locator->get('TestPlugin.Comments');
@@ -230,7 +230,7 @@ class IndexLocatorTest extends TestCase
             'MyComments',
             [
             'className' => 'TestPlugin.Comments',
-            ]
+            ],
         );
         $class = 'TestPlugin\Model\Index\CommentsIndex';
         $this->assertInstanceOf($class, $table);
@@ -253,7 +253,7 @@ class IndexLocatorTest extends TestCase
         $class = 'TestPlugin\Model\Index\CommentsIndex';
         $table = $this->locator->get(
             'Comments',
-            ['className' => $class]
+            ['className' => $class],
         );
         $this->assertInstanceOf($class, $table);
         $this->assertFalse($this->locator->exists('TestPlugin.Comments'), 'Full class alias should not exist');
@@ -307,7 +307,7 @@ class IndexLocatorTest extends TestCase
         $this->assertNotSame(
             $first,
             $second,
-            'Should be different, as the reference to the first was destroyed'
+            'Should be different, as the reference to the first was destroyed',
         );
         $this->assertTrue($this->locator->exists('Comments'));
     }

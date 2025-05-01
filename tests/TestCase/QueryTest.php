@@ -326,7 +326,7 @@ class QueryTest extends TestCase
         $query->where(function (QueryBuilder $builder) {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
-                $builder->exists('stuff')
+                $builder->exists('stuff'),
             );
         });
 
@@ -389,7 +389,7 @@ class QueryTest extends TestCase
         $query->queryMust(function (QueryBuilder $builder) {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
-                $builder->exists('stuff')
+                $builder->exists('stuff'),
             );
         });
 
@@ -447,7 +447,7 @@ class QueryTest extends TestCase
         $query->queryShould(function (QueryBuilder $builder) {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
-                $builder->exists('stuff')
+                $builder->exists('stuff'),
             );
         });
 
@@ -510,7 +510,7 @@ class QueryTest extends TestCase
         $query->postFilter(function (QueryBuilder $builder) {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
-                $builder->exists('stuff')
+                $builder->exists('stuff'),
             );
         });
 

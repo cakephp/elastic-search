@@ -183,7 +183,7 @@ class QueryBuilder
     public function geoShape(
         string $field,
         array $geoPoints,
-        string $type = Elastica\Query\GeoShapeProvided::TYPE_ENVELOPE
+        string $type = Elastica\Query\GeoShapeProvided::TYPE_ENVELOPE,
     ): GeoShapeProvided {
         return new Elastica\Query\GeoShapeProvided($field, $geoPoints, $type);
     }
@@ -209,7 +209,7 @@ class QueryBuilder
         string $field,
         string $id,
         string $index = 'shapes',
-        string $path = 'shape'
+        string $path = 'shape',
     ): GeoShapePreIndexed {
         return new Elastica\Query\GeoShapePreIndexed($field, $id, $index, $path);
     }
@@ -496,11 +496,11 @@ class QueryBuilder
      * }}}
      *
      * @param string $field The field to query by.
-     * @param string $value The term to find in field.
+     * @param string|float|int|bool $value The term to find in field.
      * @return \Elastica\Query\Term
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
      */
-    public function term(string $field, string|int|float $value): Term
+    public function term(string $field, string|float|int|bool $value): Term
     {
         return new Elastica\Query\Term([$field => $value]);
     }

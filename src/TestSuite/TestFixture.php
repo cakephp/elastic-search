@@ -95,7 +95,7 @@ class TestFixture implements FixtureInterface
                 $message = sprintf(
                     'Invalid datasource name "%s" for "%s" fixture. Fixture datasource names must begin with "test".',
                     $connection,
-                    $this->table
+                    $this->table,
                 );
                 throw new CakeException($message);
             }
@@ -157,7 +157,7 @@ class TestFixture implements FixtureInterface
             $msg = sprintf(
                 'Fixture creation for "%s" failed "%s"',
                 $this->table,
-                $response->getError()
+                $response->getError(),
             );
             Log::error($msg);
             trigger_error($msg, E_USER_WARNING);

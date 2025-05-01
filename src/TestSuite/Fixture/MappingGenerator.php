@@ -123,7 +123,7 @@ class MappingGenerator
             $msg = sprintf(
                 'Fixture creation for "%s" failed "%s"',
                 $mapping['name'],
-                $response->getError()
+                $response->getError(),
             );
             throw new RuntimeException($msg);
         }

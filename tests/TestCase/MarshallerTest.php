@@ -165,7 +165,7 @@ class MarshallerTest extends TestCase
                 $called++;
                 $this->assertInstanceOf('ArrayObject', $data);
                 $this->assertInstanceOf('ArrayObject', $options);
-            }
+            },
         );
         $marshaller = new Marshaller($this->index);
         $marshaller->one($data);
@@ -487,7 +487,7 @@ class MarshallerTest extends TestCase
                 $called++;
                 $this->assertInstanceOf('ArrayObject', $data);
                 $this->assertInstanceOf('ArrayObject', $options);
-            }
+            },
         );
         $marshaller = new Marshaller($this->index);
         $doc = new Document(['title' => 'original', 'body' => 'original']);

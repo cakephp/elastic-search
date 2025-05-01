@@ -119,7 +119,7 @@ class ConnectionTest extends TestCase
                     'path' => '_stats',
                     'data' => [],
                 ],
-                JSON_PRETTY_PRINT
+                JSON_PRETTY_PRINT,
             ),
         ]);
 

@@ -119,7 +119,7 @@ class DocumentContext implements ContextInterface
 
         if (!is_object($index)) {
             throw new RuntimeException(
-                'Unable to find index class for current entity'
+                'Unable to find index class for current entity',
             );
         }
         $this->_isCollection = (
@@ -241,8 +241,8 @@ class DocumentContext implements ContextInterface
         throw new RuntimeException(
             sprintf(
                 'Unable to fetch property "%s"',
-                implode('.', $path)
-            )
+                implode('.', $path),
+            ),
         );
     }
 

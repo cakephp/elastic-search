@@ -125,7 +125,7 @@ class IndexTest extends TestCase
         $index->setEntityClass('TestUser');
         $this->assertSame(
             'TestApp\Model\Document\TestUser',
-            $index->getEntityClass()
+            $index->getEntityClass(),
         );
     }
 
@@ -144,7 +144,7 @@ class IndexTest extends TestCase
         $this->assertSame($index, $index->setEntityClass('MyPlugin.SuperUser'));
         $this->assertSame(
             'MyPlugin\Model\Document\SuperUser',
-            $index->getEntityClass()
+            $index->getEntityClass(),
         );
     }
 
@@ -294,14 +294,14 @@ class IndexTest extends TestCase
                     'title' => 'First',
                     'body' => 'Some new content',
                 ],
-                ['markNew' => true]
+                ['markNew' => true],
             ),
             new Document(
                 [
                     'title' => 'Second',
                     'body' => 'Some new content',
                 ],
-                ['markNew' => true]
+                ['markNew' => true],
             ),
         ];
 
@@ -330,14 +330,14 @@ class IndexTest extends TestCase
                     'title' => 'First',
                     'body' => 'Some new content',
                 ],
-                ['markNew' => true]
+                ['markNew' => true],
             ),
             new Document(
                 [
                     'title' => 'Second',
                     'body' => 'Some new content',
                 ],
-                ['markNew' => true]
+                ['markNew' => true],
             ),
         ];
         $called = 0;
@@ -364,7 +364,7 @@ class IndexTest extends TestCase
                 'title' => 'A brand new article',
                 'body' => 'Some new content',
             ],
-            ['markNew' => true]
+            ['markNew' => true],
         );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
@@ -390,7 +390,7 @@ class IndexTest extends TestCase
                 'title' => 'A brand new article',
                 'body' => 'Some new content',
             ],
-            ['markNew' => true]
+            ['markNew' => true],
         );
         $this->assertSame($doc, $this->index->save($doc, ['routing' => 'abcd']));
         $this->assertNotEmpty($doc->id, 'Should get an id');
@@ -424,7 +424,7 @@ class IndexTest extends TestCase
                 'title' => 'A brand new article',
                 'body' => 'Some new content',
             ],
-            ['markNew' => false]
+            ['markNew' => false],
         );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertFalse($doc->isNew(), 'Not new.');
@@ -445,7 +445,7 @@ class IndexTest extends TestCase
                 'title' => 'A brand new article',
                 'body' => 'Some new content',
             ],
-            ['markNew' => false]
+            ['markNew' => false],
         );
         $doc->setErrors(['title' => ['bad news']]);
         $this->assertFalse($this->index->save($doc), 'Should not save.');
@@ -463,12 +463,12 @@ class IndexTest extends TestCase
                 'title' => 'A brand new article',
                 'body' => 'Some new content',
             ],
-            ['markNew' => true]
+            ['markNew' => true],
         );
 
         $document = $this->index->save(
             $doc,
-            ['refresh' => true]
+            ['refresh' => true],
         );
 
         $query = $this->index->find();
@@ -495,7 +495,7 @@ class IndexTest extends TestCase
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
-            }
+            },
         );
         $this->index->getEventManager()->on(
             'Model.afterSave',
@@ -505,7 +505,7 @@ class IndexTest extends TestCase
                 $this->assertSame($doc, $entity);
                 $this->assertFalse($doc->isNew(), 'Should not be new');
                 $this->assertFalse($doc->isDirty(), 'Should not be dirty');
-            }
+            },
         );
         $this->index->save($doc);
         $this->assertSame(2, $called);
@@ -526,13 +526,13 @@ class IndexTest extends TestCase
                 $event->stopPropagation();
 
                 return false;
-            }
+            },
         );
         $this->index->getEventManager()->on(
             'Model.afterSave',
             function () {
                 $this->fail('Should not be fired');
-            }
+            },
         );
         $this->assertFalse($this->index->save($doc));
     }
@@ -596,9 +596,9 @@ class IndexTest extends TestCase
                     function ($doc) {
                         return 'Did not work';
                     },
-                    ['errorField' => 'name']
+                    ['errorField' => 'name'],
                 );
-            }
+            },
         );
 
         $doc = new Document(['title' => 'rules are checked']);
@@ -624,9 +624,9 @@ class IndexTest extends TestCase
                     function ($doc) {
                         return 'Did not work';
                     },
-                    ['errorField' => 'name']
+                    ['errorField' => 'name'],
                 );
-            }
+            },
         );
 
         $doc = new Document(['title' => 'update rules'], ['markNew' => false]);
@@ -645,7 +645,7 @@ class IndexTest extends TestCase
                 'title' => 'A brand new article',
                 'body' => 'Some new content',
             ],
-            ['markNew' => true]
+            ['markNew' => true],
         );
         $this->assertSame($doc, $this->index->save($doc));
         $this->assertNotEmpty($doc->id, 'Should get an id');
@@ -681,7 +681,7 @@ class IndexTest extends TestCase
             function () {
                 return 'not good';
             },
-            ['errorField' => 'title']
+            ['errorField' => 'title'],
         );
         $doc = $this->index->get(1);
 
@@ -704,7 +704,7 @@ class IndexTest extends TestCase
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
-            }
+            },
         );
         $this->index->getEventManager()->on(
             'Model.afterDelete',
@@ -712,7 +712,7 @@ class IndexTest extends TestCase
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
-            }
+            },
         );
         $this->assertTrue($this->index->delete($doc));
         $this->assertSame(2, $called);
@@ -732,13 +732,13 @@ class IndexTest extends TestCase
                 $event->stopPropagation();
 
                 return false;
-            }
+            },
         );
         $this->index->getEventManager()->on(
             'Model.afterDelete',
             function () {
                 $this->fail('Should not be fired');
-            }
+            },
         );
         $this->assertFalse($this->index->delete($doc));
     }
@@ -784,7 +784,7 @@ class IndexTest extends TestCase
                 $called++;
                 $this->assertInstanceOf('Cake\Validation\Validator', $validator);
                 $this->assertSame('default', $name);
-            }
+            },
         );
         $this->index->getValidator();
         $this->assertSame(1, $called, 'Event not triggered');
@@ -844,9 +844,9 @@ class IndexTest extends TestCase
                 $rules->add(
                     function ($doc) {
                         return false;
-                    }
+                    },
                 );
-            }
+            },
         );
         $rules = $this->index->rulesChecker();
         $this->assertInstanceOf('Cake\Datasource\RulesChecker', $rules);

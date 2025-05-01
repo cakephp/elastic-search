@@ -385,7 +385,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
 
         throw new BadMethodCallException(
-            sprintf('Unknown finder method "%s"', $type)
+            sprintf('Unknown finder method "%s"', $type),
         );
     }
 
@@ -410,7 +410,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         array|string $finder = 'all',
         CacheInterface|string|null $cache = null,
         Closure|string|null $cacheKey = null,
-        mixed ...$args
+        mixed ...$args,
     ): EntityInterface {
         $esIndex = $this->getConnection()->getIndex($this->getName());
         $esOptions = [];
@@ -557,7 +557,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
                 throw new RuntimeException(sprintf(
                     'Invalid items in the list. Found `%s` but expected `%s`',
                     is_object($entity) ? get_class($entity) : gettype($entity),
-                    EntityInterface::class
+                    EntityInterface::class,
                 ));
             }
 
