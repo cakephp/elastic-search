@@ -17,6 +17,12 @@
         "irc": "irc://irc.freenode.org/cakephp",
         "source": "https://github.com/cakephp/elastic-search"
     },
+    "repositories": {
+        "researchmap-v3/elastica": {
+            "type": "vcs",
+            "url": "https://github.com/researchmap-v3/elastica"
+        }
+    },
     "require": {
         "cakephp/cakephp": "^5.0.0",
         "ruflin/elastica": "^7.1"
