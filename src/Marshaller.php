@@ -97,10 +97,11 @@ class Marshaller
             }
         }
         $errors = $this->_validate($data, $options, true);
-        $entity->setErrors($errors);
-        foreach (array_keys($errors) as $badKey) {
-            unset($data[$badKey]);
-        }
+        // Ryuji.Masukawa edit
+        //$entity->setErrors($errors);
+        //foreach (array_keys($errors) as $badKey) {
+        //    unset($data[$badKey]);
+        //}
 
         if ($indexClass === null) {
             $embeds = $this->index->embedded();
@@ -133,6 +134,8 @@ class Marshaller
                 }
             }
         }
+        // Ryuji.Masukawa edit
+        $entity->setErrors($errors);
 
         return $entity;
     }
@@ -245,11 +248,11 @@ class Marshaller
         $options += ['associated' => []];
         [$data, $options] = $this->_prepareDataAndOptions($data, $options);
         $errors = $this->_validate($data, $options, $entity->isNew());
-        $entity->setErrors($errors);
-
-        foreach (array_keys($errors) as $badKey) {
-            unset($data[$badKey]);
-        }
+        // Ryuji.Masukawa edit
+        //$entity->setErrors($errors);
+        //foreach (array_keys($errors) as $badKey) {
+        //    unset($data[$badKey]);
+        //}
 
         foreach ($this->index->embedded() as $embed) {
             $property = $embed->getProperty();
@@ -261,6 +264,9 @@ class Marshaller
         if (!isset($options['fieldList'])) {
             $entity->set($data);
 
+            // Ryuji.Masukawa edit
+            $entity->setErrors($errors);
+
             return $entity;
         }
 
@@ -269,6 +275,8 @@ class Marshaller
                 $entity->set($field, $data[$field]);
             }
         }
+        // Ryuji.Masukawa edit
+        $entity->setErrors($errors);
 
         return $entity;
     }
