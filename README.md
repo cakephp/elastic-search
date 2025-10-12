@@ -1,9 +1,10 @@
 # Elasticsearch Datasource for CakePHP
 
-![Build Status](https://github.com/cakephp/elastic-search/actions/workflows/ci.yml/badge.svg?branch=master)
+![Build Status](https://github.com/cakephp/elastic-search/actions/workflows/ci.yml/badge.svg?branch=5.x)
 [![Latest Stable Version](https://img.shields.io/github/v/release/cakephp/elastic-search?sort=semver&style=flat-square)](https://packagist.org/packages/cakephp/elastic-search)
 [![Total Downloads](https://img.shields.io/packagist/dt/cakephp/elastic-search?style=flat-square)](https://packagist.org/packages/cakephp/elastic-search/stats)
-[![Code Coverage](https://img.shields.io/coveralls/cakephp/elastic-search/master.svg?style=flat-square)](https://coveralls.io/r/cakephp/elastic-search?branch=master)
+[![Code Coverage](https://img.shields.io/coveralls/cakephp/elastic-search/5.x.svg?style=flat-square)](https://coveralls.io/r/cakephp/elastic-search?branch=5.x)
+[![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat-square)](https://phpstan.org/)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
 Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 5.0+.
@@ -17,22 +18,23 @@ You can install Elasticsearch into your project using
 following to your `composer.json` file:
 
     "require": {
-        "cakephp/elastic-search": "^4.0"
+        "cakephp/elastic-search": "^5.0"
     }
 
 And run `php composer.phar update`
 
 ### Versions Table
 
-| Cake\ElasticSearch                                                 | CakePHP   | ElasticSearch |
-| ---                                                                | ---       | ---           |
-| [1.x](https://github.com/cakephp/elastic-search/tree/1.0)          | 3.0 - 3.5 | 2.x - 5.x     |
-| [2.x](https://github.com/cakephp/elastic-search/tree/2.x)          | 3.6+      | 6.x           |
-| [>3, <3.4.0](https://github.com/cakephp/elastic-search/tree/3.3.0) | 4.0+      | 6.x           |
-| [>=3.4.0](https://github.com/cakephp/elastic-search/tree/3.x)      | 4.0+      | 7.x           |
-| [4.x](https://github.com/cakephp/elastic-search/tree/4.x)          | 5.0+      | 7.x           |
+| Cake\ElasticSearch                                                 | CakePHP   | ElasticSearch | Elastica  |
+| ---                                                                | ---       | ---           | ---       |
+| [1.x](https://github.com/cakephp/elastic-search/tree/1.0)          | 3.0 - 3.5 | 2.x - 5.x     | 5.x - 6.x |
+| [2.x](https://github.com/cakephp/elastic-search/tree/2.x)          | 3.6+      | 6.x           | 6.x       |
+| [>3, <3.4.0](https://github.com/cakephp/elastic-search/tree/3.3.0) | 4.0+      | 6.x           | 6.x       |
+| [>=3.4.0](https://github.com/cakephp/elastic-search/tree/3.x)      | 4.0+      | 7.x           | 7.x       |
+| [4.x](https://github.com/cakephp/elastic-search/tree/4.x)          | 5.0+      | 7.x           | 7.x       |
+| [5.x](https://github.com/cakephp/elastic-search/tree/5.x)          | 5.0+      | 9.x           | 9.x       |
 
-You are seeing the 3.x version.
+You are seeing the 5.x version.
 
 ## Connecting the Plugin to your Application
 
@@ -66,8 +68,7 @@ a connection:
         'elastic' => [
             'className' => 'Cake\ElasticSearch\Datasource\Connection',
             'driver' => 'Cake\ElasticSearch\Datasource\Connection',
-            'host' => '127.0.0.1',
-            'port' => 9200
+            'hosts' => ['127.0.0.1:9200']
         ],
     ]
 ```
