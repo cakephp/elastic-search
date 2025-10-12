@@ -19,7 +19,7 @@
     },
     "require": {
         "cakephp/cakephp": "^5.0.0",
-        "ruflin/elastica": "^7.1"
+        "ruflin/elastica": "^9.0"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "^5.0",
@@ -40,7 +40,8 @@
     },
     "config": {
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "php-http/discovery": true
         }
     },
     "scripts": {

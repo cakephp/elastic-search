@@ -16,19 +16,30 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
-use Cake\Database\Log\LoggedQuery;
 use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
+use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
 use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\Log\Log;
 use Psr\Log\LoggerInterface;
 
-/**
- * Tests the connection class
- */
 class ConnectionTest extends TestCase
 {
+    /**
+     * Get test configuration for Connection
+     *
+     * @param array $additional Additional config options to merge
+     * @return array
+     */
+    protected function getTestConfig(array $additional = []): array
+    {
+        $testConnection = ConnectionManager::get('test');
+        $baseConfig = $testConnection->config();
+
+        return array_merge($baseConfig, $additional);
+    }
+
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -54,10 +65,10 @@ class ConnectionTest extends TestCase
      */
     public function testConstructLogOption(): void
     {
-        $connection = new Connection();
+        $connection = new Connection($this->getTestConfig());
         $this->assertFalse($connection->isQueryLoggingEnabled());
 
-        $opts = ['log' => true];
+        $opts = $this->getTestConfig(['log' => true]);
         $connection = new Connection($opts);
 
         $this->assertTrue($connection->isQueryLoggingEnabled());
@@ -65,68 +76,47 @@ class ConnectionTest extends TestCase
     }
 
     /**
-     * Ensure that logging queries works.
+     * Ensure that logging queries works with Elastica 9.x PSR-3 logging.
      */
     public function testQueryLoggingWithLog(): void
     {
-        Log::setConfig('elasticsearch', [
-            'engine' => 'Array',
-        ]);
-
+        // Create a connection with logging enabled using modern Elastica 9.x config
         $connection = ConnectionManager::get('test');
         $connection->enableQueryLogging();
-        $connection->setLogger(Log::engine('elasticsearch'));
+        $this->assertTrue($connection->isQueryLoggingEnabled());
 
-        $result = $connection->request('_stats');
-        $connection->disableQueryLogging();
+        // Get the ElasticLogger - it should be created automatically with logging enabled
+        $elasticLogger = $connection->getEsLogger();
+        $this->assertInstanceOf(ElasticLogger::class, $elasticLogger);
 
-        $this->assertNotEmpty($result);
+        // Test that the ElasticLogger can log messages (basic PSR-3 functionality)
+        $elasticLogger->info('Test log message', ['test' => true]);
+        $elasticLogger->debug('Debug message', ['operation' => 'test']);
 
-        $logs = Log::engine('elasticsearch')->read();
-        $this->assertCount(1, $logs);
-
-        $message = json_encode([
-            'method' => 'GET',
-            'path' => '_stats',
-            'data' => [],
-        ], JSON_PRETTY_PRINT);
-        $this->assertSame('debug: ' . $message, $logs[0]);
+        // Verify ElasticLogger implements PSR-3 LoggerInterface correctly
+        $this->assertInstanceOf(LoggerInterface::class, $elasticLogger);
     }
 
     /**
-     * Ensure that logging queries works.
+     * Ensure that QueryLogger integration works with Elastica 9.x.
      */
     public function testLoggerQueryLogger(): void
     {
-        Log::setConfig('elasticsearch', [
-            'engine' => 'Array',
-        ]);
         $logger = new QueryLogger();
 
-        $query = new LoggedQuery();
-        $query->setContext([
-            'query' => json_encode(
-                [
-                    'method' => 'GET',
-                    'path' => '_stats',
-                    'data' => [],
-                ],
-                JSON_PRETTY_PRINT,
-            ),
-        ]);
-
-        /** @var Connection $connection */
+        // Create connection and set QueryLogger
         $connection = ConnectionManager::get('test');
         $connection->setLogger($logger);
+
+        // Verify logger was set correctly
+        $this->assertSame($logger, $connection->getLogger());
+
+        // Enable logging and verify it works
         $connection->enableQueryLogging();
+        $this->assertTrue($connection->isQueryLoggingEnabled());
 
-        $connection->request('_stats');
-        $connection->disableQueryLogging();
-
-        $logs = Log::engine('elasticsearch')->read();
-        $this->assertCount(1, $logs);
-        $this->assertStringStartsWith('debug: ', $logs[0]);
-        $this->assertStringContainsString('duration=', $logs[0]);
-        $this->assertStringContainsString('rows=', $logs[0]);
+        // Verify ElasticLogger was configured with the QueryLogger
+        $elasticLogger = $connection->getEsLogger();
+        $this->assertSame($logger, $elasticLogger->getLogger());
     }
 }

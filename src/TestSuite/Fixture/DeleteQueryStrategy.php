@@ -20,6 +20,7 @@ use Cake\Datasource\ConnectionInterface;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\TestSuite\Fixture\FixtureHelper;
 use Cake\TestSuite\Fixture\FixtureStrategyInterface;
+use Elastic\Elasticsearch\Exception\ClientResponseException;
 use Elastica\Query\MatchAll;
 
 class DeleteQueryStrategy implements FixtureStrategyInterface
@@ -70,7 +71,27 @@ class DeleteQueryStrategy implements FixtureStrategyInterface
             foreach ($fixtures as $fixture) {
                 /** @var \Cake\ElasticSearch\Datasource\Connection $connection */
                 $esIndex = $connection->getIndex($fixture->getIndex()->getName());
-                $esIndex->deleteByQuery(new MatchAll());
+
+                try {
+                    $esIndex->deleteByQuery(new MatchAll());
+                } catch (ClientResponseException $e) {
+                    // Ignore version conflicts during test cleanup
+                    // ElasticSearch 9.x is stricter about optimistic concurrency control
+                    if ($e->getCode() !== 409) {
+                        throw $e;
+                    }
+                    // For version conflicts, try to refresh and delete again
+                    $esIndex->refresh();
+                    try {
+                        $esIndex->deleteByQuery(new MatchAll());
+                    } catch (ClientResponseException $retryException) {
+                        // If it still fails, ignore it - test cleanup should be resilient
+                        if ($retryException->getCode() !== 409) {
+                            throw $retryException;
+                        }
+                    }
+                }
+
                 $esIndex->refresh();
             }
         }, $this->fixtures);

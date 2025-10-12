@@ -1,38 +1,146 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="5.26.1@d747f6500b38ac4f7dfc5edbcae6e4b637d7add0">
+<files psalm-version="6.13.1@1e3b7f0a8ab32b23197b91107adc0a7ed8a05b51">
+  <file src="src/Association/EmbedMany.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function hydrate(array $data, array $options): array]]></code>
+      <code><![CDATA[public function type(): string]]></code>
+    </MissingOverrideAttribute>
+    <UnusedPsalmSuppress>
+      <code><![CDATA[MoreSpecificReturnType]]></code>
+    </UnusedPsalmSuppress>
+  </file>
+  <file src="src/Association/EmbedOne.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function hydrate(array $data, array $options): Document]]></code>
+      <code><![CDATA[public function type(): string]]></code>
+    </MissingOverrideAttribute>
+  </file>
   <file src="src/Datasource/Connection.php">
-    <InvalidReturnStatement>
-      <code><![CDATA[$this->_client->getConfig()]]></code>
-    </InvalidReturnStatement>
-    <InvalidReturnType>
-      <code><![CDATA[array]]></code>
-    </InvalidReturnType>
-    <LessSpecificImplementedReturnType>
-      <code><![CDATA[array]]></code>
-    </LessSpecificImplementedReturnType>
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function config(): array]]></code>
+      <code><![CDATA[public function configName(): string]]></code>
+      <code><![CDATA[public function getCacher(): CacheInterface]]></code>
+      <code><![CDATA[public function getDriver(string $role = self::ROLE_WRITE): ElasticaClient]]></code>
+      <code><![CDATA[public function setCacher(CacheInterface $cacher)]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Datasource/IndexLocator.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[protected function createInstance(string $alias, array $options): RepositoryInterface]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/Datasource/Log/ElasticLogger.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function log(mixed $level, Stringable|string $message, array $context = []): void]]></code>
+    </MissingOverrideAttribute>
   </file>
   <file src="src/Index.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function aliasField(string $field): string]]></code>
+      <code><![CDATA[public function delete(EntityInterface $entity, array $options = []): bool]]></code>
+      <code><![CDATA[public function deleteAll(Closure|array|string|null $conditions): int]]></code>
+      <code><![CDATA[public function exists(Closure|array|string|null $conditions): bool]]></code>
+      <code><![CDATA[public function find(string $type = 'all', mixed ...$args): Query]]></code>
+      <code><![CDATA[public function get(]]></code>
+      <code><![CDATA[public function getAlias(): string]]></code>
+      <code><![CDATA[public function getRegistryAlias(): string]]></code>
+      <code><![CDATA[public function hasField(string $field): bool]]></code>
+      <code><![CDATA[public function implementedEvents(): array]]></code>
+      <code><![CDATA[public function newEmptyEntity(): EntityInterface]]></code>
+      <code><![CDATA[public function newEntities(array $data, array $options = []): array]]></code>
+      <code><![CDATA[public function newEntity(array $data, array $options = []): EntityInterface]]></code>
+      <code><![CDATA[public function patchEntities(iterable $entities, array $data, array $options = []): array]]></code>
+      <code><![CDATA[public function patchEntity(EntityInterface $entity, array $data, array $options = []): EntityInterface]]></code>
+      <code><![CDATA[public function query(): Query]]></code>
+      <code><![CDATA[public function save(EntityInterface $entity, array $options = []): EntityInterface|false]]></code>
+      <code><![CDATA[public function setAlias(string $alias)]]></code>
+      <code><![CDATA[public function setRegistryAlias(string $registryAlias)]]></code>
+      <code><![CDATA[public function updateAll(Closure|array|string $fields, Closure|array|string|null $conditions): int]]></code>
+    </MissingOverrideAttribute>
     <NoInterfaceProperties>
-      <code><![CDATA[$entity->id]]></code>
-      <code><![CDATA[$entity->id]]></code>
-      <code><![CDATA[$entity->id]]></code>
-      <code><![CDATA[$entity->id]]></code>
       <code><![CDATA[$entity->version]]></code>
     </NoInterfaceProperties>
+    <UnusedPsalmSuppress>
+      <code><![CDATA[MoreSpecificReturnType]]></code>
+    </UnusedPsalmSuppress>
   </file>
-  <file src="src/Marshaller.php">
-    <NoInterfaceProperties>
-      <code><![CDATA[$record->id]]></code>
-    </NoInterfaceProperties>
+  <file src="src/Plugin.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function bootstrap(PluginApplicationInterface $app): void]]></code>
+    </MissingOverrideAttribute>
   </file>
   <file src="src/Query.php">
-    <LessSpecificImplementedReturnType>
-      <code><![CDATA[\Traversable]]></code>
-    </LessSpecificImplementedReturnType>
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function aliasField(string $field, ?string $alias = null): array]]></code>
+      <code><![CDATA[public function aliasFields(array $fields, ?string $defaultAlias = null): array]]></code>
+      <code><![CDATA[public function all(): ResultSetInterface]]></code>
+      <code><![CDATA[public function applyOptions(array $options)]]></code>
+      <code><![CDATA[public function count(): int]]></code>
+      <code><![CDATA[public function find(string $finder, mixed ...$args): static]]></code>
+      <code><![CDATA[public function first(): mixed]]></code>
+      <code><![CDATA[public function getIterator(): Traversable]]></code>
+      <code><![CDATA[public function getRepository(): Index]]></code>
+      <code><![CDATA[public function limit(?int $limit)]]></code>
+      <code><![CDATA[public function offset(?int $offset)]]></code>
+      <code><![CDATA[public function order(Closure|array|string $fields, bool $overwrite = false)]]></code>
+      <code><![CDATA[public function orderBy(array|Closure|string $fields, bool $overwrite = false)]]></code>
+      <code><![CDATA[public function page(int $num, ?int $limit = null)]]></code>
+      <code><![CDATA[public function select(Closure|array|string|int|float $fields, bool $overwrite = false)]]></code>
+      <code><![CDATA[public function setRepository(RepositoryInterface $repository)]]></code>
+      <code><![CDATA[public function toArray(): array]]></code>
+      <code><![CDATA[public function where(]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/QueryBuilder.php">
+    <RedundantCondition>
+      <code><![CDATA[$parsed instanceof AbstractQuery]]></code>
+      <code><![CDATA[$parsed instanceof AbstractQuery]]></code>
+      <code><![CDATA[$parsed instanceof AbstractQuery]]></code>
+    </RedundantCondition>
+  </file>
+  <file src="src/ResultSet.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function count(): int]]></code>
+      <code><![CDATA[public function current(): Document]]></code>
+    </MissingOverrideAttribute>
+    <MissingTemplateParam>
+      <code><![CDATA[ResultSetInterface]]></code>
+    </MissingTemplateParam>
+  </file>
+  <file src="src/TestSuite/Fixture/DeleteQueryStrategy.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function setupTest(array $fixtureNames): void]]></code>
+      <code><![CDATA[public function teardownTest(): void]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/TestSuite/TestCase.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[protected function getFixtureStrategy(): FixtureStrategyInterface]]></code>
+      <code><![CDATA[protected function setUp(): void]]></code>
+    </MissingOverrideAttribute>
+  </file>
+  <file src="src/TestSuite/TestFixture.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function connection(): string]]></code>
+      <code><![CDATA[public function insert(ConnectionInterface $connection): bool]]></code>
+      <code><![CDATA[public function sourceName(): string]]></code>
+      <code><![CDATA[public function truncate(ConnectionInterface $connection): bool]]></code>
+    </MissingOverrideAttribute>
   </file>
   <file src="src/View/Form/DocumentContext.php">
-    <InvalidReturnStatement>
-      <code><![CDATA[$entity]]></code>
-    </InvalidReturnStatement>
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function attributes(string $field): array]]></code>
+      <code><![CDATA[public function error(string $field): array]]></code>
+      <code><![CDATA[public function fieldNames(): array]]></code>
+      <code><![CDATA[public function getMaxLength(string $field): ?int]]></code>
+      <code><![CDATA[public function getPrimaryKey(): array]]></code>
+      <code><![CDATA[public function getRequiredMessage(string $field): ?string]]></code>
+      <code><![CDATA[public function hasError(string $field): bool]]></code>
+      <code><![CDATA[public function isCreate(): bool]]></code>
+      <code><![CDATA[public function isPrimaryKey(string $field): bool]]></code>
+      <code><![CDATA[public function isRequired(string $field): bool]]></code>
+      <code><![CDATA[public function type(string $field): ?string]]></code>
+      <code><![CDATA[public function val(string $field, array $options = []): mixed]]></code>
+    </MissingOverrideAttribute>
   </file>
 </files>

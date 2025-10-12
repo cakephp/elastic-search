@@ -69,10 +69,9 @@ class Connection implements ConnectionInterface
      * Constructor.
      *
      * @param array $config config options
-     * @param callable|null $callback Callback function which can be used to be notified
-     * about errors (for example connection down)
+     * @throws \RuntimeException When using legacy host/port configuration instead of modern hosts array
      */
-    public function __construct(array $config = [], ?callable $callback = null)
+    public function __construct(array $config = [])
     {
         if (isset($config['name'])) {
             $this->configName = $config['name'];
@@ -82,7 +81,30 @@ class Connection implements ConnectionInterface
             $this->enableQueryLogging((bool)$config['log']);
         }
 
-        $this->_client = new ElasticaClient($config, $callback, $this->getEsLogger());
+        // Check for legacy host/port configuration
+        if (isset($config['host']) || isset($config['port'])) {
+            $host = $config['host'] ?? 'localhost';
+            $port = $config['port'] ?? 9200;
+
+            throw new RuntimeException(
+                'Legacy host/port configuration is not supported in Elastica 9.x. ' .
+                'Please use the hosts array format instead: ' .
+                "['hosts' => ['{$host}:{$port}']] " .
+                'See https://elastica.io for more information.',
+            );
+        }
+
+        // Ensure hosts array is present for non-empty config
+        if (!empty($config) && !isset($config['hosts']) && !isset($config['url'])) {
+            throw new RuntimeException(
+                'Elastica requires either a "hosts" array or "url" configuration. ' .
+                'Example: ["hosts" => ["localhost:9200"]] or ["url" => "http://localhost:9200"]',
+            );
+        }
+
+        $this->_config = $config;
+        $logger = $this->logQueries ? $this->getEsLogger() : null;
+        $this->_client = new ElasticaClient($config, $logger);
     }
 
     /**
@@ -175,10 +197,7 @@ class Connection implements ConnectionInterface
      */
     public function config(): array
     {
-        $config = $this->_client->getConfig();
-        assert(is_array($config));
-
-        return $config;
+        return $this->_config;
     }
 
     /**

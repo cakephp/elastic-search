@@ -112,21 +112,46 @@ class ElasticLogger extends AbstractLogger
     protected function _log(string $level, string $message, array $context = []): void
     {
         $logData = $context;
-        if ($level === LogLevel::DEBUG && isset($context['request'])) {
-            $logData = [
-                'method' => $context['request']['method'],
-                'path' => $context['request']['path'],
-                'data' => $context['request']['data'],
-            ];
-        }
 
+        // Handle Elastica 9.x log format
+        if ($level === LogLevel::DEBUG && isset($context['request'])) {
+            // Handle legacy 7.x format
+            if (is_array($context['request']) && isset($context['request']['method'])) {
+                $logData = [
+                    'method' => $context['request']['method'],
+                    'path' => $context['request']['path'],
+                    'data' => $context['request']['data'],
+                ];
+            } else {
+                // Handle new 9.x format - context may have different structure
+                $logData = [
+                    'method' => $context['method'] ?? null,
+                    'path' => $context['path'] ?? null,
+                    'data' => $context['data'] ?? null,
+                ];
+            }
+        }
         $logData = json_encode($logData, JSON_PRETTY_PRINT);
 
         if (isset($context['request'], $context['response'])) {
             $took = 0;
-            $numRows = $context['response']['hits']['total']['value'] ?? $context['response']['hits']['total'] ?? 0;
-            if (isset($context['response']['took'])) {
-                $took = $context['response']['took'];
+            $numRows = 0;
+
+            // Handle response structure differences between Elastica versions
+            if (is_array($context['response'])) {
+                $response = $context['response'];
+                $took = $response['took'] ?? 0;
+
+                // Handle different response structures for document count
+                if (isset($response['hits']['total']['value'])) {
+                    $numRows = $response['hits']['total']['value'];
+                } elseif (isset($response['hits']['total'])) {
+                    $numRows = is_array($response['hits']['total']) ?
+                        ($response['hits']['total']['value'] ?? 0) :
+                        $response['hits']['total'];
+                } elseif (isset($response['count'])) {
+                    $numRows = $response['count'];
+                }
             }
 
             $message = new LoggedQuery();

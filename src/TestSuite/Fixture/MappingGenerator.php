@@ -5,7 +5,6 @@ namespace Cake\ElasticSearch\TestSuite\Fixture;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
-use Elastica\Mapping as ElasticaMapping;
 use RuntimeException;
 
 /**
@@ -111,12 +110,14 @@ class MappingGenerator
             $args['settings'] = $mapping['settings'];
         }
 
-        $esIndex->create($args);
+        // In Elastica 9.x, mappings should be included in index creation
+        if (!empty($mapping['mapping'])) {
+            $args['mappings'] = [
+                'properties' => $mapping['mapping'],
+            ];
+        }
 
-        $esMapping = new ElasticaMapping();
-        $esMapping->setProperties($mapping['mapping']);
-
-        $response = $esMapping->send($esIndex);
+        $response = $esIndex->create($args);
         if (!$response->isOk()) {
             $msg = sprintf(
                 'Fixture creation for "%s" failed "%s"',

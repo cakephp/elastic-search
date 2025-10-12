@@ -140,22 +140,4 @@ class ResultSetTest extends TestCase
         $this->assertSame([], $resultSet->getAggregations());
         $this->assertSame([], $resultSet->getSuggests());
     }
-
-    /**
-     * Test serialize/unserialize
-     */
-    public function testSerialize(): void
-    {
-        $index = new Index([
-            'name' => 'articles',
-            'connection' => ConnectionManager::get('test'),
-        ]);
-
-        $resultSet = $index->find()->all();
-        $serialized = serialize($resultSet);
-        $outcome = unserialize($serialized);
-
-        $this->assertEquals($resultSet->getResults(), $outcome->getResults());
-        $this->assertEquals($resultSet->toArray(), $outcome->toArray());
-    }
 }

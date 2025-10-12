@@ -16,7 +16,7 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\Datasource;
 
-use Elastica\Exception\ResponseException;
+use Elastic\Elasticsearch\Exception\ClientResponseException;
 
 /**
  * Temporary shim for fixtures as they know too much about databases.
@@ -24,7 +24,7 @@ use Elastica\Exception\ResponseException;
 class SchemaCollection
 {
     /**
-     * The connection instance to use.
+     * Connection instance
      */
     protected Connection $connection;
 
@@ -47,7 +47,7 @@ class SchemaCollection
     {
         try {
             $indexes = $this->connection->getDriver()->getStatus()->getIndexNames();
-        } catch (ResponseException $responseException) {
+        } catch (ClientResponseException $responseException) {
             return [];
         }
 

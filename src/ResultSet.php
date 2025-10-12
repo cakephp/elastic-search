@@ -237,43 +237,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     }
 
     /**
-     * Returns a string representation of this object that can be used
-     * to reconstruct it
-     */
-    public function serialize(): string
-    {
-        return serialize([ $this->resultSet, $this->queryObject ]);
-    }
-
-    /**
-     * Magic method for serializing the ResultSet instance
-     */
-    public function __serialize(): array
-    {
-        return [$this->resultSet, $this->queryObject];
-    }
-
-    /**
-     * Unserializes the passed string and rebuilds the ResultSet instance
-     *
-     * @param string $serialized The serialized ResultSet information
-     */
-    public function unserialize(string $serialized): void
-    {
-        $this->__construct(...unserialize($serialized));
-    }
-
-    /**
-     * Magic method for unserializing the ResultSet instance
-     *
-     * @param array $data The serialized data
-     */
-    public function __unserialize(array $data): void
-    {
-        $this->__construct(...$data);
-    }
-
-    /**
      * Debug output hook method.
      */
     public function __debugInfo(): array
