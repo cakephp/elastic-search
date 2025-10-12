@@ -23,6 +23,7 @@ use Cake\ElasticSearch\ResultSet;
 use Cake\ElasticSearch\TestSuite\TestCase;
 use Elastica\Result;
 use Elastica\ResultSet as ElasticaResultSet;
+use PHPUnit\Framework\Attributes\Depends;
 use ReflectionProperty;
 use TestApp\Model\Document\MyTestDocument;
 
@@ -46,13 +47,13 @@ class ResultSetTest extends TestCase
             ->setConstructorArgs([$type])
             ->getMock();
         $query->expects($this->once())->method('getRepository')
-            ->will($this->returnValue($type));
+            ->willReturn($type);
 
         $type->expects($this->once())
             ->method('getEntityClass')
-            ->will($this->returnValue(MyTestDocument::class));
+            ->willReturn(MyTestDocument::class);
         $type->method('embedded')
-            ->will($this->returnValue([]));
+            ->willReturn([]);
 
         return [new ResultSet($elasticaSet, $query), $elasticaSet];
     }
@@ -60,9 +61,8 @@ class ResultSetTest extends TestCase
     /**
      * Tests that calling current will wrap the result using the provided entity
      * class
-     *
-     * @depends testConstructor
      */
+    #[Depends('testConstructor')]
     public function testCurrent($resultSets): void
     {
         [$resultSet, $elasticaSet] = $resultSets;
@@ -72,15 +72,15 @@ class ResultSetTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $result->method('getData')
-            ->will($this->returnValue($data));
+            ->willReturn($data);
         $result->method('getId')
-            ->will($this->returnValue(99));
+            ->willReturn(99);
         $result->method('getIndex')
-            ->will($this->returnValue('things'));
+            ->willReturn('things');
 
         $elasticaSet->expects($this->once())
             ->method('current')
-            ->will($this->returnValue($result));
+            ->willReturn($result);
 
         $document = $resultSet->current();
         $this->assertInstanceOf(MyTestDocument::class, $document);

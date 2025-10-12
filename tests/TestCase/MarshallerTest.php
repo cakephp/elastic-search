@@ -22,6 +22,7 @@ use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\TestSuite\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TestApp\Model\Document\ProtectedArticle;
 use TestApp\Model\Document\User;
 use TestApp\Model\Index\AccountsIndex;
@@ -231,9 +232,9 @@ class MarshallerTest extends TestCase
     /**
      * test marshalling a simple object with associated options
      *
-     * @dataProvider oneEmbeddedOneWithOptionProvider
      * @param array  $options  Options to pass to marshaller->one
      */
+    #[DataProvider('oneEmbeddedOneWithOptionProvider')]
     public function testOneEmbeddedOneWithOptions(array $options): void
     {
         $data = [
@@ -306,9 +307,9 @@ class MarshallerTest extends TestCase
     /**
      * test marshalling a simple object.
      *
-     * @dataProvider oneEmbeddedManyWithOptionsProvider
      * @param array  $options  Options to pass to marshaller->one
      */
+    #[DataProvider('oneEmbeddedManyWithOptionsProvider')]
     public function testOneEmbeddedManyWithOptions(array $options): void
     {
         $data = [

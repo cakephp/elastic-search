@@ -26,6 +26,7 @@ use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Http\ServerRequest;
 use Cake\Validation\Validator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TestApp\Model\Document\Article;
 
 /**
@@ -155,9 +156,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test isCreate on a collection.
-     *
-     * @dataProvider collectionProvider
      */
+    #[DataProvider('collectionProvider')]
     public function testIsCreateCollection(ArrayObject|ArrayIterator|Collection|array $collection): void
     {
         $context = new DocumentContext(
@@ -235,9 +235,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test operations on a collection of entities.
-     *
-     * @dataProvider collectionProvider
      */
+    #[DataProvider('collectionProvider')]
     public function testValOnCollections(ArrayObject|ArrayIterator|Collection|array $collection): void
     {
         $context = new DocumentContext(
@@ -342,9 +341,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test error operations on a collection of entities.
-     *
-     * @dataProvider collectionProvider
      */
+    #[DataProvider('collectionProvider')]
     public function testErrorsOnCollections(ArrayObject|ArrayIterator|Collection|array $collection): void
     {
         $context = new DocumentContext(

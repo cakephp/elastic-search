@@ -23,6 +23,7 @@ use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\TestSuite\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TestApp\Model\Document\Address;
 
 /**
@@ -90,10 +91,10 @@ class EmbeddedDocumentTest extends TestCase
     /**
      * Test fetching with EmbedOne documents.
      *
-     * @dataProvider embedTypeProvider
      * @param array  $options  Options to pass to embed
      * @param string $expected Expected type
      */
+    #[DataProvider('embedTypeProvider')]
     public function testGetWithEmbedOneType(array $options, string $expected): void
     {
         Configure::write('App.namespace', 'TestApp');
@@ -143,10 +144,10 @@ class EmbeddedDocumentTest extends TestCase
     /**
      * Test fetching with EmbedMany documents.
      *
-     * @dataProvider embedTypeProvider
      * @param array  $options  Options to pass to embed
      * @param string $expected Expected type
      */
+    #[DataProvider('embedTypeProvider')]
     public function testGetWithEmbedManyType(array $options, string $expected): void
     {
         Configure::write('App.namespace', 'TestApp');

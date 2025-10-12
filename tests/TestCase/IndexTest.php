@@ -196,7 +196,7 @@ class IndexTest extends TestCase
 
         $connection->expects($this->once())
             ->method('getIndex')
-            ->will($this->returnValue($internalIndex));
+            ->willReturn($internalIndex);
 
         $document = $this->getMockBuilder(ElasticaDocument::class)
             ->onlyMethods(['getId', 'getData'])
@@ -204,14 +204,14 @@ class IndexTest extends TestCase
         $internalIndex->expects($this->once())
             ->method('getDocument')
             ->with('foo', ['bar' => 'baz'])
-            ->will($this->returnValue($document));
+            ->willReturn($document);
 
         $document->expects($this->once())
             ->method('getData')
-            ->will($this->returnValue(['a' => 'b']));
+            ->willReturn(['a' => 'b']);
         $document->expects($this->once())
             ->method('getId')
-            ->will($this->returnValue('foo'));
+            ->willReturn('foo');
 
         $result = $index->get('foo', ['bar' => 'baz']);
         $this->assertInstanceOf(Document::class, $result);
@@ -782,7 +782,7 @@ class IndexTest extends TestCase
             'Model.buildRules',
             function ($event, $rules): void {
                 $rules->add(
-                    function ($doc): false {
+                    function ($doc): bool {
                         return false;
                     },
                 );
@@ -826,15 +826,34 @@ class IndexTest extends TestCase
     }
 
     /**
-     * Test that Index implements the EventListenerInterface and some events.
+     * Test that implementedEvents works.
      */
     public function testImplementedEvents(): void
     {
         $this->assertInstanceOf(EventListenerInterface::class, $this->index);
 
-        $index = $this->getMockBuilder(Index::class)
-            ->addMethods(['beforeFind', 'beforeSave', 'afterSave', 'beforeDelete', 'afterDelete'])
-            ->getMock();
+        $index = new class extends Index {
+            public function beforeFind(): void
+            {
+            }
+
+            public function beforeSave(): void
+            {
+            }
+
+            public function afterSave(): void
+            {
+            }
+
+            public function beforeDelete(): void
+            {
+            }
+
+            public function afterDelete(): void
+            {
+            }
+        };
+
         $result = $index->implementedEvents();
         $expected = [
             'Model.beforeFind' => 'beforeFind',
@@ -851,9 +870,11 @@ class IndexTest extends TestCase
      */
     public function testOwnEvents(): void
     {
-        $index = $this->getMockBuilder(Index::class)
-            ->addMethods(['beforeSave'])
-            ->getMock();
+        $index = new class extends Index {
+            public function beforeSave(): void
+            {
+            }
+        };
 
         $this->assertCount(1, $index->getEventManager()->listeners('Model.beforeSave'));
     }

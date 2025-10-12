@@ -47,7 +47,7 @@ class DocumentTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $result->expects($this->once())->method('getData')
-            ->will($this->returnValue($data));
+            ->willReturn($data);
         $document = new Document($result);
         $this->assertSame($data, $document->toArray());
     }
@@ -93,27 +93,27 @@ class DocumentTest extends TestCase
 
         $result
             ->method('getData')
-            ->will($this->returnValue($data));
+            ->willReturn($data);
 
         $result
             ->method('getId')
-            ->will($this->returnValue(1));
+            ->willReturn(1);
 
         $result
             ->method('getIndex')
-            ->will($this->returnValue('things'));
+            ->willReturn('things');
 
         $result
             ->method('getVersion')
-            ->will($this->returnValue(3));
+            ->willReturn(3);
 
         $result
             ->method('getHighlights')
-            ->will($this->returnValue(['highlights array']));
+            ->willReturn(['highlights array']);
 
         $result
             ->method('getExplanation')
-            ->will($this->returnValue(['explanation array']));
+            ->willReturn(['explanation array']);
 
         $document = new Document($result);
         $this->assertSame($data + ['id' => 1], $document->toArray());
