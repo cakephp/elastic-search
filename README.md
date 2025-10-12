@@ -29,7 +29,7 @@ composer require cakephp/elastic-search:^5.0
 | [>3, <3.4.0](https://github.com/cakephp/elastic-search/tree/3.3.0) | 4.0+      | 6.x           | 6.x       |
 | [>=3.4.0](https://github.com/cakephp/elastic-search/tree/3.x)      | 4.0+      | 7.x           | 7.x       |
 | [4.x](https://github.com/cakephp/elastic-search/tree/4.x)          | 5.0+      | 7.x           | 7.x       |
-| [5.x](https://github.com/cakephp/elastic-search/tree/5.x)          | 5.0+      | 9.x           | 9.x       |
+| [5.x](https://github.com/cakephp/elastic-search/tree/5.x)          | 5.2+      | 9.x           | 9.x       |
 
 You are seeing the 5.x version.
 
