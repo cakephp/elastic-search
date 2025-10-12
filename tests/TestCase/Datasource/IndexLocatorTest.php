@@ -27,8 +27,10 @@ use Cake\TestSuite\TestCase;
  */
 class IndexLocatorTest extends TestCase
 {
+    protected IndexLocator $locator;
+
     /**
-     * setup
+     * Setup method
      *
      * @return void
      */

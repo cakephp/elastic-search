@@ -86,7 +86,7 @@ class Document implements EntityInterface
         }
 
         if (!empty($data)) {
-            $this->set($data, [
+            $this->patch($data, [
                 'setter' => $options['useSetters'],
                 'guard' => $options['guard'],
             ]);

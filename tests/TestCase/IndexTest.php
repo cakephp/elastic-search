@@ -18,6 +18,7 @@ namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\EntityInterface;
+use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\TestSuite\TestCase;
@@ -30,6 +31,9 @@ use Elastica\Exception\NotFoundException;
 class IndexTest extends TestCase
 {
     public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
+
+    protected Connection $connection;
+    protected Index $index;
 
     public function setUp(): void
     {
@@ -524,8 +528,7 @@ class IndexTest extends TestCase
             'Model.beforeSave',
             function (EventInterface $event, EntityInterface $entity, $options) use ($doc) {
                 $event->stopPropagation();
-
-                return false;
+                $event->setResult(false);
             },
         );
         $this->index->getEventManager()->on(
@@ -730,8 +733,7 @@ class IndexTest extends TestCase
             'Model.beforeDelete',
             function ($event, $entity, $options) use ($doc) {
                 $event->stopPropagation();
-
-                return false;
+                $event->setResult(false);
             },
         );
         $this->index->getEventManager()->on(

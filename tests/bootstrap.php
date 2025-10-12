@@ -42,7 +42,7 @@ Configure::write('App', [
     ],
 ]);
 
-Cache::setConfig('_cake_core_', [
+Cache::setConfig('_cake_translations_', [
     'className' => 'File',
     'path' => sys_get_temp_dir(),
 ]);

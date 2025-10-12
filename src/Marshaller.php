@@ -125,13 +125,15 @@ class Marshaller
         }
 
         if (!isset($options['fieldList'])) {
-            $entity->set($data);
+            $entity->patch($data);
         } else {
+            $filteredData = [];
             foreach ((array)$options['fieldList'] as $field) {
                 if (array_key_exists($field, $data)) {
-                    $entity->set($field, $data[$field]);
+                    $filteredData[$field] = $data[$field];
                 }
             }
+            $entity->patch($filteredData);
         }
 
         return $entity;
@@ -177,7 +179,7 @@ class Marshaller
             if (!($existing instanceof EntityInterface)) {
                 $existing = new $class();
             }
-            $existing->set($data);
+            $existing->patch($data);
 
             return $existing;
         } else {
@@ -186,14 +188,14 @@ class Marshaller
             }
             foreach ($existing as $i => $row) {
                 if (isset($data[$i])) {
-                    $row->set($data[$i]);
+                    $row->patch($data[$i]);
                 }
                 unset($data[$i]);
             }
             foreach ($data as $row) {
                 if (is_array($row)) {
                     $new = new $class();
-                    $new->set($row);
+                    $new->patch($row);
                     $existing[] = $new;
                 }
             }
@@ -259,7 +261,7 @@ class Marshaller
         }
 
         if (!isset($options['fieldList'])) {
-            $entity->set($data);
+            $entity->patch($data);
 
             return $entity;
         }

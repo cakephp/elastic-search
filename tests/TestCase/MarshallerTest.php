@@ -37,6 +37,8 @@ class MarshallerTest extends TestCase
      */
     public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
+    protected Index $index;
+
     /**
      * Setup method.
      *

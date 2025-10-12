@@ -1,6 +1,7 @@
 composer.lock
 phpunit.xml
 /tools
+.phpunit.cache
 vendor
 .env
 composer.phar

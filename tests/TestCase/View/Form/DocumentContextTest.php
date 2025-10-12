@@ -43,6 +43,9 @@ class DocumentContextTest extends TestCase
         'plugin.Cake/ElasticSearch.Profiles',
     ];
 
+    protected ServerRequest $request;
+    protected string $textField;
+
     /**
      * setup method.
      *

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Datasource\ConnectionManager;
+use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Rule\IsUnique;
@@ -12,6 +13,9 @@ use Cake\ElasticSearch\TestSuite\TestCase;
 class RulesCheckerTest extends TestCase
 {
     public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
+
+    protected Connection $connection;
+    protected Index $index;
 
     public function setUp(): void
     {

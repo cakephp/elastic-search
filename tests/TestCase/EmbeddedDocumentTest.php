@@ -28,6 +28,8 @@ class EmbeddedDocumentTest extends TestCase
 {
     public array $fixtures = ['plugin.Cake/ElasticSearch.Profiles'];
 
+    protected Index $index;
+
     public function setUp(): void
     {
         parent::setUp();
