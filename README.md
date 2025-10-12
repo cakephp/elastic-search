@@ -3,7 +3,7 @@
 ![Build Status](https://github.com/cakephp/elastic-search/actions/workflows/ci.yml/badge.svg?branch=5.x)
 [![Latest Stable Version](https://img.shields.io/github/v/release/cakephp/elastic-search?sort=semver&style=flat-square)](https://packagist.org/packages/cakephp/elastic-search)
 [![Total Downloads](https://img.shields.io/packagist/dt/cakephp/elastic-search?style=flat-square)](https://packagist.org/packages/cakephp/elastic-search/stats)
-[![Code Coverage](https://img.shields.io/coveralls/cakephp/elastic-search/5.x.svg?style=flat-square)](https://coveralls.io/r/cakephp/elastic-search?branch=5.x)
+[![codecov](https://codecov.io/gh/cakephp/elastic-search/branch/5.x/graph/badge.svg?token=G3Tcg116OX)](https://codecov.io/gh/cakephp/elastic-search)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat-square)](https://phpstan.org/)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
@@ -92,13 +92,32 @@ Elasticsearch query logs will go. Query logging is done at a 'debug' level.
 ## Getting a Index object
 
 Index objects are the equivalent of `ORM\Table` instances in elastic search. You can
-use the `IndexRegistry` factory to get instances, much like `TableRegistry`:
+use the `IndexLocatorAwareTrait` to get instances in your classes:
 
 ```php
-use Cake\ElasticSearch\IndexRegistry;
+use Cake\ElasticSearch\Datasource\IndexLocatorAwareTrait;
 
-$comments = IndexRegistry::get('Comments');
+class MyClass
+{
+    use IndexLocatorAwareTrait;
+
+    public function someMethod()
+    {
+        $comments = $this->fetchIndex('Comments');
+    }
+}
 ```
+
+Alternatively, you can use the `IndexLocator` directly:
+
+```php
+use Cake\ElasticSearch\Datasource\IndexLocator;
+
+$locator = new IndexLocator();
+$comments = $locator->get('Comments');
+```
+
+> **Note for upgrading users**: The `IndexRegistry` class has been deprecated since version 3.4.3. If you're upgrading from an older version, replace `IndexRegistry::get('Comments')` with the `IndexLocatorAwareTrait` approach shown above or use `IndexLocator` directly.
 
 If you have loaded the plugin with bootstrap enabled you could load indexes using the model factory in your controllers
 ```php
@@ -119,7 +138,7 @@ class SomeController extends AppController
 
 Each `Index` object needs a correspondent Elasticsearch _index_, just like most of `ORM\Table` needs a database _table_.
 
-In the above example, if you have defined a class as `CommentsIndex` and the `IndexRegistry` can find it, the `$comments` will receive a initialized object with inner configurations of connection and index. But if you don't have that class, a default one will be initialized and the index name on Elasticsearch mapped to the class.
+In the above example, if you have defined a class as `CommentsIndex` and the `IndexLocator` can find it, the `$comments` will receive an initialized object with inner configurations of connection and index. But if you don't have that class, a default one will be initialized and the index name on Elasticsearch mapped to the class.
 
 ## The Index class
 
