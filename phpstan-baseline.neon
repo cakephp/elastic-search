@@ -19,25 +19,25 @@ parameters:
 			path: src/Index.php
 
 		-
+			message: '#^Method Cake\\ElasticSearch\\Query\:\:all\(\) should return Cake\\Datasource\\ResultSetInterface&iterable\<T\> but returns iterable\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Query.php
+
+		-
 			message: '#^Method Cake\\ElasticSearch\\Query\:\:find\(\) should return static\(Cake\\ElasticSearch\\Query\<TSubject of array\|Cake\\ElasticSearch\\Document\>\) but returns Cake\\ElasticSearch\\Query\<Cake\\ElasticSearch\\Document\>\.$#'
 			identifier: return.type
 			count: 1
 			path: src/Query.php
 
 		-
-			message: '#^PHPDoc tag @return with type Cake\\ElasticSearch\\Query\<TSubject of array\|Cake\\ElasticSearch\\Document\> is not subtype of native type static\(Cake\\ElasticSearch\\Query\<TSubject of array\|Cake\\ElasticSearch\\Document\>\)\.$#'
-			identifier: return.phpDocType
-			count: 1
-			path: src/Query.php
-
-		-
-			message: '#^Class Cake\\ElasticSearch\\ResultSet @implements tag contains incompatible type Cake\\Datasource\\ResultSetInterface&iterable<T of array\|Cake\\Datasource\\EntityInterface>\.$#'
-			identifier: generics.notCompatible
-			count: 1
-			path: src/ResultSet.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: src/QueryBuilder.php
+
+		-
+			message: '#^Class Cake\\ElasticSearch\\ResultSet @implements tag contains incompatible type Cake\\Datasource\\ResultSetInterface&iterable\<T of array\|Cake\\Datasource\\EntityInterface\>\.$#'
+			identifier: generics.notCompatible
+			count: 1
+			path: src/ResultSet.php

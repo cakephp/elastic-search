@@ -9,6 +9,9 @@ on:
       - '*'
   workflow_dispatch:
 
+env:
+  DB_URL: Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection
+
 jobs:
   testsuite:
     runs-on: ubuntu-latest
@@ -24,16 +27,17 @@ jobs:
     services:
       elasticsearch:
         image: elasticsearch:9.1.5
-        ports:
-          - 9200/tcp
         env:
           discovery.type: single-node
-          ES_JAVA_OPTS: -Xms500m -Xmx500m
+          xpack.security.enabled: false
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+        ports:
+          - 9200:9200
         options: >-
-          --health-cmd "curl http://127.0.0.1:9200/_cluster/health"
+          --health-cmd "curl -f http://localhost:9200/_cluster/health || exit 1"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -75,8 +79,6 @@ jobs:
       run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
     - name: Run PHPUnit
-      env:
-        DB_URL: Cake\ElasticSearch\Datasource\Connection://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}?driver=Cake\ElasticSearch\Datasource\Connection
       run: |
         if [[ ${{ matrix.php-version }} == '8.1' ]]; then
           export CODECOVERAGE=1 && vendor/bin/phpunit --display-incomplete --display-skipped --coverage-clover=coverage.xml
@@ -95,16 +97,17 @@ jobs:
     services:
       elasticsearch:
         image: elasticsearch:9.1.5
-        ports:
-          - 9200/tcp
         env:
           discovery.type: single-node
-          ES_JAVA_OPTS: -Xms500m -Xmx500m
+          xpack.security.enabled: false
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+        ports:
+          - 9200:9200
         options: >-
-          --health-cmd "curl http://127.0.0.1:9200/_cluster/health"
+          --health-cmd "curl -f http://localhost:9200/_cluster/health || exit 1"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -139,13 +142,9 @@ jobs:
       run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
 
     - name: Run psalm
-      env:
-        DB_URL: Cake\ElasticSearch\Datasource\Connection://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}?driver=Cake\ElasticSearch\Datasource\Connection
       if: always()
       run: tools/psalm --output-format=github
 
     - name: Run phpstan
-      env:
-        DB_URL: Cake\ElasticSearch\Datasource\Connection://127.0.0.1:${{ job.services.elasticsearch.ports['9200'] }}?driver=Cake\ElasticSearch\Datasource\Connection
       if: always()
       run: tools/phpstan analyse --error-format=github
