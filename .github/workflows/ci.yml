@@ -75,12 +75,12 @@ jobs:
         fi
 
     - name: Setup problem matchers for PHPUnit
-      if: matrix.php-version == '8.1'
+      if: matrix.php-version == '8.4'
       run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
     - name: Run PHPUnit
       run: |
-        if [[ ${{ matrix.php-version }} == '8.1' ]]; then
+        if [[ ${{ matrix.php-version }} == '8.4' ]]; then
           export CODECOVERAGE=1 && vendor/bin/phpunit --display-incomplete --display-skipped --coverage-clover=coverage.xml
         else
           vendor/bin/phpunit
