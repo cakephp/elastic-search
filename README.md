@@ -3,7 +3,7 @@
 ![Build Status](https://github.com/cakephp/elastic-search/actions/workflows/ci.yml/badge.svg?branch=5.x)
 [![Latest Stable Version](https://img.shields.io/github/v/release/cakephp/elastic-search?sort=semver&style=flat-square)](https://packagist.org/packages/cakephp/elastic-search)
 [![Total Downloads](https://img.shields.io/packagist/dt/cakephp/elastic-search?style=flat-square)](https://packagist.org/packages/cakephp/elastic-search/stats)
-[![codecov](https://codecov.io/gh/cakephp/elastic-search/branch/5.x/graph/badge.svg?token=G3Tcg116OX)](https://codecov.io/gh/cakephp/elastic-search)
+[![codecov](https://codecov.io/gh/cakephp/elastic-search/branch/5.x/graph/badge.svg?token=G3Tcg116OX)](https://app.codecov.io/gh/cakephp/elastic-search/tree/5.x)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat-square)](https://phpstan.org/)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
