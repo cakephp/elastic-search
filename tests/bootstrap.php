@@ -48,15 +48,12 @@ Cache::setConfig('_cake_translations_', [
     'path' => sys_get_temp_dir(),
 ]);
 
-// Use modern Elastica 9.x configuration format with hosts array
-$elasticConfig = [
-    'className' => 'Cake\ElasticSearch\Datasource\Connection',
-    'driver' => 'Cake\ElasticSearch\Datasource\Connection',
-    'hosts' => ['127.0.0.1:9202'],
-];
+if (!getenv('DB_URL')) {
+    putenv('DB_URL=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9202?driver=Cake\ElasticSearch\Datasource\Connection');
+}
 
-ConnectionManager::setConfig('test', $elasticConfig);
-ConnectionManager::setConfig('test_elastic', $elasticConfig);
+ConnectionManager::setConfig('test', ['url' => getenv('DB_URL')]);
+ConnectionManager::setConfig('test_elastic', ['url' => getenv('DB_URL')]);
 
 $schema = new MappingGenerator('./tests/mappings.php', 'test');
 $schema->reload();

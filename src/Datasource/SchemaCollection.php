@@ -47,7 +47,7 @@ class SchemaCollection
     {
         try {
             $indexes = $this->connection->getDriver()->getStatus()->getIndexNames();
-        } catch (ClientResponseException $responseException) {
+        } catch (ClientResponseException $clientResponseException) {
             return [];
         }
 

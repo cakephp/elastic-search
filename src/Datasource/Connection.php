@@ -75,30 +75,19 @@ class Connection implements ConnectionInterface
     {
         if (isset($config['name'])) {
             $this->configName = $config['name'];
+            unset($config['name']);
         }
 
         if (isset($config['log'])) {
             $this->enableQueryLogging((bool)$config['log']);
         }
 
-        // Check for legacy host/port configuration
-        if (isset($config['host']) || isset($config['port'])) {
-            $host = $config['host'] ?? 'localhost';
-            $port = $config['port'] ?? 9200;
-
-            throw new RuntimeException(
-                'Legacy host/port configuration is not supported in Elastica 9.x. ' .
-                'Please use the hosts array format instead: ' .
-                "['hosts' => ['{$host}:{$port}']] " .
-                'See https://elastica.io for more information.',
-            );
-        }
-
-        // Ensure hosts array is present for non-empty config
-        if (!empty($config) && !isset($config['hosts']) && !isset($config['url'])) {
-            throw new RuntimeException(
-                'Elastica requires either a "hosts" array or "url" configuration. ' .
-                'Example: ["hosts" => ["localhost:9200"]] or ["url" => "http://localhost:9200"]',
+        // Allow configuration from URL format.
+        if (isset($config['host'])) {
+            $config['hosts'] = [$config['host'] . ':' . $config['port']];
+            unset(
+                $config['host'],
+                $config['port'],
             );
         }
 

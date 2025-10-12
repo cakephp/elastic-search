@@ -80,6 +80,7 @@ class DeleteQueryStrategy implements FixtureStrategyInterface
                     if ($e->getCode() !== 409) {
                         throw $e;
                     }
+
                     // For version conflicts, try to refresh and delete again
                     $esIndex->refresh();
                     try {

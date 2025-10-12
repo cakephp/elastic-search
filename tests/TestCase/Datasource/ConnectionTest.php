@@ -30,7 +30,6 @@ class ConnectionTest extends TestCase
      * Get test configuration for Connection
      *
      * @param array $additional Additional config options to merge
-     * @return array
      */
     protected function getTestConfig(array $additional = []): array
     {

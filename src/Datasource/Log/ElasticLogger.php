@@ -131,6 +131,7 @@ class ElasticLogger extends AbstractLogger
                 ];
             }
         }
+
         $logData = json_encode($logData, JSON_PRETTY_PRINT);
 
         if (isset($context['request'], $context['response'])) {
