@@ -332,7 +332,7 @@ class EmbeddedTest extends TestCase
     {
         // Create an embedded class that mimics real namespace structure
         $embedded = new class ('ComplexTest') extends Embedded {
-            public function hydrate(array $data, array $options): Document|array
+            public function hydrate(array $data, array $options): Document
             {
                 return new Document($data);
             }

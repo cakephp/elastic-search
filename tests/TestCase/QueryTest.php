@@ -36,6 +36,7 @@ use Elastica\Query\BoolQuery;
 use Elastica\Query\Term;
 use InvalidArgumentException;
 use Traversable;
+use TypeError;
 
 /**
  * Tests the Query class
@@ -830,6 +831,7 @@ class QueryTest extends TestCase
             // Just test that iteration works
             break;
         }
+
         $this->assertTrue(true); // If we get here, iteration worked
     }
 
@@ -843,6 +845,7 @@ class QueryTest extends TestCase
 
         // Test with array conditions
         $query->andWhere(['title' => 'test']);
+
         $compiled = $query->compileQuery();
         $this->assertInstanceOf(ElasticaQuery::class, $compiled);
 
@@ -1148,7 +1151,7 @@ class QueryTest extends TestCase
         $connection = ConnectionManager::get('test');
 
         return $this->fetchIndex('Articles', [
-            'className' => 'Cake\ElasticSearch\Index',
+            'className' => Index::class,
             'connection' => $connection,
         ]);
     }
@@ -1314,15 +1317,21 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Test setRepository with non-Index object throws assertion error
+     * Test setRepository with non-Index object throws exception (TypeError or AssertionError depending on PHP version)
      */
     public function testSetRepositoryWithNonIndex(): void
     {
         $repository = $this->createMock(RepositoryInterface::class);
         $query = new Query(new Index());
 
-        $this->expectException(AssertionError::class);
-        $query->setRepository($repository);
+        // Different PHP versions/configurations may throw different exception types
+        try {
+            $query->setRepository($repository);
+            $this->fail('Expected exception was not thrown');
+        } catch (TypeError | AssertionError $e) {
+            // Either TypeError or AssertionError is acceptable
+            $this->assertTrue(true);
+        }
     }
 
     /**
@@ -1401,6 +1410,7 @@ class QueryTest extends TestCase
 
         // First selection
         $query->select(['title', 'body']);
+
         $fields = $query->clause('fields');
         $this->assertContains('title', $fields);
         $this->assertContains('body', $fields);

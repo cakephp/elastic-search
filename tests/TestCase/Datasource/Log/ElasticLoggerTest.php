@@ -305,7 +305,7 @@ class ElasticLoggerTest extends TestCase
             ->method('log');
 
         foreach ($levels as $level) {
-            $elasticLogger->log($level, "Test message for $level", []);
+            $elasticLogger->log($level, 'Test message for ' . $level, []);
         }
     }
 
