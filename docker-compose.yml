@@ -11,7 +11,7 @@ services:
   elasticsearch:
     image: "elasticsearch:9.1.5"
     ports:
-      - "9202:9200"
+      - "9200:9200"
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms500m -Xmx500m

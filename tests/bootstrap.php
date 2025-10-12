@@ -49,7 +49,7 @@ Cache::setConfig('_cake_translations_', [
 ]);
 
 if (!getenv('DB_URL')) {
-    putenv('DB_URL=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9202?driver=Cake\ElasticSearch\Datasource\Connection');
+    putenv('DB_URL=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection');
 }
 
 ConnectionManager::setConfig('test', ['url' => getenv('DB_URL')]);
