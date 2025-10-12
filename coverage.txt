@@ -1,0 +1,10 @@
+PHPUnit 12.4.1 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.13
+Configuration: /home/josbeir/Sites/elastic-search/phpunit.xml.dist
+
+There was 1 PHPUnit test runner warning:
+
+1) XDEBUG_MODE=coverage (environment variable) or xdebug.mode=coverage (PHP configuration setting) has to be set
+
+No tests executed!

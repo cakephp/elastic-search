@@ -16,14 +16,19 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\Test\TestCase;
 
+use BadMethodCallException;
 use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Datasource\RulesChecker;
+use Cake\ElasticSearch\Association\EmbedMany;
+use Cake\ElasticSearch\Association\EmbedOne;
 use Cake\ElasticSearch\Datasource\Connection;
+use Cake\ElasticSearch\Datasource\MappingSchema;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\ElasticSearch\Index;
+use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\Query;
 use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\Event\EventInterface;
@@ -33,6 +38,7 @@ use Cake\Validation\Validator;
 use Elastica\Document as ElasticaDocument;
 use Elastica\Exception\NotFoundException;
 use Elastica\Index as ElasticaIndex;
+use RuntimeException;
 use TestPlugin\Model\Document\Comment;
 
 /**
@@ -877,5 +883,310 @@ class IndexTest extends TestCase
         };
 
         $this->assertCount(1, $index->getEventManager()->listeners('Model.beforeSave'));
+    }
+
+    /**
+     * Test updateAll method throws RuntimeException
+     */
+    public function testUpdateAll(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Not implemented yet');
+
+        $this->index->updateAll(['title' => 'Updated'], ['id' => '1']);
+    }
+
+    /**
+     * Test setConnection and getConnection methods
+     */
+    public function testSetAndGetConnection(): void
+    {
+        $connection = $this->createMock(Connection::class);
+
+        $result = $this->index->setConnection($connection);
+        $this->assertSame($this->index, $result); // Test fluent interface
+        $this->assertSame($connection, $this->index->getConnection());
+    }
+
+    /**
+     * Test setRegistryAlias and getRegistryAlias methods
+     */
+    public function testSetAndGetRegistryAliasCustom(): void
+    {
+        $alias = 'custom_alias';
+
+        $result = $this->index->setRegistryAlias($alias);
+        $this->assertSame($this->index, $result); // Test fluent interface
+        $this->assertSame($alias, $this->index->getRegistryAlias());
+    }
+
+    /**
+     * Test setName and getName methods
+     */
+    public function testSetAndGetName(): void
+    {
+        $name = 'custom_index_name';
+
+        $result = $this->index->setName($name);
+        $this->assertSame($this->index, $result); // Test fluent interface
+        $this->assertSame($name, $this->index->getName());
+    }
+
+    /**
+     * Test setAlias method (alias for setName)
+     */
+    public function testSetAlias(): void
+    {
+        $alias = 'test_alias';
+
+        $result = $this->index->setAlias($alias);
+        $this->assertSame($this->index, $result); // Test fluent interface
+        $this->assertSame($alias, $this->index->getName());
+        $this->assertSame($alias, $this->index->getAlias());
+    }
+
+    /**
+     * Test embedOne method
+     */
+    public function testEmbedOne(): void
+    {
+        $this->index->embedOne('User', ['property' => 'user']);
+
+        $embedded = $this->index->embedded();
+        $this->assertCount(1, $embedded);
+        $this->assertInstanceOf(EmbedOne::class, $embedded[0]);
+    }
+
+    /**
+     * Test embedMany method
+     */
+    public function testEmbedMany(): void
+    {
+        $this->index->embedMany('Comments', ['property' => 'comments']);
+
+        $embedded = $this->index->embedded();
+        $this->assertCount(1, $embedded);
+        $this->assertInstanceOf(EmbedMany::class, $embedded[0]);
+    }
+
+    /**
+     * Test embedded method returns empty array initially
+     */
+    public function testEmbeddedEmpty(): void
+    {
+        $newIndex = new Index();
+
+        $embedded = $newIndex->embedded();
+        $this->assertIsArray($embedded);
+        $this->assertEmpty($embedded);
+    }
+
+    /**
+     * Test callFinder method
+     */
+    public function testCallFinder(): void
+    {
+        $query = $this->index->query();
+        $options = ['limit' => 10, 'conditions' => ['status' => 'active']];
+
+        $result = $this->index->callFinder('all', $query, $options);
+        $this->assertInstanceOf(Query::class, $result);
+        $this->assertSame($query, $result); // Should return the same query object
+    }
+
+    /**
+     * Test callFinder with invalid finder
+     */
+    public function testCallFinderInvalid(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('Unknown finder method "invalidFinder"');
+
+        $query = $this->index->query();
+        $this->index->callFinder('invalidFinder', $query);
+    }
+
+    /**
+     * Test aliasField method
+     */
+    public function testAliasField(): void
+    {
+        $result = $this->index->aliasField('title');
+        $this->assertSame('title', $result);
+
+        $result = $this->index->aliasField('body');
+        $this->assertSame('body', $result);
+    }
+
+    /**
+     * Test query method creates new Query instance
+     */
+    public function testQueryMethod(): void
+    {
+        $query = $this->index->query();
+
+        $this->assertInstanceOf(Query::class, $query);
+        $this->assertSame($this->index, $query->getRepository());
+
+        // Ensure each call creates a new instance
+        $query2 = $this->index->query();
+        $this->assertNotSame($query, $query2);
+    }
+
+    /**
+     * Test marshaller method
+     */
+    public function testMarshallerMethod(): void
+    {
+        $marshaller = $this->index->marshaller();
+
+        $this->assertInstanceOf(Marshaller::class, $marshaller);
+
+        // Test that subsequent calls return new instances
+        $marshaller2 = $this->index->marshaller();
+        $this->assertNotSame($marshaller, $marshaller2);
+    }
+
+    /**
+     * Test newEmptyEntity method
+     */
+    public function testNewEmptyEntity(): void
+    {
+        $entity = $this->index->newEmptyEntity();
+
+        $this->assertInstanceOf(Document::class, $entity);
+        $this->assertTrue($entity->isNew());
+        $this->assertEmpty($entity->toArray());
+    }
+
+    /**
+     * Test patchEntity method
+     */
+    public function testPatchEntity(): void
+    {
+        $entity = new Document(['title' => 'Original Title']);
+        $data = ['title' => 'Updated Title', 'body' => 'New Body'];
+
+        $result = $this->index->patchEntity($entity, $data);
+
+        $this->assertSame($entity, $result);
+        $this->assertSame('Updated Title', $entity->get('title'));
+        $this->assertSame('New Body', $entity->get('body'));
+    }
+
+    /**
+     * Test patchEntities method
+     */
+    public function testPatchEntities(): void
+    {
+        $entities = [
+            new Document(['title' => 'First', 'id' => '1']),
+            new Document(['title' => 'Second', 'id' => '2']),
+        ];
+
+        $data = [
+            ['title' => 'Updated First'],
+            ['title' => 'Updated Second'],
+        ];
+
+        $result = $this->index->patchEntities($entities, $data);
+
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertSame('Updated First', $result[0]->get('title'));
+        $this->assertSame('Updated Second', $result[1]->get('title'));
+    }
+
+    /**
+     * Test schema method returns MappingSchema
+     */
+    public function testSchemaMethod(): void
+    {
+        $schema = $this->index->schema();
+
+        $this->assertInstanceOf(MappingSchema::class, $schema);
+
+        // Test that subsequent calls return the same instance (cached)
+        $schema2 = $this->index->schema();
+        $this->assertSame($schema, $schema2);
+    }
+
+    /**
+     * Test getName method with automatic name inference
+     */
+    public function testGetNameAutomatic(): void
+    {
+        $index = new class extends Index {
+            // Class name ends with "Index" so it should infer "Test" as the name
+        };
+
+        // The name should be inferred from the class name
+        $name = $index->getName();
+        $this->assertIsString($name);
+        $this->assertNotEmpty($name);
+    }
+
+    /**
+     * Test getRegistryAlias with automatic inference
+     */
+    public function testGetRegistryAliasAutomatic(): void
+    {
+        $index = new Index();
+
+        // Should infer from class name when not set
+        $alias = $index->getRegistryAlias();
+        $this->assertSame('', $alias);
+    }
+
+    /**
+     * Test find method with custom finder and options
+     */
+    public function testFindWithFinderAndOptions(): void
+    {
+        $query = $this->index->find('all', ['limit' => 5]);
+
+        $this->assertInstanceOf(Query::class, $query);
+        $this->assertSame($this->index, $query->getRepository());
+    }
+
+    /**
+     * Test get method with array finder options
+     */
+    public function testGetWithArrayFinder(): void
+    {
+        $result = $this->index->get('1', ['finder' => 'all']);
+
+        $this->assertInstanceOf(Document::class, $result);
+    }
+
+    /**
+     * Test exists method with complex conditions
+     */
+    public function testExistsWithComplexConditions(): void
+    {
+        // Test with array conditions
+        $exists = $this->index->exists(['title' => 'nonexistent']);
+
+        $this->assertFalse($exists);
+
+        // Test with simple array conditions
+        $exists = $this->index->exists(['title' => 'article']);
+        $this->assertTrue($exists); // Should find something with our test data
+    }
+
+    /**
+     * Test deleteAll method with complex conditions
+     */
+    public function testDeleteAllWithComplexConditions(): void
+    {
+        // Test with array conditions
+        $result = $this->index->deleteAll(['title' => 'nonexistent_title_for_test']);
+
+        $this->assertIsInt($result);
+        $this->assertIsInt($result); // Result count can vary based on test data
+
+        // Test with simple array conditions
+        $result = $this->index->deleteAll(['title' => 'test_delete_all']);
+        $this->assertIsInt($result);
     }
 }

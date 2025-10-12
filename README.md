@@ -14,14 +14,11 @@ You can [find the documentation for the plugin in the Cake Book](https://book.ca
 ## Installing Elasticsearch via composer
 
 You can install Elasticsearch into your project using
-[composer](https://getcomposer.org). For existing applications you can add the
-following to your `composer.json` file:
+[composer](https://getcomposer.org). For existing applications you can run:
 
-    "require": {
-        "cakephp/elastic-search": "^5.0"
-    }
-
-And run `php composer.phar update`
+```bash
+composer require cakephp/elastic-search:^5.0
+```
 
 ### Versions Table
 

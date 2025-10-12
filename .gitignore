@@ -6,6 +6,8 @@ vendor
 .env
 composer.phar
 .phpunit.result.cache
+tmp/
+coverage/
 
 # Tool specific files #
 #######################

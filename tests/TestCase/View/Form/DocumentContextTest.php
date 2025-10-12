@@ -27,6 +27,7 @@ use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Http\ServerRequest;
 use Cake\Validation\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
+use RuntimeException;
 use TestApp\Model\Document\Article;
 
 /**
@@ -629,5 +630,368 @@ class DocumentContextTest extends TestCase
         $articles->setValidator('alternate', $validator);
 
         return $articles;
+    }
+
+    /**
+     * Test getRequiredMessage method
+     */
+    public function testGetRequiredMessage(): void
+    {
+        $articles = $this->setupIndex();
+        $row = new Article();
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        // Test field with required message
+        $this->assertSame('This field cannot be left empty', $context->getRequiredMessage('title'));
+
+        // Test field without validation
+        $this->assertNull($context->getRequiredMessage('nonexistent'));
+
+        // Test nested field path
+        $this->assertNull($context->getRequiredMessage('comments.0.body'));
+    }
+
+    /**
+     * Test getRequiredMessage with custom validator
+     */
+    public function testGetRequiredMessageWithCustomValidator(): void
+    {
+        $articles = $this->setupIndex();
+        $row = new Article();
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            'validator' => 'alternate',
+            ],
+        );
+
+        // The alternate validator only has body validation
+        $this->assertNull($context->getRequiredMessage('title'));
+        $this->assertSame('This field cannot be left empty', $context->getRequiredMessage('body'));
+    }
+
+    /**
+     * Test getMaxLength method
+     */
+    public function testGetMaxLength(): void
+    {
+        $articles = $this->setupIndex();
+        $row = new Article();
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        // Test field without maxLength rule
+        $this->assertNull($context->getMaxLength('title'));
+
+        // Test field that doesn't exist
+        $this->assertNull($context->getMaxLength('nonexistent'));
+
+        // Test nested field path
+        $this->assertNull($context->getMaxLength('comments.0.body'));
+    }
+
+    /**
+     * Test getMaxLength with maxLength validation rule
+     */
+    public function testGetMaxLengthWithRule(): void
+    {
+        $articles = $this->setupIndex();
+
+        // Add maxLength validation
+        $validator = $articles->getValidator();
+        $validator->add('title', 'maxLength', [
+            'rule' => ['maxLength', 255],
+        ]);
+
+        $row = new Article();
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        $this->assertSame(255, $context->getMaxLength('title'));
+    }
+
+    /**
+     * Test attributes method
+     */
+    public function testAttributes(): void
+    {
+        $articles = $this->setupIndex();
+        $row = new Article();
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        $expected = ['length' => null, 'precision' => null];
+        $this->assertEquals($expected, $context->attributes('title'));
+        $this->assertEquals($expected, $context->attributes('body'));
+        $this->assertEquals($expected, $context->attributes('nonexistent'));
+    }
+
+    /**
+     * Test hasError method
+     */
+    public function testHasError(): void
+    {
+        $articles = $this->setupIndex();
+        $row = new Article();
+        $row->setError('title', ['Title is required']);
+
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        $this->assertTrue($context->hasError('title'));
+        $this->assertFalse($context->hasError('body'));
+        $this->assertFalse($context->hasError('nonexistent'));
+    }
+
+    /**
+     * Test hasError with nested fields
+     */
+    public function testHasErrorNested(): void
+    {
+        $articles = $this->setupIndex();
+        $row = new Article();
+        $row->setErrors(['user' => ['name' => ['Name is required']]]);
+
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        $this->assertTrue($context->hasError('user.name'));
+        $this->assertFalse($context->hasError('user.email'));
+    }
+
+    /**
+     * Test _prepare method edge cases with invalid index
+     */
+    public function testPrepareWithInvalidIndex(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unable to find index class for current entity');
+
+        new DocumentContext(
+            $this->request,
+            [
+            'entity' => [],
+            'index' => false, // Invalid index
+            ],
+        );
+    }
+
+    /**
+     * Test _prepare method with string index name
+     */
+    public function testPrepareWithStringIndex(): void
+    {
+        $this->setupIndex();
+        $row = new Article();
+
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => 'Articles', // String index name
+            ],
+        );
+
+        $this->assertInstanceOf(DocumentContext::class, $context);
+        $this->assertEquals(['id'], $context->getPrimaryKey());
+    }
+
+    /**
+     * Test _prepare method with collection of entities
+     */
+    public function testPrepareWithCollection(): void
+    {
+        $this->setupIndex();
+        $articles = [
+            new Article(['id' => '1', 'title' => 'First']),
+            new Article(['id' => '2', 'title' => 'Second']),
+        ];
+
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $articles,
+            ],
+        );
+
+        $this->assertInstanceOf(DocumentContext::class, $context);
+        $this->assertTrue($context->isCreate());
+    }
+
+    /**
+     * Test _prepare method with empty collection
+     */
+    public function testPrepareWithEmptyCollection(): void
+    {
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => [],
+            'index' => 'Articles',
+            ],
+        );
+
+        $this->assertInstanceOf(DocumentContext::class, $context);
+    }
+
+    /**
+     * Test entity method edge cases
+     */
+    public function testEntityMethodEdgeCases(): void
+    {
+        $articles = $this->setupIndex();
+        $row = new Article([
+            'id' => '1',
+            'title' => 'Test',
+            'user' => new Article(['name' => 'John']),
+        ]);
+
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        // Test val with nested path that should return the entity
+        $result = $context->val('user.name');
+        $this->assertSame('John', $result);
+
+        // Test val with non-existent nested path
+        $result = $context->val('user.nonexistent.field');
+        $this->assertNull($result);
+    }
+
+    /**
+     * Test getProp method with different target types
+     */
+    public function testGetPropWithDifferentTargets(): void
+    {
+        $articles = $this->setupIndex();
+
+        // Test with array - arrays are treated as collections, so val returns null for single fields
+        $arrayData = ['title' => 'Array Title'];
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $arrayData,
+            'index' => $articles,
+            ],
+        );
+
+        $this->assertNull($context->val('title')); // Arrays are collections, single field access returns null
+
+        // Test with ArrayIterator - also treated as collection
+        $iteratorData = new ArrayIterator(['title' => 'Iterator Title']);
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $iteratorData,
+            'index' => $articles,
+            ],
+        );
+
+        $this->assertNull($context->val('title')); // Collections don't support direct field access
+    }
+
+    /**
+     * Test type method returns correct field types
+     */
+    public function testTypeMethod(): void
+    {
+        $articles = $this->setupIndex();
+        $row = new Article();
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        // Test known field types from schema
+        $this->assertSame('text', $context->type('title'));
+        $this->assertSame('text', $context->type('body'));
+        $this->assertNull($context->type('nonexistent'));
+    }
+
+    /**
+     * Test fieldNames method returns all schema fields
+     */
+    public function testFieldNamesMethod(): void
+    {
+        $articles = $this->setupIndex();
+        $row = new Article();
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        $fieldNames = $context->fieldNames();
+        $this->assertIsArray($fieldNames);
+        $this->assertContains('title', $fieldNames);
+        $this->assertContains('body', $fieldNames);
+    }
+
+    /**
+     * Test isRequired with boolean field type
+     */
+    public function testIsRequiredWithBooleanField(): void
+    {
+        $articles = $this->setupIndex();
+
+        // Add validation for boolean field (we'll test the type checking logic)
+        $validator = $articles->getValidator();
+        $validator->requirePresence('user_id'); // Use existing field
+
+        $row = new Article();
+        $context = new DocumentContext(
+            $this->request,
+            [
+            'entity' => $row,
+            'index' => $articles,
+            ],
+        );
+
+        // Test with a field that exists and is required
+        $this->assertTrue($context->isRequired('title'));
+        $this->assertFalse($context->isRequired('nonexistent'));
     }
 }

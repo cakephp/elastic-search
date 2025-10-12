@@ -53,6 +53,7 @@
         "cs-check": "phpcs --colors -p ./src ./tests",
         "cs-fix": "phpcbf --colors -p src/ tests/",
         "test": "phpunit --colors=always",
+        "test-coverage": "export XDEBUG_MODE=coverage; phpunit --log-junit tmp/coverage/unitreport.xml --coverage-html tmp/coverage --coverage-clover tmp/coverage/coverage.xml",
         "stan": [
             "@phpstan",
             "@psalm"

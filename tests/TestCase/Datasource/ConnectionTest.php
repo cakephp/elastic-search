@@ -16,13 +16,19 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
+use Cake\Cache\Cache;
 use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
+use Cake\ElasticSearch\Datasource\SchemaCollection;
+use Cake\ElasticSearch\Exception\NotImplementedException;
 use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\Log\Log;
+use Elastic\Elasticsearch\Response\Elasticsearch;
+use Elastica\Client;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 
 class ConnectionTest extends TestCase
 {
@@ -117,5 +123,170 @@ class ConnectionTest extends TestCase
         // Verify ElasticLogger was configured with the QueryLogger
         $elasticLogger = $connection->getEsLogger();
         $this->assertSame($logger, $elasticLogger->getLogger());
+    }
+
+    /**
+     * Test __call method delegation to Elastica client
+     */
+    public function testCallMethodDelegation(): void
+    {
+        $connection = new Connection($this->getTestConfig());
+
+        // Test successful delegation - info() method exists on Elastica client
+        $result = $connection->info();
+        $this->assertIsObject($result);
+        $this->assertInstanceOf(Elasticsearch::class, $result);
+
+        // Test method that doesn't exist should throw NotImplementedException
+        $this->expectException(NotImplementedException::class);
+        $connection->nonExistentMethod();
+    }
+
+    /**
+     * Test getSchemaCollection method
+     */
+    public function testGetSchemaCollection(): void
+    {
+        $connection = new Connection($this->getTestConfig());
+        $schemaCollection = $connection->getSchemaCollection();
+
+        $this->assertInstanceOf(SchemaCollection::class, $schemaCollection);
+    }
+
+    /**
+     * Test disableConstraints method
+     */
+    public function testDisableConstraints(): void
+    {
+        $connection = new Connection($this->getTestConfig());
+
+        $called = false;
+        $result = $connection->disableConstraints(function ($conn) use (&$called, $connection) {
+            $called = true;
+            $this->assertSame($connection, $conn);
+
+            return 'test result';
+        });
+
+        $this->assertTrue($called);
+        $this->assertSame('test result', $result);
+    }
+
+    /**
+     * Test cache management methods
+     */
+    public function testCacheManagement(): void
+    {
+        // Set up cache configuration for testing
+        Cache::setConfig('_cake_model_', [
+            'className' => 'File',
+            'path' => sys_get_temp_dir(),
+        ]);
+
+        $connection = new Connection($this->getTestConfig());
+
+        // Test default cacher
+        $defaultCacher = $connection->getCacher();
+        $this->assertInstanceOf(CacheInterface::class, $defaultCacher);
+
+        // Test setting custom cacher
+        $mockCache = $this->createMock(CacheInterface::class);
+        $connection->setCacher($mockCache);
+
+        $this->assertSame($mockCache, $connection->getCacher());
+
+        // Clean up
+        Cache::drop('_cake_model_');
+    }
+
+    /**
+     * Test getDriver method
+     */
+    public function testGetDriver(): void
+    {
+        $connection = new Connection($this->getTestConfig());
+
+        $driver = $connection->getDriver();
+        $this->assertInstanceOf(Client::class, $driver);
+
+        // Test with role parameter (should return same client)
+        $driverWithRole = $connection->getDriver(Connection::ROLE_WRITE);
+        $this->assertSame($driver, $driverWithRole);
+    }
+
+    /**
+     * Test constructor with legacy configuration (should convert automatically)
+     */
+    public function testConstructorLegacyConfigConversion(): void
+    {
+        // Test with legacy host/port configuration - should convert to hosts array
+        $connection = new Connection([
+            'host' => '127.0.0.1',
+            'port' => 9200,
+        ]);
+
+        $config = $connection->config();
+        $this->assertArrayHasKey('hosts', $config);
+        $this->assertEquals(['127.0.0.1:9200'], $config['hosts']);
+        $this->assertArrayNotHasKey('host', $config);
+        $this->assertArrayNotHasKey('port', $config);
+    }
+
+    /**
+     * Test different configuration variations
+     */
+    public function testConfigurationVariations(): void
+    {
+        // Test with minimal valid configuration
+        $connection = new Connection(['hosts' => ['127.0.0.1:9200']]);
+        $this->assertIsArray($connection->config());
+        $this->assertEquals(['127.0.0.1:9200'], $connection->config()['hosts']);
+
+        // Test with additional configuration options
+        $config = [
+            'hosts' => ['127.0.0.1:9200'],
+            'log' => true,
+            'index' => 'test_index',
+        ];
+        $connection = new Connection($config);
+        $this->assertEquals($config, $connection->config());
+    }
+
+    /**
+     * Test configName method
+     */
+    public function testConfigName(): void
+    {
+        $connection = new Connection($this->getTestConfig(['name' => 'test_connection']));
+        $this->assertEquals('test_connection', $connection->configName());
+
+        // Test with default empty name
+        $connection = new Connection($this->getTestConfig());
+        $this->assertEquals('', $connection->configName());
+    }
+
+    /**
+     * Test query logging enable/disable methods
+     */
+    public function testQueryLoggingToggle(): void
+    {
+        $connection = new Connection($this->getTestConfig());
+
+        // Test initial state
+        $this->assertFalse($connection->isQueryLoggingEnabled());
+
+        // Test enabling
+        $result = $connection->enableQueryLogging();
+        $this->assertSame($connection, $result); // Test fluent interface
+        $this->assertTrue($connection->isQueryLoggingEnabled());
+
+        // Test disabling
+        $result = $connection->disableQueryLogging();
+        $this->assertSame($connection, $result); // Test fluent interface
+        $this->assertFalse($connection->isQueryLoggingEnabled());
+
+        // Test enabling with explicit parameter
+        $connection->enableQueryLogging(false);
+        $this->assertFalse($connection->isQueryLoggingEnabled());
     }
 }
