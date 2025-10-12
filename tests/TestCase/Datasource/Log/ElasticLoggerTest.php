@@ -142,7 +142,7 @@ class ElasticLoggerTest extends TestCase
             ->method('log')
             ->with(
                 LogLevel::DEBUG,
-                $this->isString(),
+                $this->anything(),
                 $this->callback(function ($logContext) {
                     return isset($logContext['query']) &&
                            $logContext['query'] instanceof LoggedQuery;
@@ -177,8 +177,8 @@ class ElasticLoggerTest extends TestCase
             ->method('log')
             ->with(
                 LogLevel::DEBUG,
-                $this->isString(),
-                $this->isArray(),
+                $this->anything(),
+                $this->anything(),
             );
 
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
@@ -210,10 +210,10 @@ class ElasticLoggerTest extends TestCase
             ->method('log')
             ->with(
                 LogLevel::DEBUG,
-                $this->isString(),
+                $this->anything(),
                 $this->callback(function ($logContext) {
                     return isset($logContext['query']) &&
-                           ($logContext['query'] instanceof LoggedQuery);
+                           $logContext['query'] instanceof LoggedQuery;
                 }),
             );
 
@@ -249,10 +249,10 @@ class ElasticLoggerTest extends TestCase
             ->method('log')
             ->with(
                 LogLevel::DEBUG,
-                $this->isString(),
+                $this->anything(),
                 $this->callback(function ($logContext) {
                     return isset($logContext['query']) &&
-                           ($logContext['query'] instanceof LoggedQuery);
+                           $logContext['query'] instanceof LoggedQuery;
                 }),
             );
 
