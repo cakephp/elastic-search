@@ -32,15 +32,11 @@ class ElasticLogger extends AbstractLogger
 {
     /**
      * Holds the logger instance
-     *
-     * @var \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface
      */
     protected QueryLogger|LoggerInterface $_logger;
 
     /**
      * Holds the connection instance
-     *
-     * @var \Cake\ElasticSearch\Datasource\Connection
      */
     protected Connection $_connection;
 
@@ -85,12 +81,11 @@ class ElasticLogger extends AbstractLogger
      * @param mixed $level The log level
      * @param \Stringable|string $message The log message
      * @param array $context log context
-     * @return void
      */
     public function log(mixed $level, Stringable|string $message, array $context = []): void
     {
         if ($this->_connection->isQueryLoggingEnabled()) {
-            $this->_log($level, $message, $context);
+            $this->_log($level, (string)$message, $context);
         }
     }
 
@@ -113,7 +108,6 @@ class ElasticLogger extends AbstractLogger
      * @param string $level The log level
      * @param string $message The log message
      * @param array $context log context
-     * @return void
      */
     protected function _log(string $level, string $message, array $context = []): void
     {
@@ -125,6 +119,7 @@ class ElasticLogger extends AbstractLogger
                 'data' => $context['request']['data'],
             ];
         }
+
         $logData = json_encode($logData, JSON_PRETTY_PRINT);
 
         if (isset($context['request'], $context['response'])) {
@@ -133,6 +128,7 @@ class ElasticLogger extends AbstractLogger
             if (isset($context['response']['took'])) {
                 $took = $context['response']['took'];
             }
+
             $message = new LoggedQuery();
             $message->setContext([
                 'query' => $logData,
@@ -142,10 +138,12 @@ class ElasticLogger extends AbstractLogger
 
             $context['query'] = $message;
         }
+
         $exception = $context['exception'] ?? null;
         if ($exception instanceof Exception) {
             throw $exception;
         }
-        $this->getLogger()->log($level, $logData, $context);
+
+        $this->getLogger()->log($level, $logData ?: '', $context);
     }
 }

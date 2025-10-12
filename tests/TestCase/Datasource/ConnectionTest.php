@@ -29,7 +29,7 @@ use Psr\Log\LoggerInterface;
  */
 class ConnectionTest extends TestCase
 {
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
         Log::drop('elasticsearch');
@@ -38,10 +38,8 @@ class ConnectionTest extends TestCase
     /**
      * Tests the getIndex method when defining a index name from different
      * ways
-     *
-     * @return void
      */
-    public function testGetIndex()
+    public function testGetIndex(): void
     {
         $connection = new Connection();
         $index = $connection->getIndex('something_else,another');
@@ -53,10 +51,8 @@ class ConnectionTest extends TestCase
 
     /**
      * Ensure the log option works via the constructor
-     *
-     * @return void
      */
-    public function testConstructLogOption()
+    public function testConstructLogOption(): void
     {
         $connection = new Connection();
         $this->assertFalse($connection->isQueryLoggingEnabled());
@@ -70,10 +66,8 @@ class ConnectionTest extends TestCase
 
     /**
      * Ensure that logging queries works.
-     *
-     * @return void
      */
-    public function testQueryLoggingWithLog()
+    public function testQueryLoggingWithLog(): void
     {
         Log::setConfig('elasticsearch', [
             'engine' => 'Array',
@@ -101,10 +95,8 @@ class ConnectionTest extends TestCase
 
     /**
      * Ensure that logging queries works.
-     *
-     * @return void
      */
-    public function testLoggerQueryLogger()
+    public function testLoggerQueryLogger(): void
     {
         Log::setConfig('elasticsearch', [
             'engine' => 'Array',

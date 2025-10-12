@@ -19,6 +19,7 @@ namespace Cake\ElasticSearch\View\Form;
 use Cake\Collection\Collection;
 use Cake\Datasource\FactoryLocator;
 use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Index;
 use Cake\Http\ServerRequest;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
@@ -35,30 +36,22 @@ class DocumentContext implements ContextInterface
 {
     /**
      * The request object.
-     *
-     * @var \Cake\Http\ServerRequest
      */
     protected ServerRequest $_request;
 
     /**
      * The context data
-     *
-     * @var array
      */
     protected array $_context;
 
     /**
      * The name of the top level entity/index object.
-     *
-     * @var string
      */
     protected string $_rootName;
 
     /**
      * Boolean to track whether or not the entity is a
      * collection.
-     *
-     * @var bool
      */
     protected bool $_isCollection = false;
 
@@ -92,7 +85,6 @@ class DocumentContext implements ContextInterface
      * naming conventions. This inference will work with a number of common objects
      * like arrays, Collection objects and ResultSets.
      *
-     * @return void
      * @throws \RuntimeException When a table object cannot be located/inferred.
      */
     protected function _prepare(): void
@@ -103,16 +95,19 @@ class DocumentContext implements ContextInterface
             if (is_array($entity) || $entity instanceof Traversable) {
                 $entity = (new Collection($entity))->first();
             }
+
             $isDocument = $entity instanceof Document;
 
             if ($isDocument) {
                 $index = $entity->getSource();
             }
+
             if (!$index && $isDocument) {
                 [, $entityClass] = namespaceSplit(get_class($entity));
                 $index = Inflector::pluralize($entityClass);
             }
         }
+
         if (is_string($index)) {
             $index = FactoryLocator::get('Elastic')->get($index);
         }
@@ -122,10 +117,12 @@ class DocumentContext implements ContextInterface
                 'Unable to find index class for current entity',
             );
         }
+
         $this->_isCollection = (
             is_array($entity) ||
             $entity instanceof Traversable
         );
+        assert($index instanceof Index);
         $this->_rootName = $index->getName();
         $this->_context['index'] = $index;
     }
@@ -157,8 +154,9 @@ class DocumentContext implements ContextInterface
         if (is_array($entity) || $entity instanceof Traversable) {
             $entity = (new Collection($entity))->first();
         }
+
         if ($entity instanceof Document) {
-            return $entity->isNew() !== false;
+            return $entity->isNew();
         }
 
         return true;
@@ -235,6 +233,7 @@ class DocumentContext implements ContextInterface
             if ($isLast || !$isTraversable) {
                 return $entity;
             }
+
             $entity = $next;
         }
 
@@ -251,7 +250,6 @@ class DocumentContext implements ContextInterface
      *
      * @param mixed  $target The entity/array/collection to fetch $field from.
      * @param string $field The next field to fetch.
-     * @return mixed
      */
     protected function getProp(mixed $target, string $field): mixed
     {
@@ -292,6 +290,7 @@ class DocumentContext implements ContextInterface
         if ($entity instanceof Document) {
             $isNew = $entity->isNew();
         }
+
         $validator = $this->getValidator();
 
         $field = array_pop($parts);
@@ -327,6 +326,7 @@ class DocumentContext implements ContextInterface
         if ($ruleset->isPresenceRequired() && $requiredMessage) {
             return $requiredMessage;
         }
+
         if (!$ruleset->isEmptyAllowed() && $emptyMessage) {
             return $emptyMessage;
         }
@@ -338,7 +338,6 @@ class DocumentContext implements ContextInterface
      * Get field length from validation
      *
      * @param string $field The dot separated path to the field you want to check.
-     * @return int|null
      */
     public function getMaxLength(string $field): ?int
     {
@@ -348,6 +347,7 @@ class DocumentContext implements ContextInterface
         if (!$validator->hasField($fieldName)) {
             return null;
         }
+
         foreach ($validator->field($fieldName)->rules() as $rule) {
             if ($rule->get('rule') === 'maxLength') {
                 return $rule->get('pass')[0];

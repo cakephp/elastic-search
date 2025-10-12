@@ -25,8 +25,6 @@ class IsUnique
 {
     /**
      * The list of fields to check
-     *
-     * @var array
      */
     protected array $_fields;
 
@@ -52,7 +50,6 @@ class IsUnique
      *   where the `repository` key is required.
      *
      * @param array $options Options passed to the check,
-     * @return bool
      */
     public function __invoke(EntityInterface $entity, array $options): bool
     {

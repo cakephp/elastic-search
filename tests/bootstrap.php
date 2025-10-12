@@ -22,6 +22,7 @@ define('ROOT', dirname(__DIR__));
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
 }
+
 define('APP', __DIR__);
 define('TMP', sys_get_temp_dir() . DS);
 define('LOGS', TMP . 'logs' . DS);
@@ -30,7 +31,7 @@ use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\FactoryLocator;
-use Cake\ElasticSearch\IndexRegistry;
+use Cake\ElasticSearch\Datasource\IndexLocator;
 use Cake\ElasticSearch\TestSuite\Fixture\MappingGenerator;
 use Cake\Routing\Router;
 
@@ -48,7 +49,7 @@ Cache::setConfig('_cake_translations_', [
 ]);
 
 if (!getenv('DB_URL')) {
-    putenv('DB_URL=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection');
+    putenv('DB_URL=Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9202?driver=Cake\ElasticSearch\Datasource\Connection');
 }
 
 ConnectionManager::setConfig('test', ['url' => getenv('DB_URL')]);
@@ -59,6 +60,6 @@ $schema->reload();
 
 Router::reload();
 
-$indexRegistry = new IndexRegistry();
-FactoryLocator::add('Elastic', $indexRegistry);
-FactoryLocator::add('ElasticSearch', $indexRegistry);
+$indexLocator = new IndexLocator();
+FactoryLocator::add('Elastic', $indexLocator);
+FactoryLocator::add('ElasticSearch', $indexLocator);

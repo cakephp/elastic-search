@@ -25,8 +25,5 @@ use Cake\Core\Exception\CakeException;
  */
 class MissingIndexClassException extends CakeException
 {
-    /**
-     * @var string
-     */
     protected string $_messageTemplate = 'Index class %s could not be found.';
 }

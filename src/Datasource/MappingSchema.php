@@ -23,15 +23,11 @@ class MappingSchema
 {
     /**
      * The raw mapping data from elasticsearch
-     *
-     * @var array
      */
     protected array $data;
 
     /**
      * The name of the index this mapping data is for.
-     *
-     * @var string
      */
     protected string $name;
 
@@ -47,13 +43,12 @@ class MappingSchema
         if (isset($data['properties'])) {
             $data = $data['properties'];
         }
+
         $this->data = $data;
     }
 
     /**
      * Get the name of the index for this mapping.
-     *
-     * @return string
      */
     public function name(): string
     {
@@ -77,12 +72,14 @@ class MappingSchema
 
             return null;
         }
+
         $parts = explode('.', $name);
         $pointer = $this->data;
         foreach ($parts as $part) {
             if (isset($pointer[$part]['type']) && $pointer[$part]['type'] !== 'nested') {
                 return (array)$pointer[$part];
             }
+
             if (isset($pointer[$part]['properties'])) {
                 $pointer = $pointer[$part]['properties'];
             }
@@ -114,8 +111,6 @@ class MappingSchema
      *
      * Will only return the top level fields. Nested object field names will
      * not be included.
-     *
-     * @return array
      */
     public function fields(): array
     {

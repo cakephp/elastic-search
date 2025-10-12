@@ -20,6 +20,7 @@ use Cake\Collection\Collection;
 use Cake\Core\BasePlugin;
 use Cake\Core\PluginApplicationInterface;
 use Cake\Datasource\FactoryLocator;
+use Cake\ElasticSearch\Datasource\IndexLocator;
 use Cake\ElasticSearch\View\Form\DocumentContext;
 use Cake\Event\EventManager;
 use Traversable;
@@ -34,18 +35,19 @@ class Plugin extends BasePlugin
      */
     public function bootstrap(PluginApplicationInterface $app): void
     {
-        $indexRegistry = new IndexRegistry();
-        FactoryLocator::add('Elastic', $indexRegistry);
-        FactoryLocator::add('ElasticSearch', $indexRegistry);
+        $indexLocator = new IndexLocator();
+        FactoryLocator::add('Elastic', $indexLocator);
+        FactoryLocator::add('ElasticSearch', $indexLocator);
 
         // Attach the document context into FormHelper.
         EventManager::instance()->on('View.beforeRender', function ($event): void {
             $view = $event->getSubject();
-            $view->Form->addContextProvider('elastic', function ($request, $data) {
+            $view->Form->addContextProvider('elastic', function ($request, array $data) {
                 $first = null;
                 if (is_array($data['entity']) || $data['entity'] instanceof Traversable) {
                     $first = (new Collection($data['entity']))->first();
                 }
+
                 if ($data['entity'] instanceof Document || $first instanceof Document) {
                     return new DocumentContext($request, $data);
                 }

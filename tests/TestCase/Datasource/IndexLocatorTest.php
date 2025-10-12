@@ -21,6 +21,8 @@ use Cake\ElasticSearch\Datasource\IndexLocator;
 use Cake\ElasticSearch\Exception\MissingIndexClassException;
 use Cake\ElasticSearch\Index;
 use Cake\TestSuite\TestCase;
+use TestApp\Model\Index\UsersIndex;
+use TestPlugin\Model\Index\CommentsIndex;
 
 /**
  * Test case for IndexLocator
@@ -31,10 +33,8 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Setup method
-     *
-     * @return void
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         Configure::write('App.namespace', 'TestApp');
@@ -44,10 +44,8 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Test the exists() method.
-     *
-     * @return void
      */
-    public function testExists()
+    public function testExists(): void
     {
         $this->assertFalse($this->locator->exists('Articles'));
 
@@ -57,10 +55,8 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Test the exists() method with plugin-prefixed models.
-     *
-     * @return void
      */
-    public function testExistsPlugin()
+    public function testExistsPlugin(): void
     {
         $this->assertFalse($this->locator->exists('Comments'));
         $this->assertFalse($this->locator->exists('TestPlugin.Comments'));
@@ -72,10 +68,8 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Test getting instances from the registry.
-     *
-     * @return void
      */
-    public function testGet()
+    public function testGet(): void
     {
         $result = $this->locator->get(
             'Articles',
@@ -83,7 +77,7 @@ class IndexLocatorTest extends TestCase
                 'name' => 'my_articles',
             ],
         );
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
+        $this->assertInstanceOf(Index::class, $result);
         $this->assertSame('my_articles', $result->getName());
 
         $result2 = $this->locator->get('Articles');
@@ -93,17 +87,15 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Are auto-models instanciated correctly? How about when they have an alias?
-     *
-     * @return void
      */
-    public function testGetFallbacks()
+    public function testGetFallbacks(): void
     {
         $result = $this->locator->get('Droids');
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
+        $this->assertInstanceOf(Index::class, $result);
         $this->assertSame('droids', $result->getName());
 
         $result = $this->locator->get('R2D2', ['className' => 'Droids']);
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
+        $this->assertInstanceOf(Index::class, $result);
         $this->assertSame(
             'r2_d2',
             $result->getName(),
@@ -114,28 +106,26 @@ class IndexLocatorTest extends TestCase
             'C3P0',
             ['className' => 'Droids', 'name' => 'droids'],
         );
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
+        $this->assertInstanceOf(Index::class, $result);
         $this->assertSame('droids', $result->getName(), 'The name should be taken from options');
 
         $result = $this->locator->get('Funky.Chipmunks');
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
+        $this->assertInstanceOf(Index::class, $result);
         $this->assertSame('chipmunks', $result->getName(), 'The name should be derived from the alias');
 
         $result = $this->locator->get('Awesome', ['className' => 'Funky.Monkies']);
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
+        $this->assertInstanceOf(Index::class, $result);
         $this->assertSame('awesome', $result->getName(), 'The name should be derived from the alias');
 
-        $result = $this->locator->get('Stuff', ['className' => 'Cake\ElasticSearch\Index']);
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $result);
+        $result = $this->locator->get('Stuff', ['className' => Index::class]);
+        $this->assertInstanceOf(Index::class, $result);
         $this->assertSame('stuff', $result->getName(), 'The name should be derived from the alias');
     }
 
     /**
      * Test get() with fallbacks disabled
-     *
-     * @return void
      */
-    public function testGetNoFallback()
+    public function testGetNoFallback(): void
     {
         $this->locator->allowFallbackClass(false);
         $this->expectException(MissingIndexClassException::class);
@@ -144,10 +134,8 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Test get with config throws an exception if the alias exists already.
-     *
-     * @return void
      */
-    public function testGetExistingWithConfigData()
+    public function testGetExistingWithConfigData(): void
     {
         $this->expectException('RuntimeException');
         $this->expectExceptionMessage('You cannot configure `Users`, it already exists in the registry.');
@@ -158,10 +146,8 @@ class IndexLocatorTest extends TestCase
     /**
      * Test get() can be called several times with the same option without
      * throwing an exception.
-     *
-     * @return void
      */
-    public function testGetWithSameOption()
+    public function testGetWithSameOption(): void
     {
         $result = $this->locator->get('Users', ['className' => MyUsersIndex::class]);
         $result2 = $this->locator->get('Users', ['className' => MyUsersIndex::class]);
@@ -170,15 +156,13 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Test get() with plugin syntax aliases
-     *
-     * @return void
      */
-    public function testGetPlugin()
+    public function testGetPlugin(): void
     {
         $this->loadPlugins(['TestPlugin']);
         $table = $this->locator->get('TestPlugin.Comments');
 
-        $this->assertInstanceOf('TestPlugin\Model\Index\CommentsIndex', $table);
+        $this->assertInstanceOf(CommentsIndex::class, $table);
         $this->assertFalse(
             $this->locator->exists('Comments'),
             'Short form should NOT exist',
@@ -196,10 +180,8 @@ class IndexLocatorTest extends TestCase
      * Test get() with same-alias models in different plugins
      *
      * There should be no internal cache-confusion
-     *
-     * @return void
      */
-    public function testGetMultiplePlugins()
+    public function testGetMultiplePlugins(): void
     {
         $this->loadPlugins(['TestPlugin', 'TestPluginTwo']);
 
@@ -207,25 +189,23 @@ class IndexLocatorTest extends TestCase
         $plugin1 = $this->locator->get('TestPlugin.Comments');
         $plugin2 = $this->locator->get('TestPluginTwo.Comments');
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $app, 'Should be a generic instance');
-        $this->assertInstanceOf('TestPlugin\Model\Index\CommentsIndex', $plugin1, 'Should be a concrete class');
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $plugin2, 'Should be a plugin 2 generic instance');
+        $this->assertInstanceOf(Index::class, $app, 'Should be a generic instance');
+        $this->assertInstanceOf(CommentsIndex::class, $plugin1, 'Should be a concrete class');
+        $this->assertInstanceOf(Index::class, $plugin2, 'Should be a plugin 2 generic instance');
 
         $plugin2 = $this->locator->get('TestPluginTwo.Comments');
         $plugin1 = $this->locator->get('TestPlugin.Comments');
         $app = $this->locator->get('Comments');
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $app, 'Should still be a generic instance');
-        $this->assertInstanceOf('TestPlugin\Model\Index\CommentsIndex', $plugin1, 'Should still be a concrete class');
-        $this->assertInstanceOf('Cake\ElasticSearch\Index', $plugin2, 'Should still be a plugin 2 generic instance');
+        $this->assertInstanceOf(Index::class, $app, 'Should still be a generic instance');
+        $this->assertInstanceOf(CommentsIndex::class, $plugin1, 'Should still be a concrete class');
+        $this->assertInstanceOf(Index::class, $plugin2, 'Should still be a plugin 2 generic instance');
     }
 
     /**
      * Test get() with plugin aliases + className option.
-     *
-     * @return void
      */
-    public function testGetPluginWithClassNameOption()
+    public function testGetPluginWithClassNameOption(): void
     {
         $this->loadPlugins(['TestPlugin']);
         $table = $this->locator->get(
@@ -234,7 +214,7 @@ class IndexLocatorTest extends TestCase
             'className' => 'TestPlugin.Comments',
             ],
         );
-        $class = 'TestPlugin\Model\Index\CommentsIndex';
+        $class = CommentsIndex::class;
         $this->assertInstanceOf($class, $table);
         $this->assertFalse($this->locator->exists('Comments'), 'Class name should not exist');
         $this->assertFalse($this->locator->exists('TestPlugin.Comments'), 'Full class alias should not exist');
@@ -246,13 +226,11 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Test get() with full namespaced classname
-     *
-     * @return void
      */
-    public function testGetPluginWithFullNamespaceName()
+    public function testGetPluginWithFullNamespaceName(): void
     {
         $this->loadPlugins(['TestPlugin']);
-        $class = 'TestPlugin\Model\Index\CommentsIndex';
+        $class = CommentsIndex::class;
         $table = $this->locator->get(
             'Comments',
             ['className' => $class],
@@ -264,26 +242,22 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Test setting an instance.
-     *
-     * @return void
      */
-    public function testSet()
+    public function testSet(): void
     {
-        $mock = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
+        $mock = $this->getMockBuilder(Index::class)->getMock();
         $this->assertSame($mock, $this->locator->set('Articles', $mock));
         $this->assertSame($mock, $this->locator->get('Articles'));
     }
 
     /**
      * Test setting an instance with plugin syntax aliases
-     *
-     * @return void
      */
-    public function testSetPlugin()
+    public function testSetPlugin(): void
     {
         $this->loadPlugins(['TestPlugin']);
 
-        $mock = $this->getMockBuilder('TestPlugin\Model\Index\CommentsIndex')
+        $mock = $this->getMockBuilder(CommentsIndex::class)
             ->getMock();
 
         $this->assertSame($mock, $this->locator->set('TestPlugin.Comments', $mock));
@@ -292,10 +266,8 @@ class IndexLocatorTest extends TestCase
 
     /**
      * Tests remove an instance
-     *
-     * @return void
      */
-    public function testRemove()
+    public function testRemove(): void
     {
         $first = $this->locator->get('Comments');
 
@@ -321,10 +293,8 @@ class IndexLocatorTest extends TestCase
      * plugin-prefixed model, or app model.
      * Removing an app model should not affect any other
      * plugin-prefixed model.
-     *
-     * @return void
      */
-    public function testRemovePlugin()
+    public function testRemovePlugin(): void
     {
         $this->loadPlugins(['TestPlugin', 'TestPluginTwo']);
 
@@ -361,10 +331,10 @@ class IndexLocatorTest extends TestCase
 
     public function testSetFallbackClassName(): void
     {
-        $this->locator->setFallbackClassName('TestApp\Model\Index\UsersIndex');
+        $this->locator->setFallbackClassName(UsersIndex::class);
 
         $result = $this->locator->get('Droids');
-        $this->assertInstanceOf('TestApp\Model\Index\UsersIndex', $result);
+        $this->assertInstanceOf(UsersIndex::class, $result);
 
         $this->locator->setFallbackClassName(Index::class);
     }

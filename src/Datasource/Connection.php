@@ -31,6 +31,8 @@ use RuntimeException;
 
 class Connection implements ConnectionInterface
 {
+    protected array $_config;
+
     /**
      * Compatibility shim for ConnectionInterface
      */
@@ -75,6 +77,7 @@ class Connection implements ConnectionInterface
         if (isset($config['name'])) {
             $this->configName = $config['name'];
         }
+
         if (isset($config['log'])) {
             $this->enableQueryLogging((bool)$config['log']);
         }
@@ -88,12 +91,14 @@ class Connection implements ConnectionInterface
      *
      * @param string $name Method name
      * @param array $attributes Method attributes
-     * @return mixed
      */
     public function __call(string $name, array $attributes): mixed
     {
         if (method_exists($this->_client, $name)) {
-            return call_user_func_array([$this->_client, $name], $attributes);
+            $callback = [$this->_client, $name];
+            assert(is_callable($callback));
+
+            return call_user_func_array($callback, $attributes);
         }
 
         throw new NotImplementedException($name);
@@ -102,8 +107,6 @@ class Connection implements ConnectionInterface
     /**
      * Returns a SchemaCollection stub until we can add more
      * abstract API's in Connection.
-     *
-     * @return \Cake\ElasticSearch\Datasource\SchemaCollection
      */
     public function getSchemaCollection(): SchemaCollection
     {
@@ -121,12 +124,12 @@ class Connection implements ConnectionInterface
     /**
      * Enable/disable query logging
      *
-     * @param bool $value Enable/disable query logging
+     * @param bool $enable Enable/disable query logging
      * @return $this
      */
-    public function enableQueryLogging(bool $value = true)
+    public function enableQueryLogging(bool $enable = true)
     {
-        $this->logQueries = $value;
+        $this->logQueries = $enable;
 
         return $this;
     }
@@ -145,8 +148,6 @@ class Connection implements ConnectionInterface
 
     /**
      * Check if query logging is enabled.
-     *
-     * @return bool
      */
     public function isQueryLoggingEnabled(): bool
     {
@@ -170,13 +171,14 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * Get the config data for this connection.
-     *
-     * @return array
+     * Get the configuration data used to create the connection.
      */
     public function config(): array
     {
-        return $this->_client->getConfig();
+        $config = $this->_client->getConfig();
+        assert(is_array($config));
+
+        return $config;
     }
 
     /**
@@ -205,7 +207,7 @@ class Connection implements ConnectionInterface
         if (!isset($this->_logger)) {
             $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
 
-            if (!$engine) {
+            if (!$engine instanceof LoggerInterface) {
                 $engine = new NullLogger();
             }
 
@@ -217,8 +219,6 @@ class Connection implements ConnectionInterface
 
     /**
      * Return instance of ElasticLogger
-     *
-     * @return \Cake\ElasticSearch\Datasource\Log\ElasticLogger
      */
     public function getEsLogger(): ElasticLogger
     {
@@ -267,7 +267,6 @@ class Connection implements ConnectionInterface
      * {@inheritDoc}
      *
      * @see \Cake\Datasource\ConnectionInterface::getDriver()
-     * @return \Elastica\Client
      */
     public function getDriver(string $role = self::ROLE_WRITE): ElasticaClient
     {

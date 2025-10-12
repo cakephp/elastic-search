@@ -23,15 +23,11 @@ class ArticlesFixture extends TestFixture
 {
     /**
      * The table/type for this fixture.
-     *
-     * @var string
      */
     public string $table = 'articles';
 
     /**
      * The fixture records
-     *
-     * @var array
      */
     public array $records = [
         [

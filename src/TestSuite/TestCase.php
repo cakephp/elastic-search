@@ -31,7 +31,7 @@ class TestCase extends CakeTestCase
     protected LocatorInterface $ElasticLocator;
 
     /**
-     * @return void
+     * setUp method
      */
     protected function setUp(): void
     {
@@ -42,7 +42,7 @@ class TestCase extends CakeTestCase
     /**
      * @inheritDoc
      */
-    public function getFixtureStrategy(): FixtureStrategyInterface
+    protected function getFixtureStrategy(): FixtureStrategyInterface
     {
         return new DeleteQueryStrategy();
     }

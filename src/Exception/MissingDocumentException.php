@@ -25,8 +25,5 @@ use Cake\ORM\Exception\MissingEntityException;
  */
 class MissingDocumentException extends MissingEntityException
 {
-    /**
-     * @var string
-     */
     protected string $_messageTemplate = 'Document class %s could not be found.';
 }

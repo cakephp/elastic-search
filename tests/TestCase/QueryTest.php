@@ -23,6 +23,7 @@ use Cake\ElasticSearch\TestSuite\TestCase;
 use Elastica\Aggregation\Max as MaxAggregation;
 use Elastica\Aggregation\Min as MinAggregation;
 use Elastica\Collapse;
+use Elastica\Query\BoolQuery;
 use Elastica\Query\Term;
 
 /**
@@ -32,10 +33,8 @@ class QueryTest extends TestCase
 {
     /**
      * Tests query constructor
-     *
-     * @return void
      */
-    public function testConstruct()
+    public function testConstruct(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -44,10 +43,8 @@ class QueryTest extends TestCase
 
     /**
      * Test that chained finders will work
-     *
-     * @return void
      */
-    public function testChainedFinders()
+    public function testChainedFinders(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -59,7 +56,7 @@ class QueryTest extends TestCase
     /**
      * Test that query overwrite any query
      */
-    public function testSetFullQuery()
+    public function testSetFullQuery(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -79,10 +76,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests that calling select() sets the field to select from _source
-     *
-     * @return void
      */
-    public function testSelect()
+    public function testSelect(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -101,10 +96,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests that calling limit() sets the size option for the elastic query
-     *
-     * @return void
      */
-    public function testLimit()
+    public function testLimit(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -119,10 +112,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests that calling offset() sets the from option for the elastic query
-     *
-     * @return void
      */
-    public function testOffset()
+    public function testOffset(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -137,10 +128,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests that calling page() sets the from option for the elastic query and size (optional)
-     *
-     * @return void
      */
-    public function testPage()
+    public function testPage(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -163,10 +152,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests that calling clause() gets the part of the query
-     *
-     * @return void
      */
-    public function testClause()
+    public function testClause(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -191,10 +178,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests that calling applyOptions() sets parts of the query
-     *
-     * @return void
      */
-    public function testApplyOptions()
+    public function testApplyOptions(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -233,10 +218,8 @@ class QueryTest extends TestCase
     /**
      * Tests that calling order() will populate the sort part of the elastic
      * query.
-     *
-     * @return void
      */
-    public function testOrder()
+    public function testOrder(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -285,10 +268,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests the where() method
-     *
-     * @return void
      */
-    public function testWhere()
+    public function testWhere(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -323,7 +304,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $filter[2]['bool']['should'][1]);
 
-        $query->where(function (QueryBuilder $builder) {
+        $query->where(function (QueryBuilder $builder): BoolQuery {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
                 $builder->exists('stuff'),
@@ -333,6 +314,7 @@ class QueryTest extends TestCase
         $compiled = $query->compileQuery()->toArray();
         $filter = $compiled['query']['bool']['filter'][0]['bool']['must'];
         $filter = $filter[3]['bool']['must'];
+
         $expected = [
             ['term' => ['another.thing' => 'value']],
             ['exists' => ['field' => 'stuff']],
@@ -348,10 +330,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests the query() method
-     *
-     * @return void
      */
-    public function testQueryMust()
+    public function testQueryMust(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -386,7 +366,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $must[2]['bool']['should'][1]);
 
-        $query->queryMust(function (QueryBuilder $builder) {
+        $query->queryMust(function (QueryBuilder $builder): BoolQuery {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
                 $builder->exists('stuff'),
@@ -396,6 +376,7 @@ class QueryTest extends TestCase
         $compiled = $query->compileQuery()->toArray();
         $must = $compiled['query']['bool']['must'];
         $must = $must[3]['bool']['must'];
+
         $expected = [
             ['term' => ['another.thing' => 'value']],
             ['exists' => ['field' => 'stuff']],
@@ -409,7 +390,7 @@ class QueryTest extends TestCase
         $this->assertEquals([$expected], $must);
     }
 
-    public function testQueryShould()
+    public function testQueryShould(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -444,7 +425,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $should[2]['bool']['should'][1]);
 
-        $query->queryShould(function (QueryBuilder $builder) {
+        $query->queryShould(function (QueryBuilder $builder): BoolQuery {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
                 $builder->exists('stuff'),
@@ -454,6 +435,7 @@ class QueryTest extends TestCase
         $compiled = $query->compileQuery()->toArray();
         $should = $compiled['query']['bool']['should'];
         $should = $should[3]['bool']['must'];
+
         $expected = [
             ['term' => ['another.thing' => 'value']],
             ['exists' => ['field' => 'stuff']],
@@ -469,10 +451,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests the postFilter() method
-     *
-     * @return void
      */
-    public function testPostFilter()
+    public function testPostFilter(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -507,7 +487,7 @@ class QueryTest extends TestCase
         ];
         $this->assertEquals($expected, $filter[2]['bool']['should'][1]);
 
-        $query->postFilter(function (QueryBuilder $builder) {
+        $query->postFilter(function (QueryBuilder $builder): BoolQuery {
             return $builder->and(
                 $builder->term('another.thing', 'value'),
                 $builder->exists('stuff'),
@@ -517,6 +497,7 @@ class QueryTest extends TestCase
         $compiled = $query->compileQuery()->toArray();
         $filter = $compiled['post_filter']['bool']['must'];
         $filter = $filter[3]['bool']['must'];
+
         $expected = [
             ['term' => ['another.thing' => 'value']],
             ['exists' => ['field' => 'stuff']],
@@ -532,10 +513,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests that it is possible to pass a 0 as limit
-     *
-     * @return void
      */
-    public function testLimitZero()
+    public function testLimitZero(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -546,10 +525,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests that it is possible to pass a 0 as offset
-     *
-     * @return void
      */
-    public function testOffsetZero()
+    public function testOffsetZero(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -560,15 +537,14 @@ class QueryTest extends TestCase
 
     /**
      * Test setting collapse.
-     *
-     * @return void
      */
-    public function testCollapse()
+    public function testCollapse(): void
     {
         $index = new Index();
         $query = new Query($index);
 
         $query->collapse('username');
+
         $compiled = $query->compileQuery()->toArray();
         $this->assertSame(['field' => 'username'], $compiled['collapse']);
 
@@ -579,10 +555,8 @@ class QueryTest extends TestCase
 
     /**
      * Test setting aggregations.
-     *
-     * @return void
      */
-    public function testAggregations()
+    public function testAggregations(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -607,10 +581,8 @@ class QueryTest extends TestCase
 
     /**
      * Test setting highlights.
-     *
-     * @return void
      */
-    public function testHighlight()
+    public function testHighlight(): void
     {
         $index = new Index();
         $query = new Query($index);
@@ -634,10 +606,8 @@ class QueryTest extends TestCase
 
     /**
      * Tests that it is possible to pass a min score
-     *
-     * @return void
      */
-    public function testMinScore()
+    public function testMinScore(): void
     {
         $index = new Index();
         $query = new Query($index);

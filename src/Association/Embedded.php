@@ -8,7 +8,6 @@ use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\ElasticSearch\Index;
 use Cake\Utility\Inflector;
-use function Cake\Core\deprecationWarning;
 
 /**
  * Represents an embedded document.
@@ -33,29 +32,21 @@ abstract class Embedded
 
     /**
      * The alias this association uses.
-     *
-     * @var string
      */
     protected string $alias;
 
     /**
      * The class to use for the embeded document.
-     *
-     * @var string
      */
     protected string $entityClass;
 
     /**
      * The property the embedded document is located under.
-     *
-     * @var string
      */
     protected string $property;
 
     /**
      * The index class this embed is linked to
-     *
-     * @var string
      */
     protected string $indexClass;
 
@@ -105,31 +96,11 @@ abstract class Embedded
      */
     public function setProperty(?string $name = null)
     {
-        $this->property = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get/set the property this embed is attached to.
-     *
-     * @deprecated 3.2.0 Use setProperty()/getProperty() instead.
-     * @param string|null $name The property name to set.
-     * @return string The property name.
-     */
-    public function property(?string $name = null): string
-    {
-        deprecationWarning(
-            '3.3.0',
-            static::class . '::property() is deprecated. ' .
-            'Use setProperty()/getProperty() instead.',
-        );
-
         if ($name !== null) {
-            $this->setProperty($name);
+            $this->property = $name;
         }
 
-        return $this->getProperty();
+        return $this;
     }
 
     /**
@@ -158,6 +129,7 @@ abstract class Embedded
             if (!$class) {
                 throw new MissingDocumentException([$name]);
             }
+
             $this->entityClass = $class;
         }
 
@@ -176,28 +148,6 @@ abstract class Embedded
         $this->entityClass = $class ?? Document::class;
 
         return $this;
-    }
-
-    /**
-     * Get/set the entity/document class used for this embed.
-     *
-     * @deprecated 3.2.0 Use setEntityClass()/getEntityClass() instead.
-     * @param string|null $name The class name to set.
-     * @return string The class name.
-     */
-    public function entityClass(?string $name = null): string
-    {
-        deprecationWarning(
-            '3.3',
-            static::class . '::entityClass() is deprecated. ' .
-            'Use setEntityClass()/getEntityClass() instead.',
-        );
-
-        if ($name !== null) {
-            $this->setEntityClass($name);
-        }
-
-        return $this->getEntityClass();
     }
 
     /**
@@ -233,38 +183,16 @@ abstract class Embedded
             $this->indexClass = get_class($name);
         } elseif (is_string($name)) {
             $class = App::className($name, 'Model/Index');
-            $this->indexClass = $class;
+            if ($class !== null) {
+                $this->indexClass = $class;
+            }
         }
 
         return $this;
     }
 
     /**
-     * Get/set the index class used for this embed.
-     *
-     * @deprecated 3.2.0 Use setIndexClass()/getIndexClass() instead.
-     * @param \Cake\ElasticSearch\Index|string|null $name The class name to set.
-     * @return string The class name.
-     */
-    public function indexClass(string|Index|null $name = null): string
-    {
-        deprecationWarning(
-            '3.3.0',
-            static::class . '::indexClass() is deprecated. ' .
-            'Use setIndexClass()/getIndexClass() instead.',
-        );
-
-        if ($name !== null) {
-            $this->setIndexClass($name);
-        }
-
-        return $this->getIndexClass();
-    }
-
-    /**
      * Get the alias for this embed.
-     *
-     * @return string
      */
     public function getAlias(): string
     {
@@ -276,7 +204,6 @@ abstract class Embedded
      *
      * @param array $data The data to use in the embedded document.
      * @param array $options The options to use in the new document.
-     * @return \Cake\ElasticSearch\Document|array
      */
     abstract public function hydrate(array $data, array $options): Document|array;
 
@@ -284,8 +211,6 @@ abstract class Embedded
      * Get the type of association this is.
      *
      * Returns one of the association type constants.
-     *
-     * @return string
      */
     abstract public function type(): string;
 }

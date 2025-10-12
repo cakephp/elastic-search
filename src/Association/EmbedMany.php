@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Cake\ElasticSearch\Association;
 
+use Cake\ElasticSearch\Document;
+
 /**
  * Represents an embedded document that only contains
  * multiple instances.
@@ -23,7 +25,9 @@ class EmbedMany extends Embedded
         $out = [];
         foreach ($data as $row) {
             if (is_array($row)) {
-                $out[] = new $class($row, $options);
+                $document = new $class($row, $options);
+                assert($document instanceof Document);
+                $out[] = $document;
             }
         }
 

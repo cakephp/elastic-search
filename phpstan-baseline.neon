@@ -1,6 +1,12 @@
 parameters:
 	ignoreErrors:
 		-
+			message: '#^Trait Cake\\ElasticSearch\\Datasource\\IndexLocatorAwareTrait is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Datasource/IndexLocatorAwareTrait.php
+
+		-
 			message: '#^Strict comparison using \!\=\= between string and array\{\} will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
@@ -23,6 +29,12 @@ parameters:
 			identifier: return.phpDocType
 			count: 1
 			path: src/Query.php
+
+		-
+			message: '#^Class Cake\\ElasticSearch\\ResultSet @implements tag contains incompatible type Cake\\Datasource\\ResultSetInterface&iterable<T of array\|Cake\\Datasource\\EntityInterface>\.$#'
+			identifier: generics.notCompatible
+			count: 1
+			path: src/ResultSet.php
 
 		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'

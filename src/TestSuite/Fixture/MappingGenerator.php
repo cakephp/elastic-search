@@ -32,14 +32,8 @@ use RuntimeException;
  */
 class MappingGenerator
 {
-    /**
-     * @var string
-     */
     protected string $file;
 
-    /**
-     * @var string
-     */
     protected string $connection;
 
     /**
@@ -58,22 +52,27 @@ class MappingGenerator
      * Drop and re-create indexes defined in the mapping schema file.
      *
      * @param array<string> $indexes A subset of indexes to reload. Used for testing.
-     * @return void
      */
     public function reload(?array $indexes = null): void
     {
         $db = ConnectionManager::get($this->connection);
         if (!($db instanceof Connection)) {
-            throw new RuntimeException("The `{$this->connection}` connection is not an ElasticSearch connection.");
+            throw new RuntimeException(sprintf(
+                'The `%s` connection is not an ElasticSearch connection.',
+                $this->connection,
+            ));
         }
+
         $mappings = include $this->file;
         if (empty($mappings)) {
-            throw new RuntimeException("The `{$this->file}` file did not return any mapping data.");
+            throw new RuntimeException(sprintf('The `%s` file did not return any mapping data.', $this->file));
         }
+
         foreach ($mappings as $i => $mapping) {
             if (!isset($mapping['name'])) {
-                throw new RuntimeException("The mapping at index {$i} does not have a name.");
+                throw new RuntimeException(sprintf('The mapping at index %s does not have a name.', $i));
             }
+
             $this->dropIndex($db, $mapping['name']);
             $this->createIndex($db, $mapping);
         }
@@ -84,7 +83,6 @@ class MappingGenerator
      *
      * @param \Cake\ElasticSearch\Datasource\Connection $db The connection.
      * @param string $name The name of the index to drop.
-     * @return void
      */
     protected function dropIndex(Connection $db, string $name): void
     {
@@ -99,12 +97,11 @@ class MappingGenerator
      *
      * @param \Cake\ElasticSearch\Datasource\Connection $db The connection.
      * @param array $mapping The index mapping and settings.
-     * @return void
      */
     protected function createIndex(Connection $db, array $mapping): void
     {
         if (!isset($mapping['mapping'])) {
-            throw new RuntimeException("Mapping for {$mapping['name']} does not define a `mapping` key");
+            throw new RuntimeException(sprintf('Mapping for %s does not define a `mapping` key', $mapping['name']));
         }
 
         $esIndex = $db->getIndex($mapping['name']);
@@ -113,6 +110,7 @@ class MappingGenerator
         if (!empty($mapping['settings'])) {
             $args['settings'] = $mapping['settings'];
         }
+
         $esIndex->create($args);
 
         $esMapping = new ElasticaMapping();

@@ -38,7 +38,6 @@ class QueryBuilder
      * @param string $field The field to query by.
      * @param mixed $from The lower bound value.
      * @param mixed $to The upper bound value.
-     * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function between(string $field, mixed $from, mixed $to): Range
@@ -53,7 +52,6 @@ class QueryBuilder
      * Returns a bool query that can be chained with the `addMust()`, `addShould()`,
      * `addFilter` and `addMustNot()` methods.
      *
-     * @return \Elastica\Query\BoolQuery
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
      */
     public function bool(): BoolQuery
@@ -66,7 +64,6 @@ class QueryBuilder
      * or not set to null.
      *
      * @param string $field The field to check for existance.
-     * @return \Elastica\Query\Exists
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html
      */
     public function exists(string $field): Exists
@@ -95,7 +92,6 @@ class QueryBuilder
      * @param string $field The field to compare.
      * @param array|string $topLeft The top left coordinate.
      * @param array|string $bottomRight The bottom right coordinate.
-     * @return \Elastica\Query\GeoBoundingBox
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-bounding-box-query.html
      */
     public function geoBoundingBox(string $field, array|string $topLeft, array|string $bottomRight): GeoBoundingBox
@@ -118,7 +114,6 @@ class QueryBuilder
      * @param string $field The field to compare.
      * @param array|string $location The coordinate from which to compare.
      * @param string $distance The distance radius.
-     * @return \Elastica\Query\GeoDistance
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-query.html
      */
     public function geoDistance(string $field, array|string $location, string $distance): GeoDistance
@@ -148,7 +143,6 @@ class QueryBuilder
      *
      * @param string $field The field to compare.
      * @param array $geoPoints List of geo points that form the polygon
-     * @return \Elastica\Query\GeoPolygon
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-query.html
      */
     public function geoPolygon(string $field, array $geoPoints): GeoPolygon
@@ -177,7 +171,6 @@ class QueryBuilder
      * @param string $field The field to compare.
      * @param array $geoPoints List of geo points that form the shape.
      * @param string $type The shape type to use (envelope, linestring, polygon, multipolygon...)
-     * @return \Elastica\Query\GeoShapeProvided
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
     public function geoShape(
@@ -202,7 +195,6 @@ class QueryBuilder
      * @param string $id The ID of the document containing the pre-indexed shape.
      * @param string $index Name of the index where the pre-indexed shape is.
      * @param string $path The field specified as path containing the pre-indexed shape.
-     * @return \Elastica\Query\GeoShapePreIndexed
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-shape-query.html
      */
     public function geoShapeIndex(
@@ -220,7 +212,6 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param mixed $value The value to compare with.
-     * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function gt(string $field, mixed $value): Range
@@ -234,7 +225,6 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param mixed $value The value to compare with.
-     * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function gte(string $field, mixed $value): Range
@@ -248,7 +238,6 @@ class QueryBuilder
      *
      * @param \Elastica\Query|\Elastica\Query\AbstractQuery|string $query The query.
      * @param string $type The child type to query against.
-     * @return \Elastica\Query\HasChild
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-child-query.html
      */
     public function hasChild(Query|AbstractQuery|string $query, string $type): HasChild
@@ -261,7 +250,6 @@ class QueryBuilder
      *
      * @param \Elastica\Query|\Elastica\Query\AbstractQuery|string $query The query.
      * @param string $type The parent type to query against.
-     * @return \Elastica\Query\HasParent
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-has-parent-query.html
      */
     public function hasParent(Query|AbstractQuery|string $query, string $type): HasParent
@@ -273,7 +261,6 @@ class QueryBuilder
      * Query documents that only have the provided ids.
      *
      * @param array $ids The list of ids to query by.
-     * @return \Elastica\Query\Ids
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-query.html
      */
     public function ids(array $ids = []): Ids
@@ -285,18 +272,16 @@ class QueryBuilder
      * Limits the number of documents (per shard) to execute on.
      *
      * @param int $limit The maximum number of documents to query.
-     * @return \Elastica\Query\Limit
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-limit-query.html
      */
     public function limit(int $limit): Limit
     {
-        return new Elastica\Query\Limit((int)$limit);
+        return new Elastica\Query\Limit($limit);
     }
 
     /**
      * A query that returns all documents.
      *
-     * @return \Elastica\Query\MatchAll
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-all-query.html
      */
     public function matchAll(): MatchAll
@@ -310,7 +295,6 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param mixed $value The value to compare with.
-     * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function lt(string $field, mixed $value): Range
@@ -324,7 +308,6 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param mixed $value The value to compare with.
-     * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function lte(string $field, mixed $value): Range
@@ -343,7 +326,6 @@ class QueryBuilder
      *
      * @param string $path A dot separated string denoting the path to the property to query.
      * @param \Elastica\Query\AbstractQuery $query The query conditions.
-     * @return \Elastica\Query\Nested
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-nested-query.html
      */
     public function nested(string $path, AbstractQuery $query): Nested
@@ -360,7 +342,6 @@ class QueryBuilder
      * Returns a BoolQuery query with must_not field that is typically ussed to negate another query expression
      *
      * @param \Elastica\Query\AbstractQuery|array $query The query to negate
-     * @return \Elastica\Query\BoolQuery
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
      */
     public function not(AbstractQuery|array $query): BoolQuery
@@ -378,7 +359,6 @@ class QueryBuilder
      * @param string $field The field to query by.
      * @param string $prefix The prefix to check for.
      * @param float $boost The optional boost
-     * @return \Elastica\Query\Prefix
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html
      */
     public function prefix(string $field, string $prefix, float $boost = 1.0): Prefix
@@ -402,7 +382,6 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param array $args An array describing the search range
-     * @return \Elastica\Query\Range
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */
     public function range(string $field, array $args): Range
@@ -422,7 +401,6 @@ class QueryBuilder
      * @param string $field The field to query by.
      * @param string $regexp The regular expression.
      * @param float $boost Boost
-     * @return \Elastica\Query\Regexp
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html
      */
     public function regexp(string $field, string $regexp, float $boost = 1.0): Regexp
@@ -440,7 +418,6 @@ class QueryBuilder
      * }}}
      *
      * @param \Elastica\Script\AbstractScript|array|string $script The script.
-     * @return \Elastica\Query\Script
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-query.html
      */
     public function script(AbstractScript|array|string $script): Script
@@ -459,7 +436,6 @@ class QueryBuilder
      *
      * @param array|string $fields The fields to search within
      * @param string $string The pattern to find in the fields
-     * @return \Elastica\Query\SimpleQueryString
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html
      */
     public function simpleQueryString(array|string $fields, string $string): SimpleQueryString
@@ -478,7 +454,6 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param string $value The match to find in field.
-     * @return \Elastica\Query\MatchQuery
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html
      */
     public function match(string $field, string $value): MatchQuery
@@ -497,7 +472,6 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param string|float|int|bool $value The term to find in field.
-     * @return \Elastica\Query\Term
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
      */
     public function term(string $field, string|float|int|bool $value): Term
@@ -516,12 +490,19 @@ class QueryBuilder
      *
      * @param string $field The field to query by.
      * @param array $values The list of terms to find in field.
-     * @return \Elastica\Query\Terms
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html
      */
     public function terms(string $field, array $values): Terms
     {
-        return new Elastica\Query\Terms($field, $values);
+        // Ensure values is a list of scalars as expected by Elastica
+        $scalarValues = [];
+        foreach ($values as $value) {
+            if (is_scalar($value)) {
+                $scalarValues[] = $value;
+            }
+        }
+
+        return new Elastica\Query\Terms($field, $scalarValues);
     }
 
     /**
@@ -538,7 +519,6 @@ class QueryBuilder
      * }}}
      *
      * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
-     * @return \Elastica\Query\BoolQuery
      */
     public function and(AbstractQuery ...$queries): BoolQuery
     {
@@ -564,7 +544,6 @@ class QueryBuilder
      * }}}
      *
      * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
-     * @return \Elastica\Query\BoolQuery
      */
     public function or(AbstractQuery ...$queries): BoolQuery
     {
@@ -576,51 +555,6 @@ class QueryBuilder
 
         return $bool;
     }
-
-    // @codingStandardsIgnoreStart
-    /**
-     * Combines all the passed arguments in a single bool query
-     * using the "must" clause.
-     *
-     * ### Example:
-     *
-     * {{{
-     *  $bool = $builder->and(
-     *     $builder->terms('tags', ['cool', 'stuff']),
-     *     $builder->exists('comments')
-     *  );
-     * }}}
-     *
-     * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
-     * @return \Elastica\Query\BoolQuery
-     * @deprecated 3.0.1 Use `and()` instead.
-     */
-    public function and_(...$queries)
-    {
-        return $this->and(...$queries);
-    }
-
-    /**
-     * Combines all the passed arguments in a single BoolQuery query using should clause.
-     *
-     * ### Example:
-     *
-     * {{{
-     *  $bool = $builder->or(
-     *     $builder->not($builder->exists('tags')),
-     *     $builder->exists('comments')
-     *  );
-     * }}}
-     *
-     * @param \Elastica\Query\AbstractQuery ...$queries Queries to compare.
-     * @return \Elastica\Query\BoolQuery
-     * @deprecated 3.0.1 Use `or()` instead.
-     */
-    public function or_(...$queries)
-    {
-        return $this->or(...$queries);
-    }
-    // @codingStandardsIgnoreEnd
 
     /**
      * Converts an array into a single array of query objects
@@ -706,7 +640,6 @@ class QueryBuilder
      * `<`, `>`, `<=`, `>=`, `in`, `not in`, `is`, `is not`, `!=`
      *
      * @param \Elastica\Query\AbstractQuery|array $conditions The list of conditions to parse.
-     * @return \Elastica\Query\AbstractQuery|array
      */
     public function parse(array|AbstractQuery $conditions): AbstractQuery|array
     {
@@ -721,8 +654,9 @@ class QueryBuilder
             if ($numericKey) {
                 $c = $this->parse($c);
                 if (is_array($c)) {
-                    $c = $this->and(...$c);
+                    $c = $this->and(...array_values($c));
                 }
+
                 $result[] = $c;
                 continue;
             }
@@ -730,17 +664,35 @@ class QueryBuilder
             $operator = strtolower($k);
 
             if ($operator === 'and') {
-                $result[] = $this->and(...$this->parse($c));
+                $parsed = $this->parse($c);
+                if (is_array($parsed)) {
+                    $result[] = $this->and(...$parsed);
+                } elseif ($parsed instanceof AbstractQuery) {
+                    $result[] = $this->and($parsed);
+                }
+
                 continue;
             }
 
             if ($operator === 'or') {
-                $result[] = $this->or(...$this->parse($c));
+                $parsed = $this->parse($c);
+                if (is_array($parsed)) {
+                    $result[] = $this->or(...$parsed);
+                } elseif ($parsed instanceof AbstractQuery) {
+                    $result[] = $this->or($parsed);
+                }
+
                 continue;
             }
 
             if ($operator === 'not') {
-                $result[] = $this->not($this->and(...$this->parse($c)));
+                $parsed = $this->parse($c);
+                if (is_array($parsed)) {
+                    $result[] = $this->not($this->and(...$parsed));
+                } elseif ($parsed instanceof AbstractQuery) {
+                    $result[] = $this->not($parsed);
+                }
+
                 continue;
             }
 
@@ -760,7 +712,6 @@ class QueryBuilder
      *
      * @param string $field The filed name containing the operator
      * @param mixed $value The value to pass to the query
-     * @return \Elastica\Query\AbstractQuery
      */
     protected function _parseQuery(string $field, mixed $value): AbstractQuery
     {

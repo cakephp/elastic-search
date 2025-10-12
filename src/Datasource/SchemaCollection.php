@@ -25,8 +25,6 @@ class SchemaCollection
 {
     /**
      * The connection instance to use.
-     *
-     * @var \Cake\ElasticSearch\Datasource\Connection
      */
     protected Connection $connection;
 
@@ -49,7 +47,7 @@ class SchemaCollection
     {
         try {
             $indexes = $this->connection->getDriver()->getStatus()->getIndexNames();
-        } catch (ResponseException $e) {
+        } catch (ResponseException $responseException) {
             return [];
         }
 

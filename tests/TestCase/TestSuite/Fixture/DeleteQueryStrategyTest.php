@@ -26,10 +26,8 @@ class DeleteQueryStrategyTest extends TestCase
 {
     /**
      * Test teardown
-     *
-     * @return void
      */
-    public function testTeardownTest()
+    public function testTeardownTest(): void
     {
         $articleIndex = $this->ElasticLocator->get('Articles');
 

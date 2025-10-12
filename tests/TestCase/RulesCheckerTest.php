@@ -15,9 +15,10 @@ class RulesCheckerTest extends TestCase
     public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     protected Connection $connection;
+
     protected Index $index;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->connection = ConnectionManager::get('test');
@@ -33,9 +34,8 @@ class RulesCheckerTest extends TestCase
      * Tests the isUnique domain rule
      *
      * @group save
-     * @return void
      */
-    public function testIsUniqueDomainRule()
+    public function testIsUniqueDomainRule(): void
     {
         $document = new Document(
             [
@@ -61,31 +61,29 @@ class RulesCheckerTest extends TestCase
      * Test unique rule on existing document
      *
      * @group save
-     * @return void
      */
-    public function testIsUniqueExisting()
+    public function testIsUniqueExisting(): void
     {
         $document = $this->index->get(1);
         $rules = $this->index->rulesChecker();
         $rules->add(new IsUnique([ 'user_id' ]));
 
         $document->setDirty('user_id', true);
-        $this->assertInstanceOf('\Cake\ElasticSearch\Document', $this->index->save($document));
+        $this->assertInstanceOf(Document::class, $this->index->save($document));
     }
 
     /**
      * Test unique rule on existing document
      *
      * @group save
-     * @return void
      */
-    public function testIsUniqueWithNullValue()
+    public function testIsUniqueWithNullValue(): void
     {
         $document = $this->index->get(1);
         $rules = $this->index->rulesChecker();
         $rules->add(new IsUnique([ 'user_id', 'title' ]));
 
         $document->title = null;
-        $this->assertInstanceOf('\Cake\ElasticSearch\Document', $this->index->save($document));
+        $this->assertInstanceOf(Document::class, $this->index->save($document));
     }
 }

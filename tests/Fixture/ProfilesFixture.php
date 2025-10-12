@@ -23,15 +23,11 @@ class ProfilesFixture extends TestFixture
 {
     /**
      * The table/type for this fixture.
-     *
-     * @var string
      */
     public string $table = 'profiles';
 
     /**
      * The fixture records
-     *
-     * @var array
      */
     public array $records = [
         [

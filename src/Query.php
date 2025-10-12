@@ -72,8 +72,6 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * The various query builder parts that will
      * be transferred to the elastica query.
-     *
-     * @var array
      */
     protected array $_queryParts = [
         'fields' => [],
@@ -90,8 +88,6 @@ class Query implements IteratorAggregate, QueryInterface
 
     /**
      * Internal state to track whether or not the query has been modified.
-     *
-     * @var bool
      */
     protected bool $_dirty = false;
 
@@ -99,14 +95,11 @@ class Query implements IteratorAggregate, QueryInterface
      * Additional options for Elastica\Index::search()
      *
      * @see \Elastica\Search::OPTION_SEARCH_* constants
-     * @var array
      */
     protected array $_searchOptions = [];
 
     /**
      * Instance of a repository object this query is bound to.
-     *
-     * @var \Cake\ElasticSearch\Index
      */
     protected Index $_repository;
 
@@ -115,7 +108,6 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * When set, query execution will be bypassed.
      *
-     * @var iterable|null
      * @see \Cake\Datasource\QueryTrait::setResult()
      */
     protected ?iterable $_results = null;
@@ -123,8 +115,6 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * List of map-reduce routines that should be applied over the query
      * result
-     *
-     * @var array
      */
     protected array $_mapReduce = [];
 
@@ -138,16 +128,12 @@ class Query implements IteratorAggregate, QueryInterface
 
     /**
      * A query cacher instance if this query has caching enabled.
-     *
-     * @var \Cake\Datasource\QueryCacher|null
      */
     protected ?QueryCacher $_cache = null;
 
     /**
      * Holds any custom options passed using applyOptions that could not be processed
      * by any method in this class.
-     *
-     * @var array
      */
     protected array $_options = [];
 
@@ -178,8 +164,18 @@ class Query implements IteratorAggregate, QueryInterface
     public function select(Closure|array|string|int|float $fields, bool $overwrite = false)
     {
         if (!$overwrite) {
-            $fields = array_merge($this->_queryParts['fields'], $fields);
+            $currentFields = $this->_queryParts['fields'];
+            if (!is_array($currentFields)) {
+                $currentFields = [];
+            }
+
+            if (!is_array($fields)) {
+                $fields = [$fields];
+            }
+
+            $fields = array_merge($currentFields, $fields);
         }
+
         $this->_queryParts['fields'] = $fields;
 
         return $this;
@@ -232,15 +228,18 @@ class Query implements IteratorAggregate, QueryInterface
         if ($limit !== null) {
             $this->limit($limit);
         }
+
         $limit = $this->clause('limit');
         if ($limit === null) {
             $limit = 25;
             $this->limit($limit);
         }
+
         $offset = ($num - 1) * $limit;
         if (PHP_INT_MAX <= $offset) {
             $offset = PHP_INT_MAX;
         }
+
         $this->offset((int)$offset);
 
         return $this;
@@ -265,7 +264,6 @@ class Query implements IteratorAggregate, QueryInterface
      * - offset: integer, null when not set
      *
      * @param string $name name of the clause to be returned
-     * @return mixed
      */
     public function clause(string $name): mixed
     {
@@ -284,7 +282,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @param \Closure|array|string $fields The sorting order to use.
      * @param bool $overwrite Whether or not to replace previous sorting.
      * @return $this
-     * @deprecated 4.0.0 Use orderBy() instead.
+     * @deprecated 5.0.0 Use orderBy() instead now that CollectionInterface methods are no longer proxied.
      */
     public function order(Closure|array|string $fields, bool $overwrite = false)
     {
@@ -312,6 +310,7 @@ class Query implements IteratorAggregate, QueryInterface
 
                 return $this;
             }
+
             $this->_queryParts['order'] = array_merge($fields, $this->_queryParts['order']);
 
             return $this;
@@ -321,7 +320,7 @@ class Query implements IteratorAggregate, QueryInterface
             $fields = [$fields => ['order' => 'desc']];
         }
 
-        $normalizer = function ($fields, $key) {
+        $normalizer = function ($fields, $key): array {
           // ['field' => 'asc|desc']
             if (is_string($fields)) {
                 return [$key => ['order' => $fields]];
@@ -329,6 +328,10 @@ class Query implements IteratorAggregate, QueryInterface
 
             return [$key => $fields];
         };
+
+        if (!is_iterable($fields)) {
+            $fields = [$fields];
+        }
 
         $fields = collection($fields)->map($normalizer)->toList();
 
@@ -405,6 +408,11 @@ class Query implements IteratorAggregate, QueryInterface
         array $types = [],
         bool $overwrite = false,
     ) {
+        // Convert string conditions to proper format for _buildBoolQuery
+        if (is_string($conditions)) {
+            $conditions = [$conditions];
+        }
+
         return $this->_buildBoolQuery('filter', $conditions, $overwrite);
     }
 
@@ -571,9 +579,8 @@ class Query implements IteratorAggregate, QueryInterface
      * Set or get the search options
      *
      * @param array|null $options An array of additional search options
-     * @return $this|array
      */
-    public function searchOptions(?array $options = null)
+    public function searchOptions(?array $options = null): array|self
     {
         if ($options === null) {
             return $this->_searchOptions;
@@ -596,12 +603,16 @@ class Query implements IteratorAggregate, QueryInterface
      */
     protected function _buildBoolQuery(
         string $partType,
-        AbstractQuery|callable|array $conditions,
+        AbstractQuery|callable|array|null $conditions,
         bool $overwrite,
         string $type = 'addMust',
     ) {
         if (!isset($this->_queryParts[$partType]) || $overwrite) {
             $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
+        }
+
+        if ($conditions === null) {
+            return $this;
         }
 
         if ($conditions instanceof AbstractQuery) {
@@ -620,7 +631,11 @@ class Query implements IteratorAggregate, QueryInterface
 
         if (is_array($conditions)) {
             $conditions = (new QueryBuilder())->parse($conditions);
-            array_map([$this->_queryParts[$partType], $type], $conditions);
+            if (is_array($conditions)) {
+                foreach ($conditions as $condition) {
+                    $this->_queryParts[$partType]->{$type}($condition);
+                }
+            }
 
             return $this;
         }
@@ -806,6 +821,7 @@ class Query implements IteratorAggregate, QueryInterface
                 $aliased += $this->aliasField($field, $defaultAlias);
                 continue;
             }
+
             $aliased[$alias] = $field;
         }
 
@@ -814,8 +830,6 @@ class Query implements IteratorAggregate, QueryInterface
 
     /**
      * Returns the total amount of hits for the query
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -835,18 +849,6 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @param \Cake\Datasource\RepositoryInterface $repository The default repository object to use.
      * @return $this
-     * @deprecated 4.0.0 Use setRepository() instead.
-     */
-    public function repository(RepositoryInterface $repository)
-    {
-        return $this->setRepository($repository);
-    }
-
-    /**
-     * Set the default repository object that will be used by this query.
-     *
-     * @param \Cake\Datasource\RepositoryInterface $repository The default repository object to use.
-     * @return $this
      */
     public function setRepository(RepositoryInterface $repository)
     {
@@ -859,8 +861,6 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Returns the default repository object that will be used by this query,
      * that is, the table that will appear in the from clause.
-     *
-     * @return \Cake\ElasticSearch\Index
      */
     public function getRepository(): Index
     {
@@ -872,8 +872,6 @@ class Query implements IteratorAggregate, QueryInterface
      * for implementing the IteratorAggregate interface and allows the query to be
      * iterated without having to call execute() manually, thus making it look like
      * a result set instead of the query itself.
-     *
-     * @return \Traversable
      */
     public function getIterator(): Traversable
     {
@@ -923,6 +921,7 @@ class Query implements IteratorAggregate, QueryInterface
 
             return $this;
         }
+
         $this->_cache = new QueryCacher($key, $config);
 
         return $this;
@@ -936,8 +935,6 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * ResultSetDecorator is a traversable object that implements the methods found
      * on Cake\Collection\Collection.
-     *
-     * @return \Cake\Datasource\ResultSetInterface
      */
     public function all(): ResultSetInterface
     {
@@ -950,15 +947,17 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         $results = null;
-        if ($this->_cache) {
+        if ($this->_cache instanceof QueryCacher) {
             $results = $this->_cache->fetch($this);
         }
+
         if ($results === null) {
             $results = $this->decorateResults($this->_execute());
-            if ($this->_cache) {
+            if ($this->_cache instanceof QueryCacher) {
                 $this->_cache->store($this, $results);
             }
         }
+
         $this->_results = $results;
 
         return $this->_results;
@@ -966,8 +965,6 @@ class Query implements IteratorAggregate, QueryInterface
 
     /**
      * Returns an array representation of the results after executing the query.
-     *
-     * @return array
      */
     public function toArray(): array
     {
@@ -994,22 +991,22 @@ class Query implements IteratorAggregate, QueryInterface
         if ($overwrite) {
             $this->_mapReduce = [];
         }
-        if ($mapper === null) {
+
+        if (!$mapper instanceof Closure) {
             if (!$overwrite) {
                 throw new InvalidArgumentException('$mapper can be null only when $overwrite is true.');
             }
 
             return $this;
         }
-        $this->_mapReduce[] = compact('mapper', 'reducer');
+
+        $this->_mapReduce[] = ['mapper' => $mapper, 'reducer' => $reducer];
 
         return $this;
     }
 
     /**
      * Returns the list of previously registered map reduce routines.
-     *
-     * @return array
      */
     public function getMapReducers(): array
     {
@@ -1064,7 +1061,8 @@ class Query implements IteratorAggregate, QueryInterface
         if ($mode === self::OVERWRITE) {
             $this->_formatters = [];
         }
-        if ($formatter === null) {
+
+        if (!$formatter instanceof Closure) {
             if ($mode !== self::OVERWRITE) {
                 throw new InvalidArgumentException('$formatter can be null only when $mode is overwrite.');
             }
@@ -1147,7 +1145,6 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @see \Cake\Datasource\QueryInterface::applyOptions() to read about the options that will
      * be processed by this class and not returned by this function
-     * @return array
      * @see applyOptions()
      */
     public function getOptions(): array
@@ -1159,16 +1156,16 @@ class Query implements IteratorAggregate, QueryInterface
      * Decorates the results iterator with MapReduce routines and formatters
      *
      * @param iterable $result Original results
-     * @return \Cake\Datasource\ResultSetInterface
      */
     protected function decorateResults(iterable $result): ResultSetInterface
     {
         $decorator = $this->decoratorClass();
 
-        if (!empty($this->_mapReduce)) {
+        if ($this->_mapReduce !== []) {
             foreach ($this->_mapReduce as $functions) {
                 $result = new MapReduce($result, $functions['mapper'], $functions['reducer']);
             }
+
             $result = new $decorator($result);
         }
 
@@ -1176,7 +1173,7 @@ class Query implements IteratorAggregate, QueryInterface
             $result = new $decorator($result);
         }
 
-        if (!empty($this->_formatters)) {
+        if ($this->_formatters !== []) {
             foreach ($this->_formatters as $formatter) {
                 $result = $formatter($result, $this);
             }

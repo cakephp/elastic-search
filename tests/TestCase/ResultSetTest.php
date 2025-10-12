@@ -18,8 +18,11 @@ namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Index;
+use Cake\ElasticSearch\Query;
 use Cake\ElasticSearch\ResultSet;
 use Cake\ElasticSearch\TestSuite\TestCase;
+use Elastica\Result;
+use Elastica\ResultSet as ElasticaResultSet;
 use ReflectionProperty;
 use TestApp\Model\Document\MyTestDocument;
 
@@ -32,16 +35,14 @@ class ResultSetTest extends TestCase
 
     /**
      * Tests the construction process
-     *
-     * @return void
      */
-    public function testConstructor()
+    public function testConstructor(): array
     {
-        $elasticaSet = $this->getMockBuilder('Elastica\ResultSet')
+        $elasticaSet = $this->getMockBuilder(ElasticaResultSet::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $type = $this->getMockBuilder('Cake\ElasticSearch\Index')->getMock();
-        $query = $this->getMockBuilder('Cake\ElasticSearch\Query')
+        $type = $this->getMockBuilder(Index::class)->getMock();
+        $query = $this->getMockBuilder(Query::class)
             ->setConstructorArgs([$type])
             ->getMock();
         $query->expects($this->once())->method('getRepository')
@@ -61,13 +62,12 @@ class ResultSetTest extends TestCase
      * class
      *
      * @depends testConstructor
-     * @return void
      */
-    public function testCurrent($resultSets)
+    public function testCurrent($resultSets): void
     {
         [$resultSet, $elasticaSet] = $resultSets;
         $data = ['foo' => 1, 'bar' => 2];
-        $result = $this->getMockBuilder('Elastica\Result')
+        $result = $this->getMockBuilder(Result::class)
             ->onlyMethods(['getId', 'getData', 'getIndex'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -92,10 +92,8 @@ class ResultSetTest extends TestCase
 
     /**
      * Tests that the original ResultSet's methods are accessible
-     *
-     * @return void
      */
-    public function testDecoratedMethods()
+    public function testDecoratedMethods(): void
     {
         $connection = ConnectionManager::get('test');
         $index = new Index([
@@ -109,6 +107,7 @@ class ResultSetTest extends TestCase
         // This is not ideal but better than using mocks.
         $reflect = new ReflectionProperty($results, 'resultSet');
         $reflect->setAccessible(true);
+
         $elasticResult = $reflect->getValue($results);
 
         $this->assertSame($elasticResult->getResults(), $results->getResults());
@@ -125,10 +124,8 @@ class ResultSetTest extends TestCase
 
     /**
      * Test stats related proxy methods
-     *
-     * @return void
      */
-    public function testStatsProxies()
+    public function testStatsProxies(): void
     {
         $index = new Index([
             'name' => 'articles',
@@ -146,10 +143,8 @@ class ResultSetTest extends TestCase
 
     /**
      * Test serialize/unserialize
-     *
-     * @return void
      */
-    public function testSerialize()
+    public function testSerialize(): void
     {
         $index = new Index([
             'name' => 'articles',

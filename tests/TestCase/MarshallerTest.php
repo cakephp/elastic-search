@@ -23,6 +23,7 @@ use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\TestSuite\TestCase;
 use TestApp\Model\Document\ProtectedArticle;
+use TestApp\Model\Document\User;
 use TestApp\Model\Index\AccountsIndex;
 
 /**
@@ -32,8 +33,6 @@ class MarshallerTest extends TestCase
 {
     /**
      * Fixtures for this test.
-     *
-     * @var array
      */
     public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
@@ -41,10 +40,8 @@ class MarshallerTest extends TestCase
 
     /**
      * Setup method.
-     *
-     * @return void
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $connection = ConnectionManager::get('test');
@@ -56,10 +53,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test marshalling a simple object.
-     *
-     * @return void
      */
-    public function testOneSimple()
+    public function testOneSimple(): void
     {
         $data = [
             'title' => 'Testing',
@@ -69,7 +64,7 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertSame($data['title'], $result->title);
         $this->assertSame($data['body'], $result->body);
         $this->assertSame($data['user_id'], $result->user_id);
@@ -77,10 +72,8 @@ class MarshallerTest extends TestCase
 
     /**
      * Test validation errors being set.
-     *
-     * @return void
      */
-    public function testOneValidationErrorsSet()
+    public function testOneValidationErrorsSet(): void
     {
         $data = [
             'title' => 'Testing',
@@ -93,19 +86,17 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertNull($result->title, 'Invalid fields are not set.');
         $this->assertSame($data['body'], $result->body);
         $this->assertSame($data['user_id'], $result->user_id);
-        $this->assertNotEmpty($result->getErrors('title'), 'Should have an error.');
+        $this->assertNotEmpty($result->getErrors(), 'Should have an error.');
     }
 
     /**
      * test marshalling with fieldList
-     *
-     * @return void
      */
-    public function testOneFieldList()
+    public function testOneFieldList(): void
     {
         $data = [
             'title' => 'Testing',
@@ -122,10 +113,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test marshalling with accessibleFields
-     *
-     * @return void
      */
-    public function testOneAccsesibleFields()
+    public function testOneAccsesibleFields(): void
     {
         $data = [
             'title' => 'Testing',
@@ -150,10 +139,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test beforeMarshal event
-     *
-     * @return void
      */
-    public function testOneBeforeMarshalEvent()
+    public function testOneBeforeMarshalEvent(): void
     {
         $data = [
             'title' => 'Testing',
@@ -163,7 +150,7 @@ class MarshallerTest extends TestCase
         $called = 0;
         $this->index->getEventManager()->on(
             'Model.beforeMarshal',
-            function ($event, $data, $options) use (&$called) {
+            function ($event, $data, $options) use (&$called): void {
                 $called++;
                 $this->assertInstanceOf('ArrayObject', $data);
                 $this->assertInstanceOf('ArrayObject', $options);
@@ -177,10 +164,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test beforeMarshal event allows data mutation.
-     *
-     * @return void
      */
-    public function testOneBeforeMarshalEventMutateData()
+    public function testOneBeforeMarshalEventMutateData(): void
     {
         $data = [
             'title' => 'Testing',
@@ -197,10 +182,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test marshalling a simple object.
-     *
-     * @return void
      */
-    public function testOneEmbeddedOne()
+    public function testOneEmbeddedOne(): void
     {
         $data = [
             'title' => 'Testing',
@@ -214,8 +197,8 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data, ['associated' => ['User']]);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertInstanceOf(Document::class, $result->user);
         $this->assertSame($data['title'], $result->title);
         $this->assertSame($data['body'], $result->body);
         $this->assertSame($data['user']['username'], $result->user->username);
@@ -223,7 +206,7 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertIsArray($result->user);
         $this->assertSame($data['title'], $result->title);
         $this->assertSame($data['body'], $result->body);
@@ -232,10 +215,8 @@ class MarshallerTest extends TestCase
 
     /**
      * DataProvider for testOneEmbeddedOneWithOption
-     *
-     * @return array
      */
-    public static function oneEmbeddedOneWithOptionProvider()
+    public static function oneEmbeddedOneWithOptionProvider(): array
     {
         return [
             // Test both embeds with options
@@ -252,9 +233,8 @@ class MarshallerTest extends TestCase
      *
      * @dataProvider oneEmbeddedOneWithOptionProvider
      * @param array  $options  Options to pass to marshaller->one
-     * @return void
      */
-    public function testOneEmbeddedOneWithOptions($options)
+    public function testOneEmbeddedOneWithOptions(array $options): void
     {
         $data = [
             'title' => 'Testing',
@@ -273,19 +253,17 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data, $options);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comment);
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertInstanceOf(Document::class, $result->user);
+        $this->assertInstanceOf(Document::class, $result->comment);
         $this->assertSame($data['user']['username'], $result->user->username);
         $this->assertSame($data['comment']['text'], $result->comment->text);
     }
 
     /**
      * test marshalling a simple object.
-     *
-     * @return void
      */
-    public function testOneEmbeddedMany()
+    public function testOneEmbeddedMany(): void
     {
         $data = [
             'title' => 'Testing',
@@ -301,10 +279,10 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data, ['associated' => ['Comments']]);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertIsArray($result->comments);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
+        $this->assertInstanceOf(Document::class, $result->comments[0]);
+        $this->assertInstanceOf(Document::class, $result->comments[1]);
         $this->assertTrue($result->isNew());
         $this->assertTrue($result->comments[0]->isNew());
         $this->assertTrue($result->comments[1]->isNew());
@@ -312,10 +290,8 @@ class MarshallerTest extends TestCase
 
     /**
      * DataProvider for testOneEmbeddedManyWithOptions
-     *
-     * @return array
      */
-    public static function oneEmbeddedManyWithOptionsProvider()
+    public static function oneEmbeddedManyWithOptionsProvider(): array
     {
         return [
             // Test both embeds with options
@@ -332,9 +308,8 @@ class MarshallerTest extends TestCase
      *
      * @dataProvider oneEmbeddedManyWithOptionsProvider
      * @param array  $options  Options to pass to marshaller->one
-     * @return void
      */
-    public function testOneEmbeddedManyWithOptions($options)
+    public function testOneEmbeddedManyWithOptions(array $options): void
     {
         $data = [
             'title' => 'Testing',
@@ -355,13 +330,13 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->one($data, $options);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertIsArray($result->comments);
         $this->assertIsArray($result->authors);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->authors[0]);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->authors[1]);
+        $this->assertInstanceOf(Document::class, $result->comments[0]);
+        $this->assertInstanceOf(Document::class, $result->comments[1]);
+        $this->assertInstanceOf(Document::class, $result->authors[0]);
+        $this->assertInstanceOf(Document::class, $result->authors[1]);
         $this->assertTrue($result->isNew());
         $this->assertTrue($result->comments[0]->isNew());
         $this->assertTrue($result->comments[1]->isNew());
@@ -371,10 +346,8 @@ class MarshallerTest extends TestCase
 
     /**
      * Test converting multiple objects at once.
-     *
-     * @return void
      */
-    public function testMany()
+    public function testMany(): void
     {
         $data = [
             [
@@ -392,18 +365,16 @@ class MarshallerTest extends TestCase
         $result = $marshaller->many($data);
 
         $this->assertCount(2, $result);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[0]);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[1]);
+        $this->assertInstanceOf(Document::class, $result[0]);
+        $this->assertInstanceOf(Document::class, $result[1]);
         $this->assertSame($data[0], $result[0]->toArray());
         $this->assertSame($data[1], $result[1]->toArray());
     }
 
     /**
      * Test merging data into existing records.
-     *
-     * @return void
      */
-    public function testMerge()
+    public function testMerge(): void
     {
         $doc = $this->index->get(1);
         $data = [
@@ -424,10 +395,8 @@ class MarshallerTest extends TestCase
 
     /**
      * Test validation errors being set.
-     *
-     * @return void
      */
-    public function testMergeValidationErrorsSet()
+    public function testMergeValidationErrorsSet(): void
     {
         $data = [
             'title' => 'Testing',
@@ -441,17 +410,15 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($doc, $data);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertSame('First article', $result->title, 'Invalid fields are not modified.');
-        $this->assertNotEmpty($result->getErrors('title'), 'Should have an error.');
+        $this->assertNotEmpty($result->getErrors(), 'Should have an error.');
     }
 
     /**
      * Test merging data into existing records with a fieldlist
-     *
-     * @return void
      */
-    public function testMergeFieldList()
+    public function testMergeFieldList(): void
     {
         $doc = $this->index->get(1);
         $doc->setAccess('*', false);
@@ -472,10 +439,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test beforeMarshal event
-     *
-     * @return void
      */
-    public function testMergeBeforeMarshalEvent()
+    public function testMergeBeforeMarshalEvent(): void
     {
         $data = [
             'title' => 'Testing',
@@ -485,7 +450,7 @@ class MarshallerTest extends TestCase
         $called = 0;
         $this->index->getEventManager()->on(
             'Model.beforeMarshal',
-            function ($event, $data, $options) use (&$called) {
+            function ($event, $data, $options) use (&$called): void {
                 $called++;
                 $this->assertInstanceOf('ArrayObject', $data);
                 $this->assertInstanceOf('ArrayObject', $options);
@@ -500,10 +465,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test beforeMarshal event allows data mutation.
-     *
-     * @return void
      */
-    public function testMergeBeforeMarshalEventMutateData()
+    public function testMergeBeforeMarshalEventMutateData(): void
     {
         $data = [
             'title' => 'Testing',
@@ -521,10 +484,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test merge with an embed one
-     *
-     * @return void
      */
-    public function testMergeEmbeddedOneExisting()
+    public function testMergeEmbeddedOneExisting(): void
     {
         $this->index->embedOne('User');
         $data = [
@@ -542,8 +503,8 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($entity, $data, ['associated' => ['User']]);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertInstanceOf(Document::class, $result->user);
         $this->assertFalse($result->isNew(), 'Existing doc');
         $this->assertFalse($result->user->isNew(), 'Existing sub-doc');
         $this->assertSame($data['title'], $result->title);
@@ -553,10 +514,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test merge when embedded documents don't exist
-     *
-     * @return void
      */
-    public function testMergeEmbeddedOneMissing()
+    public function testMergeEmbeddedOneMissing(): void
     {
         $this->index->embedOne('User');
         $data = [
@@ -573,8 +532,8 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($entity, $data, ['associated' => ['User']]);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->user);
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertInstanceOf(Document::class, $result->user);
         $this->assertSame($data['title'], $result->title);
         $this->assertSame($data['body'], $result->body);
         $this->assertSame($data['user']['username'], $result->user->username);
@@ -583,10 +542,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test marshalling a simple object.
-     *
-     * @return void
      */
-    public function testMergeEmbeddedMany()
+    public function testMergeEmbeddedMany(): void
     {
         $data = [
             'title' => 'Testing',
@@ -610,20 +567,18 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($entity, $data, ['associated' => ['Comments']]);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertIsArray($result->comments);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
+        $this->assertInstanceOf(Document::class, $result->comments[0]);
+        $this->assertInstanceOf(Document::class, $result->comments[1]);
         $this->assertFalse($result->comments[0]->isNew());
         $this->assertFalse($result->comments[1]->isNew());
     }
 
     /**
      * test merge with some sub documents not existing.
-     *
-     * @return void
      */
-    public function testMergeEmbeddedManySomeMissing()
+    public function testMergeEmbeddedManySomeMissing(): void
     {
         $data = [
             'title' => 'Testing',
@@ -646,24 +601,22 @@ class MarshallerTest extends TestCase
         $marshaller = new Marshaller($this->index);
         $result = $marshaller->merge($entity, $data, ['associated' => ['Comments']]);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertIsArray($result->comments);
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[0]);
+        $this->assertInstanceOf(Document::class, $result->comments[0]);
         $this->assertSame('First comment', $result->comments[0]->comment);
         $this->assertFalse($result->comments[0]->isNew());
 
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->comments[1]);
+        $this->assertInstanceOf(Document::class, $result->comments[1]);
         $this->assertSame('Second comment', $result->comments[1]->comment);
         $this->assertTrue($result->comments[1]->isNew());
     }
 
     /**
      * Test that mergeMany will create new objects if the entity list is empty.
-     *
-     * @return void
      */
-    public function testMergeManyAllNew()
+    public function testMergeManyAllNew(): void
     {
         $entities = [];
         $data = [
@@ -684,10 +637,8 @@ class MarshallerTest extends TestCase
 
     /**
      * Ensure that mergeMany uses the fieldList option.
-     *
-     * @return void
      */
-    public function testMergeManyFieldList()
+    public function testMergeManyFieldList(): void
     {
         $entities = [];
         $data = [
@@ -710,10 +661,8 @@ class MarshallerTest extends TestCase
 
     /**
      * Ensure that mergeMany can merge a sparse data set.
-     *
-     * @return void
      */
-    public function testMergeManySomeNew()
+    public function testMergeManySomeNew(): void
     {
         $doc = $this->index->get(1);
         $entities = [$doc];
@@ -743,10 +692,8 @@ class MarshallerTest extends TestCase
 
     /**
      * Test that unknown entities are excluded from the results.
-     *
-     * @return void
      */
-    public function testMergeManyDropsUnknownEntities()
+    public function testMergeManyDropsUnknownEntities(): void
     {
         $doc = $this->index->get(1);
         $entities = [$doc];
@@ -777,10 +724,8 @@ class MarshallerTest extends TestCase
 
     /**
      * Ensure that only entities are updated.
-     *
-     * @return void
      */
-    public function testMergeManyBadEntityData()
+    public function testMergeManyBadEntityData(): void
     {
         $this->index->get(1);
         $entities = ['text', ['herp' => 'derp']];
@@ -799,10 +744,8 @@ class MarshallerTest extends TestCase
 
     /**
      * test marshalling One with multi level embed
-     *
-     * @return void
      */
-    public function testMarshallOneMultiLevelEmbed()
+    public function testMarshallOneMultiLevelEmbed(): void
     {
         Configure::write('App.namespace', 'TestApp');
 
@@ -836,22 +779,20 @@ class MarshallerTest extends TestCase
 
         $this->assertCount(2, $result->users);
         $this->assertSame('123 West Street', $result->address);
-        $this->assertInstanceOf('TestApp\Model\Document\User', $result->users[0]);
+        $this->assertInstanceOf(User::class, $result->users[0]);
         $this->assertSame('Mark', $result->users[0]->first_name);
         $this->assertSame('Story', $result->users[0]->last_name);
-        $this->assertInstanceOf('TestApp\Model\Document\User', $result->users[1]);
+        $this->assertInstanceOf(User::class, $result->users[1]);
         $this->assertSame('Clare', $result->users[1]->first_name);
         $this->assertSame('Smith', $result->users[1]->last_name);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->users[0]->user_type);
+        $this->assertInstanceOf(Document::class, $result->users[0]->user_type);
         $this->assertSame('Admin', $result->users[0]->user_type->label);
     }
 
     /**
      * test marshalling One with multi level embed (with AccessibleFields)
-     *
-     * @return void
      */
-    public function testMarshallOneMultiLevelEmbedWithAccessibleFields()
+    public function testMarshallOneMultiLevelEmbedWithAccessibleFields(): void
     {
         Configure::write('App.namespace', 'TestApp');
 
@@ -891,20 +832,18 @@ class MarshallerTest extends TestCase
 
         $this->assertCount(2, $result->users);
         $this->assertNull($result->remove_this);
-        $this->assertInstanceOf('TestApp\Model\Document\User', $result->users[0]);
+        $this->assertInstanceOf(User::class, $result->users[0]);
         $this->assertNull($result->users[0]->last_name);
-        $this->assertInstanceOf('TestApp\Model\Document\User', $result->users[1]);
+        $this->assertInstanceOf(User::class, $result->users[1]);
         $this->assertNull($result->users[1]->last_name);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result->users[0]->user_type);
+        $this->assertInstanceOf(Document::class, $result->users[0]->user_type);
         $this->assertNull($result->users[0]->user_type->level);
     }
 
     /**
      * test marshalling Many with multi level embed
-     *
-     * @return void
      */
-    public function testMarshallManyMultiLevelEmbed()
+    public function testMarshallManyMultiLevelEmbed(): void
     {
         Configure::write('App.namespace', 'TestApp');
 
@@ -955,16 +894,16 @@ class MarshallerTest extends TestCase
         $this->assertCount(1, $result[1]->users);
         $this->assertSame('123 West Street', $result[0]->address);
         $this->assertSame('87 Grant Avenue', $result[1]->address);
-        $this->assertInstanceOf('TestApp\Model\Document\User', $result[0]->users[0]);
-        $this->assertInstanceOf('TestApp\Model\Document\User', $result[0]->users[1]);
-        $this->assertInstanceOf('TestApp\Model\Document\User', $result[1]->users[0]);
+        $this->assertInstanceOf(User::class, $result[0]->users[0]);
+        $this->assertInstanceOf(User::class, $result[0]->users[1]);
+        $this->assertInstanceOf(User::class, $result[1]->users[0]);
         $this->assertSame('Mark', $result[0]->users[0]->first_name);
         $this->assertSame('Story', $result[0]->users[0]->last_name);
         $this->assertSame('Clare', $result[0]->users[1]->first_name);
         $this->assertSame('Smith', $result[0]->users[1]->last_name);
         $this->assertSame('Colin', $result[1]->users[0]->first_name);
         $this->assertSame('Thomas', $result[1]->users[0]->last_name);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[0]->users[0]->user_type);
+        $this->assertInstanceOf(Document::class, $result[0]->users[0]->user_type);
         $this->assertSame('Admin', $result[0]->users[0]->user_type->label);
     }
 }

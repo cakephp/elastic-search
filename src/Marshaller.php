@@ -21,6 +21,7 @@ use Cake\Collection\Collection;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\FactoryLocator;
 use Cake\ElasticSearch\Association\Embedded;
+use Cake\Validation\Validator;
 use RuntimeException;
 
 /**
@@ -32,8 +33,6 @@ class Marshaller
 {
     /**
      * Index instance this marshaller is for.
-     *
-     * @var \Cake\ElasticSearch\Index
      */
     protected Index $index;
 
@@ -59,7 +58,6 @@ class Marshaller
      *
      * @param array $data The data to hydrate.
      * @param array $options List of options
-     * @return \Cake\ElasticSearch\Document
      */
     public function one(array $data, array $options = []): Document
     {
@@ -77,7 +75,6 @@ class Marshaller
      * @param array  $data       The data to hydrate with
      * @param array  $options    Options to control the hydration
      * @param string $indexClass Index class to get embeds from (for nesting)
-     * @return \Cake\ElasticSearch\Document
      */
     protected function createAndHydrate(
         string $class,
@@ -86,6 +83,7 @@ class Marshaller
         ?string $indexClass = null,
     ): Document {
         $entity = new $class();
+        assert($entity instanceof Document);
 
         $options += ['associated' => []];
 
@@ -96,6 +94,7 @@ class Marshaller
                 $entity->setAccess($key, $value);
             }
         }
+
         $errors = $this->_validate($data, $options, true);
         $entity->setErrors($errors);
         foreach (array_keys($errors) as $badKey) {
@@ -133,6 +132,7 @@ class Marshaller
                     $filteredData[$field] = $data[$field];
                 }
             }
+
             $entity->patch($filteredData);
         }
 
@@ -178,7 +178,9 @@ class Marshaller
         if ($embed->type() === Embedded::ONE_TO_ONE) {
             if (!($existing instanceof EntityInterface)) {
                 $existing = new $class();
+                assert($existing instanceof Document);
             }
+
             $existing->patch($data);
 
             return $existing;
@@ -186,15 +188,20 @@ class Marshaller
             if (!is_array($existing)) {
                 $existing = [];
             }
+
             foreach ($existing as $i => $row) {
                 if (isset($data[$i])) {
+                    assert($row instanceof Document);
                     $row->patch($data[$i]);
                 }
+
                 unset($data[$i]);
             }
+
             foreach ($data as $row) {
                 if (is_array($row)) {
                     $new = new $class();
+                    assert($new instanceof Document);
                     $new->patch($row);
                     $existing[] = $new;
                 }
@@ -240,7 +247,6 @@ class Marshaller
      * data merged in
      * @param array $data key value list of fields to be merged into the entity
      * @param array $options List of options.
-     * @return \Cake\Datasource\EntityInterface
      */
     public function merge(EntityInterface $entity, array $data, array $options = []): EntityInterface
     {
@@ -298,7 +304,7 @@ class Marshaller
     public function mergeMany(iterable $entities, array $data, array $options = []): array
     {
         $indexed = (new Collection($data))
-            ->groupBy(function ($element) {
+            ->groupBy(function (array $element) {
                 return $element['id'] ?? '';
             })
             ->map(function ($element, $key) {
@@ -314,13 +320,16 @@ class Marshaller
             if (!($record instanceof EntityInterface)) {
                 continue;
             }
-            $id = $record->id;
+
+            $id = $record->get('id');
             if (!isset($indexed[$id])) {
                 continue;
             }
+
             $output[] = $this->merge($record, $indexed[$id], $options);
             unset($indexed[$id]);
         }
+
         $new = array_merge($indexed, $new);
         foreach ($new as $newRecord) {
             $output[] = $this->one($newRecord, $options);
@@ -347,16 +356,21 @@ class Marshaller
         if ($options['validate'] === true) {
             $options['validate'] = $this->index->getValidator('default');
         }
+
         if (is_string($options['validate'])) {
             $options['validate'] = $this->index->getValidator($options['validate']);
         }
+
         if (!is_object($options['validate'])) {
             throw new RuntimeException(
                 sprintf('validate must be a boolean, a string or an object. Got %s.', gettype($options['validate'])),
             );
         }
 
-        return $options['validate']->validate($data, $isNew);
+        $validator = $options['validate'];
+        assert($validator instanceof Validator);
+
+        return $validator->validate($data, $isNew);
     }
 
     /**
@@ -371,7 +385,7 @@ class Marshaller
         $options += ['validate' => true];
         $data = new ArrayObject($data);
         $options = new ArrayObject($options);
-        $this->index->dispatchEvent('Model.beforeMarshal', compact('data', 'options'));
+        $this->index->dispatchEvent('Model.beforeMarshal', ['data' => $data, 'options' => $options]);
 
         return [(array)$data, (array)$options];
     }

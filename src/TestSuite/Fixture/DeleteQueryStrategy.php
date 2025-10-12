@@ -24,9 +24,6 @@ use Elastica\Query\MatchAll;
 
 class DeleteQueryStrategy implements FixtureStrategyInterface
 {
-    /**
-     * @var \Cake\TestSuite\Fixture\FixtureHelper
-     */
     protected FixtureHelper $helper;
 
     /**
@@ -61,8 +58,6 @@ class DeleteQueryStrategy implements FixtureStrategyInterface
 
     /**
      * Clear state in all elastic indexes.
-     *
-     * @return void
      */
     public function teardownTest(): void
     {

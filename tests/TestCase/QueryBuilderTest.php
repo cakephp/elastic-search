@@ -18,6 +18,7 @@ namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\ElasticSearch\QueryBuilder;
 use Cake\ElasticSearch\TestSuite\TestCase;
+use Elastica\Query\BoolQuery;
 use Elastica\Query\SimpleQueryString;
 use stdClass;
 
@@ -28,10 +29,8 @@ class QueryBuilderTest extends TestCase
 {
     /**
      * Tests the between() filter
-     *
-     * @return void
      */
-    public function testBetween()
+    public function testBetween(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->between('price', 10, 100);
@@ -49,22 +48,18 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the bool() filter
-     *
-     * @return void
      */
-    public function testBool()
+    public function testBool(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->bool();
-        $this->assertInstanceOf('Elastica\Query\BoolQuery', $result);
+        $this->assertInstanceOf(BoolQuery::class, $result);
     }
 
     /**
      * Tests the exists() filter
-     *
-     * @return void
      */
-    public function testExists()
+    public function testExists(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->exists('comments');
@@ -76,10 +71,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the geoBoundingBox() filter
-     *
-     * @return void
      */
-    public function testGeoBoundingBox()
+    public function testGeoBoundingBox(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->geoBoundingBox('location', [40.73, -74.1], [40.01, -71.12]);
@@ -96,10 +89,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the geoDistance() filter
-     *
-     * @return void
      */
-    public function testGeoDistance()
+    public function testGeoDistance(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->geoDistance('location', ['lat' => 40.73, 'lon' => -74.1], '10km');
@@ -123,10 +114,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the geoPolygon() filter
-     *
-     * @return void
      */
-    public function testGeoPolygon()
+    public function testGeoPolygon(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->geoPolygon('location', [
@@ -150,10 +139,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the geoShape() filter
-     *
-     * @return void
      */
-    public function testGeoShape()
+    public function testGeoShape(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->geoShape('location', [
@@ -179,10 +166,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the geoShapeIndex() filter
-     *
-     * @return void
      */
-    public function testGeoShapeIndex()
+    public function testGeoShapeIndex(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->geoShapeIndex('location', 'DEU', 'shapes', 'location');
@@ -203,10 +188,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the gt() filter
-     *
-     * @return void
      */
-    public function testGt()
+    public function testGt(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->gt('price', 10);
@@ -224,10 +207,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the gte() filter
-     *
-     * @return void
      */
-    public function testGte()
+    public function testGte(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->gte('price', 10);
@@ -245,10 +226,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the hasChild() filter
-     *
-     * @return void
      */
-    public function testHashChild()
+    public function testHashChild(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->hasChild($builder->term('user', 'john'), 'comment');
@@ -263,10 +242,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the hasParent() filter
-     *
-     * @return void
      */
-    public function testHashParent()
+    public function testHashParent(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->hasParent($builder->term('name', 'john'), 'user');
@@ -281,10 +258,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the ids() filter
-     *
-     * @return void
      */
-    public function testIds()
+    public function testIds(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->ids([1, 2, 3]);
@@ -298,10 +273,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the limit() filter
-     *
-     * @return void
      */
-    public function testLimit()
+    public function testLimit(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->limit(10);
@@ -313,10 +286,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the matchAll() filter
-     *
-     * @return void
      */
-    public function testMatchAll()
+    public function testMatchAll(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->matchAll();
@@ -328,10 +299,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the lt() filter
-     *
-     * @return void
      */
-    public function testLt()
+    public function testLt(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->lt('price', 10);
@@ -349,10 +318,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the lte() filter
-     *
-     * @return void
      */
-    public function testLte()
+    public function testLte(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->lte('price', 10);
@@ -370,10 +337,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the nested() filter
-     *
-     * @return void
      */
-    public function testNested()
+    public function testNested(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->nested('comments', $builder->term('author', 'mark'));
@@ -387,10 +352,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the nested() filter
-     *
-     * @return void
      */
-    public function testNestedWithQuery()
+    public function testNestedWithQuery(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->nested(
@@ -407,10 +370,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the not() filter
-     *
-     * @return void
      */
-    public function testNot()
+    public function testNot(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->not($builder->term('title', 'cake'));
@@ -426,10 +387,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the prefix() filter
-     *
-     * @return void
      */
-    public function testPrefix()
+    public function testPrefix(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->prefix('user', 'ki');
@@ -457,10 +416,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the range() filter
-     *
-     * @return void
      */
-    public function testRange()
+    public function testRange(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->range('created', [
@@ -482,10 +439,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the regexp() filter
-     *
-     * @return void
      */
-    public function testRegexp()
+    public function testRegexp(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->regexp('name.first', 'mar[c|k]', 2.0);
@@ -502,10 +457,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the script() filter
-     *
-     * @return void
      */
-    public function testScript()
+    public function testScript(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->script("doc['foo'] > 2");
@@ -519,10 +472,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the simpleQueryString() filter
-     *
-     * @return void
      */
-    public function testSimpleQueryString()
+    public function testSimpleQueryString(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->simpleQueryString('name', 'hello world');
@@ -534,10 +485,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the term() filter
-     *
-     * @return void
      */
-    public function testTerm()
+    public function testTerm(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->term('user.name', 'jose');
@@ -567,10 +516,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the terms() filter
-     *
-     * @return void
      */
-    public function testTerms()
+    public function testTerms(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->terms('user.name', ['mark', 'jose']);
@@ -582,10 +529,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the and() method
-     *
-     * @return void
      */
-    public function testAnd()
+    public function testAnd(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->and(
@@ -607,10 +552,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the or() method
-     *
-     * @return void
      */
-    public function testOr()
+    public function testOr(): void
     {
         $builder = new QueryBuilder();
         $result = $builder->or(
@@ -630,10 +573,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the parse() method
-     *
-     * @return void
      */
-    public function testParseSingleArray()
+    public function testParseSingleArray(): void
     {
         $builder = new QueryBuilder();
         $filter = $builder->parse([
@@ -669,10 +610,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the parse() method for generating or conditions
-     *
-     * @return void
      */
-    public function testParseOr()
+    public function testParseOr(): void
     {
         $builder = new QueryBuilder();
         $filter = $builder->parse([
@@ -692,10 +631,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the parse() method for generating and conditions
-     *
-     * @return void
      */
-    public function testParseAnd()
+    public function testParseAnd(): void
     {
         $builder = new QueryBuilder();
         $filter = $builder->parse([
@@ -715,10 +652,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the parse() method for generating not conditions
-     *
-     * @return void
      */
-    public function testParseNot()
+    public function testParseNot(): void
     {
         $builder = new QueryBuilder();
         $filter = $builder->parse([
@@ -740,10 +675,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Tests the parse() method with numerically indexed arrays
-     *
-     * @return void
      */
-    public function testParseNumericArray()
+    public function testParseNumericArray(): void
     {
         $builder = new QueryBuilder();
         $filter = $builder->parse([

@@ -18,6 +18,7 @@ namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\TestSuite\TestCase;
+use Elastica\Result;
 
 /**
  * Tests the Document class
@@ -26,10 +27,8 @@ class DocumentTest extends TestCase
 {
     /**
      * Tests constructing a document
-     *
-     * @return void
      */
-    public function testConstructorArray()
+    public function testConstructorArray(): void
     {
         $data = ['foo' => 1, 'bar' => 2];
         $document = new Document($data);
@@ -39,13 +38,11 @@ class DocumentTest extends TestCase
     /**
      * Tests that constructing a document with a Elastica Result will
      * use the returned data out of it
-     *
-     * @return void
      */
-    public function testConstructorWithResult()
+    public function testConstructorWithResult(): void
     {
         $data = ['foo' => 1, 'bar' => 2];
-        $result = $this->getMockBuilder('Elastica\Result')
+        $result = $this->getMockBuilder(Result::class)
             ->onlyMethods(['getData'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -57,13 +54,11 @@ class DocumentTest extends TestCase
 
     /**
      * Tests that the result object can be passed in the options array
-     *
-     * @return void
      */
-    public function testConstructorWithResultAsOption()
+    public function testConstructorWithResultAsOption(): void
     {
         $data = ['foo' => 1, 'bar' => 2];
-        $result = $this->getMockBuilder('Elastica\Result')
+        $result = $this->getMockBuilder(Result::class)
             ->onlyMethods(['getData'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -74,10 +69,8 @@ class DocumentTest extends TestCase
     /**
      * Tests that creating a document without a result object will
      * make the proxy functions return their default
-     *
-     * @return void
      */
-    public function testNewWithNoResult()
+    public function testNewWithNoResult(): void
     {
         $document = new Document();
         $this->assertNull($document->index());
@@ -89,12 +82,10 @@ class DocumentTest extends TestCase
     /**
      * Tests that passing a result object in the constructor makes
      * the proxy the functions return the right value
-     *
-     * @return void
      */
-    public function testTypeWithResult()
+    public function testTypeWithResult(): void
     {
-        $result = $this->getMockBuilder('Elastica\Result')
+        $result = $this->getMockBuilder(Result::class)
             ->onlyMethods(['getData', 'getId', 'getIndex', 'getVersion', 'getHighlights', 'getExplanation'])
             ->disableOriginalConstructor()
             ->getMock();

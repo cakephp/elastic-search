@@ -44,29 +44,21 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
 
     /**
      * Holds the Elasticsearch ORM query object
-     *
-     * @var \Cake\ElasticSearch\Query
      */
     protected Query $queryObject;
 
     /**
      * The full class name of the document class to wrap the results
-     *
-     * @var string
      */
     protected string $entityClass;
 
     /**
      * Embedded type references
-     *
-     * @var array
      */
     protected array $embeds = [];
 
     /**
      * Name of the type that the originating query came from.
-     *
-     * @var string
      */
     protected string $repoName;
 
@@ -84,6 +76,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
         foreach ($repo->embedded() as $embed) {
             $this->embeds[$embed->getProperty()] = $embed;
         }
+
         $this->entityClass = $repo->getEntityClass();
         $this->repoName = $repo->getRegistryAlias();
         parent::__construct($resultSet);
@@ -101,8 +94,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
 
     /**
      * Returns true if the response contains suggestion results; false otherwise
-     *
-     * @return bool
      */
     public function hasSuggests(): bool
     {
@@ -121,8 +112,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
 
     /**
      * Returns all aggregation results
-     *
-     * @return array
      */
     public function getAggregations(): array
     {
@@ -133,7 +122,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      * Retrieve a specific aggregation from this result set
      *
      * @param string $name the name of the desired aggregation
-     * @return array
      * @throws \Elastica\Exception\InvalidException if an aggregation by the given name cannot be found
      */
     public function getAggregation(string $name): array
@@ -193,8 +181,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
 
     /**
      * Returns the original \Elastica\Query instance
-     *
-     * @return \Elastica\Query
      */
     public function getQuery(): ElasticaQuery
     {
@@ -208,7 +194,7 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      */
     public function count(): int
     {
-        return (int)$this->resultSet->count();
+        return $this->resultSet->count();
     }
 
     /**
@@ -223,8 +209,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
 
     /**
      * Returns the current document for the iteration
-     *
-     * @return \Cake\ElasticSearch\Document
      */
     public function current(): Document
     {
@@ -246,14 +230,15 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
             }
         }
 
-        return new $this->entityClass($data, $options);
+        $entity = new $this->entityClass($data, $options);
+        assert($entity instanceof Document);
+
+        return $entity;
     }
 
     /**
      * Returns a string representation of this object that can be used
      * to reconstruct it
-     *
-     * @return string
      */
     public function serialize(): string
     {
@@ -262,8 +247,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
 
     /**
      * Magic method for serializing the ResultSet instance
-     *
-     * @return array
      */
     public function __serialize(): array
     {
@@ -274,7 +257,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      * Unserializes the passed string and rebuilds the ResultSet instance
      *
      * @param string $serialized The serialized ResultSet information
-     * @return void
      */
     public function unserialize(string $serialized): void
     {
@@ -285,7 +267,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
      * Magic method for unserializing the ResultSet instance
      *
      * @param array $data The serialized data
-     * @return void
      */
     public function __unserialize(array $data): void
     {
@@ -294,8 +275,6 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
 
     /**
      * Debug output hook method.
-     *
-     * @return array
      */
     public function __debugInfo(): array
     {

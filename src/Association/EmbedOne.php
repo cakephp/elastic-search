@@ -16,13 +16,15 @@ class EmbedOne extends Embedded
      *
      * @param array $data The data to use in the embedded document.
      * @param array $options The options to use in the new document.
-     * @return \Cake\ElasticSearch\Document
      */
     public function hydrate(array $data, array $options): Document
     {
         $class = $this->getEntityClass();
 
-        return new $class($data, $options);
+        $document = new $class($data, $options);
+        assert($document instanceof Document);
+
+        return $document;
     }
 
     /**

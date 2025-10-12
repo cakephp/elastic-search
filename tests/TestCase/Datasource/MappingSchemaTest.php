@@ -26,10 +26,8 @@ class MappingSchemaTest extends TestCase
 {
     /**
      * Test the name()
-     *
-     * @return void
      */
-    public function testName()
+    public function testName(): void
     {
         $mapping = new MappingSchema('articles', []);
         $this->assertSame('articles', $mapping->name());
@@ -37,10 +35,8 @@ class MappingSchemaTest extends TestCase
 
     /**
      * Test fields()
-     *
-     * @return void
      */
-    public function testFields()
+    public function testFields(): void
     {
         $data = [
             'user_id' => [
@@ -60,10 +56,8 @@ class MappingSchemaTest extends TestCase
 
     /**
      * Test field()
-     *
-     * @return void
      */
-    public function testField()
+    public function testField(): void
     {
         $data = [
             'user_id' => [
@@ -85,10 +79,8 @@ class MappingSchemaTest extends TestCase
 
     /**
      * Test field()
-     *
-     * @return void
      */
-    public function testFieldNested()
+    public function testFieldNested(): void
     {
         $data = [
             'user_id' => [
@@ -108,10 +100,8 @@ class MappingSchemaTest extends TestCase
 
     /**
      * Test fieldType()
-     *
-     * @return void
      */
-    public function testFieldType()
+    public function testFieldType(): void
     {
         $data = [
             'user_id' => [

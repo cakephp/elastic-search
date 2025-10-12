@@ -33,8 +33,6 @@ class Document implements EntityInterface
      * Holds an instance of a Result object that's passed into the constructor
      * from a search query. It can contain extra information about this document
      * concerning the search operation, such as highlights, score and version.
-     *
-     * @var \Elastica\Result
      */
     protected Result $_result;
 
@@ -101,8 +99,6 @@ class Document implements EntityInterface
      * Returns the Elasticsearch index name from which this document came from.
      *
      * If this is a new document, this function returns null
-     *
-     * @return string|null
      */
     public function index(): ?string
     {
@@ -117,8 +113,6 @@ class Document implements EntityInterface
      * Returns the version number of this document as returned by Elasticsearch
      *
      * If this is a new document, this function returns 1
-     *
-     * @return int
      */
     public function version(): int
     {
@@ -135,8 +129,6 @@ class Document implements EntityInterface
      *
      * If this is a new document, or the query used to create it did not ask for
      * highlights, this function will return an empty array.
-     *
-     * @return array
      */
     public function highlights(): array
     {
@@ -152,8 +144,6 @@ class Document implements EntityInterface
      *
      * If this is a new document, or the query used to create it did not ask for
      * explanation, this function will return an empty array.
-     *
-     * @return array
      */
     public function explanation(): array
     {

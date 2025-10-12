@@ -32,6 +32,7 @@ use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
+use Cake\Event\EventManagerInterface;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
 use Closure;
@@ -81,43 +82,33 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     /**
      * Connection instance
-     *
-     * @var \Cake\ElasticSearch\Datasource\Connection
      */
     protected Connection $_connection;
 
     /**
      * The name of the Elasticsearch index this class represents
-     *
-     * @var string
      */
     protected string $_name;
 
     /**
      * Registry key used to create this index object
-     *
-     * @var string
      */
     protected string $_registryAlias;
 
     /**
      * The name of the class that represent a single document for this type
      *
-     * @var string
+     * @var class-string<\Cake\ElasticSearch\Document>
      */
     protected string $_documentClass;
 
     /**
      * Collection of Embedded sub documents this type has.
-     *
-     * @var array
      */
     protected array $embeds = [];
 
     /**
      * The mapping schema for this type.
-     *
-     * @var \Cake\ElasticSearch\Datasource\MappingSchema
      */
     protected MappingSchema $schema;
 
@@ -140,19 +131,26 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         if (!empty($config['registryAlias'])) {
             $this->setRegistryAlias($config['registryAlias']);
         }
+
         if (!empty($config['connection'])) {
             $this->setConnection($config['connection']);
         }
+
         if (!empty($config['name'])) {
             $this->setName($config['name']);
         }
+
         $eventManager = null;
         if (isset($config['eventManager'])) {
             $eventManager = $config['eventManager'];
         }
+
         $this->_eventManager = $eventManager ?: new EventManager();
         $this->initialize($config);
-        $this->_eventManager->on($this);
+        if ($this->_eventManager instanceof EventManagerInterface) {
+            $this->_eventManager->on($this);
+        }
+
         $this->dispatchEvent('Model.initialize');
     }
 
@@ -170,7 +168,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * ```
      *
      * @param array $config Configuration options passed to the constructor
-     * @return void
      */
     public function initialize(array $config): void
     {
@@ -184,7 +181,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param string $name The name of the property that contains the embedded document.
      * @param array $options The options for the embedded document.
-     * @return void
      */
     public function embedOne(string $name, array $options = []): void
     {
@@ -201,7 +197,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param string $name The name of the property that contains the embedded document.
      * @param array $options The options for the embedded document.
-     * @return void
      */
     public function embedMany(string $name, array $options = []): void
     {
@@ -210,8 +205,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     /**
      * Get the list of embedded documents this type has.
-     *
-     * @return array
      */
     public function embedded(): array
     {
@@ -233,8 +226,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     /**
      * Returns the connection instance
-     *
-     * @return \Cake\ElasticSearch\Datasource\Connection
      */
     public function getConnection(): Connection
     {
@@ -256,8 +247,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     /**
      * Returns the index registry key used to create this instance.
-     *
-     * @return string
      */
     public function getRegistryAlias(): string
     {
@@ -285,8 +274,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * Returns the index name
      *
      * If this isn't set the name will be inferred from the class name
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -303,8 +290,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * Get the index name, as required by QueryTrait
      *
      * This method is just an alias of name().
-     *
-     * @return string
      */
     public function getTable(): string
     {
@@ -324,8 +309,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     /**
      * Returns the type name.
-     *
-     * @return string
      */
     public function getAlias(): string
     {
@@ -343,7 +326,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param string $type the type of query to perform
      * @param mixed ...$args Additional arguments for the find operation
-     * @return \Cake\ElasticSearch\Query
      */
     public function find(string $type = 'all', mixed ...$args): Query
     {
@@ -357,7 +339,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param \Cake\ElasticSearch\Query $query An Elasticsearch query object
      * @param array $options An array of options to be used for query logic
-     * @return \Cake\ElasticSearch\Query
      */
     public function findAll(Query $query, array $options = []): Query
     {
@@ -417,6 +398,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         if (is_array($finder)) {
             $esOptions = $finder;
         }
+
         $result = $esIndex->getDocument($primaryKey, $esOptions);
         $class = $this->getEntityClass();
 
@@ -427,6 +409,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             'source' => $this->getRegistryAlias(),
         ];
         $data = $result->getData();
+        if (!is_array($data)) {
+            $data = [];
+        }
+
         $data['id'] = $result->getId();
         foreach ($this->embedded() as $embed) {
             $prop = $embed->getProperty();
@@ -442,7 +428,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * No-op method in elasticsearch
      *
      * @param string $field The field to alias
-     * @return string
      */
     public function aliasField(string $field): string
     {
@@ -451,8 +436,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     /**
      * Creates a new Query instance for this repository
-     *
-     * @return \Cake\ElasticSearch\Query
      */
     public function query(): Query
     {
@@ -461,8 +444,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     /**
      * Get a marshaller for this Index instance.
-     *
-     * @return \Cake\ElasticSearch\Marshaller
      */
     public function marshaller(): Marshaller
     {
@@ -478,7 +459,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param \Closure|array|string $fields A hash of field => new value.
      * @param \Closure|array|string|null $conditions An array of conditions, similar to those used with find()
-     * @return int
      */
     public function updateAll(Closure|array|string $fields, Closure|array|string|null $conditions): int
     {
@@ -501,6 +481,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     {
         $query = $this->query();
         $query->where($conditions);
+
         $esIndex = $this->getConnection()->getIndex($this->getName());
         $response = $esIndex->deleteByQuery($query->compileQuery());
 
@@ -512,12 +493,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * conditions.
      *
      * @param \Closure|array|string|null $conditions list of conditions to pass to the query
-     * @return bool
      */
     public function exists(Closure|array|string|null $conditions): bool
     {
         $query = $this->query();
-        if (count($conditions) && is_array($conditions) && isset($conditions['id'])) {
+        if (is_array($conditions) && count($conditions) && isset($conditions['id'])) {
             $query->where(function ($builder) use ($conditions) {
                 return $builder->ids((array)$conditions['id']);
             });
@@ -539,7 +519,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param array $entities An array of entities
      * @param array $options An array of options to be used for the event
-     * @return bool
      */
     public function saveMany(array $entities, array $options = []): bool
     {
@@ -575,7 +554,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
                 return false;
             }
 
-            $id = $entity->id ?: null;
+            $id = $entity->get('id') ?: null;
 
             $data = $entity->toArray();
             unset($data['id'], $data['_version']);
@@ -657,7 +636,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
 
         $esIndex = $this->getConnection()->getIndex($this->getName());
-        $id = $entity->id ?: null;
+        $id = $entity->get('id') ?: null;
 
         $data = $entity->toArray();
         unset($data['id'], $data['_version']);
@@ -674,7 +653,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
         $esIndex->addDocument($doc);
 
-        $entity->id = $doc->getId();
+        $entity->set('id', $doc->getId());
         $entity->version = $doc->getVersion();
         $entity->setNew(false);
         $entity->setSource($this->getRegistryAlias());
@@ -706,6 +685,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $msg = 'Deleting requires an "id" value.';
             throw new InvalidArgumentException($msg);
         }
+
         $options += [
             'checkRules' => true,
             'refresh' => false,
@@ -727,15 +707,18 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $data = $entity->toArray();
         unset($data['id']);
 
-        $doc = new ElasticaDocument($entity->id, $data);
-
         $requestParams = [];
         if ($options['refresh']) {
             $requestParams['refresh'] = $options['refresh'];
         }
 
         $esIndex = $this->getConnection()->getIndex($this->getName());
-        $result = $esIndex->deleteById($doc->getId(), $requestParams);
+        $id = $entity->get('id');
+        if ($id !== null) {
+            $result = $esIndex->deleteById((string)$id, $requestParams);
+        } else {
+            throw new InvalidArgumentException('Entity must have an id to be deleted.');
+        }
 
         $this->dispatchEvent('Model.afterDelete', [
             'entity' => $entity,
@@ -771,7 +754,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param array $data The data to build an entity with.
      * @param array $options A list of options for the object hydration.
-     * @return \Cake\Datasource\EntityInterface
      */
     public function newEntity(array $data, array $options = []): EntityInterface
     {
@@ -802,7 +784,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     /**
      * Returns the class used to hydrate documents for this index.
      *
-     * @return string
+     * @return class-string<\Cake\ElasticSearch\Document>
      * @psalm-suppress MoreSpecificReturnType
      * @psalm-return class-string<\Cake\ElasticSearch\Document>
      */
@@ -822,13 +804,15 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             if (!class_exists($name)) {
                 return $this->_documentClass = $default;
             }
+
             /** @var class-string<\Cake\ElasticSearch\Document>|null $class */
             $class = App::className($name, 'Model/Document');
             if (!$class) {
                 throw new MissingDocumentException([$name]);
             }
 
-            $this->_documentClass = $class;
+            /** @var class-string<\Cake\ElasticSearch\Document> $class */
+            return $this->_documentClass = $class;
         }
 
         return $this->_documentClass;
@@ -848,6 +832,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             throw new MissingDocumentException([$name]);
         }
 
+        /** @var class-string<\Cake\ElasticSearch\Document> $class */
         $this->_documentClass = $class;
 
         return $this;
@@ -868,7 +853,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * data merged in
      * @param array $data key value list of fields to be merged into the entity
      * @param array $options A list of options for the object hydration.
-     * @return \Cake\Datasource\EntityInterface
      */
     public function patchEntity(EntityInterface $entity, array $data, array $options = []): EntityInterface
     {
@@ -907,14 +891,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * This will fetch the schema from Elasticsearch the first
      * time this method is called.
-     *
-     * @return \Cake\ElasticSearch\Datasource\MappingSchema
      */
     public function schema(): MappingSchema
     {
         if (isset($this->schema)) {
             return $this->schema;
         }
+
         $index = $this->getName();
         $esIndex = $this->getConnection()->getIndex($index);
         $this->schema = new MappingSchema($index, $esIndex->getMapping());
@@ -926,7 +909,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * Check whether or not a field exists in the mapping.
      *
      * @param string $field The field to check.
-     * @return bool
      */
     public function hasField(string $field): bool
     {
@@ -973,6 +955,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             if (!method_exists($this, $method)) {
                 continue;
             }
+
             $events[$event] = $method;
         }
 
@@ -981,8 +964,6 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     /**
      * The default connection name to inject when creating an instance.
-     *
-     * @return string
      */
     public static function defaultConnectionName(): string
     {

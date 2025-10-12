@@ -33,15 +33,12 @@ class IndexLocator extends AbstractLocator
     /**
      * Fallback class to use
      *
-     * @var string
      * @psalm-var class-string<\Cake\ElasticSearch\Index>
      */
     protected string $fallbackClassName = Index::class;
 
     /**
      * Whether fallback class should be used if a Index class could not be found.
-     *
-     * @var bool
      */
     protected bool $allowFallbackClass = true;
 
@@ -72,7 +69,7 @@ class IndexLocator extends AbstractLocator
      * @param bool $allow Flag to enable or disable fallback
      * @return $this
      */
-    public function allowFallbackClass(bool $allow)
+    public function allowFallbackClass(bool $allow = true)
     {
         $this->allowFallbackClass = $allow;
 
@@ -97,6 +94,7 @@ class IndexLocator extends AbstractLocator
                 [, $name] = pluginSplit($options['className']);
                 $options['name'] = Inflector::underscore($name);
             }
+
             $options['className'] = $this->fallbackClassName;
         } else {
             throw new MissingIndexClassException(['name' => $alias]);
@@ -106,8 +104,12 @@ class IndexLocator extends AbstractLocator
             $connectionName = $options['className']::defaultConnectionName();
             $options['connection'] = ConnectionManager::get($connectionName);
         }
+
         $options['registryAlias'] = $alias;
 
-        return new $options['className']($options);
+        $instance = new $options['className']($options);
+        assert($instance instanceof RepositoryInterface);
+
+        return $instance;
     }
 }

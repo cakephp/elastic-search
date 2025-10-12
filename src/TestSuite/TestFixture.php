@@ -20,8 +20,8 @@ use Cake\Core\Exception\CakeException;
 use Cake\Datasource\ConnectionInterface;
 use Cake\Datasource\FixtureInterface;
 use Cake\ElasticSearch\Datasource\Connection;
+use Cake\ElasticSearch\Datasource\IndexLocator;
 use Cake\ElasticSearch\Index;
-use Cake\ElasticSearch\IndexRegistry;
 use Cake\Log\Log;
 use Cake\Utility\Inflector;
 use Elastica\Mapping as ElasticaMapping;
@@ -38,22 +38,16 @@ class TestFixture implements FixtureInterface
 {
     /**
      * Full Table Name
-     *
-     * @var string
      */
     public string $table = '';
 
     /**
      * The connection name to use for this fixture.
-     *
-     * @var string
      */
     public string $connection = 'test';
 
     /**
      * The index settings used to create the underlying index.
-     *
-     * @var array
      */
     public array $indexSettings = [];
 
@@ -63,22 +57,17 @@ class TestFixture implements FixtureInterface
      * The schema defined here should be compatible with Elasticsearch's
      * mapping API and Elastica
      *
-     * @var array
      * @see https://elastica.io/getting-started/storing-and-indexing-documents.html#define-mapping
      */
     public array $schema = [];
 
     /**
      * The records to insert.
-     *
-     * @var array
      */
     public array $records = [];
 
     /**
      * A list of connections this fixtures has been added to.
-     *
-     * @var array
      */
     public array $created = [];
 
@@ -106,8 +95,6 @@ class TestFixture implements FixtureInterface
 
     /**
      * Initialize the fixture.
-     *
-     * @return void
      */
     public function init(): void
     {
@@ -115,26 +102,24 @@ class TestFixture implements FixtureInterface
 
     /**
      * Return the index class from table name
-     *
-     * @return \Cake\ElasticSearch\Index
      */
     public function getIndex(): Index
     {
         $name = Inflector::camelize($this->table);
 
-        return (new IndexRegistry())->get($name);
+        /** @var \Cake\ElasticSearch\Index */
+        return (new IndexLocator())->get($name);
     }
 
     /**
      * Create index and mapping for the type.
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
-     * @return bool
      */
     public function create(ConnectionInterface $db): bool
     {
         assert($db instanceof Connection, 'Requires an elasticsearch connection');
-        if (empty($this->schema)) {
+        if ($this->schema === []) {
             return false;
         }
 
@@ -144,9 +129,10 @@ class TestFixture implements FixtureInterface
         }
 
         $args = [];
-        if (!empty($this->indexSettings)) {
+        if ($this->indexSettings !== []) {
             $args['settings'] = $this->indexSettings;
         }
+
         $esIndex->create($args);
 
         $mapping = new ElasticaMapping();
@@ -174,14 +160,14 @@ class TestFixture implements FixtureInterface
      * Insert fixture documents.
      *
      * @param \Cake\Datasource\ConnectionInterface $connection The Elasticsearch connection
-     * @return bool
      */
     public function insert(ConnectionInterface $connection): bool
     {
         assert($connection instanceof Connection, 'Requires an elasticsearch connection');
-        if (empty($this->records)) {
+        if ($this->records === []) {
             return false;
         }
+
         $documents = [];
         $esIndex = $connection->getIndex($this->getIndex()->getName());
 
@@ -190,9 +176,11 @@ class TestFixture implements FixtureInterface
             if (isset($data['id'])) {
                 $id = $data['id'];
             }
+
             unset($data['id']);
             $documents[] = $esIndex->createDocument($id, $data);
         }
+
         $esIndex->addDocuments($documents);
         $esIndex->refresh();
 
@@ -203,7 +191,6 @@ class TestFixture implements FixtureInterface
      * Drops the index
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
-     * @return bool
      */
     public function drop(ConnectionInterface $db): bool
     {
@@ -223,7 +210,6 @@ class TestFixture implements FixtureInterface
      * Truncate the fixture type.
      *
      * @param \Cake\Datasource\ConnectionInterface $connection The Elasticsearch connection
-     * @return bool
      */
     public function truncate(ConnectionInterface $connection): bool
     {
@@ -258,7 +244,6 @@ class TestFixture implements FixtureInterface
      * Elasticsearch does not deal with foreign key constraints.
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
-     * @return void
      */
     public function createConstraints(ConnectionInterface $db): void
     {
@@ -270,7 +255,6 @@ class TestFixture implements FixtureInterface
      *
      * @param \Cake\Datasource\ConnectionInterface $db The Elasticsearch connection
      *  connection
-     * @return void
      */
     public function dropConstraints(ConnectionInterface $db): void
     {

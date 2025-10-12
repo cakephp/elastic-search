@@ -18,12 +18,22 @@ namespace Cake\ElasticSearch\Test\TestCase;
 
 use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\EntityInterface;
+use Cake\Datasource\Exception\RecordNotFoundException;
+use Cake\Datasource\RulesChecker;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Document;
+use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\ElasticSearch\Index;
+use Cake\ElasticSearch\Query;
 use Cake\ElasticSearch\TestSuite\TestCase;
 use Cake\Event\EventInterface;
+use Cake\Event\EventListenerInterface;
+use Cake\ORM\Entity;
+use Cake\Validation\Validator;
+use Elastica\Document as ElasticaDocument;
 use Elastica\Exception\NotFoundException;
+use Elastica\Index as ElasticaIndex;
+use TestPlugin\Model\Document\Comment;
 
 /**
  * Tests the Index class
@@ -33,9 +43,10 @@ class IndexTest extends TestCase
     public array $fixtures = ['plugin.Cake/ElasticSearch.Articles'];
 
     protected Connection $connection;
+
     protected Index $index;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->connection = ConnectionManager::get('test');
@@ -48,66 +59,54 @@ class IndexTest extends TestCase
 
     /**
      * Tests that calling find will return a query object
-     *
-     * @return void
      */
-    public function testFindAll()
+    public function testFindAll(): void
     {
         $query = $this->index->find('all');
-        $this->assertInstanceOf('Cake\ElasticSearch\Query', $query);
+        $this->assertInstanceOf(Query::class, $query);
         $this->assertSame($this->index, $query->getRepository());
     }
 
     /**
      * Tests that calling find will return a query object
-     *
-     * @return            void
      */
-    public function testFindAllWithFirstOrFail()
+    public function testFindAllWithFirstOrFail(): void
     {
-        $this->expectException('Cake\Datasource\Exception\RecordNotFoundException');
+        $this->expectException(RecordNotFoundException::class);
         $this->index->find('all')->where(['id' => '999999999'])->firstOrFail();
     }
 
     /**
      * Tests that table() is implemented as QueryTrait relies on.
-     *
-     * @return void
      */
-    public function testTable()
+    public function testTable(): void
     {
         $this->assertSame('articles', $this->index->getTable());
     }
 
     /**
      * Test the default entityClass.
-     *
-     * @return void
      */
-    public function testGetEntityClassDefault()
+    public function testGetEntityClassDefault(): void
     {
         $this->assertSame(Document::class, $this->index->getEntityClass());
     }
 
     /**
      * Test a custom entityClass.
-     *
-     * @return void
      */
-    public function testGetEntityClassCustom()
+    public function testGetEntityClassCustom(): void
     {
         $index = $this->ElasticLocator->get('TestPlugin.Comments');
 
-        $this->assertSame('TestPlugin\Model\Document\Comment', $index->getEntityClass());
+        $this->assertSame(Comment::class, $index->getEntityClass());
     }
 
     /**
      * Test a custom entityClass with existing index without a
      * document class.
-     *
-     * @return void
      */
-    public function testGetEntityClassDynamic()
+    public function testGetEntityClassDynamic(): void
     {
         $index = $this->ElasticLocator->get('Accounts');
 
@@ -117,12 +116,10 @@ class IndexTest extends TestCase
     /**
      * Tests that using a simple string for entityClass will try to
      * load the class from the App namespace
-     *
-     * @return void
      */
-    public function testSetEntityClassInApp()
+    public function testSetEntityClassInApp(): void
     {
-        $class = $this->getMockBuilder('Cake\ElasticSearch\Document')->getMock();
+        $class = $this->getMockBuilder(Document::class)->getMock();
         class_alias(get_class($class), 'TestApp\Model\Document\TestUser');
 
         $index = new Index();
@@ -136,12 +133,10 @@ class IndexTest extends TestCase
     /**
      * Tests that using a simple string for entityClass will try to
      * load the class from the Plugin namespace when using plugin notation
-     *
-     * @return void
      */
-    public function testsetEntityClassInPlugin()
+    public function testsetEntityClassInPlugin(): void
     {
-        $class = $this->getMockBuilder('\Cake\ElasticSearch\Document')->getMock();
+        $class = $this->getMockBuilder(Document::class)->getMock();
         class_alias(get_class($class), 'MyPlugin\Model\Document\SuperUser');
 
         $index = new Index();
@@ -155,14 +150,12 @@ class IndexTest extends TestCase
     /**
      * Tests that using a simple string for entityClass will try to
      * load the class from the App namespace, without target class
-     *
-     * @return void
      */
-    public function testSetInvalidEntityClass()
+    public function testSetInvalidEntityClass(): void
     {
         $index = new Index();
 
-        $this->expectException('\Cake\ElasticSearch\Exception\MissingDocumentException');
+        $this->expectException(MissingDocumentException::class);
 
         $index->setEntityClass('NotExistingDocument');
     }
@@ -170,29 +163,25 @@ class IndexTest extends TestCase
     /**
      * Tests that using a simple string for entityClass will try to
      * load the class from the App namespace, without target class
-     *
-     * @return void
      */
-    public function testSetInvalidDocumentClassButWithEntity()
+    public function testSetInvalidDocumentClassButWithEntity(): void
     {
-        $class = $this->getMockBuilder('\Cake\ORM\Entity')->getMock();
+        $class = $this->getMockBuilder(Entity::class)->getMock();
         class_alias(get_class($class), 'TestApp\Model\Entity\Doge');
 
         $index = new Index();
 
-        $this->expectException('\Cake\ElasticSearch\Exception\MissingDocumentException');
+        $this->expectException(MissingDocumentException::class);
 
         $index->setEntityClass('Doge');
     }
 
     /**
      * Tests the get method
-     *
-     * @return void
      */
-    public function testGet()
+    public function testGet(): void
     {
-        $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
+        $connection = $this->getMockBuilder(Connection::class)
             ->onlyMethods(['getIndex'])
             ->getMock();
 
@@ -201,7 +190,7 @@ class IndexTest extends TestCase
             'connection' => $connection,
         ]);
 
-        $internalIndex = $this->getMockBuilder('Elastica\Index')
+        $internalIndex = $this->getMockBuilder(ElasticaIndex::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -209,7 +198,7 @@ class IndexTest extends TestCase
             ->method('getIndex')
             ->will($this->returnValue($internalIndex));
 
-        $document = $this->getMockBuilder('Elastica\Document')
+        $document = $this->getMockBuilder(ElasticaDocument::class)
             ->onlyMethods(['getId', 'getData'])
             ->getMock();
         $internalIndex->expects($this->once())
@@ -225,7 +214,7 @@ class IndexTest extends TestCase
             ->will($this->returnValue('foo'));
 
         $result = $index->get('foo', ['bar' => 'baz']);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertEquals(['a' => 'b', 'id' => 'foo'], $result->toArray());
         $this->assertFalse($result->isDirty());
         $this->assertFalse($result->isNew());
@@ -234,12 +223,10 @@ class IndexTest extends TestCase
 
     /**
      * Test that newEntity is wired up.
-     *
-     * @return void
      */
-    public function testNewEntity()
+    public function testNewEntity(): void
     {
-        $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
+        $connection = $this->getMockBuilder(Connection::class)
             ->onlyMethods(['getIndex'])
             ->getMock();
         $index = new Index([
@@ -250,19 +237,17 @@ class IndexTest extends TestCase
             'title' => 'A newer title',
         ];
         $result = $index->newEntity($data);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result);
+        $this->assertInstanceOf(Document::class, $result);
         $this->assertSame($data, $result->toArray());
         $this->assertSame('articles', $result->getSource());
     }
 
     /**
      * Test that newEntities is wired up.
-     *
-     * @return void
      */
-    public function testNewEntities()
+    public function testNewEntities(): void
     {
-        $connection = $this->getMockBuilder('Cake\ElasticSearch\Datasource\Connection')
+        $connection = $this->getMockBuilder(Connection::class)
             ->onlyMethods(['getIndex'])
             ->getMock();
         $index = new Index([
@@ -279,18 +264,16 @@ class IndexTest extends TestCase
         ];
         $result = $index->newEntities($data);
         $this->assertCount(2, $result);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[0]);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $result[1]);
+        $this->assertInstanceOf(Document::class, $result[0]);
+        $this->assertInstanceOf(Document::class, $result[1]);
         $this->assertSame($data[0], $result[0]->toArray());
         $this->assertSame($data[1], $result[1]->toArray());
     }
 
     /**
      * Test saving many entities
-     *
-     * @return void
      */
-    public function testSaveMany()
+    public function testSaveMany(): void
     {
         $entities = [
             new Document(
@@ -317,7 +300,8 @@ class IndexTest extends TestCase
             $this->assertFalse($entity->isNew());
             $this->assertSame('articles', $entity->getSource());
         }
-        $ids = array_map(function ($doc) {
+
+        $ids = array_map(function (Document $doc) {
             return $doc->id;
         }, $entities);
         $this->assertCount(2, array_unique($ids));
@@ -326,7 +310,7 @@ class IndexTest extends TestCase
     /**
      * Test that saveMany() triggers afterSave event
      */
-    public function testSaveManyAfterSave()
+    public function testSaveManyAfterSave(): void
     {
         $entities = [
             new Document(
@@ -345,7 +329,7 @@ class IndexTest extends TestCase
             ),
         ];
         $called = 0;
-        $this->index->getEventManager()->on('Model.afterSave', function ($event, $entity) use (&$called) {
+        $this->index->getEventManager()->on('Model.afterSave', function ($event, $entity) use (&$called): void {
             $called++;
             $this->assertInstanceOf(Document::class, $entity);
             $this->assertFalse($entity->isDirty());
@@ -358,10 +342,8 @@ class IndexTest extends TestCase
 
     /**
      * Test saving a new document.
-     *
-     * @return void
      */
-    public function testSaveNew()
+    public function testSaveNew(): void
     {
         $doc = new Document(
             [
@@ -384,10 +366,8 @@ class IndexTest extends TestCase
 
     /**
      * Test saving a new document with a custom routing key.
-     *
-     * @return void
      */
-    public function testSaveNewRoutingKey()
+    public function testSaveNewRoutingKey(): void
     {
         $doc = new Document(
             [
@@ -405,8 +385,8 @@ class IndexTest extends TestCase
         try {
             $result = $this->index->get($doc->id, ['routing' => '1234']);
             $this->assertFalse(true, 'Routing keys are not working.');
-        } catch (NotFoundException $e) {
-            $this->assertStringContainsString($doc->id, $e->getMessage());
+        } catch (NotFoundException $notFoundException) {
+            $this->assertStringContainsString($doc->id, $notFoundException->getMessage());
         }
 
         $result = $this->index->get($doc->id, ['routing' => 'abcd']);
@@ -417,10 +397,8 @@ class IndexTest extends TestCase
 
     /**
      * Test saving a new document.
-     *
-     * @return void
      */
-    public function testSaveUpdate()
+    public function testSaveUpdate(): void
     {
         $doc = new Document(
             [
@@ -438,10 +416,8 @@ class IndexTest extends TestCase
 
     /**
      * Test saving a new document that contains errors
-     *
-     * @return void
      */
-    public function testSaveDoesNotSaveDocumentWithErrors()
+    public function testSaveDoesNotSaveDocumentWithErrors(): void
     {
         $doc = new Document(
             [
@@ -457,10 +433,8 @@ class IndexTest extends TestCase
 
     /**
      * Test saving documents with index refresh
-     *
-     * @return void
      */
-    public function testSaveWithRefresh()
+    public function testSaveWithRefresh(): void
     {
         $doc = new Document(
             [
@@ -479,15 +453,13 @@ class IndexTest extends TestCase
         $match = $query->all()->firstMatch(['id' => $document->id]);
 
         $this->assertCount(3, $query);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $match);
+        $this->assertInstanceOf(Document::class, $match);
     }
 
     /**
      * Test save triggers events.
-     *
-     * @return void
      */
-    public function testSaveEvents()
+    public function testSaveEvents(): void
     {
         $doc = $this->index->get(1);
         $doc->title = 'A new title';
@@ -495,7 +467,7 @@ class IndexTest extends TestCase
         $called = 0;
         $this->index->getEventManager()->on(
             'Model.beforeSave',
-            function (EventInterface $event, EntityInterface $entity, $options) use ($doc, &$called) {
+            function (EventInterface $event, EntityInterface $entity, $options) use ($doc, &$called): void {
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
@@ -503,7 +475,7 @@ class IndexTest extends TestCase
         );
         $this->index->getEventManager()->on(
             'Model.afterSave',
-            function ($event, $entity, $options) use ($doc, &$called) {
+            function ($event, $entity, $options) use ($doc, &$called): void {
                 $called++;
                 $this->assertInstanceOf('ArrayObject', $options);
                 $this->assertSame($doc, $entity);
@@ -517,23 +489,21 @@ class IndexTest extends TestCase
 
     /**
      * Test beforeSave abort.
-     *
-     * @return void
      */
-    public function testSaveBeforeSaveAbort()
+    public function testSaveBeforeSaveAbort(): void
     {
         $doc = $this->index->get(1);
         $doc->title = 'new title';
         $this->index->getEventManager()->on(
             'Model.beforeSave',
-            function (EventInterface $event, EntityInterface $entity, $options) use ($doc) {
+            function (EventInterface $event, EntityInterface $entity, $options): void {
                 $event->stopPropagation();
                 $event->setResult(false);
             },
         );
         $this->index->getEventManager()->on(
             'Model.afterSave',
-            function () {
+            function (): void {
                 $this->fail('Should not be fired');
             },
         );
@@ -542,10 +512,8 @@ class IndexTest extends TestCase
 
     /**
      * Test save with embedded documents.
-     *
-     * @return void
      */
-    public function testSaveEmbedOne()
+    public function testSaveEmbedOne(): void
     {
         $entity = new Document([
             'title' => 'A brand new article',
@@ -556,16 +524,14 @@ class IndexTest extends TestCase
         $this->index->save($entity);
 
         $compare = $this->index->get($entity->id);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->user);
+        $this->assertInstanceOf(Document::class, $compare->user);
         $this->assertSame('sarah', $compare->user->username);
     }
 
     /**
      * Test save with embedded documents.
-     *
-     * @return void
      */
-    public function testSaveEmbedMany()
+    public function testSaveEmbedMany(): void
     {
         $entity = new Document([
             'title' => 'A brand new article',
@@ -579,24 +545,22 @@ class IndexTest extends TestCase
         $this->index->save($entity);
 
         $compare = $this->index->get($entity->id);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->comments[0]);
-        $this->assertInstanceOf('Cake\ElasticSearch\Document', $compare->comments[1]);
+        $this->assertInstanceOf(Document::class, $compare->comments[0]);
+        $this->assertInstanceOf(Document::class, $compare->comments[1]);
         $this->assertSame('Nice post', $compare->comments[0]->comment);
         $this->assertSame('Awesome!', $compare->comments[1]->comment);
     }
 
     /**
      * Test that rules can prevent save.
-     *
-     * @return void
      */
-    public function testSaveWithRulesCreate()
+    public function testSaveWithRulesCreate(): void
     {
         $this->index->getEventManager()->on(
             'Model.buildRules',
-            function ($event, $rules) {
+            function ($event, $rules): void {
                 $rules->addCreate(
-                    function ($doc) {
+                    function ($doc): string {
                         return 'Did not work';
                     },
                     ['errorField' => 'name'],
@@ -615,16 +579,14 @@ class IndexTest extends TestCase
 
     /**
      * Test that rules can prevent save.
-     *
-     * @return void
      */
-    public function testSaveWithRulesUpdate()
+    public function testSaveWithRulesUpdate(): void
     {
         $this->index->getEventManager()->on(
             'Model.buildRules',
-            function ($event, $rules) {
+            function ($event, $rules): void {
                 $rules->addUpdate(
-                    function ($doc) {
+                    function ($doc): string {
                         return 'Did not work';
                     },
                     ['errorField' => 'name'],
@@ -638,10 +600,8 @@ class IndexTest extends TestCase
 
     /**
      * Test to make sure double save works correctly
-     *
-     * @return void
      */
-    public function testDoubleSave()
+    public function testDoubleSave(): void
     {
         $doc = new Document(
             [
@@ -661,10 +621,8 @@ class IndexTest extends TestCase
 
     /**
      * Test deleting a document.
-     *
-     * @return void
      */
-    public function testDeleteBasic()
+    public function testDeleteBasic(): void
     {
         $doc = $this->index->get(1);
         $this->assertTrue($this->index->delete($doc));
@@ -675,13 +633,11 @@ class IndexTest extends TestCase
 
     /**
      * Test deletion prevented by rules
-     *
-     * @return void
      */
-    public function testDeleteRules()
+    public function testDeleteRules(): void
     {
         $this->index->rulesChecker()->addDelete(
-            function () {
+            function (): string {
                 return 'not good';
             },
             ['errorField' => 'title'],
@@ -694,16 +650,14 @@ class IndexTest extends TestCase
 
     /**
      * Test delete triggers events.
-     *
-     * @return void
      */
-    public function testDeleteEvents()
+    public function testDeleteEvents(): void
     {
         $called = 0;
         $doc = $this->index->get(1);
         $this->index->getEventManager()->on(
             'Model.beforeDelete',
-            function ($event, $entity, $options) use ($doc, &$called) {
+            function ($event, $entity, $options) use ($doc, &$called): void {
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
@@ -711,7 +665,7 @@ class IndexTest extends TestCase
         );
         $this->index->getEventManager()->on(
             'Model.afterDelete',
-            function ($event, $entity, $options) use ($doc, &$called) {
+            function ($event, $entity, $options) use ($doc, &$called): void {
                 $called++;
                 $this->assertSame($doc, $entity);
                 $this->assertInstanceOf('ArrayObject', $options);
@@ -723,22 +677,20 @@ class IndexTest extends TestCase
 
     /**
      * Test beforeDelete abort.
-     *
-     * @return void
      */
-    public function testDeleteBeforeDeleteAbort()
+    public function testDeleteBeforeDeleteAbort(): void
     {
         $doc = $this->index->get(1);
         $this->index->getEventManager()->on(
             'Model.beforeDelete',
-            function ($event, $entity, $options) use ($doc) {
+            function ($event, $entity, $options): void {
                 $event->stopPropagation();
                 $event->setResult(false);
             },
         );
         $this->index->getEventManager()->on(
             'Model.afterDelete',
-            function () {
+            function (): void {
                 $this->fail('Should not be fired');
             },
         );
@@ -747,10 +699,8 @@ class IndexTest extends TestCase
 
     /**
      * Test deleting a new document
-     *
-     * @return                   void
      */
-    public function testDeleteMissing()
+    public function testDeleteMissing(): void
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Deleting requires an "id" value.');
@@ -760,31 +710,27 @@ class IndexTest extends TestCase
 
     /**
      * Test getting and setting validators.
-     *
-     * @return void
      */
-    public function testValidatorSetAndGet()
+    public function testValidatorSetAndGet(): void
     {
         $result = $this->index->getValidator();
 
-        $this->assertInstanceOf('Cake\Validation\Validator', $result);
+        $this->assertInstanceOf(Validator::class, $result);
         $this->assertSame($result, $this->index->getValidator(), 'validator instances are persistent');
         $this->assertSame($this->index, $result->getProvider('collection'), 'index bound as provider');
     }
 
     /**
      * Test buildValidator event
-     *
-     * @return void
      */
-    public function testValidatorTriggerEvent()
+    public function testValidatorTriggerEvent(): void
     {
         $called = 0;
         $this->index->getEventManager()->on(
             'Model.buildValidator',
-            function ($event, $validator, $name) use (&$called) {
+            function ($event, $validator, $name) use (&$called): void {
                 $called++;
-                $this->assertInstanceOf('Cake\Validation\Validator', $validator);
+                $this->assertInstanceOf(Validator::class, $validator);
                 $this->assertSame('default', $name);
             },
         );
@@ -794,10 +740,8 @@ class IndexTest extends TestCase
 
     /**
      * Test that exists works.
-     *
-     * @return void
      */
-    public function testExists()
+    public function testExists(): void
     {
         $this->assertFalse($this->index->exists(['id' => '999999']));
         $this->assertTrue($this->index->exists(['id' => '1']));
@@ -805,10 +749,8 @@ class IndexTest extends TestCase
 
     /**
      * Test that deleteAll works.
-     *
-     * @return void
      */
-    public function testDeleteAll()
+    public function testDeleteAll(): void
     {
         $result = $this->index->deleteAll(['title' => 'article']);
 
@@ -820,10 +762,8 @@ class IndexTest extends TestCase
 
     /**
      * Test that deleteAll works.
-     *
-     * @return void
      */
-    public function testDeleteAllOnlySome()
+    public function testDeleteAllOnlySome(): void
     {
         $result = $this->index->deleteAll(['body' => 'cake']);
 
@@ -835,23 +775,21 @@ class IndexTest extends TestCase
 
     /**
      * Test the rules builder indexes
-     *
-     * @return void
      */
-    public function testAddRules()
+    public function testAddRules(): void
     {
         $this->index->getEventManager()->on(
             'Model.buildRules',
-            function ($event, $rules) {
+            function ($event, $rules): void {
                 $rules->add(
-                    function ($doc) {
+                    function ($doc): false {
                         return false;
                     },
                 );
             },
         );
         $rules = $this->index->rulesChecker();
-        $this->assertInstanceOf('Cake\Datasource\RulesChecker', $rules);
+        $this->assertInstanceOf(RulesChecker::class, $rules);
 
         $doc = new Document();
         $result = $rules->checkCreate($doc);
@@ -860,10 +798,8 @@ class IndexTest extends TestCase
 
     /**
      * Test the alias method.
-     *
-     * @return void
      */
-    public function testAlias()
+    public function testAlias(): void
     {
         $this->assertEquals($this->index->getName(), $this->index->getAlias());
         $this->assertSame('articles', $this->index->getAlias());
@@ -871,10 +807,8 @@ class IndexTest extends TestCase
 
     /**
      * Test the alias method.
-     *
-     * @return void
      */
-    public function testRegistryAlias()
+    public function testRegistryAlias(): void
     {
         $index = $this->ElasticLocator->get('TestPlugin.Comments');
 
@@ -884,10 +818,8 @@ class IndexTest extends TestCase
 
     /**
      * Test hasField()
-     *
-     * @return void
      */
-    public function testHasField()
+    public function testHasField(): void
     {
         $this->assertTrue($this->index->hasField('title'));
         $this->assertFalse($this->index->hasField('nope'));
@@ -895,14 +827,12 @@ class IndexTest extends TestCase
 
     /**
      * Test that Index implements the EventListenerInterface and some events.
-     *
-     * @return void
      */
-    public function testImplementedEvents()
+    public function testImplementedEvents(): void
     {
-        $this->assertInstanceOf('Cake\Event\EventListenerInterface', $this->index);
+        $this->assertInstanceOf(EventListenerInterface::class, $this->index);
 
-        $index = $this->getMockBuilder('Cake\ElasticSearch\Index')
+        $index = $this->getMockBuilder(Index::class)
             ->addMethods(['beforeFind', 'beforeSave', 'afterSave', 'beforeDelete', 'afterDelete'])
             ->getMock();
         $result = $index->implementedEvents();
@@ -918,12 +848,10 @@ class IndexTest extends TestCase
 
     /**
      * Test that index listen's to it's own events..
-     *
-     * @return void
      */
-    public function testOwnEvents()
+    public function testOwnEvents(): void
     {
-        $index = $this->getMockBuilder('Cake\ElasticSearch\Index')
+        $index = $this->getMockBuilder(Index::class)
             ->addMethods(['beforeSave'])
             ->getMock();
 

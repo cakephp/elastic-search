@@ -35,8 +35,6 @@ class DocumentContextTest extends TestCase
 {
     /**
      * Fixtures to use.
-     *
-     * @var array
      */
     public array $fixtures = [
         'plugin.Cake/ElasticSearch.Articles',
@@ -44,14 +42,13 @@ class DocumentContextTest extends TestCase
     ];
 
     protected ServerRequest $request;
+
     protected string $textField;
 
     /**
      * setup method.
-     *
-     * @return void
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->request = new ServerRequest();
@@ -60,10 +57,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * teardown method.
-     *
-     * @return void
      */
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
         $this->ElasticLocator->clear();
@@ -71,10 +66,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test getting primary key data.
-     *
-     * @return void
      */
-    public function testPrimaryKey()
+    public function testPrimaryKey(): void
     {
         $row = new Article();
         $context = new DocumentContext(
@@ -88,10 +81,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test isPrimaryKey
-     *
-     * @return void
      */
-    public function testIsPrimaryKey()
+    public function testIsPrimaryKey(): void
     {
         $row = new Article();
         $context = new DocumentContext(
@@ -112,10 +103,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test isCreate on a single entity.
-     *
-     * @return void
      */
-    public function testIsCreateSingle()
+    public function testIsCreateSingle(): void
     {
         $row = new Article();
         $context = new DocumentContext(
@@ -135,10 +124,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Data provider for testing collections.
-     *
-     * @return array
      */
-    public static function collectionProvider()
+    public static function collectionProvider(): array
     {
         $one = new Article(
             [
@@ -170,9 +157,8 @@ class DocumentContextTest extends TestCase
      * Test isCreate on a collection.
      *
      * @dataProvider collectionProvider
-     * @return       void
      */
-    public function testIsCreateCollection($collection)
+    public function testIsCreateCollection(ArrayObject|ArrayIterator|Collection|array $collection): void
     {
         $context = new DocumentContext(
             $this->request,
@@ -185,10 +171,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test reading data.
-     *
-     * @return void
      */
-    public function testValBasic()
+    public function testValBasic(): void
     {
         $row = new Article(
             [
@@ -215,10 +199,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test reading data from embeddded docs.
-     *
-     * @return void
      */
-    public function testValEmbeddedDocs()
+    public function testValEmbeddedDocs(): void
     {
         $row = new Article(
             [
@@ -255,9 +237,8 @@ class DocumentContextTest extends TestCase
      * Test operations on a collection of entities.
      *
      * @dataProvider collectionProvider
-     * @return       void
      */
-    public function testValOnCollections($collection)
+    public function testValOnCollections(ArrayObject|ArrayIterator|Collection|array $collection): void
     {
         $context = new DocumentContext(
             $this->request,
@@ -285,10 +266,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test val on plain arrays
-     *
-     * @return void
      */
-    public function testValOnArrays()
+    public function testValOnArrays(): void
     {
         $row = new Article(
             [
@@ -322,10 +301,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test fields being required by validation.
-     *
-     * @return void
      */
-    public function testIsRequrired()
+    public function testIsRequrired(): void
     {
         $articles = $this->setupIndex();
         $entity = new Document(['title' => 'test']);
@@ -344,10 +321,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test fields being required by validation.
-     *
-     * @return void
      */
-    public function testIsRequriredAlternateValidator()
+    public function testIsRequriredAlternateValidator(): void
     {
         $articles = $this->setupIndex();
         $entity = new Document(['title' => 'test']);
@@ -369,9 +344,8 @@ class DocumentContextTest extends TestCase
      * Test error operations on a collection of entities.
      *
      * @dataProvider collectionProvider
-     * @return       void
      */
-    public function testErrorsOnCollections($collection)
+    public function testErrorsOnCollections(ArrayObject|ArrayIterator|Collection|array $collection): void
     {
         $context = new DocumentContext(
             $this->request,
@@ -395,10 +369,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test error
-     *
-     * @return void
      */
-    public function testError()
+    public function testError(): void
     {
         $articles = $this->setupIndex();
 
@@ -433,10 +405,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test validation errors coming from a nested validator
-     *
-     * @return void
      */
-    public function testNestedValidatorErrors()
+    public function testNestedValidatorErrors(): void
     {
         $articles = $this->setupIndex();
 
@@ -488,10 +458,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test error on associated entities.
-     *
-     * @return void
      */
-    public function testErrorAssociatedHasMany()
+    public function testErrorAssociatedHasMany(): void
     {
         $articles = $this->setupIndex();
 
@@ -528,10 +496,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test errors for structured fields.
-     *
-     * @return void
      */
-    public function testErrorNestedFields()
+    public function testErrorNestedFields(): void
     {
         $row = new Article([
             'name' => [
@@ -565,10 +531,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test getting fieldnames.
-     *
-     * @return void
      */
-    public function testFieldNames()
+    public function testFieldNames(): void
     {
         $this->setupIndex();
         $context = new DocumentContext(
@@ -586,10 +550,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test type() basic
-     *
-     * @return void
      */
-    public function testIndex()
+    public function testIndex(): void
     {
         $articles = $this->setupIndex();
 
@@ -615,10 +577,8 @@ class DocumentContextTest extends TestCase
 
     /**
      * Test type() nested fields
-     *
-     * @return void
      */
-    public function testIndexNestedFields()
+    public function testIndexNestedFields(): void
     {
         $profiles = new Index(
             [
