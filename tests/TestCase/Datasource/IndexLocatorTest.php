@@ -22,6 +22,7 @@ use Cake\ElasticSearch\Datasource\IndexLocator;
 use Cake\ElasticSearch\Exception\MissingIndexClassException;
 use Cake\ElasticSearch\Index;
 use Cake\TestSuite\TestCase;
+use TestApp\Model\Index\MyUsersIndex;
 use TestApp\Model\Index\UsersIndex;
 use TestPlugin\Model\Index\CommentsIndex;
 

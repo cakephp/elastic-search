@@ -82,7 +82,7 @@ class Connection implements ConnectionInterface
             $this->enableQueryLogging((bool)$config['log']);
         }
 
-        // Allow configuration from URL format.
+        // Allow configuration from DSN format.
         if (isset($config['host'])) {
             $config['hosts'] = [$config['host'] . ':' . $config['port']];
             unset(

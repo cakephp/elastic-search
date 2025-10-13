@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @since         0.5.0
  * @license       https://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Test\TestCase;
+namespace TestApp\Model\Index;
 
 use Cake\ElasticSearch\Index;
 
