@@ -20,6 +20,11 @@ use Cake\Datasource\EntityInterface;
 
 /**
  * Checks that a list of fields from an entity are unique in the table
+ *
+ * Note: This rule uses 'is' conditions which translate to ElasticSearch 'term' queries.
+ * For ElasticSearch 'text' fields that are analyzed (tokenized, lowercased, etc.),
+ * term queries may not work as expected for exact matching. Consider using 'keyword'
+ * field mappings or '.keyword' subfields for exact unique validation.
  */
 class IsUnique
 {
@@ -45,6 +50,10 @@ class IsUnique
 
     /**
      * Performs the uniqueness check
+     *
+     * Note: Uses 'field is value' conditions which create ElasticSearch term queries.
+     * These work best with 'keyword' type fields. For 'text' fields that are analyzed,
+     * the validation may not work as expected due to ElasticSearch text analysis.
      *
      * @param \Cake\Datasource\EntityInterface $entity The entity from where to extract the fields
      *   where the `repository` key is required.

@@ -96,5 +96,8 @@ class DeleteQueryStrategy implements FixtureStrategyInterface
                 $esIndex->refresh();
             }
         }, $this->fixtures);
+
+        // Clear fixtures array to prevent memory leaks in long-running test suites
+        $this->fixtures = [];
     }
 }

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
 use Cake\Core\Configure;
+use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Datasource\IndexLocator;
 use Cake\ElasticSearch\Exception\MissingIndexClassException;
 use Cake\ElasticSearch\Index;
@@ -337,5 +338,68 @@ class IndexLocatorTest extends TestCase
         $this->assertInstanceOf(UsersIndex::class, $result);
 
         $this->locator->setFallbackClassName(Index::class);
+    }
+
+    /**
+     * Test createInstance with connection option provided
+     */
+    public function testCreateInstanceWithConnectionOption(): void
+    {
+        $connection = $this->getMockBuilder(Connection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $result = $this->locator->get('TestIndex', [
+            'connection' => $connection,
+            'name' => 'test_index',
+        ]);
+
+        $this->assertInstanceOf(Index::class, $result);
+        $this->assertSame('test_index', $result->getName());
+    }
+
+    /**
+     * Test createInstance with className containing backslash (full namespace)
+     */
+    public function testCreateInstanceWithFullNamespaceClassName(): void
+    {
+        $result = $this->locator->get('TestIndex', [
+            'className' => Index::class,
+            'name' => 'custom_name',
+        ]);
+
+        $this->assertInstanceOf(Index::class, $result);
+        $this->assertSame('custom_name', $result->getName());
+    }
+
+    /**
+     * Test createInstance with fallback disabled and missing className
+     */
+    public function testCreateInstanceFallbackDisabledMissingClass(): void
+    {
+        $this->locator->allowFallbackClass(false);
+
+        $this->expectException(MissingIndexClassException::class);
+        $this->expectExceptionMessage('Index class NonExistentIndex could not be found.');
+
+        $this->locator->get('NonExistentIndex');
+    }
+
+    /**
+     * Test createInstance with name derivation from className without namespace
+     */
+    public function testCreateInstanceNameDerivationFromClassName(): void
+    {
+        // Test the branch where name is derived from className when no name is provided
+        // and className doesn't contain backslash
+        $this->locator->allowFallbackClass(true);
+
+        $result = $this->locator->get('SomeCustomIndex', [
+            // No name provided, className will be derived from alias
+        ]);
+
+        $this->assertInstanceOf(Index::class, $result);
+        // The name should be derived from 'SomeCustomIndex' -> 'some_custom_index'
+        $this->assertSame('some_custom_index', $result->getName());
     }
 }
