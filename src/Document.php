@@ -51,7 +51,7 @@ class Document implements EntityInterface
             $options['result'] = $data;
             $id = $data->getId();
             $data = $data->getData();
-            if ($id !== []) {
+            if (!empty($id)) {
                 $data['id'] = $id;
             }
         }

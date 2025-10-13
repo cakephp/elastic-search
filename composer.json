@@ -53,17 +53,10 @@
         "cs-check": "phpcs --colors -p ./src ./tests",
         "cs-fix": "phpcbf --colors -p src/ tests/",
         "test": "phpunit --colors=always",
-        "test-coverage": "export XDEBUG_MODE=coverage; phpunit --log-junit tmp/coverage/unitreport.xml --coverage-html tmp/coverage --coverage-clover tmp/coverage/coverage.xml",
-        "stan": [
-            "@phpstan",
-            "@psalm"
-        ],
-        "phpstan": "tools/phpstan analyse",
-        "psalm": "tools/psalm --show-info=false",
-        "phpstan-baseline": "tools/phpstan --generate-baseline",
-        "psalm-baseline": "tools/psalm  --set-baseline=psalm-baseline.xml",
-        "stan-setup": "phive install",
-        "rector-setup": "cp composer.json composer.backup && composer require --dev rector/rector:\"^2.1\" && mv composer.backup composer.json",
+        "test-coverage": "phpunit --coverage-clover=clover.xml",
+        "phpstan": "vendor/bin/phpstan analyse",
+        "phpstan-setup": "cp composer.json composer.backup && composer require --dev phpstan/phpstan:^2.0 --no-update && composer update && mv composer.backup composer.json",
+        "rector-setup": "cp composer.json composer.backup && composer require --dev rector/rector:\"^2.2\" && mv composer.backup composer.json",
         "rector-check": "vendor/bin/rector process --dry-run",
         "rector-fix": "vendor/bin/rector process"
     }

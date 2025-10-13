@@ -752,19 +752,19 @@ class QueryBuilder
             return $this->not($this->terms($field, $value));
         }
 
-        if ($operator === 'is' && $value === null) {
-            return $this->not($this->exists($field));
-        }
+        if ($operator === 'is') {
+            if ($value === null) {
+                return $this->not($this->exists($field));
+            }
 
-        if ($operator === 'is not' && $value === null) {
-            return $this->exists($field);
-        }
-
-        if ($operator === 'is' && $value !== null) {
             return $this->term($field, $value);
         }
 
-        if ($operator === 'is not' && $value !== null) {
+        if ($operator === 'is not') {
+            if ($value === null) {
+                return $this->exists($field);
+            }
+
             return $this->not($this->term($field, $value));
         }
 

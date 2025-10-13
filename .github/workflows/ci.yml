@@ -127,26 +127,19 @@ jobs:
     - name: Composer install
       uses: ramsey/composer-install@v2
 
-    - name: Install PHIVE
-      uses: szepeviktor/phive@v1
-      with:
-        home: ${{ runner.temp }}/.phive
-        binPath: ${{ github.workspace }}/tools/phive
+    - name: Setup PHPStan
+      run: composer phpstan-setup
 
-    - name: Stan setup
-      uses: szepeviktor/phive-install@v1
-      with:
-        home: ${{ runner.temp }}/.phive
-        binPath: ${{ github.workspace }}/tools/phive
-        trustGpgKeys: "CF1A108D0E7AE720,12CE0F1D262429A5,51C67305FFC2E5C0"
+    - name: Setup Rector
+      run: composer rector-setup
 
     - name: Run PHP CodeSniffer
       run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
 
-    - name: Run psalm
-      if: always()
-      run: tools/psalm --output-format=github
-
     - name: Run phpstan
       if: always()
-      run: tools/phpstan analyse --error-format=github
+      run: composer phpstan -- --error-format=github
+
+    - name: Run rector
+      if: always()
+      run: composer rector-check
