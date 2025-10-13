@@ -44,6 +44,11 @@ class Connection implements ConnectionInterface
     protected bool $logQueries = false;
 
     /**
+     * The logger name to use when log config is a string.
+     */
+    protected string $loggerName = 'elasticsearch';
+
+    /**
      * The connection name in the connection manager.
      */
     protected string $configName = '';
@@ -79,7 +84,12 @@ class Connection implements ConnectionInterface
         }
 
         if (isset($config['log'])) {
-            $this->enableQueryLogging((bool)$config['log']);
+            if (is_string($config['log'])) {
+                $this->loggerName = $config['log'];
+                $this->enableQueryLogging(true);
+            } else {
+                $this->enableQueryLogging((bool)$config['log']);
+            }
         }
 
         // Allow configuration from DSN format.
@@ -205,7 +215,7 @@ class Connection implements ConnectionInterface
 
     /**
      * Get the logger object
-     * Will set the default logger to elasticsearch if found, or debug
+     * Will set the logger based on config or fall back to debug.
      * If none of the above are found the default Es logger will be used.
      *
      * @return \Psr\Log\LoggerInterface logger instance
@@ -213,7 +223,8 @@ class Connection implements ConnectionInterface
     public function getLogger(): LoggerInterface
     {
         if (!isset($this->_logger)) {
-            $engine = Log::engine('elasticsearch') ?: Log::engine('debug');
+            $loggerName = $this->loggerName;
+            $engine = Log::engine($loggerName) ?: Log::engine('debug');
 
             if (!$engine instanceof LoggerInterface) {
                 $engine = new NullLogger();

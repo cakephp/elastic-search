@@ -24,6 +24,7 @@ use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
 use Cake\ElasticSearch\Datasource\SchemaCollection;
 use Cake\ElasticSearch\Exception\NotImplementedException;
 use Cake\ElasticSearch\TestSuite\TestCase;
+use Cake\Log\Engine\FileLog;
 use Cake\Log\Log;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use Elastica\Client;
@@ -49,6 +50,8 @@ class ConnectionTest extends TestCase
     {
         parent::tearDown();
         Log::drop('elasticsearch');
+        Log::drop('custom_logger');
+        Log::drop('another_logger');
     }
 
     /**
@@ -288,5 +291,189 @@ class ConnectionTest extends TestCase
         // Test enabling with explicit parameter
         $connection->enableQueryLogging(false);
         $this->assertFalse($connection->isQueryLoggingEnabled());
+    }
+
+    /**
+     * Test configurable logger functionality with string logger names
+     */
+    public function testConfigurableLoggerWithStringName(): void
+    {
+        // Set up a custom logger for testing
+        Log::setConfig('custom_logger', [
+            'className' => FileLog::class,
+            'path' => sys_get_temp_dir(),
+            'file' => 'custom_elastic',
+        ]);
+
+        // Test with string logger name in config
+        $config = $this->getTestConfig(['log' => 'custom_logger']);
+        $connection = new Connection($config);
+
+        $this->assertTrue($connection->isQueryLoggingEnabled());
+
+        // Verify the logger uses the custom logger engine
+        $logger = $connection->getLogger();
+        $this->assertInstanceOf(LoggerInterface::class, $logger);
+
+        // Clean up
+        Log::drop('custom_logger');
+    }
+
+    /**
+     * Test logger fallback when configured string logger doesn't exist
+     */
+    public function testConfigurableLoggerFallbackWhenNotFound(): void
+    {
+        // Test with non-existent logger name - should fall back to 'debug', then NullLogger
+        $config = $this->getTestConfig(['log' => 'non_existent_logger']);
+        $connection = new Connection($config);
+
+        $this->assertTrue($connection->isQueryLoggingEnabled());
+
+        $logger = $connection->getLogger();
+        $this->assertInstanceOf(LoggerInterface::class, $logger);
+    }
+
+    /**
+     * Test logger configuration with boolean true (should use 'elasticsearch' as default)
+     */
+    public function testConfigurableLoggerWithBooleanTrue(): void
+    {
+        // Set up elasticsearch logger for testing
+        Log::setConfig('elasticsearch', [
+            'className' => FileLog::class,
+            'path' => sys_get_temp_dir(),
+            'file' => 'elasticsearch',
+        ]);
+
+        $config = $this->getTestConfig(['log' => true]);
+        $connection = new Connection($config);
+
+        $this->assertTrue($connection->isQueryLoggingEnabled());
+
+        $logger = $connection->getLogger();
+        $this->assertInstanceOf(LoggerInterface::class, $logger);
+
+        // Clean up
+        Log::drop('elasticsearch');
+    }
+
+    /**
+     * Test logger configuration with boolean false
+     */
+    public function testConfigurableLoggerWithBooleanFalse(): void
+    {
+        $config = $this->getTestConfig(['log' => false]);
+        $connection = new Connection($config);
+
+        $this->assertFalse($connection->isQueryLoggingEnabled());
+    }
+
+    /**
+     * Test multiple different logger configurations
+     */
+    public function testMultipleLoggerConfigurations(): void
+    {
+        // Set up multiple loggers for testing
+        Log::setConfig('custom_logger', [
+            'className' => FileLog::class,
+            'path' => sys_get_temp_dir(),
+            'file' => 'custom_elastic',
+        ]);
+
+        Log::setConfig('another_logger', [
+            'className' => FileLog::class,
+            'path' => sys_get_temp_dir(),
+            'file' => 'another_elastic',
+        ]);
+
+        // Test first custom logger
+        $config1 = $this->getTestConfig(['log' => 'custom_logger']);
+        $connection1 = new Connection($config1);
+        $this->assertTrue($connection1->isQueryLoggingEnabled());
+        $logger1 = $connection1->getLogger();
+        $this->assertInstanceOf(LoggerInterface::class, $logger1);
+
+        // Test second custom logger
+        $config2 = $this->getTestConfig(['log' => 'another_logger']);
+        $connection2 = new Connection($config2);
+        $this->assertTrue($connection2->isQueryLoggingEnabled());
+        $logger2 = $connection2->getLogger();
+        $this->assertInstanceOf(LoggerInterface::class, $logger2);
+
+        // Test boolean configuration still works
+        $config3 = $this->getTestConfig(['log' => true]);
+        $connection3 = new Connection($config3);
+        $this->assertTrue($connection3->isQueryLoggingEnabled());
+        $logger3 = $connection3->getLogger();
+        $this->assertInstanceOf(LoggerInterface::class, $logger3);
+
+        // Clean up
+        Log::drop('custom_logger');
+        Log::drop('another_logger');
+    }
+
+    /**
+     * Test that logger configuration persists through ElasticLogger
+     */
+    public function testLoggerConfigurationPersistsInElasticLogger(): void
+    {
+        // Set up a custom logger for testing
+        Log::setConfig('persistent_logger', [
+            'className' => FileLog::class,
+            'path' => sys_get_temp_dir(),
+            'file' => 'persistent_elastic',
+        ]);
+
+        $config = $this->getTestConfig(['log' => 'persistent_logger']);
+        $connection = new Connection($config);
+
+        $this->assertTrue($connection->isQueryLoggingEnabled());
+
+        // Get ElasticLogger and verify it uses the correct underlying logger
+        $elasticLogger = $connection->getEsLogger();
+        $this->assertInstanceOf(ElasticLogger::class, $elasticLogger);
+
+        $underlyingLogger = $elasticLogger->getLogger();
+        $this->assertInstanceOf(LoggerInterface::class, $underlyingLogger);
+
+        // Clean up
+        Log::drop('persistent_logger');
+    }
+
+    /**
+     * Test that when log is true, it specifically uses 'elasticsearch' logger name
+     */
+    public function testLogTrueUsesElasticsearchLoggerName(): void
+    {
+        // Set up both elasticsearch and debug loggers to verify which one is used
+        Log::setConfig('elasticsearch', [
+            'className' => FileLog::class,
+            'path' => sys_get_temp_dir(),
+            'file' => 'elasticsearch_test',
+        ]);
+
+        Log::setConfig('debug', [
+            'className' => FileLog::class,
+            'path' => sys_get_temp_dir(),
+            'file' => 'debug_test',
+        ]);
+
+        $config = $this->getTestConfig(['log' => true]);
+        $connection = new Connection($config);
+
+        $this->assertTrue($connection->isQueryLoggingEnabled());
+
+        $logger = $connection->getLogger();
+        $this->assertInstanceOf(LoggerInterface::class, $logger);
+
+        // Verify that the elasticsearch logger is actually being used
+        // by checking that Log::engine('elasticsearch') returns the same instance
+        $elasticsearchEngine = Log::engine('elasticsearch');
+        $this->assertSame($elasticsearchEngine, $logger);
+
+        // Clean up
+        Log::drop('elasticsearch');
+        Log::drop('debug');
     }
 }
