@@ -28,7 +28,7 @@ use Traversable;
 /**
  * Elasticsearch plugin
  */
-class Plugin extends BasePlugin
+class ElasticSearchPlugin extends BasePlugin
 {
     /**
      * @inheritDoc

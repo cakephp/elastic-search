@@ -20,7 +20,6 @@ use ArrayObject;
 use BadMethodCallException;
 use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
-use Cake\Datasource\QueryInterface;
 use Cake\Datasource\RepositoryInterface;
 use Cake\Datasource\RulesAwareTrait;
 use Cake\Datasource\RulesChecker;
@@ -328,11 +327,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $type the type of query to perform
      * @param mixed ...$args Additional arguments for the find operation
      */
-    public function find(string $type = 'all', mixed ...$args): QueryInterface
+    public function find(string $type = 'all', mixed ...$args): Query
     {
         $query = $this->query();
 
-        /** @var \Cake\ElasticSearch\Query $query */
         return $this->callFinder($type, $query, $args);
     }
 
@@ -342,7 +340,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param \Cake\ElasticSearch\Query $query An Elasticsearch query object
      * @param array $options An array of options to be used for query logic
      */
-    public function findAll(QueryInterface $query, array $options = []): QueryInterface
+    public function findAll(Query $query, array $options = []): Query
     {
         return $query;
     }
@@ -357,7 +355,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @return \Cake\ElasticSearch\Query<\Cake\ElasticSearch\Document>
      * @throws \BadMethodCallException
      */
-    public function callFinder(string $type, Query $query, array $options = []): QueryInterface
+    public function callFinder(string $type, Query $query, array $options = []): Query
     {
         $query->applyOptions($options);
         $options = $query->getOptions();
@@ -439,7 +437,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     /**
      * Creates a new Query instance for this repository
      */
-    public function query(): QueryInterface
+    public function query(): Query
     {
         return new Query($this);
     }
