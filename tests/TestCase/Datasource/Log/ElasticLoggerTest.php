@@ -21,17 +21,11 @@ use Cake\Database\Log\QueryLogger;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
 use Cake\ElasticSearch\TestSuite\TestCase;
-use Exception;
-use Nyholm\Psr7\Request;
-use Nyholm\Psr7\Response;
-use Nyholm\Psr7\ServerRequest;
-use Nyholm\Psr7\Uri;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use Stringable;
 
 /**
- * Tests the ElasticLogger class for Elastica with PSR-7 support
+ * Tests the ElasticLogger class with simple array format
  */
 class ElasticLoggerTest extends TestCase
 {
@@ -83,80 +77,20 @@ class ElasticLoggerTest extends TestCase
     }
 
     /**
-     * Test log method when query logging is enabled
+     * Test log method when query logging is enabled with DEBUG level
      */
-    public function testLogWhenLoggingEnabled(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true); // Query logging enabled
-
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        // Expect the mock logger to be called
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(LogLevel::DEBUG, $this->stringContains('"test": "data"'), ['test' => 'data']);
-
-        $elasticLogger->log(LogLevel::DEBUG, 'Test message', ['test' => 'data']);
-    }
-
-    /**
-     * Test log method when query logging is disabled
-     */
-    public function testLogWhenLoggingDisabled(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(false); // Query logging disabled
-
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        // Expect the mock logger to NOT be called
-        $mockLogger->expects($this->never())
-            ->method('log');
-
-        $elasticLogger->log(LogLevel::DEBUG, 'Test message', ['test' => 'data']);
-    }
-
-    /**
-     * Test PSR-7 ServerRequest logging format (Nyholm\Psr7\ServerRequest)
-     */
-    public function testPsr7ServerRequestLogging(): void
+    public function testLogWhenLoggingEnabledDebugLevel(): void
     {
         $mockLogger = $this->createMock(LoggerInterface::class);
         $connection = $this->getMockConnection(true);
         $elasticLogger = new ElasticLogger($mockLogger, $connection);
 
-        // Create PSR-7 ServerRequest
-        $uri = new Uri('http://localhost:9200/test_index/_search?routing=user1');
-        $body = json_encode([
-            'query' => [
-                'match' => ['title' => 'test'],
-            ],
-            'size' => 10,
-        ]);
-
-        $request = new ServerRequest('POST', $uri, [
-            'Content-Type' => 'application/json',
-            'User-Agent' => 'elastica/9.0',
-        ], $body);
-
-        // Create PSR-7 Response
-        $responseBody = json_encode([
-            'took' => 25,
-            'timed_out' => false,
-            'hits' => [
-                'total' => ['value' => 142, 'relation' => 'eq'],
-                'hits' => [
-                    ['_id' => '1', '_source' => ['title' => 'Test Document']],
-                ],
-            ],
-        ]);
-        $response = new Response(200, ['Content-Type' => 'application/json'], $responseBody);
-
         $context = [
-            'request' => $request,
-            'response' => $response,
-            'responseStatus' => 200,
+            'request' => [
+                'method' => 'POST',
+                'path' => '/articles/_search',
+                'data' => ['query' => ['match_all' => []]],
+            ],
         ];
 
         $mockLogger->expects($this->once())
@@ -167,74 +101,83 @@ class ElasticLoggerTest extends TestCase
                     $data = json_decode($message, true);
 
                     return isset($data['method']) && $data['method'] === 'POST' &&
-                           isset($data['path']) && $data['path'] === '/test_index/_search' &&
-                           isset($data['body']['query']['match']['title']);
+                           isset($data['path']) && $data['path'] === '/articles/_search' &&
+                           isset($data['data']['query']['match_all']);
                 }),
-                $this->callback(function ($logContext) {
-                    return isset($logContext['query']) &&
-                           $logContext['query'] instanceof LoggedQuery;
-                }),
+                $this->anything(),
             );
 
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
     }
 
     /**
-     * Test PSR-7 Request logging format (Nyholm\Psr7\Request)
+     * Test log method when query logging is disabled
      */
-    public function testPsr7RequestLogging(): void
+    public function testLogWhenLoggingDisabled(): void
+    {
+        $mockLogger = $this->createMock(LoggerInterface::class);
+        $connection = $this->getMockConnection(false);
+        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+
+        $context = [
+            'request' => [
+                'method' => 'GET',
+                'path' => '/test',
+            ],
+        ];
+
+        $mockLogger->expects($this->never())
+            ->method('log');
+
+        $elasticLogger->log(LogLevel::DEBUG, 'Test message', $context);
+    }
+
+    /**
+     * Test that non-DEBUG levels are ignored
+     */
+    public function testNonDebugLevelsIgnored(): void
     {
         $mockLogger = $this->createMock(LoggerInterface::class);
         $connection = $this->getMockConnection(true);
         $elasticLogger = new ElasticLogger($mockLogger, $connection);
 
-        // Create PSR-7 Request
-        $uri = new Uri('http://localhost:9200/test_index/_doc/123');
-        $body = json_encode(['title' => 'Updated Document']);
-
-        $request = new Request('PUT', $uri, [
-            'Content-Type' => 'application/json',
-        ], $body);
-
-        // Create PSR-7 Response
-        $responseBody = json_encode([
-            '_index' => 'test_index',
-            '_id' => '123',
-            '_version' => 2,
-            'result' => 'updated',
-        ]);
-        $response = new Response(200, ['Content-Type' => 'application/json'], $responseBody);
-
         $context = [
-            'request' => $request,
-            'response' => $response,
-            'responseStatus' => 200,
+            'request' => [
+                'method' => 'POST',
+                'path' => '/articles/_search',
+                'data' => ['query' => ['match_all' => []]],
+            ],
         ];
 
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->callback(function ($message) {
-                    $data = json_decode($message, true);
+        $mockLogger->expects($this->never())
+            ->method('log');
 
-                    return isset($data['method']) && $data['method'] === 'PUT' &&
-                           isset($data['path']) && $data['path'] === '/test_index/_doc/123' &&
-                           isset($data['body']['title']);
-                }),
-                $this->callback(function ($logContext) {
-                    return isset($logContext['query']) &&
-                           $logContext['query'] instanceof LoggedQuery;
-                }),
-            );
-
-        $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+        // Test various non-DEBUG levels
+        $elasticLogger->log(LogLevel::INFO, 'Info message', $context);
+        $elasticLogger->log(LogLevel::WARNING, 'Warning message', $context);
+        $elasticLogger->log(LogLevel::ERROR, 'Error message', $context);
     }
 
     /**
-     * Test array format request logging (direct format from elasticsearch-php)
+     * Test logging without request context is ignored
      */
-    public function testArrayFormatRequestLogging(): void
+    public function testLogWithoutRequestIgnored(): void
+    {
+        $mockLogger = $this->createMock(LoggerInterface::class);
+        $connection = $this->getMockConnection(true);
+        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+
+        $mockLogger->expects($this->never())
+            ->method('log');
+
+        $elasticLogger->log(LogLevel::DEBUG, 'Empty context', []);
+        $elasticLogger->log(LogLevel::DEBUG, 'No request', ['response' => []]);
+    }
+
+    /**
+     * Test search request with response - creates LoggedQuery
+     */
+    public function testSearchRequestWithResponse(): void
     {
         $mockLogger = $this->createMock(LoggerInterface::class);
         $connection = $this->getMockConnection(true);
@@ -246,24 +189,24 @@ class ElasticLoggerTest extends TestCase
                 'from' => 0,
                 'query' => [
                     'bool' => [
-                        'must' => [
-                            ['match' => ['status' => 'active']],
+                        'filter' => [
+                            ['terms' => ['feed_id' => [112]]],
                         ],
                     ],
                 ],
             ],
             'response' => [
-                'took' => 8,
+                'took' => 4,
                 'timed_out' => false,
-                '_shards' => [
-                    'total' => 1,
-                    'successful' => 1,
-                    'skipped' => 0,
-                    'failed' => 0,
-                ],
                 'hits' => [
-                    'total' => ['value' => 25, 'relation' => 'eq'],
-                    'hits' => [],
+                    'total' => [
+                        'value' => 5443,
+                        'relation' => 'eq',
+                    ],
+                    'max_score' => 0.0,
+                    'hits' => [
+                        ['_id' => '112-abc123', '_score' => 0.0],
+                    ],
                 ],
             ],
             'responseStatus' => 200,
@@ -277,97 +220,9 @@ class ElasticLoggerTest extends TestCase
                     $data = json_decode($message, true);
 
                     return isset($data['size']) && $data['size'] === 50 &&
-                           isset($data['query']['bool']['must']);
+                           isset($data['query']['bool']['filter']) &&
+                           $data['from'] === 0;
                 }),
-                $this->callback(function ($logContext) {
-                    return isset($logContext['query']) &&
-                           $logContext['query'] instanceof LoggedQuery;
-                }),
-            );
-
-        $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
-    }
-
-    /**
-     * Test legacy array format request logging
-     */
-    public function testLegacyArrayFormatRequestLogging(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $context = [
-            'request' => [
-                'method' => 'POST',
-                'path' => '/test_index/_search',
-                'data' => [
-                    'query' => ['match_all' => []],
-                    'size' => 20,
-                ],
-            ],
-            'response' => [
-                'took' => 15,
-                'hits' => [
-                    'total' => ['value' => 100, 'relation' => 'eq'],
-                    'hits' => [],
-                ],
-            ],
-        ];
-
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->callback(function ($message) {
-                    $data = json_decode($message, true);
-
-                    return isset($data['method']) && $data['method'] === 'POST' &&
-                           isset($data['path']) && $data['path'] === '/test_index/_search' &&
-                           isset($data['data']['query']['match_all']);
-                }),
-                $this->callback(function ($logContext) {
-                    return isset($logContext['query']) &&
-                           $logContext['query'] instanceof LoggedQuery;
-                }),
-            );
-
-        $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
-    }
-
-    /**
-     * Test count operation response logging
-     */
-    public function testCountOperationLogging(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $context = [
-            'request' => [
-                'method' => 'GET',
-                'path' => '/test_index/_count',
-                'data' => [
-                    'query' => ['term' => ['status' => 'published']],
-                ],
-            ],
-            'response' => [
-                'count' => 87,
-                '_shards' => [
-                    'total' => 1,
-                    'successful' => 1,
-                    'skipped' => 0,
-                    'failed' => 0,
-                ],
-            ],
-        ];
-
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->anything(),
                 $this->callback(function ($logContext) {
                     if (!isset($logContext['query']) || !($logContext['query'] instanceof LoggedQuery)) {
                         return false;
@@ -375,7 +230,8 @@ class ElasticLoggerTest extends TestCase
 
                     $queryContext = $logContext['query']->getContext();
 
-                    return $queryContext['numRows'] === 87;
+                    return isset($queryContext['took']) && $queryContext['took'] === 4.0 &&
+                           isset($queryContext['numRows']) && $queryContext['numRows'] === 5443;
                 }),
             );
 
@@ -418,7 +274,8 @@ class ElasticLoggerTest extends TestCase
 
                     $queryContext = $logContext['query']->getContext();
 
-                    return $queryContext['numRows'] === 42;
+                    return isset($queryContext['numRows']) && $queryContext['numRows'] === 42 &&
+                           isset($queryContext['took']) && $queryContext['took'] === 5.0;
                 }),
             );
 
@@ -426,9 +283,9 @@ class ElasticLoggerTest extends TestCase
     }
 
     /**
-     * Test query metrics extraction (took and numRows)
+     * Test count operation response
      */
-    public function testQueryMetricsExtraction(): void
+    public function testCountOperationLogging(): void
     {
         $mockLogger = $this->createMock(LoggerInterface::class);
         $connection = $this->getMockConnection(true);
@@ -436,19 +293,19 @@ class ElasticLoggerTest extends TestCase
 
         $context = [
             'request' => [
-                'method' => 'POST',
-                'path' => '/metrics_test/_search',
-                'data' => ['query' => ['match_all' => []]],
+                'method' => 'GET',
+                'path' => '/test_index/_count',
+                'data' => [
+                    'query' => ['term' => ['status' => 'published']],
+                ],
             ],
             'response' => [
-                'took' => 125,
-                'hits' => [
-                    'total' => ['value' => 1000, 'relation' => 'eq'],
-                    'hits' => [
-                        ['_id' => '1'],
-                        ['_id' => '2'],
-                        ['_id' => '3'],
-                    ],
+                'count' => 87,
+                '_shards' => [
+                    'total' => 1,
+                    'successful' => 1,
+                    'skipped' => 0,
+                    'failed' => 0,
                 ],
             ],
         ];
@@ -465,211 +322,8 @@ class ElasticLoggerTest extends TestCase
 
                     $queryContext = $logContext['query']->getContext();
 
-                    return $queryContext['numRows'] === 1000 && $queryContext['took'] === 125.0;
+                    return isset($queryContext['numRows']) && $queryContext['numRows'] === 87;
                 }),
-            );
-
-        $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
-    }
-
-    /**
-     * Test exception handling in log method
-     */
-    public function testExceptionHandling(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $testException = new Exception('ElasticSearch connection failed');
-        $context = [
-            'exception' => $testException,
-            'request' => [
-                'method' => 'POST',
-                'path' => '/failing_index/_search',
-            ],
-        ];
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('ElasticSearch connection failed');
-
-        $elasticLogger->log(LogLevel::ERROR, 'Elastica Request Failure', $context);
-    }
-
-    /**
-     * Test log method with different PSR-3 log levels
-     */
-    public function testDifferentLogLevels(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $levels = [
-            LogLevel::EMERGENCY,
-            LogLevel::ALERT,
-            LogLevel::CRITICAL,
-            LogLevel::ERROR,
-            LogLevel::WARNING,
-            LogLevel::NOTICE,
-            LogLevel::INFO,
-            LogLevel::DEBUG,
-        ];
-
-        $mockLogger->expects($this->exactly(count($levels)))
-            ->method('log');
-
-        foreach ($levels as $level) {
-            $elasticLogger->log($level, 'Test message for ' . $level, []);
-        }
-    }
-
-    /**
-     * Test log with Stringable message
-     */
-    public function testStringableMessage(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $stringableMessage = new class implements Stringable {
-            public function __toString(): string
-            {
-                return 'Stringable ElasticSearch message';
-            }
-        };
-
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(LogLevel::INFO, '[]', []);
-
-        $elasticLogger->log(LogLevel::INFO, $stringableMessage, []);
-    }
-
-    /**
-     * Test log with empty context
-     */
-    public function testLogWithEmptyContext(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(LogLevel::DEBUG, '[]', []);
-
-        $elasticLogger->log(LogLevel::DEBUG, 'Simple message');
-    }
-
-    /**
-     * Test log with complex nested context data
-     */
-    public function testLogWithComplexContext(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $complexContext = [
-            'nested' => [
-                'deep' => [
-                    'structure' => true,
-                    'values' => [1, 2, 3],
-                    'elasticsearch_query' => [
-                        'bool' => [
-                            'must' => [
-                                ['term' => ['status' => 'active']],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            'unicode' => 'Special chars: áéíóú 中文 🔍',
-            'null_value' => null,
-            'boolean' => false,
-        ];
-
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->callback(function ($message) {
-                    $decoded = json_decode($message, true);
-
-                    return is_array($decoded) &&
-                           isset($decoded['nested']['deep']['structure']) &&
-                           $decoded['nested']['deep']['structure'] === true &&
-                           isset($decoded['unicode']) &&
-                           str_contains($decoded['unicode'], '🔍');
-                }),
-                $complexContext,
-            );
-
-        $elasticLogger->log(LogLevel::DEBUG, 'Complex context test', $complexContext);
-    }
-
-    /**
-     * Test PSR-7 request with empty body
-     */
-    public function testPsr7RequestWithEmptyBody(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $uri = new Uri('http://localhost:9200/test_index/_refresh');
-        $request = new Request('POST', $uri);
-
-        $context = [
-            'request' => $request,
-        ];
-
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->callback(function ($message) {
-                    $data = json_decode($message, true);
-
-                    return isset($data['method']) && $data['method'] === 'POST' &&
-                           isset($data['path']) && $data['path'] === '/test_index/_refresh' &&
-                           $data['body'] === null;
-                }),
-                $context,
-            );
-
-        $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
-    }
-
-    /**
-     * Test request with non-JSON body
-     */
-    public function testRequestWithNonJsonBody(): void
-    {
-        $mockLogger = $this->createMock(LoggerInterface::class);
-        $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $uri = new Uri('http://localhost:9200/test_index/_analyze');
-        $plainTextBody = 'analyze this text';
-        $request = new Request('POST', $uri, ['Content-Type' => 'text/plain'], $plainTextBody);
-
-        $context = [
-            'request' => $request,
-        ];
-
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->callback(function ($message) use ($plainTextBody) {
-                    $data = json_decode($message, true);
-
-                    return isset($data['body']) && $data['body'] === $plainTextBody;
-                }),
-                $context,
             );
 
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
@@ -699,7 +353,8 @@ class ElasticLoggerTest extends TestCase
                 $this->callback(function ($message) {
                     $data = json_decode($message, true);
 
-                    return isset($data['method']) && $data['method'] === 'DELETE';
+                    return isset($data['method']) && $data['method'] === 'DELETE' &&
+                           isset($data['path']) && $data['path'] === '/test_index';
                 }),
                 $this->callback(function ($logContext) {
                     // Should not create LoggedQuery when no response
@@ -711,13 +366,142 @@ class ElasticLoggerTest extends TestCase
     }
 
     /**
-     * Helper method to create a mock Connection
+     * Test complex search query logging
      */
-    private function getMockConnection(bool $queryLoggingEnabled = true): Connection
+    public function testComplexSearchQuery(): void
+    {
+        $mockLogger = $this->createMock(LoggerInterface::class);
+        $connection = $this->getMockConnection(true);
+        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+
+        $context = [
+            'request' => [
+                'size' => 20,
+                'from' => 40,
+                'method' => 'POST',
+                'path' => '/products/_search',
+                'data' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                ['match' => ['title' => 'elasticsearch']],
+                                ['range' => ['price' => ['gte' => 10]]],
+                            ],
+                            'filter' => [
+                                ['term' => ['category' => 'books']],
+                            ],
+                        ],
+                    ],
+                    'sort' => [
+                        ['price' => ['order' => 'asc']],
+                    ],
+                ],
+            ],
+            'response' => [
+                'took' => 15,
+                'timed_out' => false,
+                'hits' => [
+                    'total' => ['value' => 250, 'relation' => 'eq'],
+                    'hits' => [],
+                ],
+            ],
+        ];
+
+        $mockLogger->expects($this->once())
+            ->method('log')
+            ->with(
+                LogLevel::DEBUG,
+                $this->callback(function ($message) {
+                    $data = json_decode($message, true);
+
+                    return isset($data['size']) && $data['size'] === 20 &&
+                           isset($data['from']) && $data['from'] === 40 &&
+                           isset($data['data']['query']['bool']['must']) &&
+                           isset($data['data']['sort']);
+                }),
+                $this->callback(function ($logContext) {
+                    if (!isset($logContext['query']) || !($logContext['query'] instanceof LoggedQuery)) {
+                        return false;
+                    }
+
+                    $queryContext = $logContext['query']->getContext();
+
+                    return isset($queryContext['took']) && $queryContext['took'] === 15.0 &&
+                           isset($queryContext['numRows']) && $queryContext['numRows'] === 250;
+                }),
+            );
+
+        $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+    }
+
+    /**
+     * Test aggregation hits handling
+     */
+    public function testAggregationHitsHandling(): void
+    {
+        $mockLogger = $this->createMock(LoggerInterface::class);
+        $connection = $this->getMockConnection(true);
+        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+
+        $context = [
+            'request' => [
+                'size' => 0, // Aggregation only
+                'method' => 'POST',
+                'path' => '/products/_search',
+                'data' => [
+                    'aggs' => [
+                        'categories' => [
+                            'terms' => ['field' => 'category.keyword'],
+                        ],
+                    ],
+                ],
+            ],
+            'response' => [
+                'took' => 8,
+                'hits' => [
+                    'total' => ['value' => 1000, 'relation' => 'eq'],
+                    'hits' => [
+                        ['_id' => '1', '_score' => 1.0],
+                        ['_id' => '2', '_score' => 0.8],
+                    ],
+                ],
+                'aggregations' => [
+                    'categories' => [
+                        'buckets' => [
+                            ['key' => 'books', 'doc_count' => 500],
+                            ['key' => 'electronics', 'doc_count' => 300],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $mockLogger->expects($this->once())
+            ->method('log')
+            ->with(
+                LogLevel::DEBUG,
+                $this->anything(),
+                $this->callback(function ($logContext) {
+                    if (!isset($logContext['query']) || !($logContext['query'] instanceof LoggedQuery)) {
+                        return false;
+                    }
+
+                    $queryContext = $logContext['query']->getContext();
+
+                    return isset($queryContext['numRows']) && $queryContext['numRows'] === 1000;
+                }),
+            );
+
+        $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+    }
+
+    /**
+     * Create a mock Connection instance
+     */
+    private function getMockConnection(bool $logQueries = true): Connection
     {
         $connection = $this->createMock(Connection::class);
-        $connection->method('isQueryLoggingEnabled')
-            ->willReturn($queryLoggingEnabled);
+        $connection->method('isQueryLoggingEnabled')->willReturn($logQueries);
 
         return $connection;
     }

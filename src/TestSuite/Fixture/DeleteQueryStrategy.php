@@ -76,7 +76,7 @@ class DeleteQueryStrategy implements FixtureStrategyInterface
                     $esIndex->deleteByQuery(new MatchAll());
                 } catch (ClientResponseException $e) {
                     // Ignore version conflicts during test cleanup
-                    // ElasticSearch 9.x is stricter about optimistic concurrency control
+                    // ElasticSearch is stricter about optimistic concurrency control
                     if ($e->getCode() !== 409) {
                         throw $e;
                     }

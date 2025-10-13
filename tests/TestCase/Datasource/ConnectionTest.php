@@ -89,7 +89,7 @@ class ConnectionTest extends TestCase
      */
     public function testQueryLoggingWithLog(): void
     {
-        // Create a connection with logging enabled using modern Elastica 9.x config
+        // Create a connection with logging enabled using modern Elastica config
         /** @var Connection $connection */
         $connection = ConnectionManager::get('test');
         $connection->enableQueryLogging();
@@ -108,7 +108,7 @@ class ConnectionTest extends TestCase
     }
 
     /**
-     * Ensure that QueryLogger integration works with Elastica 9.x.
+     * Ensure that QueryLogger integration works with Elastica.
      */
     public function testLoggerQueryLogger(): void
     {

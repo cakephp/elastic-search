@@ -55,7 +55,6 @@ class IndexTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        /** @var Connection $connection */
         $this->connection = ConnectionManager::get('test');
         $this->index = new Index([
             'name' => 'articles',
