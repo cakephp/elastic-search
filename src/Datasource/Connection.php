@@ -74,7 +74,6 @@ class Connection implements ConnectionInterface
      * Constructor.
      *
      * @param array $config config options
-     * @throws \RuntimeException When using legacy host/port configuration instead of modern hosts array
      */
     public function __construct(array $config = [])
     {
