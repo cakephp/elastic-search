@@ -20,6 +20,7 @@ use ArrayObject;
 use BadMethodCallException;
 use Cake\Core\App;
 use Cake\Datasource\EntityInterface;
+use Cake\Datasource\QueryInterface;
 use Cake\Datasource\RepositoryInterface;
 use Cake\Datasource\RulesAwareTrait;
 use Cake\Datasource\RulesChecker;
@@ -327,10 +328,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $type the type of query to perform
      * @param mixed ...$args Additional arguments for the find operation
      */
-    public function find(string $type = 'all', mixed ...$args): Query
+    public function find(string $type = 'all', mixed ...$args): QueryInterface
     {
         $query = $this->query();
 
+        /** @var \Cake\ElasticSearch\Query $query */
         return $this->callFinder($type, $query, $args);
     }
 
@@ -340,7 +342,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param \Cake\ElasticSearch\Query $query An Elasticsearch query object
      * @param array $options An array of options to be used for query logic
      */
-    public function findAll(Query $query, array $options = []): Query
+    public function findAll(QueryInterface $query, array $options = []): QueryInterface
     {
         return $query;
     }
@@ -355,7 +357,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @return \Cake\ElasticSearch\Query<\Cake\ElasticSearch\Document>
      * @throws \BadMethodCallException
      */
-    public function callFinder(string $type, Query $query, array $options = []): Query
+    public function callFinder(string $type, Query $query, array $options = []): QueryInterface
     {
         $query->applyOptions($options);
         $options = $query->getOptions();
@@ -437,7 +439,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     /**
      * Creates a new Query instance for this repository
      */
-    public function query(): Query
+    public function query(): QueryInterface
     {
         return new Query($this);
     }
@@ -483,6 +485,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $query->where($conditions);
 
         $esIndex = $this->getConnection()->getIndex($this->getName());
+        /** @var \Cake\ElasticSearch\Query $query */
         $response = $esIndex->deleteByQuery($query->compileQuery());
 
         return (int)$response->isOk();
