@@ -87,9 +87,9 @@ class ElasticLoggerTest extends TestCase
 
         $context = [
             'request' => [
-                'method' => 'POST',
-                'path' => '/articles/_search',
-                'data' => ['query' => ['match_all' => []]],
+                'size' => 50,
+                'from' => 0,
+                'query' => ['match_all' => []],
             ],
         ];
 
@@ -100,9 +100,9 @@ class ElasticLoggerTest extends TestCase
                 $this->callback(function ($message) {
                     $data = json_decode($message, true);
 
-                    return isset($data['method']) && $data['method'] === 'POST' &&
-                           isset($data['path']) && $data['path'] === '/articles/_search' &&
-                           isset($data['data']['query']['match_all']);
+                    return isset($data['size']) && $data['size'] === 50 &&
+                           isset($data['from']) && $data['from'] === 0 &&
+                           isset($data['query']['match_all']);
                 }),
                 $this->anything(),
             );
@@ -121,8 +121,8 @@ class ElasticLoggerTest extends TestCase
 
         $context = [
             'request' => [
-                'method' => 'GET',
-                'path' => '/test',
+                'size' => 10,
+                'query' => ['match_all' => []],
             ],
         ];
 
@@ -143,9 +143,8 @@ class ElasticLoggerTest extends TestCase
 
         $context = [
             'request' => [
-                'method' => 'POST',
-                'path' => '/articles/_search',
-                'data' => ['query' => ['match_all' => []]],
+                'size' => 20,
+                'query' => ['match_all' => []],
             ],
         ];
 
@@ -293,11 +292,7 @@ class ElasticLoggerTest extends TestCase
 
         $context = [
             'request' => [
-                'method' => 'GET',
-                'path' => '/test_index/_count',
-                'data' => [
-                    'query' => ['term' => ['status' => 'published']],
-                ],
+                'query' => ['term' => ['status' => 'published']],
             ],
             'response' => [
                 'count' => 87,
@@ -340,9 +335,7 @@ class ElasticLoggerTest extends TestCase
 
         $context = [
             'request' => [
-                'method' => 'DELETE',
-                'path' => '/test_index',
-                'data' => null,
+                'size' => 0,
             ],
         ];
 
@@ -353,8 +346,7 @@ class ElasticLoggerTest extends TestCase
                 $this->callback(function ($message) {
                     $data = json_decode($message, true);
 
-                    return isset($data['method']) && $data['method'] === 'DELETE' &&
-                           isset($data['path']) && $data['path'] === '/test_index';
+                    return isset($data['size']) && $data['size'] === 0;
                 }),
                 $this->callback(function ($logContext) {
                     // Should not create LoggedQuery when no response
@@ -378,22 +370,15 @@ class ElasticLoggerTest extends TestCase
             'request' => [
                 'size' => 20,
                 'from' => 40,
-                'method' => 'POST',
-                'path' => '/products/_search',
-                'data' => [
-                    'query' => [
-                        'bool' => [
-                            'must' => [
-                                ['match' => ['title' => 'elasticsearch']],
-                                ['range' => ['price' => ['gte' => 10]]],
-                            ],
-                            'filter' => [
-                                ['term' => ['category' => 'books']],
-                            ],
+                'query' => [
+                    'bool' => [
+                        'must' => [
+                            ['match' => ['title' => 'elasticsearch']],
+                            ['range' => ['price' => ['gte' => 10]]],
                         ],
-                    ],
-                    'sort' => [
-                        ['price' => ['order' => 'asc']],
+                        'filter' => [
+                            ['term' => ['category' => 'books']],
+                        ],
                     ],
                 ],
             ],
@@ -416,8 +401,7 @@ class ElasticLoggerTest extends TestCase
 
                     return isset($data['size']) && $data['size'] === 20 &&
                            isset($data['from']) && $data['from'] === 40 &&
-                           isset($data['data']['query']['bool']['must']) &&
-                           isset($data['data']['sort']);
+                           isset($data['query']['bool']['must']);
                 }),
                 $this->callback(function ($logContext) {
                     if (!isset($logContext['query']) || !($logContext['query'] instanceof LoggedQuery)) {
@@ -446,15 +430,7 @@ class ElasticLoggerTest extends TestCase
         $context = [
             'request' => [
                 'size' => 0, // Aggregation only
-                'method' => 'POST',
-                'path' => '/products/_search',
-                'data' => [
-                    'aggs' => [
-                        'categories' => [
-                            'terms' => ['field' => 'category.keyword'],
-                        ],
-                    ],
-                ],
+                'query' => ['match_all' => []],
             ],
             'response' => [
                 'took' => 8,

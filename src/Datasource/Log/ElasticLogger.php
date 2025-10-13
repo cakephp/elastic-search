@@ -68,8 +68,6 @@ class ElasticLogger extends AbstractLogger
 
     /**
      * Return the current logger
-     *
-     * @return \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface
      */
     public function getLogger(): QueryLogger|LoggerInterface
     {
@@ -119,9 +117,6 @@ class ElasticLogger extends AbstractLogger
         // Extract and format request data
         $request = $context['request'];
         $logData = [
-            'method' => $request['method'] ?? null,
-            'path' => $request['path'] ?? null,
-            'data' => $request['data'] ?? null,
             'size' => $request['size'] ?? null,
             'from' => $request['from'] ?? null,
             'query' => $request['query'] ?? null,
