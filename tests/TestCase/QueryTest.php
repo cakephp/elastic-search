@@ -1146,8 +1146,9 @@ class QueryTest extends TestCase
     /**
      * Helper method to get a real index for integration tests
      */
-    private function getIndex(): Index
+    protected function getIndex(): Index
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test');
 
         return $this->fetchIndex('Articles', [

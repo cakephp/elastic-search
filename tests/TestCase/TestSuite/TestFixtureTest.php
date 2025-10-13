@@ -418,6 +418,7 @@ class TestFixtureTest extends TestCase
      */
     public function testCreateWithRealConnectionAndValidSchema(): void
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test_elastic');
 
         $fixture = new class extends TestFixture {
@@ -558,6 +559,7 @@ class TestFixtureTest extends TestCase
      */
     public function testInsertWithRealConnectionAndRecords(): void
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test_elastic');
 
         $fixture = new class extends TestFixture {
@@ -595,6 +597,7 @@ class TestFixtureTest extends TestCase
      */
     public function testInsertWithRecordsWithoutIds(): void
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test_elastic');
 
         $fixture = new class extends TestFixture {
@@ -628,6 +631,7 @@ class TestFixtureTest extends TestCase
      */
     public function testDropWithExistingIndex(): void
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test_elastic');
 
         $fixture = new class extends TestFixture {
@@ -656,6 +660,7 @@ class TestFixtureTest extends TestCase
      */
     public function testDropWithNonExistingIndex(): void
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test_elastic');
 
         $fixture = new class extends TestFixture {
@@ -682,6 +687,7 @@ class TestFixtureTest extends TestCase
      */
     public function testTruncate(): void
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test_elastic');
 
         $fixture = new class extends TestFixture {
@@ -719,6 +725,7 @@ class TestFixtureTest extends TestCase
      */
     public function testCreateWhenIndexAlreadyExists(): void
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test_elastic');
 
         $fixture = new class extends TestFixture {
@@ -766,6 +773,7 @@ class TestFixtureTest extends TestCase
      */
     public function testFixtureCreatedArrayTracking(): void
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test_elastic');
 
         $fixture = new class extends TestFixture {

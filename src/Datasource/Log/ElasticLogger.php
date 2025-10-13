@@ -20,13 +20,16 @@ use Cake\Database\Log\LoggedQuery;
 use Cake\Database\Log\QueryLogger;
 use Cake\ElasticSearch\Datasource\Connection;
 use Exception;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 use Stringable;
 
 /**
- * Adapter to convert elastic logs to QueryLogger readable content
+ * Adapter to convert logs to QueryLogger readable content
+ *
+ * Handles the new elasticsearch-php package logging format with PSR-7 requests/responses.
  */
 class ElasticLogger extends AbstractLogger
 {
@@ -67,8 +70,6 @@ class ElasticLogger extends AbstractLogger
 
     /**
      * Return the current logger
-     *
-     * @return \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface [description]
      */
     public function getLogger(): QueryLogger|LoggerInterface
     {
@@ -76,7 +77,7 @@ class ElasticLogger extends AbstractLogger
     }
 
     /**
-     * Format log messages from the Elastica client _log method
+     * Format log messages from the Elastica client
      *
      * @param mixed $level The log level
      * @param \Stringable|string $message The log message
@@ -93,17 +94,17 @@ class ElasticLogger extends AbstractLogger
      * Format log messages from the Elastica client and pass
      * them to the cake defined logger instance
      *
-     * Elastica's log parameters
-     * -------------------------
+     * Elastica log parameters with elasticsearch-php package:
+     * -----------------------------------------------------------
      * error:
      *     message: "Elastica Request Failure"
      *     context: [ exception, request, retry ]
-     * debug (request):
+     * debug (PSR-7 request):
      *     message: "Elastica Request"
-     *     context: [ request, response, responseStatus, query ]
-     * debug (fallback?):
+     *     context: [ request => PSR-7 RequestInterface, response => PSR-7 ResponseInterface, responseStatus => int ]
+     * debug (array format):
      *     message: "Elastica Request"
-     *     context: [ message, query ]
+     *     context: [ request => array, response => array, responseStatus => int ]
      *
      * @param string $level The log level
      * @param string $message The log message
@@ -111,65 +112,184 @@ class ElasticLogger extends AbstractLogger
      */
     protected function _log(string $level, string $message, array $context = []): void
     {
-        $logData = $context;
+        $logData = $this->extractLogData($context);
+        $logDataJson = json_encode($logData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) ?: '{}';
 
-        // Handle Elastica 9.x log format
-        if ($level === LogLevel::DEBUG && isset($context['request'])) {
-            // Handle legacy 7.x format
-            if (is_array($context['request']) && isset($context['request']['method'])) {
-                $logData = [
-                    'method' => $context['request']['method'],
-                    'path' => $context['request']['path'],
-                    'data' => $context['request']['data'],
-                ];
-            } else {
-                // Handle new 9.x format - context may have different structure
-                $logData = [
-                    'method' => $context['method'] ?? null,
-                    'path' => $context['path'] ?? null,
-                    'data' => $context['data'] ?? null,
-                ];
-            }
-        }
+        if ($this->hasRequestResponse($context)) {
+            $queryMetrics = $this->extractQueryMetrics($context);
 
-        $logData = json_encode($logData, JSON_PRETTY_PRINT);
-
-        if (isset($context['request'], $context['response'])) {
-            $took = 0;
-            $numRows = 0;
-
-            // Handle response structure differences between Elastica versions
-            if (is_array($context['response'])) {
-                $response = $context['response'];
-                $took = $response['took'] ?? 0;
-
-                // Handle different response structures for document count
-                if (isset($response['hits']['total']['value'])) {
-                    $numRows = $response['hits']['total']['value'];
-                } elseif (isset($response['hits']['total'])) {
-                    $numRows = is_array($response['hits']['total']) ?
-                        ($response['hits']['total']['value'] ?? 0) :
-                        $response['hits']['total'];
-                } elseif (isset($response['count'])) {
-                    $numRows = $response['count'];
-                }
-            }
-
-            $message = new LoggedQuery();
-            $message->setContext([
-                'query' => $logData,
-                'took' => $took,
-                'numRows' => $numRows,
+            $loggedQuery = new LoggedQuery();
+            $loggedQuery->setContext([
+                'query' => $logDataJson,
+                'took' => $queryMetrics['took'],
+                'numRows' => $queryMetrics['numRows'],
             ]);
 
-            $context['query'] = $message;
+            $context['query'] = $loggedQuery;
         }
 
+        $this->handleException($context);
+        $this->getLogger()->log($level, $logDataJson, $context);
+    }
+
+    /**
+     * Extract log data from context based on format type
+     *
+     * @param array $context Log context
+     * @return array Extracted log data
+     */
+    protected function extractLogData(array $context): array
+    {
+        if (!isset($context['request'])) {
+            // Return original context when no request data to extract
+            return $context;
+        }
+
+        $request = $context['request'];
+
+        // Handle PSR-7 RequestInterface (Nyholm\Psr7\ServerRequest)
+        if ($request instanceof RequestInterface) {
+            return $this->extractPsr7RequestData($request);
+        }
+
+        // Handle array format request
+        if (is_array($request)) {
+            return $this->extractArrayRequestData($request);
+        }
+
+        // Fallback to context as-is
+        return $context;
+    }
+
+    /**
+     * Extract request data from PSR-7 RequestInterface
+     *
+     * @param \Psr\Http\Message\RequestInterface $request PSR-7 request
+     * @return array Extracted request data
+     */
+    protected function extractPsr7RequestData(RequestInterface $request): array
+    {
+        $body = (string)$request->getBody();
+        $bodyData = null;
+
+        if (!empty($body)) {
+            $decodedBody = json_decode($body, true);
+            $bodyData = $decodedBody ?? $body;
+        }
+
+        return [
+            'method' => $request->getMethod(),
+            'uri' => (string)$request->getUri(),
+            'path' => $request->getUri()->getPath(),
+            'query' => $request->getUri()->getQuery(),
+            'headers' => $request->getHeaders(),
+            'body' => $bodyData,
+        ];
+    }
+
+    /**
+     * Extract request data from array format
+     *
+     * @param array $request Array format request
+     * @return array Extracted request data
+     */
+    protected function extractArrayRequestData(array $request): array
+    {
+        return [
+            'method' => $request['method'] ?? null,
+            'path' => $request['path'] ?? null,
+            'data' => $request['data'] ?? null,
+            'size' => $request['size'] ?? null,
+            'from' => $request['from'] ?? null,
+            'query' => $request['query'] ?? null,
+        ];
+    }
+
+    /**
+     * Check if context has both request and response
+     *
+     * @param array $context Log context
+     */
+    protected function hasRequestResponse(array $context): bool
+    {
+        return isset($context['request']) && isset($context['response']);
+    }
+
+    /**
+     * Extract query metrics (timing and row count) from context
+     *
+     * @param array $context Log context
+     * @return array Query metrics with 'took' and 'numRows' keys
+     */
+    protected function extractQueryMetrics(array $context): array
+    {
+        $took = 0;
+        $numRows = 0;
+        $response = $context['response'];
+
+        // Handle PSR-7 ResponseInterface (Nyholm\Psr7\Response)
+        if ($response instanceof ResponseInterface) {
+            $responseBody = (string)$response->getBody();
+            $responseData = json_decode($responseBody, true);
+
+            if (is_array($responseData)) {
+                $took = $responseData['took'] ?? 0;
+                $numRows = $this->extractRowCount($responseData);
+            }
+        } elseif (is_array($response)) {
+            // Handle array format response
+            $took = $response['took'] ?? 0;
+            $numRows = $this->extractRowCount($response);
+        }
+
+        return [
+            'took' => $took,
+            'numRows' => $numRows,
+        ];
+    }
+
+    /**
+     * Extract row count from response data
+     *
+     * @param array $response Response data
+     * @return int Number of rows/documents
+     */
+    protected function extractRowCount(array $response): int
+    {
+        // Handle search response with hits.total.value (ES 7.0+)
+        if (isset($response['hits']['total']['value'])) {
+            return (int)$response['hits']['total']['value'];
+        }
+
+        // Handle search response with hits.total as number (ES 6.x and earlier)
+        if (isset($response['hits']['total']) && is_numeric($response['hits']['total'])) {
+            return (int)$response['hits']['total'];
+        }
+
+        // Handle count response
+        if (isset($response['count'])) {
+            return (int)$response['count'];
+        }
+
+        // Handle aggregation responses or other operations
+        if (isset($response['hits']['hits']) && is_array($response['hits']['hits'])) {
+            return count($response['hits']['hits']);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Handle exceptions in context
+     *
+     * @param array $context Log context
+     * @throws \Exception If exception is present in context
+     */
+    protected function handleException(array $context): void
+    {
         $exception = $context['exception'] ?? null;
         if ($exception instanceof Exception) {
             throw $exception;
         }
-
-        $this->getLogger()->log($level, $logData ?: '', $context);
     }
 }

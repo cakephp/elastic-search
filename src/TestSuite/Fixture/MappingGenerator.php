@@ -110,7 +110,7 @@ class MappingGenerator
             $args['settings'] = $mapping['settings'];
         }
 
-        // In Elastica 9.x, mappings should be included in index creation
+        // In Elastica, mappings should be included in index creation
         if (!empty($mapping['mapping'])) {
             $args['mappings'] = [
                 'properties' => $mapping['mapping'],

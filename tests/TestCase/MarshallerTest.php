@@ -45,6 +45,7 @@ class MarshallerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test');
         $this->index = new Index([
             'connection' => $connection,

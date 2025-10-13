@@ -40,6 +40,7 @@ class ConnectionTest extends TestCase
      */
     protected function getTestConfig(array $additional = []): array
     {
+        /** @var Connection $testConnection */
         $testConnection = ConnectionManager::get('test');
         $baseConfig = $testConnection->config();
 
@@ -84,11 +85,12 @@ class ConnectionTest extends TestCase
     }
 
     /**
-     * Ensure that logging queries works with Elastica 9.x PSR-3 logging.
+     * Ensure that logging queries works with Elastica PSR-3 logging.
      */
     public function testQueryLoggingWithLog(): void
     {
         // Create a connection with logging enabled using modern Elastica 9.x config
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test');
         $connection->enableQueryLogging();
         $this->assertTrue($connection->isQueryLoggingEnabled());
@@ -113,6 +115,7 @@ class ConnectionTest extends TestCase
         $logger = new QueryLogger();
 
         // Create connection and set QueryLogger
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test');
         $connection->setLogger($logger);
 

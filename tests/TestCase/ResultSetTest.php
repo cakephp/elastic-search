@@ -95,6 +95,7 @@ class ResultSetTest extends TestCase
      */
     public function testDecoratedMethods(): void
     {
+        /** @var Connection $connection */
         $connection = ConnectionManager::get('test');
         $index = new Index([
             'name' => 'articles',
@@ -127,9 +128,11 @@ class ResultSetTest extends TestCase
      */
     public function testStatsProxies(): void
     {
+        /** @var Connection $connection */
+        $connection = ConnectionManager::get('test');
         $index = new Index([
             'name' => 'articles',
-            'connection' => ConnectionManager::get('test'),
+            'connection' => $connection,
         ]);
         $resultSet = $index->find()->all();
         $this->assertSame(2, $resultSet->count());
