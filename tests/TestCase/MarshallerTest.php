@@ -959,4 +959,51 @@ class MarshallerTest extends TestCase
         $this->assertInstanceOf(Document::class, $result[0]->users[0]->user_type);
         $this->assertSame('Admin', $result[0]->users[0]->user_type->label);
     }
+
+    /**
+     * Test newNested iteration with empty array
+     */
+    public function testOneEmbeddedManyEmptyArray(): void
+    {
+        $data = [
+            'title' => 'Testing',
+            'comments' => [],
+        ];
+
+        $this->index->embedMany('Comments');
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data, ['associated' => ['Comments']]);
+
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertIsArray($result->comments);
+        $this->assertCount(0, $result->comments);
+    }
+
+    /**
+     * Test mergeNested iteration with empty existing array
+     */
+    public function testMergeEmbeddedManyEmptyExisting(): void
+    {
+        $data = [
+            'title' => 'Testing',
+            'comments' => [
+                ['comment' => 'New comment'],
+                'bad' => 'data',
+            ],
+        ];
+
+        $entity = new Document([
+            'title' => 'old',
+            'comments' => [],
+        ], ['markNew' => false]);
+
+        $this->index->embedMany('Comments');
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->merge($entity, $data, ['associated' => ['Comments']]);
+
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertIsArray($result->comments);
+        $this->assertCount(1, $result->comments);
+        $this->assertTrue($result->comments[0]->isNew());
+    }
 }
