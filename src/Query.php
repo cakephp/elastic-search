@@ -740,19 +740,13 @@ class Query implements IteratorAggregate, QueryInterface
      * - int: Track up to the specified number (balance between accuracy and performance)
      * - null: Use Elasticsearch default behavior
      *
-     * @param mixed $trackTotalHits The track_total_hits parameter
+     * @param int|bool|null $trackTotalHits The track_total_hits parameter
      * @return $this
-     * @throws \InvalidArgumentException When an invalid value is provided
+     * @throws \InvalidArgumentException When a negative integer value is provided
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-track-total-hits
      */
-    public function trackTotalHits(mixed $trackTotalHits)
+    public function trackTotalHits(int|bool|null $trackTotalHits)
     {
-        if ($trackTotalHits !== null && !is_bool($trackTotalHits) && !is_int($trackTotalHits)) {
-            throw new InvalidArgumentException(
-                'trackTotalHits must be a boolean, integer, or null. Got: ' . gettype($trackTotalHits),
-            );
-        }
-
         if (is_int($trackTotalHits) && $trackTotalHits < 0) {
             throw new InvalidArgumentException(
                 'trackTotalHits integer value must be non-negative. Got: ' . $trackTotalHits,

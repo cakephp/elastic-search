@@ -1550,16 +1550,15 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Test trackTotalHits validation
+     * Test trackTotalHits validation with invalid type
      */
     public function testTrackTotalHitsValidation(): void
     {
         $index = new Index();
         $query = new Query($index);
 
-        // Test invalid type
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('trackTotalHits must be a boolean, integer, or null. Got: string');
+        // Test invalid type (strict typing throws TypeError)
+        $this->expectException(TypeError::class);
         $query->trackTotalHits('invalid');
     }
 
