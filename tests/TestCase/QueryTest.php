@@ -1506,4 +1506,73 @@ class QueryTest extends TestCase
         $result = $query->andWhere(null);
         $this->assertSame($query, $result);
     }
+
+    /**
+     * Test trackTotalHits method
+     */
+    public function testTrackTotalHits(): void
+    {
+        $index = new Index();
+        $query = new Query($index);
+
+        // Test fluent interface
+        $result = $query->trackTotalHits(true);
+        $this->assertSame($query, $result);
+        $this->assertTrue($query->clause('trackTotalHits'));
+
+        // Test with integer
+        $query->trackTotalHits(5000);
+        $this->assertSame(5000, $query->clause('trackTotalHits'));
+
+        // Test with false
+        $query->trackTotalHits(false);
+        $this->assertFalse($query->clause('trackTotalHits'));
+    }
+
+    /**
+     * Test trackTotalHits compilation
+     */
+    public function testTrackTotalHitsCompileQuery(): void
+    {
+        $index = new Index();
+        $query = new Query($index);
+
+        // Test compilation with value
+        $query->trackTotalHits(true);
+
+        $elasticQuery = $query->compileQuery();
+        $this->assertTrue($elasticQuery->getParam('track_total_hits'));
+
+        // Test null doesn't set parameter
+        $query = new Query($index);
+        $elasticQuery = $query->compileQuery();
+        $this->assertFalse($elasticQuery->hasParam('track_total_hits'));
+    }
+
+    /**
+     * Test trackTotalHits validation
+     */
+    public function testTrackTotalHitsValidation(): void
+    {
+        $index = new Index();
+        $query = new Query($index);
+
+        // Test invalid type
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('trackTotalHits must be a boolean, integer, or null. Got: string');
+        $query->trackTotalHits('invalid');
+    }
+
+    /**
+     * Test trackTotalHits negative integer validation
+     */
+    public function testTrackTotalHitsNegativeInteger(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('trackTotalHits integer value must be non-negative. Got: -1');
+
+        $index = new Index();
+        $query = new Query($index);
+        $query->trackTotalHits(-1);
+    }
 }

@@ -84,6 +84,7 @@ class Query implements IteratorAggregate, QueryInterface
         'query' => null,
         'filter' => null,
         'postFilter' => null,
+        'trackTotalHits' => null,
     ];
 
     /**
@@ -731,6 +732,40 @@ class Query implements IteratorAggregate, QueryInterface
     }
 
     /**
+     * Sets the track_total_hits parameter for the query.
+     *
+     * Controls how the total number of hits should be tracked.
+     * - true: Track exact total count (can be slow for large datasets)
+     * - false: Don't track total hits (faster performance)
+     * - int: Track up to the specified number (balance between accuracy and performance)
+     * - null: Use Elasticsearch default behavior
+     *
+     * @param mixed $trackTotalHits The track_total_hits parameter
+     * @return $this
+     * @throws \InvalidArgumentException When an invalid value is provided
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-track-total-hits
+     */
+    public function trackTotalHits(mixed $trackTotalHits)
+    {
+        if ($trackTotalHits !== null && !is_bool($trackTotalHits) && !is_int($trackTotalHits)) {
+            throw new InvalidArgumentException(
+                'trackTotalHits must be a boolean, integer, or null. Got: ' . gettype($trackTotalHits),
+            );
+        }
+
+        if (is_int($trackTotalHits) && $trackTotalHits < 0) {
+            throw new InvalidArgumentException(
+                'trackTotalHits integer value must be non-negative. Got: ' . $trackTotalHits,
+            );
+        }
+
+        $this->_queryParts['trackTotalHits'] = $trackTotalHits;
+        $this->_dirty = true;
+
+        return $this;
+    }
+
+    /**
      * Executes the query.
      *
      * @return \Cake\ElasticSearch\ResultSet The results of the query
@@ -781,6 +816,10 @@ class Query implements IteratorAggregate, QueryInterface
             foreach ($this->_queryParts['aggregations'] as $aggregation) {
                 $this->_elasticQuery->addAggregation($aggregation);
             }
+        }
+
+        if ($this->_queryParts['trackTotalHits'] !== null) {
+            $this->_elasticQuery->setTrackTotalHits($this->_queryParts['trackTotalHits']);
         }
 
         if (!isset($this->_queryParts['query'])) {
