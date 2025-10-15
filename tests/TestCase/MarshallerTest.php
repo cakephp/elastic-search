@@ -96,7 +96,7 @@ class MarshallerTest extends TestCase
     }
 
     /**
-     * Test that invalid fields are preserved by default (new behavior).
+     * Test merging data into existing records with a fieldlist
      */
     public function testOneValidationErrorsPreserveInvalidFields(): void
     {
