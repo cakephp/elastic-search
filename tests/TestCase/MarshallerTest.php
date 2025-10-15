@@ -96,6 +96,31 @@ class MarshallerTest extends TestCase
     }
 
     /**
+     * Test that invalid fields are preserved by default (new behavior).
+     */
+    public function testOneValidationErrorsPreserveInvalidFields(): void
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $this->index->getValidator()
+            ->add('title', 'numbery', ['rule' => 'numeric']);
+
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data);
+
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertNull($result->title, 'Invalid fields are not set.');
+        $this->assertSame('Testing', $result->getInvalidField('title'), 'Invalid field should be preserved.');
+        $this->assertSame(['title' => 'Testing'], $result->getInvalid(), 'All invalid fields should be accessible.');
+        $this->assertSame($data['body'], $result->body);
+        $this->assertSame($data['user_id'], $result->user_id);
+        $this->assertNotEmpty($result->getErrors(), 'Should have an error.');
+    }
+
+    /**
      * test marshalling with fieldList
      */
     public function testOneFieldList(): void
@@ -418,7 +443,33 @@ class MarshallerTest extends TestCase
     }
 
     /**
-     * Test merging data into existing records with a fieldlist
+     * Test that invalid fields are preserved during merge (new behavior).
+     */
+    public function testMergeValidationErrorsPreserveInvalidFields(): void
+    {
+        $data = [
+            'title' => 'First article',
+            'body' => 'Some content',
+            'user_id' => 5, // Valid initial value
+        ];
+        $this->index->getValidator()
+            ->add('user_id', 'numbery', ['rule' => ['range', 1, 10]]);
+
+        $marshaller = new Marshaller($this->index);
+        $entity = $marshaller->one($data);
+
+        $mergeData = ['user_id' => 200]; // Invalid value
+        $result = $marshaller->merge($entity, $mergeData);
+
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertSame(5, $result->user_id, 'Invalid fields should not be modified during merge.');
+        $this->assertSame(200, $result->getInvalidField('user_id'), 'Invalid field should be preserved.');
+        $this->assertSame(['user_id' => 200], $result->getInvalid(), 'All invalid fields should be accessible.');
+        $this->assertNotEmpty($result->getErrors(), 'Should have an error.');
+    }
+
+    /**
+     * test merging array data into an entity.
      */
     public function testMergeFieldList(): void
     {

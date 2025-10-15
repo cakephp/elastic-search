@@ -18,12 +18,13 @@ namespace Cake\ElasticSearch;
 
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\EntityTrait;
+use Cake\Datasource\InvalidPropertyInterface;
 use Elastica\Result;
 
 /**
  * Represents a document stored in a Elastic Search Index
  */
-class Document implements EntityInterface
+class Document implements EntityInterface, InvalidPropertyInterface
 {
     use EntityTrait;
 

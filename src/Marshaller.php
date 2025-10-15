@@ -20,6 +20,7 @@ use ArrayObject;
 use Cake\Collection\Collection;
 use Cake\Datasource\EntityInterface;
 use Cake\Datasource\FactoryLocator;
+use Cake\Datasource\InvalidPropertyInterface;
 use Cake\ElasticSearch\Association\Embedded;
 use Cake\Validation\Validator;
 use RuntimeException;
@@ -97,7 +98,11 @@ class Marshaller
 
         $errors = $this->_validate($data, $options, true);
         $entity->setErrors($errors);
-        foreach (array_keys($errors) as $badKey) {
+
+        foreach ($errors as $badKey => $error) {
+            if (isset($data[$badKey])) {
+                $entity->setInvalidField($badKey, $data[$badKey]);
+            }
             unset($data[$badKey]);
         }
 
@@ -255,7 +260,12 @@ class Marshaller
         $errors = $this->_validate($data, $options, $entity->isNew());
         $entity->setErrors($errors);
 
-        foreach (array_keys($errors) as $badKey) {
+        // Handle invalid fields
+        // Handle invalid fields - preserve them like CakePHP ORM does
+        foreach ($errors as $badKey => $error) {
+            if (isset($data[$badKey]) && $entity instanceof InvalidPropertyInterface) {
+                $entity->setInvalidField($badKey, $data[$badKey]);
+            }
             unset($data[$badKey]);
         }
 
