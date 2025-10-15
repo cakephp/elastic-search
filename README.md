@@ -7,7 +7,7 @@
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat-square)](https://phpstan.org/)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 5.0+.
+Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 5.2+.
 
 You can [find the documentation for the plugin in the Cake Book](https://book.cakephp.org/elasticsearch).
 
@@ -60,28 +60,28 @@ a connection:
 
 ```php
 // in config/app.php
-    'Datasources' => [
-        // other datasources
-        'elastic' => [
-            'className' => 'Cake\ElasticSearch\Datasource\Connection',
-            'driver' => 'Cake\ElasticSearch\Datasource\Connection',
-            'hosts' => ['127.0.0.1:9200']
-        ],
-    ]
+'Datasources' => [
+    // other datasources
+    'elastic' => [
+        'className' => 'Cake\ElasticSearch\Datasource\Connection',
+        'driver' => 'Cake\ElasticSearch\Datasource\Connection',
+        'hosts' => ['127.0.0.1:9200']
+    ],
+]
 ```
 As an alternative you could use a link format if you like to use enviroment variables for example.
 
 ```php
 // in config/app.php
-    'Datasources' => [
-        // other datasources
-        'elastic' => [
-            'url' => env('ELASTIC_URL', null)
-        ]
+'Datasources' => [
+    // other datasources
+    'elastic' => [
+        'url' => env('ELASTIC_URL', null)
     ]
+]
 
-    // and make sure the folowing env variable is available:
-    // ELASTIC_URL="Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection"
+// and make sure the folowing env variable is available:
+// ELASTIC_URL="Cake\ElasticSearch\Datasource\Connection://127.0.0.1:9200?driver=Cake\ElasticSearch\Datasource\Connection"
 ```
 
 You can enable request logging by setting the `log` config option to true. By
@@ -176,16 +176,13 @@ Elasticsearch container will be downloaded and started on port 9200.
 ```bash
 # Start elasticsearch
 docker-compose up -d
-
-# Open an terminal in the development environment
-docker-compose run console bash
 ```
 
 Once inside the container you can install dependencies and run tests.
 
 ```bash
-./composer.phar install
-vendor/bin/phpunit
+composer install
+composer test
 ```
 
 **Warning**: Please, be very carefully when running tests as the Fixture will
