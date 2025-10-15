@@ -982,16 +982,24 @@ class IndexTest extends TestCase
     }
 
     /**
-     * Test callFinder method
+     * Test callFinder method with both legacy and modern styles
      */
     public function testCallFinder(): void
     {
         $query = $this->index->query();
-        $options = ['limit' => 10, 'conditions' => ['status' => 'active']];
 
-        $result = $this->index->callFinder('all', $query, $options);
+        // Test modern style without arguments
+        $result = $this->index->callFinder('all', $query);
         $this->assertInstanceOf(Query::class, $result);
-        $this->assertSame($query, $result); // Should return the same query object
+        $this->assertSame($query, $result);
+
+        // Test legacy array-based options (should trigger deprecation warning)
+        $options = ['limit' => 10, 'conditions' => ['status' => 'active']];
+        $this->deprecated(function () use ($query, $options) {
+            $result = $this->index->callFinder('all', $query, $options);
+            $this->assertInstanceOf(Query::class, $result);
+            $this->assertSame($query, $result);
+        });
     }
 
     /**
@@ -1139,14 +1147,27 @@ class IndexTest extends TestCase
     }
 
     /**
-     * Test find method with custom finder and options
+     * Test find method with both modern and deprecated styles
      */
     public function testFindWithFinderAndOptions(): void
     {
-        $query = $this->index->find('all', ['limit' => 5]);
-
+        // Test modern CakePHP 5.x style without options
+        $query = $this->index->find('all');
         $this->assertInstanceOf(Query::class, $query);
         $this->assertSame($this->index, $query->getRepository());
+
+        // Test modern CakePHP 5.x style with named arguments
+        $query = $this->index->find('all', limit: 5);
+        $this->assertInstanceOf(Query::class, $query);
+        $this->assertSame($this->index, $query->getRepository());
+
+        // Test legacy array-based options (deprecated)
+        $this->deprecated(function () {
+            $query = $this->index->find('all', ['limit' => 5]);
+
+            $this->assertInstanceOf(Query::class, $query);
+            $this->assertSame($this->index, $query->getRepository());
+        });
     }
 
     /**

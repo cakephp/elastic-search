@@ -354,7 +354,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function find(string $finder, mixed ...$args): static
     {
-        return $this->_repository->callFinder($finder, $this, $args);
+        return $this->_repository->callFinder($finder, $this, ...$args);
     }
 
     /**

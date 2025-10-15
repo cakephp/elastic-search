@@ -40,6 +40,7 @@ use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
 use RuntimeException;
+use function Cake\Core\deprecationWarning;
 use function Cake\Core\namespaceSplit;
 
 /**
@@ -329,9 +330,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function find(string $type = 'all', mixed ...$args): Query
     {
-        $query = $this->query();
-
-        return $this->callFinder($type, $query, $args);
+        return $this->callFinder($type, $this->query(), ...$args);
     }
 
     /**
@@ -351,23 +350,39 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      *
      * @param string $type name of the finder to be called
      * @param \Cake\ElasticSearch\Query $query The query object to apply the finder options to
-     * @param array $options List of options to pass to the finder
+     * @param mixed ...$args Arguments to pass to the finder method
      * @return \Cake\ElasticSearch\Query<\Cake\ElasticSearch\Document>
      * @throws \BadMethodCallException
      */
-    public function callFinder(string $type, Query $query, array $options = []): Query
+    public function callFinder(string $type, Query $query, mixed ...$args): Query
     {
-        $query->applyOptions($options);
-        $options = $query->getOptions();
         $finder = 'find' . ucfirst($type);
 
-        if (method_exists($this, $finder)) {
+        if (!method_exists($this, $finder)) {
+            throw new BadMethodCallException(
+                sprintf('Unknown finder method "%s"', $type),
+            );
+        }
+
+        // Handle backward compatibility for array-based options
+        if (count($args) === 1 && isset($args[0]) && is_array($args[0])) {
+            deprecationWarning(
+                '5.0.0',
+                'Calling finder methods with options arrays is deprecated. ' .
+                'Use named arguments instead.',
+            );
+            $options = $args[0];
+            $query->applyOptions($options);
+            $options = $query->getOptions();
+
             return $this->{$finder}($query, $options);
         }
 
-        throw new BadMethodCallException(
-            sprintf('Unknown finder method "%s"', $type),
-        );
+        // Convert named arguments to options array for the finder method
+        $query->applyOptions($args);
+        $options = $query->getOptions();
+
+        return $this->{$finder}($query, $options);
     }
 
     /**

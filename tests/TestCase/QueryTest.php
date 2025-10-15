@@ -935,7 +935,7 @@ class QueryTest extends TestCase
         // Mock the callFinder method
         $index->expects($this->once())
               ->method('callFinder')
-              ->with('published', $query, ['active'])
+              ->with('published', $query, 'active')
               ->willReturn($query);
 
         $result = $query->find('published', 'active');
