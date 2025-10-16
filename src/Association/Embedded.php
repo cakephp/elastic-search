@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Association;
 
 use Cake\Core\App;
+use Cake\Datasource\FactoryLocator;
 use Cake\ElasticSearch\Document;
 use Cake\ElasticSearch\Exception\MissingDocumentException;
 use Cake\ElasticSearch\Index;
 use Cake\Utility\Inflector;
+use InvalidArgumentException;
 
 /**
  * Represents an embedded document.
@@ -36,7 +38,7 @@ abstract class Embedded
     protected string $alias;
 
     /**
-     * The class to use for the embeded document.
+     * The class to use for the embedded document.
      */
     protected string $entityClass;
 
@@ -49,6 +51,11 @@ abstract class Embedded
      * The index class this embed is linked to
      */
     protected string $indexClass;
+
+    /**
+     * Index instance this embed is linked to
+     */
+    protected ?Index $index = null;
 
     /**
      * Constructor
@@ -174,21 +181,63 @@ abstract class Embedded
     /**
      * Set the index class used for this embed.
      *
-     * @param \Cake\ElasticSearch\Index|string|null $name The class name to set.
+     * @param \Cake\ElasticSearch\Index|string|null $className The class name to set.
      * @return $this
+     * @throws \InvalidArgumentException In case the class name is set after the target index has been
+     *  resolved, and it doesn't match the target index's class name.
      */
-    public function setIndexClass(string|Index|null $name)
+    public function setIndexClass(string|Index|null $className)
     {
-        if ($name instanceof Index) {
-            $this->indexClass = get_class($name);
-        } elseif (is_string($name)) {
-            $class = App::className($name, 'Model/Index');
+        if ($className instanceof Index) {
+            $this->index = $className;
+            $this->indexClass = get_class($className);
+        } elseif (is_string($className)) {
+            $class = App::className($className, 'Model/Index');
+            if (
+                $class !== null &&
+                $this->index instanceof Index &&
+                get_class($this->index) !== $class
+            ) {
+                throw new InvalidArgumentException(sprintf(
+                    "The class name `%s` doesn't match the target index class name of `%s`.",
+                    $className,
+                    $this->index::class,
+                ));
+            }
+
             if ($class !== null) {
                 $this->indexClass = $class;
             }
         }
 
         return $this;
+    }
+
+    /**
+     * Sets the index instance for the target side of the association.
+     *
+     * @param \Cake\ElasticSearch\Index $index the instance to be assigned as target side
+     * @return $this
+     */
+    public function setIndex(Index $index)
+    {
+        $this->index = $index;
+
+        return $this;
+    }
+
+    /**
+     * Gets the index instance for the target side of the association.
+     */
+    public function getIndex(): Index
+    {
+        if (!$this->index instanceof Index) {
+            /** @var \Cake\ElasticSearch\Index $index */
+            $index = FactoryLocator::get('Elastic')->get($this->getIndexClass());
+            $this->index = $index;
+        }
+
+        return $this->index;
     }
 
     /**

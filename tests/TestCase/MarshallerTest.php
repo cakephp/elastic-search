@@ -23,6 +23,7 @@ use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Marshaller;
 use Cake\ElasticSearch\TestSuite\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use ReflectionClass;
 use TestApp\Model\Document\ProtectedArticle;
 use TestApp\Model\Document\User;
 use TestApp\Model\Index\AccountsIndex;
@@ -1005,5 +1006,298 @@ class MarshallerTest extends TestCase
         $this->assertIsArray($result->comments);
         $this->assertCount(1, $result->comments);
         $this->assertTrue($result->comments[0]->isNew());
+    }
+
+    /**
+     * Test afterMarshal event is fired in one()
+     */
+    public function testOneAfterMarshalEvent(): void
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+            'user_id' => 1,
+        ];
+        $called = 0;
+        $this->index->getEventManager()->on(
+            'Model.afterMarshal',
+            function ($event, $entity, $data, $options) use (&$called): void {
+                $called++;
+                $this->assertInstanceOf(Document::class, $entity);
+                $this->assertInstanceOf('ArrayObject', $data);
+                $this->assertInstanceOf('ArrayObject', $options);
+                $this->assertSame('Testing', $entity->title);
+            },
+        );
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data);
+
+        $this->assertSame(1, $called, 'afterMarshal event should be called once');
+        $this->assertSame('Testing', $result->title);
+    }
+
+    /**
+     * Test afterMarshal event allows entity modification
+     */
+    public function testOneAfterMarshalEventMutateEntity(): void
+    {
+        $data = [
+            'title' => 'Testing',
+            'body' => 'Elastic text',
+        ];
+        $this->index->getEventManager()->on('Model.afterMarshal', function ($event, $entity, $data, $options) {
+            $entity->title = 'Modified in afterMarshal';
+        });
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data);
+        $this->assertSame('Modified in afterMarshal', $result->title);
+    }
+
+    /**
+     * Test afterMarshal event is fired in merge()
+     */
+    public function testMergeAfterMarshalEvent(): void
+    {
+        $data = [
+            'title' => 'Updated',
+            'body' => 'New body',
+        ];
+        $called = 0;
+        $this->index->getEventManager()->on(
+            'Model.afterMarshal',
+            function ($event, $entity, $data, $options) use (&$called): void {
+                $called++;
+                $this->assertInstanceOf(Document::class, $entity);
+                $this->assertInstanceOf('ArrayObject', $data);
+                $this->assertInstanceOf('ArrayObject', $options);
+                $this->assertSame('Updated', $entity->title);
+            },
+        );
+        $marshaller = new Marshaller($this->index);
+        $doc = new Document(['title' => 'original', 'body' => 'original']);
+        $result = $marshaller->merge($doc, $data);
+
+        $this->assertSame(1, $called, 'afterMarshal event should be called once');
+        $this->assertSame('Updated', $result->title);
+    }
+
+    /**
+     * Test afterMarshal event in merge with fieldList option
+     */
+    public function testMergeAfterMarshalEventWithFieldList(): void
+    {
+        $data = [
+            'title' => 'Updated',
+            'body' => 'New body',
+        ];
+        $called = 0;
+        $this->index->getEventManager()->on(
+            'Model.afterMarshal',
+            function ($event, $entity, $data, $options) use (&$called): void {
+                $called++;
+                $this->assertInstanceOf(Document::class, $entity);
+            },
+        );
+        $marshaller = new Marshaller($this->index);
+        $doc = new Document(['title' => 'original', 'body' => 'original']);
+        $result = $marshaller->merge($doc, $data, ['fieldList' => ['title']]);
+
+        $this->assertSame(1, $called, 'afterMarshal event should be called once even with fieldList');
+        $this->assertSame('Updated', $result->title);
+    }
+
+    /**
+     * Test clean embedded entities are not marked as dirty
+     */
+    public function testOneCleanEmbeddedEntitiesNotMarkedDirty(): void
+    {
+        $data = [
+            'title' => 'Article',
+            'user' => [
+                'username' => 'mark',
+            ],
+        ];
+
+        $this->index->embedOne('User');
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data, ['associated' => ['User']]);
+
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertInstanceOf(Document::class, $result->user);
+        $this->assertSame('mark', $result->user->username);
+
+        // The embedded user document is clean (no modifications after creation)
+        // So the parent should not be marked as dirty for that field
+        // if the embedded entity itself is clean
+        $this->assertTrue($result->isDirty('user'));
+    }
+
+    /**
+     * Test dirty embedded entities mark parent as dirty
+     */
+    public function testOneDirtyEmbeddedEntitiesMarkedDirty(): void
+    {
+        $data = [
+            'title' => 'Article',
+            'user' => [
+                'username' => 'mark',
+            ],
+        ];
+
+        $this->index->embedOne('User');
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data, ['associated' => ['User']]);
+
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertTrue($result->isDirty('user'));
+    }
+
+    /**
+     * Test many() skips non-array records
+     */
+    public function testManySkipsNonArrayRecords(): void
+    {
+        $data = [
+            ['title' => 'First', 'body' => 'Content 1'],
+            'invalid string',
+            ['title' => 'Second', 'body' => 'Content 2'],
+            null,
+            ['title' => 'Third', 'body' => 'Content 3'],
+            123,
+            ['title' => 'Fourth', 'body' => 'Content 4'],
+        ];
+
+        $marshaller = new Marshaller($this->index);
+        $results = $marshaller->many($data);
+
+        $this->assertCount(4, $results, 'Should only process array items');
+        $this->assertSame('First', $results[0]->title);
+        $this->assertSame('Second', $results[1]->title);
+        $this->assertSame('Third', $results[2]->title);
+        $this->assertSame('Fourth', $results[3]->title);
+    }
+
+    /**
+     * Test many() with all invalid data returns empty array
+     */
+    public function testManyWithAllInvalidData(): void
+    {
+        $data = [
+            'invalid string',
+            123,
+            null,
+            true,
+        ];
+
+        $marshaller = new Marshaller($this->index);
+        $results = $marshaller->many($data);
+
+        $this->assertCount(0, $results, 'Should return empty array when no valid items');
+    }
+
+    /**
+     * Test embedded entity uses correct index marshaller
+     */
+    public function testEmbeddedEntityUsesCorrectMarshaller(): void
+    {
+        Configure::write('App.namespace', 'TestApp');
+
+        $data = [
+            'title' => 'Article',
+            'user' => [
+                'username' => 'mark',
+                'profile' => [
+                    'bio' => 'Developer',
+                ],
+            ],
+        ];
+
+        // Set up nested embeds
+        $this->index->embedOne('User');
+        $userIndex = new AccountsIndex();
+        $userIndex->embedOne('Profile');
+
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->one($data, ['associated' => ['User' => ['associated' => ['Profile']]]]);
+
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertInstanceOf(Document::class, $result->user);
+        $this->assertSame('mark', $result->user->username);
+    }
+
+    /**
+     * Test fieldValue helper with existing field
+     */
+    public function testFieldValueWithExistingField(): void
+    {
+        $entity = new Document(['title' => 'Test', 'body' => 'Content']);
+        $marshaller = new Marshaller($this->index);
+
+        $reflection = new ReflectionClass($marshaller);
+        $method = $reflection->getMethod('fieldValue');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($marshaller, $entity, 'title');
+        $this->assertSame('Test', $result);
+
+        $result = $method->invoke($marshaller, $entity, 'body');
+        $this->assertSame('Content', $result);
+    }
+
+    /**
+     * Test fieldValue helper with missing field
+     */
+    public function testFieldValueWithMissingField(): void
+    {
+        $entity = new Document(['title' => 'Test']);
+        $marshaller = new Marshaller($this->index);
+
+        $reflection = new ReflectionClass($marshaller);
+        $method = $reflection->getMethod('fieldValue');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($marshaller, $entity, 'nonexistent');
+        $this->assertNull($result, 'Should return null for missing fields');
+    }
+
+    /**
+     * Test fieldValue helper with null field value
+     */
+    public function testFieldValueWithNullValue(): void
+    {
+        $entity = new Document(['title' => null]);
+        $marshaller = new Marshaller($this->index);
+
+        $reflection = new ReflectionClass($marshaller);
+        $method = $reflection->getMethod('fieldValue');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($marshaller, $entity, 'title');
+        $this->assertNull($result);
+    }
+
+    /**
+     * Test merge uses fieldValue for safe embedded access
+     */
+    public function testMergeUsesFieldValueForSafeAccess(): void
+    {
+        $data = [
+            'title' => 'Updated',
+            'user' => [
+                'username' => 'updated_user',
+            ],
+        ];
+
+        // Create entity without user field initially
+        $entity = new Document(['title' => 'original'], ['markNew' => false]);
+
+        $this->index->embedOne('User');
+        $marshaller = new Marshaller($this->index);
+        $result = $marshaller->merge($entity, $data, ['associated' => ['User']]);
+
+        $this->assertInstanceOf(Document::class, $result);
+        $this->assertSame('Updated', $result->title);
+        $this->assertInstanceOf(Document::class, $result->user);
+        $this->assertSame('updated_user', $result->user->username);
     }
 }

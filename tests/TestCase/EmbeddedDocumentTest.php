@@ -27,7 +27,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use TestApp\Model\Document\Address;
 
 /**
- * Tests features around embeded documents.
+ * Tests features around embedded documents.
  */
 class EmbeddedDocumentTest extends TestCase
 {
@@ -177,12 +177,23 @@ class EmbeddedDocumentTest extends TestCase
      * Test embed a missing document, so a generic one
      * is used.
      */
-    public function testEmbededMissingDocument(): void
+    public function testEmbeddedMissingDocument(): void
     {
         $this->index->embedOne('InvalidDocumentName');
         $assocs = $this->index->embedded();
         $this->assertCount(1, $assocs);
         $this->assertSame(Document::class, $assocs[0]->getEntityClass());
         $this->assertSame('invalid_document_name', $assocs[0]->getProperty());
+    }
+
+    /**
+     * Test setIndex/getIndex
+     */
+    public function testSetIndex(): void
+    {
+        $embed = new EmbedOne('Test');
+        $embed->setIndex($this->index);
+        $this->assertInstanceOf(Index::class, $embed->getIndex());
+        $this->assertSame($this->index, $embed->getIndex());
     }
 }

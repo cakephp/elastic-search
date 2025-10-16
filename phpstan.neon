@@ -8,6 +8,9 @@ parameters:
         - identifier: missingType.iterableValue
         - identifier: missingType.generics
         -
+            identifier: instanceof.alwaysTrue
+            path: src/Marshaller.php
+        -
             message: '#^Trait Cake\\ElasticSearch\\Datasource\\IndexLocatorAwareTrait is used zero times and is not analysed\.$#'
             identifier: trait.unused
             count: 1
