@@ -15,28 +15,21 @@ parameters:
             identifier: trait.unused
             count: 1
             path: src/Datasource/IndexLocatorAwareTrait.php
-
         -
             message: '#^Access to an undefined property Cake\\Datasource\\EntityInterface\:\:\$version\.$#'
             identifier: property.notFound
             count: 1
             path: src/Index.php
-
         -
             message: '#^Method Cake\\ElasticSearch\\Query\:\:all\(\) should return Cake\\Datasource\\ResultSetInterface but returns iterable\.$#'
             identifier: return.type
             count: 1
             path: src/Query.php
-
-
-
-
         -
             message: '#^Method Cake\\ElasticSearch\\Query\:\:find\(\) should return static\(Cake\\ElasticSearch\\Query\<TSubject of array\|Cake\\ElasticSearch\\Document\>\) but returns Cake\\ElasticSearch\\Query\<Cake\\ElasticSearch\\Document\>\.$#'
             identifier: return.type
             count: 1
             path: src/Query.php
-
         -
             message: '#^Class Cake\\ElasticSearch\\ResultSet @implements tag contains incompatible type Cake\\Datasource\\ResultSetInterface&iterable\<T of array\|Cake\\Datasource\\EntityInterface\>\.$#'
             identifier: generics.notCompatible

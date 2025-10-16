@@ -29,6 +29,10 @@ use Psr\Log\NullLogger;
 use Psr\SimpleCache\CacheInterface;
 use RuntimeException;
 
+/**
+ * @mixin \Elastica\Client
+ * @package Cake\ElasticSearch\Datasource
+ */
 class Connection implements ConnectionInterface
 {
     protected array $_config;

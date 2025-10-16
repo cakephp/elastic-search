@@ -142,7 +142,7 @@ class MarshallerTest extends TestCase
     /**
      * test marshalling with accessibleFields
      */
-    public function testOneAccsesibleFields(): void
+    public function testOneAccessibleFields(): void
     {
         $data = [
             'title' => 'Testing',

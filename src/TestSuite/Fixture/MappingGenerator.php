@@ -50,7 +50,7 @@ class MappingGenerator
     /**
      * Drop and re-create indexes defined in the mapping schema file.
      *
-     * @param array<string> $indexes A subset of indexes to reload. Used for testing.
+     * @param array<string>|null $indexes A subset of index names to reload. If null, all indexes are reloaded.
      */
     public function reload(?array $indexes = null): void
     {
@@ -62,6 +62,10 @@ class MappingGenerator
             ));
         }
 
+        if (!file_exists($this->file)) {
+            throw new RuntimeException(sprintf('The `%s` file does not exist.', $this->file));
+        }
+
         $mappings = include $this->file;
         if (empty($mappings)) {
             throw new RuntimeException(sprintf('The `%s` file did not return any mapping data.', $this->file));
@@ -70,6 +74,11 @@ class MappingGenerator
         foreach ($mappings as $i => $mapping) {
             if (!isset($mapping['name'])) {
                 throw new RuntimeException(sprintf('The mapping at index %s does not have a name.', $i));
+            }
+
+            // Skip if indexes filter is provided and this index is not in the list
+            if ($indexes !== null && !in_array($mapping['name'], $indexes, true)) {
+                continue;
             }
 
             $this->dropIndex($db, $mapping['name']);

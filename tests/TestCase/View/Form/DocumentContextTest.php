@@ -322,7 +322,7 @@ class DocumentContextTest extends TestCase
     /**
      * Test fields being required by validation.
      */
-    public function testIsRequriredAlternateValidator(): void
+    public function testIsRequiredAlternateValidator(): void
     {
         $articles = $this->setupIndex();
         $entity = new Document(['title' => 'test']);
