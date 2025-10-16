@@ -153,8 +153,8 @@ class TestFixtureTest extends TestCase
         $result = $this->fixture->getIndex();
 
         $this->assertInstanceOf(Index::class, $result);
-        // The method should use Inflector::camelize on the table name
-        // test_articles -> TestArticles
+        $this->assertSame('TestArticles', $result->getRegistryAlias());
+        $this->assertSame('test_articles', $result->getName());
     }
 
     /**
