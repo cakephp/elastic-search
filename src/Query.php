@@ -964,10 +964,14 @@ class Query implements IteratorAggregate, QueryInterface
      * Fetch the results for this query.
      *
      * Will return either the results set through setResult(), or execute this query
-     * and return the ResultSetDecorator object ready for streaming of results.
+     * and return the ResultSet object ready for streaming of results.
      *
-     * ResultSetDecorator is a traversable object that implements the methods found
-     * on Cake\Collection\Collection.
+     * When mapReduce or formatters are applied, the results are wrapped in a
+     * ResultSetDecorator which is a traversable object that implements the methods
+     * found on Cake\Collection\Collection.
+     *
+     * @return \Cake\ElasticSearch\ResultSet|\Cake\Datasource\ResultSetDecorator
+     * @phpstan-return \Cake\Datasource\ResultSetInterface
      */
     public function all(): ResultSetInterface
     {
