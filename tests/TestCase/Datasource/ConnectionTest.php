@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Test\TestCase\Datasource;
 
 use Cake\Cache\Cache;
+use Cake\Cache\Engine\ArrayEngine;
 use Cake\Database\Log\QueryLogger;
 use Cake\Datasource\ConnectionManager;
 use Cake\ElasticSearch\Datasource\Connection;
@@ -185,8 +186,7 @@ class ConnectionTest extends TestCase
     {
         // Set up cache configuration for testing
         Cache::setConfig('_cake_model_', [
-            'className' => 'File',
-            'path' => sys_get_temp_dir(),
+            'className' => 'Array',
         ]);
 
         $connection = new Connection($this->getTestConfig());
@@ -195,11 +195,16 @@ class ConnectionTest extends TestCase
         $defaultCacher = $connection->getCacher();
         $this->assertInstanceOf(CacheInterface::class, $defaultCacher);
 
-        // Test setting custom cacher
-        $mockCache = $this->createMock(CacheInterface::class);
-        $connection->setCacher($mockCache);
+        $arrayCache = new ArrayEngine();
+        $arrayCache->init(['prefix' => 'test_']);
 
-        $this->assertSame($mockCache, $connection->getCacher());
+        $connection->setCacher($arrayCache);
+
+        $this->assertSame($arrayCache, $connection->getCacher());
+
+        // Verify the cache actually works
+        $arrayCache->set('test_key', 'test_value');
+        $this->assertSame('test_value', $arrayCache->get('test_key'));
 
         // Clean up
         Cache::drop('_cake_model_');
