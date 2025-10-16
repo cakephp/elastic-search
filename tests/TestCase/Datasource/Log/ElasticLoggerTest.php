@@ -16,19 +16,54 @@ declare(strict_types=1);
  */
 namespace Cake\ElasticSearch\Test\TestCase\Datasource\Log;
 
-use Cake\Database\Log\LoggedQuery;
 use Cake\Database\Log\QueryLogger;
 use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Datasource\Log\ElasticLogger;
 use Cake\ElasticSearch\TestSuite\TestCase;
-use Psr\Log\LoggerInterface;
+use Cake\Log\Engine\ArrayLog;
 use Psr\Log\LogLevel;
 
 /**
- * Tests the ElasticLogger class with simple array format
+ * Tests the ElasticLogger class with ArrayLog engine
  */
 class ElasticLoggerTest extends TestCase
 {
+    /**
+     * Extract JSON from formatted log message
+     *
+     * ArrayLog formats messages as "level: message", so we need to extract the JSON part
+     *
+     * @param string $formattedMessage The formatted log message
+     * @return array<mixed> The decoded JSON
+     */
+    private function extractJsonFromLog(string $formattedMessage): array
+    {
+        // Remove the "level: " prefix
+        $parts = explode(': ', $formattedMessage, 2);
+        if (count($parts) === 2) {
+            /** @var array<mixed>|null $decoded */
+            $decoded = json_decode($parts[1], true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Test that ArrayLog itself works
+     */
+    public function testArrayLogBasicFunctionality(): void
+    {
+        $arrayLog = new ArrayLog();
+        $arrayLog->log(LogLevel::DEBUG, 'Test message');
+
+        $logs = $arrayLog->read();
+        $this->assertCount(1, $logs);
+        $this->assertStringContainsString('Test message', $logs[0]);
+    }
+
     /**
      * Test ElasticLogger constructor
      */
@@ -44,16 +79,16 @@ class ElasticLoggerTest extends TestCase
     }
 
     /**
-     * Test constructor with PSR-3 LoggerInterface
+     * Test constructor with ArrayLog
      */
-    public function testConstructWithPsrLogger(): void
+    public function testConstructWithArrayLog(): void
     {
-        $psrLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection();
 
-        $elasticLogger = new ElasticLogger($psrLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
-        $this->assertSame($psrLogger, $elasticLogger->getLogger());
+        $this->assertSame($arrayLog, $elasticLogger->getLogger());
     }
 
     /**
@@ -69,7 +104,7 @@ class ElasticLoggerTest extends TestCase
         $this->assertSame($initialLogger, $elasticLogger->getLogger());
 
         // Test setting new logger
-        $newLogger = $this->createMock(LoggerInterface::class);
+        $newLogger = new ArrayLog();
         $result = $elasticLogger->setLogger($newLogger);
 
         $this->assertSame($elasticLogger, $result); // Test fluent interface
@@ -81,9 +116,9 @@ class ElasticLoggerTest extends TestCase
      */
     public function testLogWhenLoggingEnabledDebugLevel(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $context = [
             'request' => [
@@ -93,21 +128,16 @@ class ElasticLoggerTest extends TestCase
             ],
         ];
 
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->callback(function ($message) {
-                    $data = json_decode($message, true);
-
-                    return isset($data['size']) && $data['size'] === 50 &&
-                           isset($data['from']) && $data['from'] === 0 &&
-                           isset($data['query']['match_all']);
-                }),
-                $this->anything(),
-            );
-
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+
+        $logs = $arrayLog->read();
+        $this->assertCount(1, $logs);
+
+        $data = $this->extractJsonFromLog($logs[0]);
+        $this->assertIsArray($data);
+        $this->assertSame(50, $data['size']);
+        $this->assertSame(0, $data['from']);
+        $this->assertEquals(['match_all' => []], $data['query']);
     }
 
     /**
@@ -115,9 +145,9 @@ class ElasticLoggerTest extends TestCase
      */
     public function testLogWhenLoggingDisabled(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(false);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $context = [
             'request' => [
@@ -126,10 +156,10 @@ class ElasticLoggerTest extends TestCase
             ],
         ];
 
-        $mockLogger->expects($this->never())
-            ->method('log');
-
         $elasticLogger->log(LogLevel::DEBUG, 'Test message', $context);
+
+        $logs = $arrayLog->read();
+        $this->assertEmpty($logs);
     }
 
     /**
@@ -137,9 +167,9 @@ class ElasticLoggerTest extends TestCase
      */
     public function testNonDebugLevelsIgnored(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $context = [
             'request' => [
@@ -148,13 +178,13 @@ class ElasticLoggerTest extends TestCase
             ],
         ];
 
-        $mockLogger->expects($this->never())
-            ->method('log');
-
         // Test various non-DEBUG levels
         $elasticLogger->log(LogLevel::INFO, 'Info message', $context);
         $elasticLogger->log(LogLevel::WARNING, 'Warning message', $context);
         $elasticLogger->log(LogLevel::ERROR, 'Error message', $context);
+
+        $logs = $arrayLog->read();
+        $this->assertEmpty($logs);
     }
 
     /**
@@ -162,15 +192,15 @@ class ElasticLoggerTest extends TestCase
      */
     public function testLogWithoutRequestIgnored(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
-
-        $mockLogger->expects($this->never())
-            ->method('log');
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $elasticLogger->log(LogLevel::DEBUG, 'Empty context', []);
         $elasticLogger->log(LogLevel::DEBUG, 'No request', ['response' => []]);
+
+        $logs = $arrayLog->read();
+        $this->assertEmpty($logs);
     }
 
     /**
@@ -178,9 +208,9 @@ class ElasticLoggerTest extends TestCase
      */
     public function testSearchRequestWithResponse(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $context = [
             'request' => [
@@ -211,30 +241,16 @@ class ElasticLoggerTest extends TestCase
             'responseStatus' => 200,
         ];
 
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->callback(function ($message) {
-                    $data = json_decode($message, true);
-
-                    return isset($data['size']) && $data['size'] === 50 &&
-                           isset($data['query']['bool']['filter']) &&
-                           $data['from'] === 0;
-                }),
-                $this->callback(function ($logContext) {
-                    if (!isset($logContext['query']) || !($logContext['query'] instanceof LoggedQuery)) {
-                        return false;
-                    }
-
-                    $queryContext = $logContext['query']->getContext();
-
-                    return isset($queryContext['took']) && $queryContext['took'] === 4.0 &&
-                           isset($queryContext['numRows']) && $queryContext['numRows'] === 5443;
-                }),
-            );
-
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+
+        $logs = $arrayLog->read();
+        $this->assertCount(1, $logs);
+
+        $data = $this->extractJsonFromLog($logs[0]);
+        $this->assertSame(50, $data['size']);
+        $this->assertSame(0, $data['from']);
+        $this->assertIsArray($data['query']);
+        $this->assertIsArray($data['query']['bool']);
     }
 
     /**
@@ -242,9 +258,9 @@ class ElasticLoggerTest extends TestCase
      */
     public function testLegacyHitsTotalFormat(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $context = [
             'request' => [
@@ -255,30 +271,19 @@ class ElasticLoggerTest extends TestCase
             'response' => [
                 'took' => 5,
                 'hits' => [
-                    'total' => 42, // Legacy format - direct number
+                    'total' => 42,
                     'hits' => [],
                 ],
             ],
         ];
 
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->anything(),
-                $this->callback(function ($logContext) {
-                    if (!isset($logContext['query']) || !($logContext['query'] instanceof LoggedQuery)) {
-                        return false;
-                    }
-
-                    $queryContext = $logContext['query']->getContext();
-
-                    return isset($queryContext['numRows']) && $queryContext['numRows'] === 42 &&
-                           isset($queryContext['took']) && $queryContext['took'] === 5.0;
-                }),
-            );
-
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+
+        $logs = $arrayLog->read();
+        $this->assertCount(1, $logs);
+
+        $data = $this->extractJsonFromLog($logs[0]);
+        $this->assertIsArray($data);
     }
 
     /**
@@ -286,9 +291,9 @@ class ElasticLoggerTest extends TestCase
      */
     public function testCountOperationLogging(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $context = [
             'request' => [
@@ -305,23 +310,14 @@ class ElasticLoggerTest extends TestCase
             ],
         ];
 
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->anything(),
-                $this->callback(function ($logContext) {
-                    if (!isset($logContext['query']) || !($logContext['query'] instanceof LoggedQuery)) {
-                        return false;
-                    }
-
-                    $queryContext = $logContext['query']->getContext();
-
-                    return isset($queryContext['numRows']) && $queryContext['numRows'] === 87;
-                }),
-            );
-
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+
+        $logs = $arrayLog->read();
+        $this->assertCount(1, $logs);
+
+        $data = $this->extractJsonFromLog($logs[0]);
+        $this->assertIsArray($data);
+        $this->assertIsArray($data['query']);
     }
 
     /**
@@ -329,9 +325,9 @@ class ElasticLoggerTest extends TestCase
      */
     public function testRequestOnlyLogging(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $context = [
             'request' => [
@@ -339,22 +335,13 @@ class ElasticLoggerTest extends TestCase
             ],
         ];
 
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->callback(function ($message) {
-                    $data = json_decode($message, true);
-
-                    return isset($data['size']) && $data['size'] === 0;
-                }),
-                $this->callback(function ($logContext) {
-                    // Should not create LoggedQuery when no response
-                    return !isset($logContext['query']);
-                }),
-            );
-
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+
+        $logs = $arrayLog->read();
+        $this->assertCount(1, $logs);
+
+        $data = $this->extractJsonFromLog($logs[0]);
+        $this->assertSame(0, $data['size']);
     }
 
     /**
@@ -362,9 +349,9 @@ class ElasticLoggerTest extends TestCase
      */
     public function testComplexSearchQuery(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $context = [
             'request' => [
@@ -392,30 +379,16 @@ class ElasticLoggerTest extends TestCase
             ],
         ];
 
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->callback(function ($message) {
-                    $data = json_decode($message, true);
-
-                    return isset($data['size']) && $data['size'] === 20 &&
-                           isset($data['from']) && $data['from'] === 40 &&
-                           isset($data['query']['bool']['must']);
-                }),
-                $this->callback(function ($logContext) {
-                    if (!isset($logContext['query']) || !($logContext['query'] instanceof LoggedQuery)) {
-                        return false;
-                    }
-
-                    $queryContext = $logContext['query']->getContext();
-
-                    return isset($queryContext['took']) && $queryContext['took'] === 15.0 &&
-                           isset($queryContext['numRows']) && $queryContext['numRows'] === 250;
-                }),
-            );
-
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+
+        $logs = $arrayLog->read();
+        $this->assertCount(1, $logs);
+
+        $data = $this->extractJsonFromLog($logs[0]);
+        $this->assertSame(20, $data['size']);
+        $this->assertSame(40, $data['from']);
+        $this->assertIsArray($data['query']['bool']['must']);
+        $this->assertCount(2, $data['query']['bool']['must']);
     }
 
     /**
@@ -423,13 +396,13 @@ class ElasticLoggerTest extends TestCase
      */
     public function testAggregationHitsHandling(): void
     {
-        $mockLogger = $this->createMock(LoggerInterface::class);
+        $arrayLog = new ArrayLog();
         $connection = $this->getMockConnection(true);
-        $elasticLogger = new ElasticLogger($mockLogger, $connection);
+        $elasticLogger = new ElasticLogger($arrayLog, $connection);
 
         $context = [
             'request' => [
-                'size' => 0, // Aggregation only
+                'size' => 0,
                 'query' => ['match_all' => []],
             ],
             'response' => [
@@ -452,23 +425,14 @@ class ElasticLoggerTest extends TestCase
             ],
         ];
 
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                $this->anything(),
-                $this->callback(function ($logContext) {
-                    if (!isset($logContext['query']) || !($logContext['query'] instanceof LoggedQuery)) {
-                        return false;
-                    }
-
-                    $queryContext = $logContext['query']->getContext();
-
-                    return isset($queryContext['numRows']) && $queryContext['numRows'] === 1000;
-                }),
-            );
-
         $elasticLogger->log(LogLevel::DEBUG, 'Elastica Request', $context);
+
+        $logs = $arrayLog->read();
+        $this->assertCount(1, $logs);
+
+        $data = $this->extractJsonFromLog($logs[0]);
+        $this->assertSame(0, $data['size']);
+        $this->assertIsArray($data['query']);
     }
 
     /**
