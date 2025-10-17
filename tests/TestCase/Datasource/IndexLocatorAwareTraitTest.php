@@ -295,4 +295,25 @@ class IndexLocatorAwareTraitTest extends TestCase
         $this->subject->setDefaultIndex(null);
         $this->assertNull($this->subject->getDefaultIndex());
     }
+
+    /**
+     * Test fetchIndex passes FQDN class names through to locator
+     */
+    public function testFetchIndexWithFqdnClassName(): void
+    {
+        $mockIndex = $this->createMock(Index::class);
+        $fqdnClass = Index::class;
+
+        $this->mockLocator
+            ->expects($this->once())
+            ->method('get')
+            ->with($fqdnClass, [])
+            ->willReturn($mockIndex);
+
+        $this->subject->setIndexLocator($this->mockLocator);
+
+        $result = $this->subject->fetchIndex($fqdnClass);
+
+        $this->assertSame($mockIndex, $result);
+    }
 }

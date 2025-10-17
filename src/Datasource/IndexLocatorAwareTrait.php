@@ -70,10 +70,12 @@ trait IndexLocatorAwareTrait
     /**
      * Convenience method to get an index instance.
      *
-     * @param string|null $alias The alias name you want to get. Should be in CamelCase format.
+     * @template T of \Cake\ElasticSearch\Index
+     * @param class-string<T>|string|null $alias The alias name you want to get. Should be in CamelCase format.
      *  If `null` then the value of $defaultIndex property is used.
      * @param array<string, mixed> $options The options you want to build the index with.
      *   If an index has already been loaded the registry options will be ignored.
+     * @return ($alias is class-string<T> ? T : \Cake\ElasticSearch\Index)
      * @throws \UnexpectedValueException If `$alias` argument and `$defaultIndex` property both are `null`.
      * @see \Cake\ElasticSearch\Datasource\IndexLocator::get()
      */
@@ -86,9 +88,8 @@ trait IndexLocatorAwareTrait
             );
         }
 
-        $index = $this->getIndexLocator()->get($alias, $options);
-        assert($index instanceof Index);
-
-        return $index;
+        // phpcs:ignore
+        /** @var T */
+        return $this->getIndexLocator()->get($alias, $options);
     }
 }

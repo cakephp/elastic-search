@@ -374,6 +374,40 @@ class IndexLocatorTest extends TestCase
     }
 
     /**
+     * Test get() with FQDN class name
+     */
+    public function testGetWithFqdnClassName(): void
+    {
+        // Using FQDN should work directly
+        $result = $this->locator->get(UsersIndex::class);
+
+        $this->assertInstanceOf(UsersIndex::class, $result);
+        $this->assertSame('users', $result->getName());
+
+        // Should be cached under FQDN alias
+        $this->assertTrue($this->locator->exists(UsersIndex::class));
+
+        // Getting again should return same instance
+        $result2 = $this->locator->get(UsersIndex::class);
+        $this->assertSame($result, $result2);
+    }
+
+    /**
+     * Test get() with FQDN class name and custom options
+     */
+    public function testGetWithFqdnClassNameAndOptions(): void
+    {
+        // Using FQDN with custom name option
+        // Use Index::class which respects the name option
+        $result = $this->locator->get(Index::class, [
+            'name' => 'custom_users_index',
+        ]);
+
+        $this->assertInstanceOf(Index::class, $result);
+        $this->assertSame('custom_users_index', $result->getName());
+    }
+
+    /**
      * Test createInstance with fallback disabled and missing className
      */
     public function testCreateInstanceFallbackDisabledMissingClass(): void

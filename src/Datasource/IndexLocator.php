@@ -81,17 +81,22 @@ class IndexLocator extends AbstractLocator
      */
     protected function createInstance(string $alias, array $options): RepositoryInterface
     {
-        [, $classAlias] = pluginSplit($alias);
-        $options += [
-            'name' => Inflector::underscore($classAlias),
-            'className' => Inflector::camelize($alias),
-        ];
-        $className = App::className($options['className'], 'Model/Index', 'Index');
+        if (!str_contains($alias, '\\')) {
+            [, $classAlias] = pluginSplit($alias);
+            $options += [
+                'name' => Inflector::underscore($classAlias),
+                'className' => Inflector::camelize($alias),
+            ];
+        } elseif (!isset($options['name'])) {
+            $options['className'] = $alias;
+        }
+
+        $className = App::className($options['className'] ?? $alias, 'Model/Index', 'Index');
         if ($className) {
             $options['className'] = $className;
         } elseif ($this->allowFallbackClass) {
-            if (!isset($options['name']) && strpos($options['className'], '\\') === false) {
-                [, $name] = pluginSplit($options['className']);
+            if (!isset($options['name']) && strpos($options['className'] ?? $alias, '\\') === false) {
+                [, $name] = pluginSplit($options['className'] ?? $alias);
                 $options['name'] = Inflector::underscore($name);
             }
 
