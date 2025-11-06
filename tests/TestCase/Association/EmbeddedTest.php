@@ -85,7 +85,7 @@ class EmbeddedTest extends TestCase
         $embedded = new ConcreteEmbedded('TestAlias');
         $original = $embedded->getProperty();
 
-        $result = $embedded->setProperty(null);
+        $result = $embedded->setProperty();
 
         $this->assertSame($embedded, $result); // Test fluent interface
         $this->assertSame($original, $embedded->getProperty()); // Should not change
