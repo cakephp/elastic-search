@@ -2,7 +2,7 @@
 #################
 
 .. warning::
-    CakePHP ElasticSearch 5.x requires CakePHP 5.0+, ElasticSearch 9.x, and PHP 8.1+.
+    CakePHP ElasticSearch 5.x requires CakePHP 5.2+, ElasticSearch 9.x, and PHP 8.1+.
 
 Requirements
 ============
