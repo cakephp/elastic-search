@@ -7,7 +7,7 @@
 Requirements
 ============
 
-* CakePHP 5.0+
+* CakePHP 5.2+
 * ElasticSearch 9.x
 * Elastica 9.x (via ruflin/elastica)
 * PHP 8.1+
