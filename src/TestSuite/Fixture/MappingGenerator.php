@@ -13,16 +13,38 @@ use RuntimeException;
  * Index definition files should return an array of indexes
  * to create. Each index in the array should follow the form of
  *
+ * Simple mapping (properties only):
  * ```
  * [
  *   'name' => 'articles',
- *   'mapping' => [...],
+ *   'mapping' => [
+ *     'title' => ['type' => 'text'],
+ *     'body' => ['type' => 'text'],
+ *   ],
+ *   'settings' => [...],
+ * ]
+ * ```
+ *
+ * Full mapping structure (with dynamic_templates, etc.):
+ * ```
+ * [
+ *   'name' => 'articles',
+ *   'mapping' => [
+ *     'properties' => [
+ *       'title' => ['type' => 'text'],
+ *       'body' => ['type' => 'text'],
+ *     ],
+ *     'dynamic_templates' => [...],
+ *     'dynamic' => 'strict',
+ *   ],
  *   'settings' => [...],
  * ]
  * ```
  *
  * The `mapping` key should be compatible with Elasticsearch's
- * mapping API and Elastica.
+ * mapping API and Elastica. If the mapping contains a 'properties'
+ * key, it will be treated as a full mapping structure. Otherwise,
+ * it will be wrapped in a 'properties' key for backward compatibility.
  *
  * The `settings` key can contain Elastica compatible index creation
  * settings.
@@ -103,6 +125,12 @@ class MappingGenerator
     /**
      * Create an index.
      *
+     * Supports two mapping formats:
+     * - Simple: Direct property definitions (wrapped in 'properties' automatically)
+     * - Full: Complete mapping structure including 'properties', 'dynamic_templates', etc.
+     *
+     * The format is detected by checking if the mapping contains a 'properties' key.
+     *
      * @param \Cake\ElasticSearch\Datasource\Connection $db The connection.
      * @param array $mapping The index mapping and settings.
      */
@@ -119,11 +147,17 @@ class MappingGenerator
             $args['settings'] = $mapping['settings'];
         }
 
-        // In Elastica, mappings should be included in index creation
+        // Detect if this is a full mapping structure or simple properties
         if (!empty($mapping['mapping'])) {
-            $args['mappings'] = [
-                'properties' => $mapping['mapping'],
-            ];
+            if (isset($mapping['mapping']['properties'])) {
+                // Full mapping structure - use as-is to support dynamic_templates, etc.
+                $args['mappings'] = $mapping['mapping'];
+            } else {
+                // Simple properties only - wrap for backward compatibility
+                $args['mappings'] = [
+                    'properties' => $mapping['mapping'],
+                ];
+            }
         }
 
         $response = $esIndex->create($args);
