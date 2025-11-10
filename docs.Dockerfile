@@ -2,7 +2,7 @@
 FROM ghcr.io/cakephp/docs-builder as builder
 
 COPY docs /data/docs
-ENV LANGS="en fr ja pt"
+ENV LANGS="en ja"
 
 # Build docs with sphinx
 RUN cd /data/docs-builder && \
@@ -13,9 +13,9 @@ RUN cd /data/docs-builder && \
 FROM ghcr.io/cakephp/docs-builder:runtime as runtime
 
 # Configure search index script
-ENV LANGS="en fr ja pt"
+ENV LANGS="en ja"
 ENV SEARCH_SOURCE="/usr/share/nginx/html"
-ENV SEARCH_URL_PREFIX="/elasticsearch/4"
+ENV SEARCH_URL_PREFIX="/elasticsearch/5"
 
 COPY --from=builder /data/docs /data/docs
 COPY --from=builder /data/website /data/website

@@ -13,7 +13,7 @@ To install the ElasticSearch plugin, you can use ``composer``. From your
 application's ROOT directory (where ``composer.json`` file is located) run the
 following::
 
-    php composer.phar require cakephp/elastic-search "^4.0"
+    $ composer require cakephp/elastic-search "^5.0"
 
 You will need to add the following line to your application's
 **src/Application.php** file::
@@ -29,18 +29,28 @@ your **config/app.php** file. An example configuration would be::
         'elastic' => [
             'className' => 'Cake\ElasticSearch\Datasource\Connection',
             'driver' => 'Cake\ElasticSearch\Datasource\Connection',
-            'host' => '127.0.0.1',
-            'port' => 9200,
+            'hosts' => ['127.0.0.1:9200'],
             'index' => 'my_apps_index',
         ],
     ]
 
+The legacy configuration format with separate ``host`` and ``port`` is still supported::
+
+    'elastic' => [
+        'className' => 'Cake\ElasticSearch\Datasource\Connection',
+        'driver' => 'Cake\ElasticSearch\Datasource\Connection',
+        'host' => '127.0.0.1',
+        'port' => 9200,
+        'index' => 'my_apps_index',
+    ]
+
 If your endpoint requires https, use::
 
-    'port' => 443,
-    'transport' => 'https'
+    'hosts' => ['https://127.0.0.1:443']
 
-or you might get a 400 response back from the elasticsearch server.
+.. note::
+    The ``hosts`` array format is recommended for new applications and provides
+    better support for multiple hosts and clustering.
 
 Overview
 ========
@@ -295,20 +305,39 @@ index use which connections. This is the ``defaultConnectionName()`` method::
 Getting Index Instances
 =======================
 
-Like the ORM, the ElasticSearch plugin provides a factory/registry for getting
+Like the ORM, the ElasticSearch plugin provides a locator for getting
 ``Index`` instances::
 
-    use Cake\ElasticSearch\IndexRegistry;
+    use Cake\ElasticSearch\Datasource\IndexLocator;
 
-    $articles = IndexRegistry::get('Articles');
+    $locator = new IndexLocator();
+    $articles = $locator->get('Articles');
 
-Flushing the Registry
+Using IndexLocatorAwareTrait
+-----------------------------
+
+For convenient access to the index locator, you can use the ``IndexLocatorAwareTrait``
+in your classes::
+
+    use Cake\ElasticSearch\Datasource\IndexLocatorAwareTrait;
+
+    class MyController extends Controller
+    {
+        use IndexLocatorAwareTrait;
+
+        public function index()
+        {
+            $articles = $this->fetchIndex('Articles');
+        }
+    }
+
+Flushing the Locator
 ---------------------
 
-During test cases you may want to flush the registry. Doing so is often useful
-when you are using mock objects, or modifying a index's dependencies::
+During test cases you may want to flush the locator. Doing so is often useful
+when you are using mock objects, or modifying an index's dependencies::
 
-    IndexRegistry::flush();
+    $locator->clear();
 
 Test Fixtures
 =============
@@ -386,6 +415,7 @@ following::
 .. versionchanged:: 3.4.0
     Prior to CakePHP 4.3.0 schema was defined on each fixture in the ``$schema``
     property.
+
 
 Once your fixtures are created you can use them in your test cases by including
 them in your test's ``fixtures`` properties::

@@ -1,13 +1,4 @@
 services:
-  console:
-    build: "."
-    environment:
-      DB_URL: "Cake\\ElasticSearch\\Datasource\\Connection://elasticsearch:9200?driver=Cake\\ElasticSearch\\Datasource\\Connection"
-    volumes:
-      - .:/code
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
   elasticsearch:
     image: "elasticsearch:9.1.5"
     ports:
