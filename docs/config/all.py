@@ -10,10 +10,10 @@ from cakephpsphinx.config.all import *
 #
 
 # The full version, including alpha/beta/rc tags.
-release = '4.x'
+release = '5.x'
 
 # The search index version.
-search_version = 'elasticsearch-4'
+search_version = 'elasticsearch-5'
 
 # The marketing display name for the book.
 version_name = ''
@@ -23,20 +23,21 @@ project = 'CakePHP ElasticSearch'
 
 # Other versions that display in the version picker menu.
 version_list = [
-    {'name': '4.x', 'number': '/elasticsearch/4', 'title': '4.x', 'current': True},
-    {'name': '3.x', 'number': '/elasticsearch/3', 'title': '3.x',},
+    {'name': '5.x', 'number': '/elasticsearch/5', 'title': '5.x', 'current': True},
+    {'name': '4.x', 'number': '/elasticsearch/4', 'title': '4.x'},
+    {'name': '3.x', 'number': '/elasticsearch/3', 'title': '3.x'},
     {'name': '2.x', 'number': '/elasticsearch/2', 'title': '2.x'},
 ]
 
 # Languages available.
-languages = ['en', 'fr', 'ja', 'pt']
+languages = ['en', 'ja']
 
 # The GitHub branch name for this version of the docs
 # for edit links to point at.
-branch = '4.x'
+branch = '5.x'
 
 # Current version being built
-version = '4.x'
+version = '5.x'
 
 show_root_link = True
 
