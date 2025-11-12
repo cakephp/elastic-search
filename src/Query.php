@@ -820,6 +820,7 @@ class Query implements IteratorAggregate, QueryInterface
             $this->_queryParts['query'] = new ElasticaQuery\BoolQuery();
         }
 
+        /** @var \Elastica\Query\AbstractQuery $query */
         $query = clone $this->_queryParts['query'];
 
         if ($query instanceof ElasticaQuery\BoolQuery && isset($this->_queryParts['filter'])) {
