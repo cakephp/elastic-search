@@ -119,23 +119,6 @@ $comments = $locator->get('Comments');
 
 > **Note for upgrading users**: The `IndexRegistry` class has been deprecated since version 3.4.3. If you're upgrading from an older version, replace `IndexRegistry::get('Comments')` with the `IndexLocatorAwareTrait` approach shown above or use `IndexLocator` directly.
 
-If you have loaded the plugin with bootstrap enabled you could load indexes using the model factory in your controllers
-```php
-class SomeController extends AppController
-{
-    public function initialize()
-    {
-        $this->loadModel('Comments', 'Elastic');
-    }
-
-    public function index()
-    {
-        $comments = $this->Comments->find();
-    }
-
-    ...
-```
-
 Each `Index` object needs a correspondent Elasticsearch _index_, just like most of `ORM\Table` needs a database _table_.
 
 In the above example, if you have defined a class as `CommentsIndex` and the `IndexLocator` can find it, the `$comments` will receive an initialized object with inner configurations of connection and index. But if you don't have that class, a default one will be initialized and the index name on Elasticsearch mapped to the class.
