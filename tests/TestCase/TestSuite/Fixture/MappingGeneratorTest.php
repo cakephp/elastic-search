@@ -333,6 +333,172 @@ class MappingGeneratorTest extends TestCase
     }
 
     /**
+     * Test simple mapping format (backward compatibility)
+     */
+    public function testSimpleMappingFormat(): void
+    {
+        $file = $this->createMappingFile([
+            [
+                'name' => 'test_index_1',
+                'mapping' => [
+                    'id' => ['type' => 'integer'],
+                    'title' => ['type' => 'text'],
+                    'body' => ['type' => 'text'],
+                ],
+            ],
+        ]);
+
+        $generator = new MappingGenerator($file, 'test');
+        $generator->reload(['test_index_1']);
+
+        $index = $this->connection->getIndex('test_index_1');
+        $this->assertTrue($index->exists());
+
+        // Verify mapping was created correctly
+        $mapping = $index->getMapping();
+        $this->assertNotEmpty($mapping);
+        $this->assertArrayHasKey('properties', $mapping);
+
+        $properties = $mapping['properties'];
+        $this->assertArrayHasKey('id', $properties);
+        $this->assertArrayHasKey('title', $properties);
+        $this->assertArrayHasKey('body', $properties);
+
+        unlink($file);
+    }
+
+    /**
+     * Test full mapping format with properties key
+     */
+    public function testFullMappingFormatWithProperties(): void
+    {
+        $file = $this->createMappingFile([
+            [
+                'name' => 'test_index_1',
+                'mapping' => [
+                    'properties' => [
+                        'id' => ['type' => 'integer'],
+                        'title' => ['type' => 'text'],
+                        'body' => ['type' => 'text'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $generator = new MappingGenerator($file, 'test');
+        $generator->reload(['test_index_1']);
+
+        $index = $this->connection->getIndex('test_index_1');
+        $this->assertTrue($index->exists());
+
+        // Verify mapping was created correctly
+        $mapping = $index->getMapping();
+        $this->assertNotEmpty($mapping);
+        $this->assertArrayHasKey('properties', $mapping);
+
+        $properties = $mapping['properties'];
+        $this->assertArrayHasKey('id', $properties);
+        $this->assertArrayHasKey('title', $properties);
+        $this->assertArrayHasKey('body', $properties);
+
+        unlink($file);
+    }
+
+    /**
+     * Test full mapping format with dynamic_templates
+     */
+    public function testFullMappingFormatWithDynamicTemplates(): void
+    {
+        $file = $this->createMappingFile([
+            [
+                'name' => 'test_index_1',
+                'mapping' => [
+                    'properties' => [
+                        'id' => ['type' => 'integer'],
+                        'title' => ['type' => 'text'],
+                    ],
+                    'dynamic_templates' => [
+                        [
+                            'strings_as_keywords' => [
+                                'match_mapping_type' => 'string',
+                                'mapping' => [
+                                    'type' => 'keyword',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $generator = new MappingGenerator($file, 'test');
+        $generator->reload(['test_index_1']);
+
+        $index = $this->connection->getIndex('test_index_1');
+        $this->assertTrue($index->exists());
+
+        // Verify mapping was created with dynamic_templates
+        $mapping = $index->getMapping();
+        $this->assertNotEmpty($mapping);
+        $this->assertArrayHasKey('properties', $mapping);
+        $this->assertArrayHasKey('dynamic_templates', $mapping);
+
+        $dynamicTemplates = $mapping['dynamic_templates'];
+        $this->assertCount(1, $dynamicTemplates);
+        $this->assertArrayHasKey('strings_as_keywords', $dynamicTemplates[0]);
+
+        unlink($file);
+    }
+
+    /**
+     * Test mixing simple and full mapping formats in same file
+     */
+    public function testMixedMappingFormats(): void
+    {
+        $file = $this->createMappingFile([
+            [
+                'name' => 'test_index_1',
+                'mapping' => [
+                    'id' => ['type' => 'integer'],
+                    'title' => ['type' => 'text'],
+                ],
+            ],
+            [
+                'name' => 'test_index_2',
+                'mapping' => [
+                    'properties' => [
+                        'id' => ['type' => 'integer'],
+                        'name' => ['type' => 'text'],
+                    ],
+                    'dynamic' => 'strict',
+                ],
+            ],
+        ]);
+
+        $generator = new MappingGenerator($file, 'test');
+        $generator->reload();
+
+        $index1 = $this->connection->getIndex('test_index_1');
+        $index2 = $this->connection->getIndex('test_index_2');
+
+        $this->assertTrue($index1->exists());
+        $this->assertTrue($index2->exists());
+
+        // Verify both mappings were created correctly
+        $mapping1 = $index1->getMapping();
+        $mapping2 = $index2->getMapping();
+
+        $this->assertNotEmpty($mapping1);
+        $this->assertNotEmpty($mapping2);
+
+        $this->assertArrayHasKey('properties', $mapping1);
+        $this->assertArrayHasKey('properties', $mapping2);
+        $this->assertArrayHasKey('dynamic', $mapping2);
+
+        unlink($file);
+    }
+
+    /**
      * Helper method to create a temporary mapping file
      *
      * @param array $mappings The mappings to write to the file
