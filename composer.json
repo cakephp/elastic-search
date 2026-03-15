@@ -50,8 +50,8 @@
             "@test",
             "@cs-check"
         ],
-        "cs-check": "phpcs --colors -p ./src ./tests",
-        "cs-fix": "phpcbf --colors -p src/ tests/",
+        "cs-check": "phpcs",
+        "cs-fix": "phpcbf",
         "test": "phpunit --colors=always",
         "test-coverage": "phpunit --coverage-clover=clover.xml",
         "phpstan": "vendor/bin/phpstan analyse",
