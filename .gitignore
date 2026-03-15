@@ -6,6 +6,7 @@ vendor
 .env
 composer.phar
 .phpunit.result.cache
+.phpcs.cache
 tmp/
 coverage/
 
