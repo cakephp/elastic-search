@@ -57,7 +57,7 @@ Overview
 
 The ElasticSearch plugin makes it easier to interact with an elasticsearch index
 and provides an interface similar to the `ORM
-<https://book.cakephp.org/3/en/orm.html>`__. To get started you should
+<https://book.cakephp.org/5/en/orm.html>`__. To get started you should
 create an ``Index`` object. ``Index`` objects are the "Repository" or table-like
 class in elasticsearch::
 
@@ -72,11 +72,11 @@ class in elasticsearch::
 
 You can then use your index class in your controllers::
 
-    public function beforeFilter(Event $event)
+    public function beforeFilter(\Cake\Event\EventInterface $event): void
     {
         parent::beforeFilter($event);
-        // Load the Index using the 'Elastic' provider.
-        $this->loadModel('Articles', 'Elastic');
+        // Load the Index using the IndexLocator.
+        $this->Articles = $this->fetchIndex('Articles');
     }
 
     public function add()
@@ -93,7 +93,7 @@ You can then use your index class in your controllers::
 
 We would also need to create a basic view for our indexed articles::
 
-    // in src/Template/Articles/add.ctp
+    // in templates/Articles/add.php
     <?= $this->Form->create($article) ?>
     <?= $this->Form->control('title') ?>
     <?= $this->Form->control('body') ?>
@@ -122,7 +122,7 @@ plugin::
 Outside of constructor logic that makes Documents work with data from
 elasticsearch, the interface and functionality provided by ``Document`` are the
 same as those in `Entities
-<https://book.cakephp.org/3.0/en/orm/entities.html>`__
+<https://book.cakephp.org/5/en/orm/entities.html>`__
 
 Searching Indexed Documents
 ===========================
@@ -163,9 +163,9 @@ Validating Data & Using Application Rules
 Like the ORM, the ElasticSearch plugin lets you validate data when marshalling
 documents. Validating request data, and applying application rules works the
 same as it does with the relational ORM. See the `validating request data
-<https://book.cakephp.org/3.0/en/orm/validation.html#validating-data-before-building-entities>`__
+<https://book.cakephp.org/5/en/orm/validation.html#validating-data-before-building-entities>`__
 and `Application Rules
-<https://book.cakephp.org/3.0/en/orm/validation.html#applying-application-rules>`__
+<https://book.cakephp.org/5/en/orm/validation.html#applying-application-rules>`__
 sections for more information.
 
 .. Need information on nested validators.
@@ -255,7 +255,7 @@ use ``embedOne`` and ``embedMany`` to define embedded documents::
 
     class ArticlesIndex extends Index
     {
-        public function initialize()
+        public function initialize(): void
         {
             $this->embedOne('User');
             $this->embedMany('Comments', [
@@ -293,7 +293,8 @@ index use which connections. This is the ``defaultConnectionName()`` method::
 
     class ArticlesIndex extends Index
     {
-        public static function defaultConnectionName() {
+        public static function defaultConnectionName(): string
+        {
             return 'replica_db';
         }
     }
@@ -412,9 +413,6 @@ following::
         ];
     }
 
-.. versionchanged:: 3.4.0
-    Prior to CakePHP 4.3.0 schema was defined on each fixture in the ``$schema``
-    property.
 
 
 Once your fixtures are created you can use them in your test cases by including
