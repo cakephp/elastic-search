@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cloning repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -20,5 +20,6 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_remote_url: 'ssh://dokku@apps.cakephp.org:22/elasticsearch-docs-5'
+          git_push_flags: '-f'
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
           branch: '5.x'

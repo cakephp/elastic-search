@@ -1,0 +1,30 @@
+{
+  "/": [
+    {
+      "text": "Getting Started",
+      "collapsed": false,
+      "items": [
+        { "text": "Installation and Configuration", "link": "/installation" },
+        { "text": "Indexes and Documents", "link": "/indexes-and-documents" },
+        { "text": "Searching and Saving", "link": "/searching-and-saving" }
+      ]
+    },
+    {
+      "text": "Advanced Topics",
+      "collapsed": false,
+      "items": [
+        { "text": "Embedded Documents", "link": "/embedded-documents" },
+        { "text": "Testing", "link": "/testing" }
+      ]
+    },
+    {
+      "text": "Migration",
+      "collapsed": false,
+      "items": [
+        { "text": "5.0 Upgrade Guide", "link": "/5-0-upgrade-guide" },
+        { "text": "4.0 Upgrade Guide", "link": "/4-0-upgrade-guide" },
+        { "text": "3.0 Upgrade Guide", "link": "/3-0-upgrade-guide" }
+      ]
+    }
+  ]
+}

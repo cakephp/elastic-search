@@ -1,0 +1,11 @@
+{
+  "/ja/": [
+    {
+      "text": "ドキュメント",
+      "collapsed": false,
+      "items": [
+        { "text": "ElasticSearch", "link": "/ja/" }
+      ]
+    }
+  ]
+}
