@@ -2,15 +2,9 @@
 
 ## Supported Versions
 
-We support fixing security issues on the following releases:
-
-| Version | Supported          | Security fixes until
-| ------- | ------------------ | --------------------
-| 5.x     | :white_check_mark: | Currently supported
-| 4.x     | :white_check_mark: | The release of 6.x
-| 3.x     | :white_check_mark: | 36 Months after the release of CakePHP 5.0 (09 Sep 2026)
-| 2.x     | :x:                | No longer supported
-| <=1.0   | :x:                | No longer supported
+Security fixes are applied to all active versions listed in the
+[version map](https://github.com/cakephp/elastic-search/wiki#cakephp-version-map).
+Versions marked as EOL no longer receive fixes.
 
 ## Reporting a Vulnerability
 
