@@ -696,11 +696,16 @@ class QueryTest extends TestCase
         ]);
 
         $index = $this->getIndex();
-        $query = new Query($index);
 
-        $results = $query->limit(1)->cache('test_key', 'query_cache')->all();
-        $cached = $query->limit(1)->cache('test_key', 'query_cache')->all();
+        $results = (new Query($index))->limit(1)->cache('test_key', 'query_cache')->all();
+        $cached = (new Query($index))->limit(1)->cache('test_key', 'query_cache')->all();
         $this->assertEquals($results->toArray(), $cached->toArray());
+        $this->assertEquals($results->getTotalHits(), $cached->getTotalHits());
+        $this->assertEquals($results->getAggregations(), $cached->getAggregations());
+        $this->assertEquals($results->getSuggests(), $cached->getSuggests());
+        $this->assertEquals($results->getMaxScore(), $cached->getMaxScore());
+        $this->assertEquals($results->getTotalTime(), $cached->getTotalTime());
+        $this->assertEquals($results->hasTimedOut(), $cached->hasTimedOut());
     }
 
     /**
