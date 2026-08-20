@@ -237,6 +237,42 @@ class ResultSet extends IteratorIterator implements ResultSetInterface
     }
 
     /**
+     * Returns the state to be serialized, so result sets can be stored in a cache (without elastica handles)
+     *
+     * @return array<string, mixed>
+     */
+    public function __serialize(): array
+    {
+        return [
+            'resultSet' => $this->resultSet,
+            'entityClass' => $this->entityClass,
+            'embeds' => $this->embeds,
+            'repoName' => $this->repoName,
+        ];
+    }
+
+    /**
+     * Restores a result set from its serialized state
+     *
+     * @param array<string, mixed> $data The state as returned by __serialize()
+     * @return void
+     */
+    public function __unserialize(array $data): void
+    {
+        assert($data['resultSet'] instanceof ElasticaResultSet);
+        assert(is_string($data['entityClass']));
+        assert(is_array($data['embeds']));
+        assert(is_string($data['repoName']));
+
+        $this->resultSet = $data['resultSet'];
+        $this->entityClass = $data['entityClass'];
+        $this->embeds = $data['embeds'];
+        $this->repoName = $data['repoName'];
+
+        parent::__construct($this->resultSet);
+    }
+
+    /**
      * Debug output hook method.
      */
     public function __debugInfo(): array
