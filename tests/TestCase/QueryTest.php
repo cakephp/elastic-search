@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Cake\ElasticSearch\Test\TestCase;
 
 use AssertionError;
+use Cake\Cache\Cache;
+use Cake\Cache\Engine\FileEngine;
 use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Datasource\RepositoryInterface;
@@ -680,6 +682,30 @@ class QueryTest extends TestCase
         // Test disabling cache
         $result = $query->cache(false);
         $this->assertSame($query, $result);
+    }
+
+    /**
+     * Test that a cached query stores its results when it is executed and reads them back on the next execution
+     */
+    public function testCacheMethodWithExecutedQuery(): void
+    {
+        Cache::setConfig('query_cache', [
+            'className' => FileEngine::class,
+            'path' => sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'query_cache' . DIRECTORY_SEPARATOR,
+            'duration' => '1 second',
+        ]);
+
+        $index = $this->getIndex();
+
+        $results = (new Query($index))->limit(1)->cache('test_key', 'query_cache')->all();
+        $cached = (new Query($index))->limit(1)->cache('test_key', 'query_cache')->all();
+        $this->assertEquals($results->toArray(), $cached->toArray());
+        $this->assertEquals($results->getTotalHits(), $cached->getTotalHits());
+        $this->assertEquals($results->getAggregations(), $cached->getAggregations());
+        $this->assertEquals($results->getSuggests(), $cached->getSuggests());
+        $this->assertEquals($results->getMaxScore(), $cached->getMaxScore());
+        $this->assertEquals($results->getTotalTime(), $cached->getTotalTime());
+        $this->assertEquals($results->hasTimedOut(), $cached->hasTimedOut());
     }
 
     /**
