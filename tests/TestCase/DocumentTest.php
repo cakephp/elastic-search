@@ -122,4 +122,70 @@ class DocumentTest extends TestCase
         $this->assertEquals(['highlights array'], $document->highlights());
         $this->assertEquals(['explanation array'], $document->explanation());
     }
+
+    /**
+     * Tests that the fields a document is built from are flagged as original on the
+     * markClean shortcut, which is the path documents hydrated from a result set take
+     */
+    public function testConstructorFlagsOriginalFieldsWithoutSetters(): void
+    {
+        $Document = new Document(['name' => 'x'], ['markClean' => true, 'useSetters' => false]);
+
+        $this->assertSame(['name'], $Document->getOriginalFields());
+        $this->assertSame(['name' => 'x'], $Document->getOriginalValues());
+        $this->assertFalse($Document->isDirty());
+    }
+
+    /**
+     * Tests that the fields a document is built from are flagged as original when the
+     * data goes through patch(), and that the document is still clean afterwards
+     */
+    public function testConstructorFlagsOriginalFieldsWithSetters(): void
+    {
+        $Document = new Document(['name' => 'x'], ['markClean' => true, 'useSetters' => true]);
+
+        $this->assertSame(['name'], $Document->getOriginalFields());
+        $this->assertSame(['name' => 'x'], $Document->getOriginalValues());
+        $this->assertFalse($Document->isDirty());
+    }
+
+    /**
+     * Tests that a new document created with data flags those fields as original,
+     * the same way \Cake\ORM\Entity does
+     */
+    public function testConstructorFlagsOriginalFieldsForNewDocument(): void
+    {
+        $Document = new Document(['name' => 'x']);
+
+        $this->assertSame(['name'], $Document->getOriginalFields());
+        $this->assertTrue($Document->isDirty('name'));
+    }
+
+    /**
+     * Tests that changing a field on a loaded document keeps the loaded value as its original
+     */
+    public function testGetOriginalAfterChange(): void
+    {
+        $Document = new Document(
+            ['name' => 'x', 'tags' => ['a']],
+            ['markClean' => true, 'useSetters' => false, 'markNew' => false],
+        );
+        $Document->name = 'changed';
+
+        $this->assertSame('x', $Document->getOriginal('name'));
+        $this->assertSame(['name' => 'x', 'tags' => ['a']], $Document->getOriginalValues());
+        $this->assertSame(['name' => 'x'], $Document->extractOriginalChanged(['name', 'tags']));
+    }
+
+    /**
+     * Tests that a document built from a search result flags the source fields and the id as original
+     */
+    public function testConstructorWithResultFlagsOriginalFields(): void
+    {
+        $Result = new Result(['_id' => '42', '_source' => ['name' => 'x', 'tags' => ['a']]]);
+        $Document = new Document($Result, ['markClean' => true, 'useSetters' => false, 'markNew' => false]);
+
+        $this->assertSame(['name', 'tags', 'id'], $Document->getOriginalFields());
+        $this->assertSame(['name' => 'x', 'tags' => ['a'], 'id' => '42'], $Document->getOriginalValues());
+    }
 }

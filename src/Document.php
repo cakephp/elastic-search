@@ -78,14 +78,17 @@ class Document implements EntityInterface, InvalidPropertyInterface
             $this->_result = $options['result'];
         }
 
-        if (!empty($data) && $options['markClean'] && !$options['useSetters']) {
-            $this->_fields = $data;
+        if (count($data) > 0) {
+            $this->setOriginalField(array_keys($data));
 
-            return;
-        }
+            if ($options['markClean'] && !$options['useSetters']) {
+                $this->_fields = $data;
 
-        if (!empty($data)) {
+                return;
+            }
+
             $this->patch($data, [
+                'asOriginal' => true,
                 'setter' => $options['useSetters'],
                 'guard' => $options['guard'],
             ]);
