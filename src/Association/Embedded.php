@@ -101,7 +101,7 @@ abstract class Embedded
      * @param string|null $name The property name to set.
      * @return $this
      */
-    public function setProperty(?string $name = null)
+    public function setProperty(?string $name = null): static
     {
         if ($name !== null) {
             $this->property = $name;
@@ -149,7 +149,7 @@ abstract class Embedded
      * @param string $name The name of the class to use
      * @return $this
      */
-    public function setEntityClass(string $name)
+    public function setEntityClass(string $name): static
     {
         $class = App::className($name, 'Model/Document');
         $this->entityClass = $class ?? Document::class;
@@ -186,7 +186,7 @@ abstract class Embedded
      * @throws \InvalidArgumentException In case the class name is set after the target index has been
      *  resolved, and it doesn't match the target index's class name.
      */
-    public function setIndexClass(string|Index|null $className)
+    public function setIndexClass(string|Index|null $className): static
     {
         if ($className instanceof Index) {
             $this->index = $className;
@@ -219,7 +219,7 @@ abstract class Embedded
      * @param \Cake\ElasticSearch\Index $index the instance to be assigned as target side
      * @return $this
      */
-    public function setIndex(Index $index)
+    public function setIndex(Index $index): static
     {
         $this->index = $index;
 

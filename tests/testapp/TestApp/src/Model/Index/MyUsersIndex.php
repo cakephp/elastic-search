@@ -26,5 +26,5 @@ class MyUsersIndex extends Index
     /**
      * Overrides default table name
      */
-    protected string $_name = 'users';
+    protected string $name = 'users';
 }

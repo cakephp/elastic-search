@@ -28,6 +28,7 @@ use Elastica\Aggregation\AbstractAggregation;
 use Elastica\Collapse;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\AbstractQuery;
+use Elastica\Query\BoolQuery;
 use InvalidArgumentException;
 use IteratorAggregate;
 use Psr\SimpleCache\CacheInterface;
@@ -67,13 +68,13 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @var \Elastica\Query
      */
-    protected ElasticaQuery $_elasticQuery;
+    protected ElasticaQuery $elasticQuery;
 
     /**
      * The various query builder parts that will
      * be transferred to the elastica query.
      */
-    protected array $_queryParts = [
+    protected array $queryParts = [
         'fields' => [],
         'limit' => null,
         'offset' => null,
@@ -90,19 +91,19 @@ class Query implements IteratorAggregate, QueryInterface
     /**
      * Internal state to track whether or not the query has been modified.
      */
-    protected bool $_dirty = false;
+    protected bool $dirty = false;
 
     /**
      * Additional options for Elastica\Index::search()
      *
      * @see \Elastica\Search::OPTION_SEARCH_* constants
      */
-    protected array $_searchOptions = [];
+    protected array $searchOptions = [];
 
     /**
      * Instance of a repository object this query is bound to.
      */
-    protected Index $_repository;
+    protected Index $repository;
 
     /**
      * A ResultSet.
@@ -111,13 +112,13 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @see \Cake\Datasource\QueryTrait::setResult()
      */
-    protected ?iterable $_results = null;
+    protected ?iterable $results = null;
 
     /**
      * List of map-reduce routines that should be applied over the query
      * result
      */
-    protected array $_mapReduce = [];
+    protected array $mapReduce = [];
 
     /**
      * List of formatter classes or callbacks that will post-process the
@@ -125,18 +126,18 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @var array<\Closure>
      */
-    protected array $_formatters = [];
+    protected array $formatters = [];
 
     /**
      * A query cacher instance if this query has caching enabled.
      */
-    protected ?QueryCacher $_cache = null;
+    protected ?QueryCacher $cache = null;
 
     /**
      * Holds any custom options passed using applyOptions that could not be processed
      * by any method in this class.
      */
-    protected array $_options = [];
+    protected array $options = [];
 
     /**
      * Query constructor
@@ -146,7 +147,7 @@ class Query implements IteratorAggregate, QueryInterface
     public function __construct(Index $repository)
     {
         $this->setRepository($repository);
-        $this->_elasticQuery = new ElasticaQuery();
+        $this->elasticQuery = new ElasticaQuery();
     }
 
     /**
@@ -162,10 +163,10 @@ class Query implements IteratorAggregate, QueryInterface
      * @param bool $overwrite Whether or not to replace previous selections.
      * @return $this
      */
-    public function select(Closure|array|string|int|float $fields, bool $overwrite = false)
+    public function select(Closure|array|string|int|float $fields, bool $overwrite = false): static
     {
         if (!$overwrite) {
-            $currentFields = $this->_queryParts['fields'];
+            $currentFields = $this->queryParts['fields'];
             if (!is_array($currentFields)) {
                 $currentFields = [];
             }
@@ -177,7 +178,7 @@ class Query implements IteratorAggregate, QueryInterface
             $fields = array_merge($currentFields, $fields);
         }
 
-        $this->_queryParts['fields'] = $fields;
+        $this->queryParts['fields'] = $fields;
 
         return $this;
     }
@@ -189,9 +190,9 @@ class Query implements IteratorAggregate, QueryInterface
      * @param ?int $limit The number of documents to return.
      * @return $this
      */
-    public function limit(?int $limit)
+    public function limit(?int $limit): static
     {
-        $this->_queryParts['limit'] = (int)$limit;
+        $this->queryParts['limit'] = (int)$limit;
 
         return $this;
     }
@@ -203,9 +204,9 @@ class Query implements IteratorAggregate, QueryInterface
      * @param ?int $offset The number of records to be skipped
      * @return $this
      */
-    public function offset(?int $offset)
+    public function offset(?int $offset): static
     {
-        $this->_queryParts['offset'] = (int)$offset;
+        $this->queryParts['offset'] = (int)$offset;
 
         return $this;
     }
@@ -224,7 +225,7 @@ class Query implements IteratorAggregate, QueryInterface
      *  the current limit clause will be used.
      * @return $this
      */
-    public function page(int $num, ?int $limit = null)
+    public function page(int $num, ?int $limit = null): static
     {
         if ($limit !== null) {
             $this->limit($limit);
@@ -268,26 +269,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function clause(string $name): mixed
     {
-        return $this->_queryParts[$name];
-    }
-
-    /**
-     * Sets the sorting options for the result set.
-     *
-     * The accepted format for the $order parameter is:
-     *
-     * - [['name' => ['order'=> 'asc', ...]], ['price' => ['order'=> 'asc', ...]]]
-     * - ['name' => 'asc', 'price' => 'desc']
-     * - 'field1' (defaults to order => 'desc')
-     *
-     * @param \Closure|array|string $fields The sorting order to use.
-     * @param bool $overwrite Whether or not to replace previous sorting.
-     * @return $this
-     * @deprecated 5.0.0 Use orderBy() instead now that CollectionInterface methods are no longer proxied.
-     */
-    public function order(Closure|array|string $fields, bool $overwrite = false)
-    {
-        return $this->orderBy($fields, $overwrite);
+        return $this->queryParts[$name];
     }
 
     /**
@@ -303,16 +285,16 @@ class Query implements IteratorAggregate, QueryInterface
      * @param bool $overwrite Whether or not to replace previous sorting.
      * @return $this
      */
-    public function orderBy(array|Closure|string $fields, bool $overwrite = false)
+    public function orderBy(array|Closure|string $fields, bool $overwrite = false): static
     {
         if (is_array($fields) && is_numeric(key($fields))) {
             if ($overwrite) {
-                $this->_queryParts['order'] = $fields;
+                $this->queryParts['order'] = $fields;
 
                 return $this;
             }
 
-            $this->_queryParts['order'] = array_merge($fields, $this->_queryParts['order']);
+            $this->queryParts['order'] = array_merge($fields, $this->queryParts['order']);
 
             return $this;
         }
@@ -337,10 +319,10 @@ class Query implements IteratorAggregate, QueryInterface
         $fields = collection($fields)->map($normalizer)->toList();
 
         if (!$overwrite) {
-            $fields = array_merge($this->_queryParts['order'], $fields);
+            $fields = array_merge($this->queryParts['order'], $fields);
         }
 
-        $this->_queryParts['order'] = $fields;
+        $this->queryParts['order'] = $fields;
 
         return $this; // [['field' => [...]], ['field2' => [...]]]
     }
@@ -355,7 +337,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function find(string $finder, mixed ...$args): static
     {
-        return $this->_repository->callFinder($finder, $this, ...$args);
+        return $this->repository->callFinder($finder, $this, ...$args);
     }
 
     /**
@@ -408,13 +390,13 @@ class Query implements IteratorAggregate, QueryInterface
         Closure|array|string|null $conditions = null,
         array $types = [],
         bool $overwrite = false,
-    ) {
+    ): static {
         // Convert string conditions to proper format for _buildBoolQuery
         if (is_string($conditions)) {
             $conditions = [$conditions];
         }
 
-        return $this->_buildBoolQuery('filter', $conditions, $overwrite);
+        return $this->buildBoolQuery('filter', $conditions, $overwrite);
     }
 
     /**
@@ -467,15 +449,19 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * `WHERE (title = 'Foo') AND (author_id = 1 OR author_id = 2)`
      *
-     * @param \Elastica\Query\AbstractQuery|callable|array|null $conditions The list of conditions.
+     * @param \Elastica\Query\AbstractQuery|\Closure|array|string|null $conditions The list of conditions.
      * @param array $types Not used, required to comply with QueryInterface.
      * @see \Cake\ElasticSearch\Query::where()
      * @see \Cake\ElasticSearch\QueryBuilder
      * @return $this
      */
-    public function andWhere(array|callable|AbstractQuery|null $conditions, array $types = [])
+    public function andWhere(array|Closure|AbstractQuery|string|null $conditions, array $types = []): static
     {
-        return $this->_buildBoolQuery('filter', $conditions, false, 'addMust');
+        if (is_string($conditions)) {
+            $conditions = [$conditions];
+        }
+
+        return $this->buildBoolQuery('filter', $conditions, false, 'addMust');
     }
 
     /**
@@ -485,13 +471,13 @@ class Query implements IteratorAggregate, QueryInterface
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param \Elastica\Query\AbstractQuery|callable|array $conditions The list of conditions
+     * @param \Elastica\Query\AbstractQuery|\Closure|array $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
      */
-    public function queryMust(array|callable|AbstractQuery $conditions, bool $overwrite = false)
+    public function queryMust(array|Closure|AbstractQuery $conditions, bool $overwrite = false): static
     {
-        return $this->_buildBoolQuery('query', $conditions, $overwrite);
+        return $this->buildBoolQuery('query', $conditions, $overwrite);
     }
 
     /**
@@ -501,13 +487,13 @@ class Query implements IteratorAggregate, QueryInterface
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param \Elastica\Query\AbstractQuery|callable|array $conditions The list of conditions
+     * @param \Elastica\Query\AbstractQuery|\Closure|array $conditions The list of conditions
      * @param bool $overwrite Whether or not to replace previous queries.
      * @return $this
      */
-    public function queryShould(array|callable|AbstractQuery $conditions, bool $overwrite = false)
+    public function queryShould(array|Closure|AbstractQuery $conditions, bool $overwrite = false): static
     {
-        return $this->_buildBoolQuery('query', $conditions, $overwrite, 'addShould');
+        return $this->buildBoolQuery('query', $conditions, $overwrite, 'addShould');
     }
 
     /**
@@ -517,14 +503,14 @@ class Query implements IteratorAggregate, QueryInterface
      * This method can be used in the same way the `where()` method is used. Please refer to
      * its documentation for more details.
      *
-     * @param \Elastica\Query\AbstractQuery|callable|array $conditions The list of conditions.
+     * @param \Elastica\Query\AbstractQuery|\Closure|array $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous filters.
      * @return $this
      * @see \Cake\ElasticSearch\Query::where()
      */
-    public function postFilter(array|callable|AbstractQuery $conditions, bool $overwrite = false)
+    public function postFilter(array|Closure|AbstractQuery $conditions, bool $overwrite = false): static
     {
-        return $this->_buildBoolQuery('postFilter', $conditions, $overwrite);
+        return $this->buildBoolQuery('postFilter', $conditions, $overwrite);
     }
 
     /**
@@ -533,9 +519,9 @@ class Query implements IteratorAggregate, QueryInterface
      * @param \Elastica\Query\AbstractQuery $query Set the query
      * @return $this
      */
-    public function setFullQuery(AbstractQuery $query)
+    public function setFullQuery(AbstractQuery $query): static
     {
-        $this->_queryParts['query'] = $query;
+        $this->queryParts['query'] = $query;
 
         return $this;
     }
@@ -546,13 +532,13 @@ class Query implements IteratorAggregate, QueryInterface
      * @param \Elastica\Collapse|string $collapse Collapse field or elastic collapse object
      * @return $this
      */
-    public function collapse(Collapse|string $collapse)
+    public function collapse(Collapse|string $collapse): static
     {
         if (is_string($collapse)) {
             $collapse = (new Collapse())->setFieldname($collapse);
         }
 
-        $this->_queryParts['collapse'] = $collapse;
+        $this->queryParts['collapse'] = $collapse;
 
         return $this;
     }
@@ -563,14 +549,14 @@ class Query implements IteratorAggregate, QueryInterface
      * @param \Elastica\Aggregation\AbstractAggregation|array $aggregation One or multiple facets
      * @return $this
      */
-    public function aggregate(AbstractAggregation|array $aggregation)
+    public function aggregate(AbstractAggregation|array $aggregation): static
     {
         if (is_array($aggregation)) {
             foreach ($aggregation as $aggregationItem) {
                 $this->aggregate($aggregationItem);
             }
         } else {
-            $this->_queryParts['aggregations'][] = $aggregation;
+            $this->queryParts['aggregations'][] = $aggregation;
         }
 
         return $this;
@@ -584,10 +570,10 @@ class Query implements IteratorAggregate, QueryInterface
     public function searchOptions(?array $options = null): array|self
     {
         if ($options === null) {
-            return $this->_searchOptions;
+            return $this->searchOptions;
         }
 
-        $this->_searchOptions = $options;
+        $this->searchOptions = $options;
 
         return $this;
     }
@@ -597,19 +583,19 @@ class Query implements IteratorAggregate, QueryInterface
      * variable.
      *
      * @param string $partType The name of the part in which the bool query will be stored
-     * @param \Elastica\Query\AbstractQuery|callable|array $conditions The list of conditions.
+     * @param \Elastica\Query\AbstractQuery|\Closure|array $conditions The list of conditions.
      * @param bool $overwrite Whether or not to replace previous query.
      * @param string $type The method to use for appending the conditions to the Query
      * @return $this
      */
-    protected function _buildBoolQuery(
+    protected function buildBoolQuery(
         string $partType,
-        AbstractQuery|callable|array|null $conditions,
+        AbstractQuery|Closure|array|null $conditions,
         bool $overwrite,
         string $type = 'addMust',
-    ) {
-        if (!isset($this->_queryParts[$partType]) || $overwrite) {
-            $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
+    ): static {
+        if (!isset($this->queryParts[$partType]) || $overwrite) {
+            $this->queryParts[$partType] = new BoolQuery();
         }
 
         if ($conditions === null) {
@@ -617,13 +603,13 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         if ($conditions instanceof AbstractQuery) {
-            $this->_queryParts[$partType]->{$type}($conditions);
+            $this->queryParts[$partType]->{$type}($conditions);
 
             return $this;
         }
 
-        if (is_callable($conditions)) {
-            $conditions = $conditions(new QueryBuilder(), $this->_queryParts[$partType], $this);
+        if ($conditions instanceof Closure) {
+            $conditions = $conditions(new QueryBuilder(), $this->queryParts[$partType], $this);
         }
 
         if ($conditions === null) {
@@ -634,14 +620,14 @@ class Query implements IteratorAggregate, QueryInterface
             $conditions = (new QueryBuilder())->parse($conditions);
             if (is_array($conditions)) {
                 foreach ($conditions as $condition) {
-                    $this->_queryParts[$partType]->{$type}($condition);
+                    $this->queryParts[$partType]->{$type}($condition);
                 }
             }
 
             return $this;
         }
 
-        $this->_queryParts[$partType]->{$type}($conditions);
+        $this->queryParts[$partType]->{$type}($conditions);
 
         return $this;
     }
@@ -652,7 +638,7 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * - fields: Maps to the select method
      * - conditions: Maps to the where method
-     * - order: Maps to the order method
+     * - order: Maps to the orderBy method
      * - limit: Maps to the limit method
      * - offset: Maps to the offset method
      * - page: Maps to the page method
@@ -681,12 +667,12 @@ class Query implements IteratorAggregate, QueryInterface
      * @param array $options list of query clauses to apply new parts to.
      * @return $this
      */
-    public function applyOptions(array $options)
+    public function applyOptions(array $options): static
     {
         $valid = [
             'fields' => 'select',
             'conditions' => 'where',
-            'order' => 'order',
+            'order' => 'orderBy',
             'limit' => 'limit',
             'offset' => 'offset',
             'page' => 'page',
@@ -697,7 +683,7 @@ class Query implements IteratorAggregate, QueryInterface
             if (isset($valid[$option]) && isset($values)) {
                 $this->{$valid[$option]}($values);
             } else {
-                $this->_options[$option] = $values;
+                $this->options[$option] = $values;
             }
         }
 
@@ -710,9 +696,9 @@ class Query implements IteratorAggregate, QueryInterface
      * @param array $highlight The highlight options to use.
      * @return $this
      */
-    public function highlight(array $highlight)
+    public function highlight(array $highlight): static
     {
-        $this->_queryParts['highlight'] = $highlight;
+        $this->queryParts['highlight'] = $highlight;
 
         return $this;
     }
@@ -724,9 +710,9 @@ class Query implements IteratorAggregate, QueryInterface
      * @param float $score The minimum score to observe
      * @return $this
      */
-    public function withMinScore(float $score)
+    public function withMinScore(float $score): static
     {
-        $this->_elasticQuery->setMinScore($score);
+        $this->elasticQuery->setMinScore($score);
 
         return $this;
     }
@@ -745,7 +731,7 @@ class Query implements IteratorAggregate, QueryInterface
      * @throws \InvalidArgumentException When a negative integer value is provided
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-track-total-hits
      */
-    public function trackTotalHits(int|bool|null $trackTotalHits)
+    public function trackTotalHits(int|bool|null $trackTotalHits): static
     {
         if (is_int($trackTotalHits) && $trackTotalHits < 0) {
             throw new InvalidArgumentException(
@@ -753,8 +739,8 @@ class Query implements IteratorAggregate, QueryInterface
             );
         }
 
-        $this->_queryParts['trackTotalHits'] = $trackTotalHits;
-        $this->_dirty = true;
+        $this->queryParts['trackTotalHits'] = $trackTotalHits;
+        $this->dirty = true;
 
         return $this;
     }
@@ -764,15 +750,15 @@ class Query implements IteratorAggregate, QueryInterface
      *
      * @return \Cake\ElasticSearch\ResultSet The results of the query
      */
-    protected function _execute(): ResultSetInterface
+    protected function execute(): ResultSetInterface
     {
-        $connection = $this->_repository->getConnection();
-        $index = $this->_repository->getName();
+        $connection = $this->repository->getConnection();
+        $index = $this->repository->getName();
         $esIndex = $connection->getIndex($index);
 
         $query = $this->compileQuery();
 
-        return new ResultSet($esIndex->search($query, $this->_searchOptions), $this);
+        return new ResultSet($esIndex->search($query, $this->searchOptions), $this);
     }
 
     /**
@@ -782,58 +768,58 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function compileQuery(): ElasticaQuery
     {
-        if ($this->_queryParts['fields']) {
-            $this->_elasticQuery->setSource($this->_queryParts['fields']);
+        if ($this->queryParts['fields']) {
+            $this->elasticQuery->setSource($this->queryParts['fields']);
         }
 
-        if (isset($this->_queryParts['limit'])) {
-            $this->_elasticQuery->setSize($this->_queryParts['limit']);
+        if (isset($this->queryParts['limit'])) {
+            $this->elasticQuery->setSize($this->queryParts['limit']);
         }
 
-        if (isset($this->_queryParts['offset'])) {
-            $this->_elasticQuery->setFrom($this->_queryParts['offset']);
+        if (isset($this->queryParts['offset'])) {
+            $this->elasticQuery->setFrom($this->queryParts['offset']);
         }
 
-        if ($this->_queryParts['order']) {
-            $this->_elasticQuery->setSort($this->_queryParts['order']);
+        if ($this->queryParts['order']) {
+            $this->elasticQuery->setSort($this->queryParts['order']);
         }
 
-        if ($this->_queryParts['highlight']) {
-            $this->_elasticQuery->setHighlight($this->_queryParts['highlight']);
+        if ($this->queryParts['highlight']) {
+            $this->elasticQuery->setHighlight($this->queryParts['highlight']);
         }
 
-        if ($this->_queryParts['collapse']) {
-            $this->_elasticQuery->setCollapse($this->_queryParts['collapse']);
+        if ($this->queryParts['collapse']) {
+            $this->elasticQuery->setCollapse($this->queryParts['collapse']);
         }
 
-        if ($this->_queryParts['aggregations']) {
-            foreach ($this->_queryParts['aggregations'] as $aggregation) {
-                $this->_elasticQuery->addAggregation($aggregation);
+        if ($this->queryParts['aggregations']) {
+            foreach ($this->queryParts['aggregations'] as $aggregation) {
+                $this->elasticQuery->addAggregation($aggregation);
             }
         }
 
-        if ($this->_queryParts['trackTotalHits'] !== null) {
-            $this->_elasticQuery->setTrackTotalHits($this->_queryParts['trackTotalHits']);
+        if ($this->queryParts['trackTotalHits'] !== null) {
+            $this->elasticQuery->setTrackTotalHits($this->queryParts['trackTotalHits']);
         }
 
-        if (!isset($this->_queryParts['query'])) {
-            $this->_queryParts['query'] = new ElasticaQuery\BoolQuery();
+        if (!isset($this->queryParts['query'])) {
+            $this->queryParts['query'] = new BoolQuery();
         }
 
         /** @var \Elastica\Query\AbstractQuery $query */
-        $query = clone $this->_queryParts['query'];
+        $query = clone $this->queryParts['query'];
 
-        if ($query instanceof ElasticaQuery\BoolQuery && isset($this->_queryParts['filter'])) {
-            $query->addFilter($this->_queryParts['filter']);
+        if ($query instanceof BoolQuery && isset($this->queryParts['filter'])) {
+            $query->addFilter($this->queryParts['filter']);
         }
 
-        if (isset($this->_queryParts['postFilter'])) {
-            $this->_elasticQuery->setPostFilter($this->_queryParts['postFilter']);
+        if (isset($this->queryParts['postFilter'])) {
+            $this->elasticQuery->setPostFilter($this->queryParts['postFilter']);
         }
 
-        $this->_elasticQuery->setQuery($query);
+        $this->elasticQuery->setQuery($query);
 
-        return $this->_elasticQuery;
+        return $this->elasticQuery;
     }
 
     /**
@@ -867,8 +853,8 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function count(): int
     {
-        $connection = $this->_repository->getConnection();
-        $index = $this->_repository->getName();
+        $connection = $this->repository->getConnection();
+        $index = $this->repository->getName();
         $esIndex = $connection->getIndex($index);
 
         $query = clone $this->compileQuery();
@@ -884,10 +870,10 @@ class Query implements IteratorAggregate, QueryInterface
      * @param \Cake\Datasource\RepositoryInterface $repository The default repository object to use.
      * @return $this
      */
-    public function setRepository(RepositoryInterface $repository)
+    public function setRepository(RepositoryInterface $repository): static
     {
         assert($repository instanceof Index, 'ElasticSearch\Query requires an Index subclass');
-        $this->_repository = $repository;
+        $this->repository = $repository;
 
         return $this;
     }
@@ -898,7 +884,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function getRepository(): Index
     {
-        return $this->_repository;
+        return $this->repository;
     }
 
     /**
@@ -948,15 +934,15 @@ class Query implements IteratorAggregate, QueryInterface
      *   a cache engine instance.
      * @return $this
      */
-    public function cache(Closure|string|false $key, CacheInterface|string $config = 'default')
+    public function cache(Closure|string|false $key, CacheInterface|string $config = 'default'): static
     {
         if ($key === false) {
-            $this->_cache = null;
+            $this->cache = null;
 
             return $this;
         }
 
-        $this->_cache = new QueryCacher($key, $config);
+        $this->cache = new QueryCacher($key, $config);
 
         return $this;
     }
@@ -976,29 +962,29 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function all(): ResultSetInterface
     {
-        if ($this->_results !== null) {
-            if (!($this->_results instanceof ResultSetInterface)) {
-                $this->_results = $this->decorateResults($this->_results);
+        if ($this->results !== null) {
+            if (!($this->results instanceof ResultSetInterface)) {
+                $this->results = $this->decorateResults($this->results);
             }
 
-            return $this->_results;
+            return $this->results;
         }
 
         $results = null;
-        if ($this->_cache instanceof QueryCacher) {
-            $results = $this->_cache->fetch($this);
+        if ($this->cache instanceof QueryCacher) {
+            $results = $this->cache->fetch($this);
         }
 
         if ($results === null) {
-            $results = $this->decorateResults($this->_execute());
-            if ($this->_cache instanceof QueryCacher) {
-                $this->_cache->store($this, $results);
+            $results = $this->decorateResults($this->execute());
+            if ($this->cache instanceof QueryCacher) {
+                $this->cache->store($this, $results);
             }
         }
 
-        $this->_results = $results;
+        $this->results = $results;
 
-        return $this->_results;
+        return $this->results;
     }
 
     /**
@@ -1024,10 +1010,10 @@ class Query implements IteratorAggregate, QueryInterface
      * @return $this
      * @see \Cake\Collection\Iterator\MapReduce for details on how to use emit data to the map reducer.
      */
-    public function mapReduce(?Closure $mapper = null, ?Closure $reducer = null, bool $overwrite = false)
+    public function mapReduce(?Closure $mapper = null, ?Closure $reducer = null, bool $overwrite = false): static
     {
         if ($overwrite) {
-            $this->_mapReduce = [];
+            $this->mapReduce = [];
         }
 
         if (!$mapper instanceof Closure) {
@@ -1038,7 +1024,7 @@ class Query implements IteratorAggregate, QueryInterface
             return $this;
         }
 
-        $this->_mapReduce[] = ['mapper' => $mapper, 'reducer' => $reducer];
+        $this->mapReduce[] = ['mapper' => $mapper, 'reducer' => $reducer];
 
         return $this;
     }
@@ -1048,7 +1034,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function getMapReducers(): array
     {
-        return $this->_mapReduce;
+        return $this->mapReduce;
     }
 
     /**
@@ -1094,10 +1080,10 @@ class Query implements IteratorAggregate, QueryInterface
      * @return $this
      * @throws \InvalidArgumentException
      */
-    public function formatResults(?Closure $formatter = null, int|bool $mode = self::APPEND)
+    public function formatResults(?Closure $formatter = null, int|bool $mode = self::APPEND): static
     {
         if ($mode === self::OVERWRITE) {
-            $this->_formatters = [];
+            $this->formatters = [];
         }
 
         if (!$formatter instanceof Closure) {
@@ -1109,12 +1095,12 @@ class Query implements IteratorAggregate, QueryInterface
         }
 
         if ($mode === self::PREPEND) {
-            array_unshift($this->_formatters, $formatter);
+            array_unshift($this->formatters, $formatter);
 
             return $this;
         }
 
-        $this->_formatters[] = $formatter;
+        $this->formatters[] = $formatter;
 
         return $this;
     }
@@ -1126,7 +1112,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function getResultFormatters(): array
     {
-        return $this->_formatters;
+        return $this->formatters;
     }
 
     /**
@@ -1143,7 +1129,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function first(): mixed
     {
-        if ($this->_dirty) {
+        if ($this->dirty) {
             $this->limit(1);
         }
 
@@ -1187,7 +1173,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function getOptions(): array
     {
-        return $this->_options;
+        return $this->options;
     }
 
     /**
@@ -1199,8 +1185,8 @@ class Query implements IteratorAggregate, QueryInterface
     {
         $decorator = $this->decoratorClass();
 
-        if ($this->_mapReduce !== []) {
-            foreach ($this->_mapReduce as $functions) {
+        if ($this->mapReduce !== []) {
+            foreach ($this->mapReduce as $functions) {
                 $result = new MapReduce($result, $functions['mapper'], $functions['reducer']);
             }
 
@@ -1211,8 +1197,8 @@ class Query implements IteratorAggregate, QueryInterface
             $result = new $decorator($result);
         }
 
-        if ($this->_formatters !== []) {
-            foreach ($this->_formatters as $formatter) {
+        if ($this->formatters !== []) {
+            foreach ($this->formatters as $formatter) {
                 $result = $formatter($result, $this);
             }
 

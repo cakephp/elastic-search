@@ -175,11 +175,12 @@ class TestFixtureTest extends TestCase
     }
 
     /**
-     * Test insert method with empty records returns false
+     * Test insert method with empty records does not touch the connection
      */
     public function testInsertWithEmptyRecords(): void
     {
         $connection = $this->createMock(Connection::class);
+        $connection->expects($this->never())->method('getIndex');
 
         $fixture = new class extends TestFixture {
             public string $connection = 'test_empty';
@@ -187,8 +188,7 @@ class TestFixtureTest extends TestCase
             public array $records = [];
         };
 
-        $result = $fixture->insert($connection);
-        $this->assertFalse($result);
+        $fixture->insert($connection);
     }
 
     /**
@@ -581,12 +581,12 @@ class TestFixtureTest extends TestCase
         // Create the index first
         $fixture->create($connection);
 
-        $result = $fixture->insert($connection);
-        $this->assertTrue($result);
+        $fixture->insert($connection);
 
         // Verify documents were inserted
         $esIndex = $connection->getIndex($fixture->getIndex()->getName());
         $esIndex->refresh();
+        $this->assertSame(2, $fixture->getIndex()->find()->count());
 
         // Clean up
         $esIndex->delete();
@@ -618,8 +618,8 @@ class TestFixtureTest extends TestCase
         // Create the index first
         $fixture->create($connection);
 
-        $result = $fixture->insert($connection);
-        $this->assertTrue($result);
+        $fixture->insert($connection);
+        $this->assertSame(2, $fixture->getIndex()->find()->count());
 
         // Clean up
         $esIndex = $connection->getIndex($fixture->getIndex()->getName());
@@ -709,8 +709,8 @@ class TestFixtureTest extends TestCase
         $fixture->create($connection);
         $fixture->insert($connection);
 
-        $result = $fixture->truncate($connection);
-        $this->assertTrue($result);
+        $fixture->truncate($connection);
+        $this->assertSame(0, $fixture->getIndex()->find()->count());
 
         // Verify index still exists but is empty
         $esIndex = $connection->getIndex($fixture->getIndex()->getName());

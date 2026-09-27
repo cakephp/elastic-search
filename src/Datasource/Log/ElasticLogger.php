@@ -34,12 +34,12 @@ class ElasticLogger extends AbstractLogger
     /**
      * Holds the logger instance
      */
-    protected QueryLogger|LoggerInterface $_logger;
+    protected QueryLogger|LoggerInterface $logger;
 
     /**
      * Holds the connection instance
      */
-    protected Connection $_connection;
+    protected Connection $connection;
 
     /**
      * Constructor, set the QueryLogger instance
@@ -50,7 +50,7 @@ class ElasticLogger extends AbstractLogger
     public function __construct(QueryLogger|LoggerInterface $logger, Connection $connection)
     {
         $this->setLogger($logger);
-        $this->_connection = $connection;
+        $this->connection = $connection;
     }
 
     /**
@@ -59,9 +59,9 @@ class ElasticLogger extends AbstractLogger
      * @param \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface $logger Set logger instance to pass logging data to
      * @return $this
      */
-    public function setLogger(QueryLogger|LoggerInterface $logger)
+    public function setLogger(QueryLogger|LoggerInterface $logger): static
     {
-        $this->_logger = $logger;
+        $this->logger = $logger;
 
         return $this;
     }
@@ -71,7 +71,7 @@ class ElasticLogger extends AbstractLogger
      */
     public function getLogger(): QueryLogger|LoggerInterface
     {
-        return $this->_logger;
+        return $this->logger;
     }
 
     /**
@@ -85,8 +85,8 @@ class ElasticLogger extends AbstractLogger
      */
     public function log(mixed $level, Stringable|string $message, array $context = []): void
     {
-        if ($this->_connection->isQueryLoggingEnabled() && $level === LogLevel::DEBUG) {
-            $this->_log($level, (string)$message, $context);
+        if ($this->connection->isQueryLoggingEnabled() && $level === LogLevel::DEBUG) {
+            $this->logQuery($level, (string)$message, $context);
         }
     }
 
@@ -107,7 +107,7 @@ class ElasticLogger extends AbstractLogger
      * @param string $message The log message
      * @param array $context log context
      */
-    protected function _log(string $level, string $message, array $context = []): void
+    protected function logQuery(string $level, string $message, array $context = []): void
     {
         // Only process if we have request data
         if (!isset($context['request']) || !is_array($context['request'])) {

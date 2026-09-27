@@ -46,8 +46,7 @@ class IsUniqueTest extends TestCase
 
         // Use reflection to verify fields were stored correctly
         $reflection = new ReflectionClass($rule);
-        $fieldsProperty = $reflection->getProperty('_fields');
-        $fieldsProperty->setAccessible(true);
+        $fieldsProperty = $reflection->getProperty('fields');
 
         $storedFields = $fieldsProperty->getValue($rule);
 
@@ -62,8 +61,7 @@ class IsUniqueTest extends TestCase
         $rule = new IsUnique([]);
 
         $reflection = new ReflectionClass($rule);
-        $fieldsProperty = $reflection->getProperty('_fields');
-        $fieldsProperty->setAccessible(true);
+        $fieldsProperty = $reflection->getProperty('fields');
 
         $storedFields = $fieldsProperty->getValue($rule);
 
@@ -80,8 +78,7 @@ class IsUniqueTest extends TestCase
         $rule = new IsUnique([$field]);
 
         $reflection = new ReflectionClass($rule);
-        $fieldsProperty = $reflection->getProperty('_fields');
-        $fieldsProperty->setAccessible(true);
+        $fieldsProperty = $reflection->getProperty('fields');
 
         $storedFields = $fieldsProperty->getValue($rule);
 

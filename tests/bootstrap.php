@@ -14,9 +14,9 @@ declare(strict_types=1);
  * @since     0.0.1
  * @license   https://www.opensource.org/licenses/mit-license.php MIT License
  */
-require dirname(__DIR__) . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
-define('CAKE', dirname(__DIR__) . '/vendor/cakephp/cakephp/src/');
+define('CAKE', __DIR__ . '/../vendor/cakephp/cakephp/src/');
 
 define('ROOT', dirname(__DIR__));
 if (!defined('DS')) {

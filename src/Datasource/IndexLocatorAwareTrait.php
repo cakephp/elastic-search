@@ -34,7 +34,7 @@ trait IndexLocatorAwareTrait
     /**
      * Index locator instance
      */
-    protected ?LocatorInterface $_indexLocator = null;
+    protected ?LocatorInterface $indexLocator = null;
 
     /**
      * Sets the index locator.
@@ -42,9 +42,9 @@ trait IndexLocatorAwareTrait
      * @param \Cake\Datasource\Locator\LocatorInterface $indexLocator LocatorInterface instance.
      * @return $this
      */
-    public function setIndexLocator(LocatorInterface $indexLocator)
+    public function setIndexLocator(LocatorInterface $indexLocator): static
     {
-        $this->_indexLocator = $indexLocator;
+        $this->indexLocator = $indexLocator;
 
         return $this;
     }
@@ -54,8 +54,8 @@ trait IndexLocatorAwareTrait
      */
     public function getIndexLocator(): LocatorInterface
     {
-        if ($this->_indexLocator !== null) {
-            return $this->_indexLocator;
+        if ($this->indexLocator !== null) {
+            return $this->indexLocator;
         }
 
         $locator = FactoryLocator::get('Elastic');
@@ -64,7 +64,7 @@ trait IndexLocatorAwareTrait
             '`FactoryLocator` must return an instance of Cake\Datasource\Locator\LocatorInterface for type `Elastic`.',
         );
 
-        return $this->_indexLocator = $locator;
+        return $this->indexLocator = $locator;
     }
 
     /**

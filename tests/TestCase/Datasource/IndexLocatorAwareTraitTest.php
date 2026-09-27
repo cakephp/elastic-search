@@ -109,12 +109,12 @@ class IndexLocatorAwareTraitTest extends TestCase
 
             public function getIndexLocator(): LocatorInterface
             {
-                if ($this->_indexLocator instanceof LocatorInterface) {
-                    return $this->_indexLocator;
+                if ($this->indexLocator instanceof LocatorInterface) {
+                    return $this->indexLocator;
                 }
 
                 // Return a mock IndexLocator instead of using FactoryLocator
-                return $this->_indexLocator = new IndexLocator();
+                return $this->indexLocator = new IndexLocator();
             }
         };
 

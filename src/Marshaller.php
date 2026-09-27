@@ -53,7 +53,7 @@ class Marshaller
      *
      * - fieldList: A whitelist of fields to be assigned to the entity. If not present,
      *   the accessible fields list in the entity will be used.
-     * - accessibleFields: A list of fields to allow or deny in entity accessible fields.
+     * - patchableFields: A list of fields to allow or deny in entity accessible fields.
      * - associated: A list of embedded documents you want to marshal.
      *
      * @param array<string, mixed> $data The data to hydrate.
@@ -63,17 +63,17 @@ class Marshaller
     {
         $options += ['associated' => []];
 
-        [$data, $options] = $this->_prepareDataAndOptions($data, $options);
+        [$data, $options] = $this->prepareDataAndOptions($data, $options);
 
         $entity = $this->index->newEmptyEntity();
         assert($entity instanceof Document);
-        if (isset($options['accessibleFields'])) {
-            foreach ((array)$options['accessibleFields'] as $key => $value) {
-                $entity->setAccess($key, $value);
+        if (isset($options['patchableFields'])) {
+            foreach ((array)$options['patchableFields'] as $key => $value) {
+                $entity->setPatchable($key, $value);
             }
         }
 
-        $errors = $this->_validate($data, $options, true);
+        $errors = $this->validate($data, $options, true);
         $entity->setErrors($errors);
 
         $properties = [];
@@ -180,30 +180,30 @@ class Marshaller
             $existing->patch($data);
 
             return $existing;
-        } else {
-            if (!is_array($existing)) {
-                $existing = [];
-            }
-
-            foreach ($existing as $i => $row) {
-                if (isset($data[$i])) {
-                    $row->patch($data[$i]);
-                }
-
-                unset($data[$i]);
-            }
-
-            foreach ($data as $row) {
-                if (is_array($row)) {
-                    $new = $index->newEmptyEntity();
-                    assert($new instanceof Document);
-                    $new->patch($row);
-                    $existing[] = $new;
-                }
-            }
-
-            return $existing;
         }
+
+        if (!is_array($existing)) {
+            $existing = [];
+        }
+
+        foreach ($existing as $i => $row) {
+            if (isset($data[$i])) {
+                $row->patch($data[$i]);
+            }
+
+            unset($data[$i]);
+        }
+
+        foreach ($data as $row) {
+            if (is_array($row)) {
+                $new = $index->newEmptyEntity();
+                assert($new instanceof Document);
+                $new->patch($row);
+                $existing[] = $new;
+            }
+        }
+
+        return $existing;
     }
 
     /**
@@ -213,7 +213,7 @@ class Marshaller
      *
      * - fieldList: A whitelist of fields to be assigned to the entity. If not present,
      *   the accessible fields list in the entity will be used.
-     * - accessibleFields: A list of fields to allow or deny in entity accessible fields.
+     * - patchableFields: A list of fields to allow or deny in entity accessible fields.
      *
      * @param array $data The data to hydrate.
      * @param array<string, mixed> $options List of options
@@ -250,10 +250,10 @@ class Marshaller
     public function merge(EntityInterface $entity, array $data, array $options = []): EntityInterface
     {
         $options += ['associated' => []];
-        [$data, $options] = $this->_prepareDataAndOptions($data, $options);
+        [$data, $options] = $this->prepareDataAndOptions($data, $options);
 
         $isNew = $entity->isNew();
-        $errors = $this->_validate($data, $options, $isNew);
+        $errors = $this->validate($data, $options, $isNew);
         $entity->setErrors($errors);
 
         // Handle invalid fields
@@ -357,7 +357,7 @@ class Marshaller
      * @return array The list of validation errors.
      * @throws \RuntimeException If no validator can be created.
      */
-    protected function _validate(array $data, array $options, bool $isNew): array
+    protected function validate(array $data, array $options, bool $isNew): array
     {
         if (!$options['validate']) {
             return [];
@@ -390,7 +390,7 @@ class Marshaller
      * @param array<string, mixed> $options The options passed to this marshaller.
      * @return array An array containing prepared data and options.
      */
-    protected function _prepareDataAndOptions(array $data, array $options): array
+    protected function prepareDataAndOptions(array $data, array $options): array
     {
         $options += ['validate' => true];
         $data = new ArrayObject($data);
