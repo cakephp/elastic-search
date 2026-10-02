@@ -21,6 +21,7 @@
       "text": "Migration",
       "collapsed": false,
       "items": [
+        { "text": "6.0 Upgrade Guide", "link": "/6-0-upgrade-guide" },
         { "text": "5.0 Upgrade Guide", "link": "/5-0-upgrade-guide" },
         { "text": "4.0 Upgrade Guide", "link": "/4-0-upgrade-guide" },
         { "text": "3.0 Upgrade Guide", "link": "/3-0-upgrade-guide" }

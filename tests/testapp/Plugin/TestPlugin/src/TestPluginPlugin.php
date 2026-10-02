@@ -2,8 +2,6 @@
 declare(strict_types=1);
 
 /**
- * MissingDocumentException file
- *
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
  *
@@ -13,17 +11,16 @@ declare(strict_types=1);
  *
  * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
  * @link          https://cakephp.org CakePHP(tm) Project
- * @since         3.0.0
- * @license       https://opensource.org/licenses/mit-license.php MIT License
+ * @since         0.0.1
+ * @license       https://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\ElasticSearch\Exception;
+namespace TestPlugin;
 
-use Cake\ORM\Exception\MissingEntityException;
+use Cake\Core\BasePlugin;
 
 /**
- * Exception raised when a Document could not be found.
+ * Plugin class for the TestPlugin test plugin.
  */
-class MissingDocumentException extends MissingEntityException
+class TestPluginPlugin extends BasePlugin
 {
-    protected string $messageTemplate = 'Document class %s could not be found.';
 }

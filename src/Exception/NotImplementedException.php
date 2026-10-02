@@ -25,5 +25,5 @@ use Cake\Core\Exception\CakeException;
  */
 class NotImplementedException extends CakeException
 {
-    protected string $_messageTemplate = 'Method %s has not been implemented in this context.';
+    protected string $messageTemplate = 'Method %s has not been implemented in this context.';
 }

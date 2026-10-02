@@ -35,7 +35,7 @@ class Document implements EntityInterface, InvalidPropertyInterface
      * from a search query. It can contain extra information about this document
      * concerning the search operation, such as highlights, score and version.
      */
-    protected Result $_result;
+    protected Result $searchResult;
 
     /**
      * Takes either an array or a Result object form a search and constructs
@@ -75,14 +75,20 @@ class Document implements EntityInterface, InvalidPropertyInterface
         }
 
         if ($options['result'] !== null) {
-            $this->_result = $options['result'];
+            $this->searchResult = $options['result'];
         }
 
         if (count($data) > 0) {
             $this->setOriginalField(array_keys($data));
 
             if ($options['markClean'] && !$options['useSetters']) {
-                $this->_fields = $data;
+                foreach ($data as $field => $value) {
+                    $field = (string)$field;
+                    $this->setRawValue($field, $value);
+                    if (!array_key_exists($field, $this->dynamicFields)) {
+                        $this->assignedProps[$field] = true;
+                    }
+                }
 
                 return;
             }
@@ -106,8 +112,8 @@ class Document implements EntityInterface, InvalidPropertyInterface
      */
     public function index(): ?string
     {
-        if (isset($this->_result)) {
-            return $this->_result->getIndex();
+        if (isset($this->searchResult)) {
+            return $this->searchResult->getIndex();
         }
 
         return null;
@@ -120,8 +126,8 @@ class Document implements EntityInterface, InvalidPropertyInterface
      */
     public function version(): int
     {
-        if (isset($this->_result)) {
-            return intval($this->_result->getVersion());
+        if (isset($this->searchResult)) {
+            return intval($this->searchResult->getVersion());
         }
 
         return 1;
@@ -136,8 +142,8 @@ class Document implements EntityInterface, InvalidPropertyInterface
      */
     public function highlights(): array
     {
-        if (isset($this->_result)) {
-            return $this->_result->getHighlights();
+        if (isset($this->searchResult)) {
+            return $this->searchResult->getHighlights();
         }
 
         return [];
@@ -151,8 +157,8 @@ class Document implements EntityInterface, InvalidPropertyInterface
      */
     public function explanation(): array
     {
-        if (isset($this->_result)) {
-            return $this->_result->getExplanation();
+        if (isset($this->searchResult)) {
+            return $this->searchResult->getExplanation();
         }
 
         return [];

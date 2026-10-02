@@ -4,13 +4,8 @@
     <file>tests/</file>
 
     <rule ref="CakePHP"/>
-    <arg value="nps"/>
+    <arg value="ps"/>
     <arg name="colors"/>
     <arg name="parallel" value="4"/>
     <arg name="cache" value=".phpcs.cache"/>
-
-    <!-- Necessary for class aliases used for backwards compat -->
-    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
-        <severity>0</severity>
-    </rule>
 </ruleset>

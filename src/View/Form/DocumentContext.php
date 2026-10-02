@@ -37,23 +37,23 @@ class DocumentContext implements ContextInterface
     /**
      * The request object.
      */
-    protected ServerRequest $_request;
+    protected ServerRequest $request;
 
     /**
      * The context data
      */
-    protected array $_context;
+    protected array $context;
 
     /**
      * The name of the top level entity/index object.
      */
-    protected string $_rootName;
+    protected string $rootName;
 
     /**
      * Boolean to track whether or not the entity is a
      * collection.
      */
-    protected bool $_isCollection = false;
+    protected bool $isCollection = false;
 
     /**
      * Constructor.
@@ -63,14 +63,14 @@ class DocumentContext implements ContextInterface
      */
     public function __construct(ServerRequest $request, array $context)
     {
-        $this->_request = $request;
+        $this->request = $request;
         $context += [
             'entity' => null,
             'index' => null,
             'validator' => 'default',
         ];
-        $this->_context = $context;
-        $this->_prepare();
+        $this->context = $context;
+        $this->prepare();
     }
 
     /**
@@ -87,10 +87,10 @@ class DocumentContext implements ContextInterface
      *
      * @throws \RuntimeException When a table object cannot be located/inferred.
      */
-    protected function _prepare(): void
+    protected function prepare(): void
     {
-        $index = $this->_context['index'];
-        $entity = $this->_context['entity'];
+        $index = $this->context['index'];
+        $entity = $this->context['entity'];
         if (empty($index)) {
             if (is_array($entity) || $entity instanceof Traversable) {
                 $entity = (new Collection($entity))->first();
@@ -118,13 +118,13 @@ class DocumentContext implements ContextInterface
             );
         }
 
-        $this->_isCollection = (
+        $this->isCollection = (
             is_array($entity) ||
             $entity instanceof Traversable
         );
         assert($index instanceof Index);
-        $this->_rootName = $index->getName();
-        $this->_context['index'] = $index;
+        $this->rootName = $index->getName();
+        $this->context['index'] = $index;
     }
 
     /**
@@ -150,7 +150,7 @@ class DocumentContext implements ContextInterface
      */
     public function isCreate(): bool
     {
-        $entity = $this->_context['entity'];
+        $entity = $this->context['entity'];
         if (is_array($entity) || $entity instanceof Traversable) {
             $entity = (new Collection($entity))->first();
         }
@@ -167,12 +167,12 @@ class DocumentContext implements ContextInterface
      */
     public function val(string $field, array $options = []): mixed
     {
-        $val = $this->_request->getData($field);
+        $val = $this->request->getData($field);
         if ($val !== null) {
             return $val;
         }
 
-        if (empty($this->_context['entity'])) {
+        if (empty($this->context['entity'])) {
             return null;
         }
 
@@ -183,8 +183,8 @@ class DocumentContext implements ContextInterface
             return $entity->get(array_pop($parts));
         }
 
-        if ($this->_context['entity'] instanceof Document) {
-            return Hash::get($this->_context['entity'], $field);
+        if ($this->context['entity'] instanceof Document) {
+            return Hash::get($this->context['entity'], $field);
         }
 
         return null;
@@ -200,16 +200,16 @@ class DocumentContext implements ContextInterface
     protected function entity(array $path): object|array|false
     {
         $oneElement = count($path) === 1;
-        if ($oneElement && $this->_isCollection) {
+        if ($oneElement && $this->isCollection) {
             return false;
         }
 
-        $entity = $this->_context['entity'];
+        $entity = $this->context['entity'];
         if ($oneElement) {
             return $entity;
         }
 
-        if ($path[0] === $this->_rootName) {
+        if ($path[0] === $this->rootName) {
             $path = array_slice($path, 1);
         }
 
@@ -349,8 +349,8 @@ class DocumentContext implements ContextInterface
         }
 
         foreach ($validator->field($fieldName)->rules() as $rule) {
-            if ($rule->get('rule') === 'maxLength') {
-                return $rule->get('pass')[0];
+            if ($rule->name === 'maxLength' && isset($rule->pass[0])) {
+                return $rule->pass[0];
             }
         }
 
@@ -364,7 +364,7 @@ class DocumentContext implements ContextInterface
      */
     protected function getValidator(): Validator
     {
-        return $this->_context['index']->getValidator($this->_context['validator']);
+        return $this->context['index']->getValidator($this->context['validator']);
     }
 
     /**
@@ -372,7 +372,7 @@ class DocumentContext implements ContextInterface
      */
     public function fieldNames(): array
     {
-        $schema = $this->_context['index']->schema();
+        $schema = $this->context['index']->schema();
 
         return $schema->fields();
     }
@@ -382,7 +382,7 @@ class DocumentContext implements ContextInterface
      */
     public function type(string $field): ?string
     {
-        $schema = $this->_context['index']->schema();
+        $schema = $this->context['index']->schema();
 
         return $schema->fieldType($field);
     }
@@ -413,8 +413,8 @@ class DocumentContext implements ContextInterface
         $entityErrors = [];
         $errors = [];
 
-        if ($this->_context['entity'] instanceof Document) {
-            $entityErrors = $this->_context['entity']->getErrors();
+        if ($this->context['entity'] instanceof Document) {
+            $entityErrors = $this->context['entity']->getErrors();
         }
 
         $tailField = array_pop($parts);

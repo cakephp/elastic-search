@@ -32,7 +32,6 @@ use Cake\Event\EventDispatcherInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
-use Cake\Event\EventManagerInterface;
 use Cake\Utility\Inflector;
 use Cake\Validation\ValidatorAwareTrait;
 use Closure;
@@ -40,7 +39,6 @@ use Elastica\Document as ElasticaDocument;
 use InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
 use RuntimeException;
-use function Cake\Core\deprecationWarning;
 use function Cake\Core\namespaceSplit;
 
 /**
@@ -48,14 +46,9 @@ use function Cake\Core\namespaceSplit;
  *
  * A index in elastic search is approximately equivalent to a table or collection
  * in a relational datastore. This ODM maps each index to a class.
- *
- * @implements \Cake\Event\EventDispatcherInterface<\Cake\ORM\Table>
  */
 class Index implements RepositoryInterface, EventListenerInterface, EventDispatcherInterface
 {
-    /**
-     * @use \Cake\Event\EventDispatcherTrait<\Cake\ElasticSearch\Index>
-     */
     use EventDispatcherTrait;
     use RulesAwareTrait;
     use ValidatorAwareTrait;
@@ -84,24 +77,24 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
     /**
      * Connection instance
      */
-    protected Connection $_connection;
+    protected Connection $connection;
 
     /**
      * The name of the Elasticsearch index this class represents
      */
-    protected string $_name;
+    protected string $name;
 
     /**
      * Registry key used to create this index object
      */
-    protected string $_registryAlias;
+    protected string $registryAlias;
 
     /**
      * The name of the class that represent a single document for this type
      *
      * @var class-string<\Cake\ElasticSearch\Document>
      */
-    protected string $_documentClass;
+    protected string $documentClass;
 
     /**
      * Collection of Embedded sub documents this type has.
@@ -146,11 +139,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             $eventManager = $config['eventManager'];
         }
 
-        $this->_eventManager = $eventManager ?: new EventManager();
+        $this->eventManager = $eventManager ?: new EventManager();
         $this->initialize($config);
-        if ($this->_eventManager instanceof EventManagerInterface) {
-            $this->_eventManager->on($this);
-        }
+        $this->eventManager->on($this);
 
         $this->dispatchEvent('Model.initialize');
     }
@@ -218,9 +209,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param \Cake\ElasticSearch\Datasource\Connection $conn the new connection instance
      * @return $this
      */
-    public function setConnection(Connection $conn)
+    public function setConnection(Connection $conn): static
     {
-        $this->_connection = $conn;
+        $this->connection = $conn;
 
         return $this;
     }
@@ -230,7 +221,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getConnection(): Connection
     {
-        return $this->_connection;
+        return $this->connection;
     }
 
     /**
@@ -239,9 +230,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $registryAlias The key used to access this object.
      * @return $this
      */
-    public function setRegistryAlias(string $registryAlias)
+    public function setRegistryAlias(string $registryAlias): static
     {
-        $this->_registryAlias = $registryAlias;
+        $this->registryAlias = $registryAlias;
 
         return $this;
     }
@@ -251,11 +242,11 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getRegistryAlias(): string
     {
-        if (!isset($this->_registryAlias)) {
-            $this->_registryAlias = $this->getAlias();
+        if (!isset($this->registryAlias)) {
+            $this->registryAlias = $this->getAlias();
         }
 
-        return $this->_registryAlias;
+        return $this->registryAlias;
     }
 
     /**
@@ -264,9 +255,9 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $name Index name
      * @return $this
      */
-    public function setName(string $name)
+    public function setName(string $name): static
     {
-        $this->_name = $name;
+        $this->name = $name;
 
         return $this;
     }
@@ -278,13 +269,13 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getName(): string
     {
-        if (!isset($this->_name)) {
+        if (!isset($this->name)) {
             $name = namespaceSplit(static::class);
             $name = substr(end($name), 0, -5);
-            $this->_name = Inflector::underscore($name);
+            $this->name = Inflector::underscore($name);
         }
 
-        return $this->_name;
+        return $this->name;
     }
 
     /**
@@ -303,7 +294,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @param string $alias Index alias
      * @return $this
      */
-    public function setAlias(string $alias)
+    public function setAlias(string $alias): static
     {
         return $this->setName($alias);
     }
@@ -364,18 +355,15 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             );
         }
 
-        // Handle backward compatibility for array-based options
-        if (count($args) === 1 && isset($args[0]) && is_array($args[0])) {
-            deprecationWarning(
-                '5.0.0',
-                'Calling finder methods with options arrays is deprecated. ' .
-                'Use named arguments instead.',
-            );
-            $options = $args[0];
-            $query->applyOptions($options);
-            $options = $query->getOptions();
-
-            return $this->{$finder}($query, $options);
+        // A single positional array used to be the legacy options array,
+        // removed in 6.0 in favor of named arguments.
+        if (count($args) === 1 && array_key_exists(0, $args) && is_array($args[0])) {
+            throw new InvalidArgumentException(sprintf(
+                'Passing an options array to the "%s" finder is not supported. ' .
+                "Use named arguments instead, for example find('%s', limit: 10).",
+                $type,
+                $type,
+            ));
         }
 
         // Convert named arguments to options array for the finder method
@@ -593,8 +581,8 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         $esIndex->addDocuments($documents, $requestParams);
 
         foreach ($documents as $key => $doc) {
-            $entities[$key]->id = $doc->getId();
-            $entities[$key]->_version = $doc->getVersion();
+            $entities[$key]->set('id', $doc->getId());
+            $entities[$key]->set('_version', $doc->getVersion());
             $entities[$key]->setNew(false);
             $entities[$key]->setSource($this->getRegistryAlias());
             $entities[$key]->clean();
@@ -806,19 +794,19 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function getEntityClass(): string
     {
-        if (!isset($this->_documentClass)) {
+        if (!isset($this->documentClass)) {
             $default = Document::class;
             $self = static::class;
             $parts = explode('\\', $self);
 
             if ($self === self::class || count($parts) < 3) {
-                return $this->_documentClass = $default;
+                return $this->documentClass = $default;
             }
 
             $alias = Inflector::classify(Inflector::underscore(substr(array_pop($parts), 0, -5)));
             $name = implode('\\', array_slice($parts, 0, -1)) . '\\Document\\' . $alias;
             if (!class_exists($name)) {
-                return $this->_documentClass = $default;
+                return $this->documentClass = $default;
             }
 
             /** @var class-string<\Cake\ElasticSearch\Document>|null $class */
@@ -828,10 +816,10 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
             }
 
             /** @var class-string<\Cake\ElasticSearch\Document> $class */
-            return $this->_documentClass = $class;
+            return $this->documentClass = $class;
         }
 
-        return $this->_documentClass;
+        return $this->documentClass;
     }
 
     /**
@@ -841,7 +829,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
      * @throws \Cake\ElasticSearch\Exception\MissingDocumentException when the entity class cannot be found
      * @return $this
      */
-    public function setEntityClass(string $name)
+    public function setEntityClass(string $name): static
     {
         $class = App::className($name, 'Model/Document');
         if (!$class) {
@@ -849,7 +837,7 @@ class Index implements RepositoryInterface, EventListenerInterface, EventDispatc
         }
 
         /** @var class-string<\Cake\ElasticSearch\Document> $class */
-        $this->_documentClass = $class;
+        $this->documentClass = $class;
 
         return $this;
     }

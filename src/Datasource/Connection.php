@@ -35,12 +35,12 @@ use RuntimeException;
  */
 class Connection implements ConnectionInterface
 {
-    protected array $_config;
+    protected array $config;
 
     /**
      * Compatibility shim for ConnectionInterface
      */
-    public const ROLE_WRITE = 'write';
+    public const string ROLE_WRITE = 'write';
 
     /**
      * Whether or not query logging is enabled.
@@ -60,17 +60,17 @@ class Connection implements ConnectionInterface
     /**
      * Elastica client instance
      */
-    protected ElasticaClient $_client;
+    protected ElasticaClient $client;
 
     /**
      * Logger object instance.
      */
-    protected QueryLogger|LoggerInterface $_logger;
+    protected QueryLogger|LoggerInterface $logger;
 
     /**
      * Instance of ElasticLogger
      */
-    protected ElasticLogger $_esLogger;
+    protected ElasticLogger $esLogger;
 
     protected CacheInterface $cacher;
 
@@ -104,9 +104,9 @@ class Connection implements ConnectionInterface
             );
         }
 
-        $this->_config = $config;
+        $this->config = $config;
         $logger = $this->logQueries ? $this->getEsLogger() : null;
-        $this->_client = new ElasticaClient($config, $logger);
+        $this->client = new ElasticaClient($config, $logger);
     }
 
     /**
@@ -118,8 +118,8 @@ class Connection implements ConnectionInterface
      */
     public function __call(string $name, array $attributes): mixed
     {
-        if (method_exists($this->_client, $name)) {
-            $callback = [$this->_client, $name];
+        if (method_exists($this->client, $name)) {
+            $callback = [$this->client, $name];
             assert(is_callable($callback));
 
             return call_user_func_array($callback, $attributes);
@@ -151,7 +151,7 @@ class Connection implements ConnectionInterface
      * @param bool $enable Enable/disable query logging
      * @return $this
      */
-    public function enableQueryLogging(bool $enable = true)
+    public function enableQueryLogging(bool $enable = true): static
     {
         $this->logQueries = $enable;
 
@@ -160,10 +160,8 @@ class Connection implements ConnectionInterface
 
     /**
      * Disable query logging
-     *
-     * @return $this
      */
-    public function disableQueryLogging()
+    public function disableQueryLogging(): static
     {
         $this->logQueries = false;
 
@@ -199,7 +197,7 @@ class Connection implements ConnectionInterface
      */
     public function config(): array
     {
-        return $this->_config;
+        return $this->config;
     }
 
     /**
@@ -208,9 +206,9 @@ class Connection implements ConnectionInterface
      * @param \Cake\Database\Log\QueryLogger|\Psr\Log\LoggerInterface $logger Logger instance
      * @return $this
      */
-    public function setLogger(QueryLogger|LoggerInterface $logger)
+    public function setLogger(QueryLogger|LoggerInterface $logger): static
     {
-        $this->_logger = $logger;
+        $this->logger = $logger;
         $this->getEsLogger()->setLogger($logger);
 
         return $this;
@@ -225,7 +223,7 @@ class Connection implements ConnectionInterface
      */
     public function getLogger(): LoggerInterface
     {
-        if (!isset($this->_logger)) {
+        if (!isset($this->logger)) {
             $loggerName = $this->loggerName;
             $engine = Log::engine($loggerName) ?: Log::engine('debug');
 
@@ -236,7 +234,7 @@ class Connection implements ConnectionInterface
             $this->setLogger($engine);
         }
 
-        return $this->_logger;
+        return $this->logger;
     }
 
     /**
@@ -244,17 +242,17 @@ class Connection implements ConnectionInterface
      */
     public function getEsLogger(): ElasticLogger
     {
-        if (!isset($this->_esLogger)) {
-            $this->_esLogger = new ElasticLogger($this->getLogger(), $this);
+        if (!isset($this->esLogger)) {
+            $this->esLogger = new ElasticLogger($this->getLogger(), $this);
         }
 
-        return $this->_esLogger;
+        return $this->esLogger;
     }
 
     /**
      * @inheritDoc
      */
-    public function setCacher(CacheInterface $cacher)
+    public function setCacher(CacheInterface $cacher): static
     {
         $this->cacher = $cacher;
 
@@ -270,7 +268,7 @@ class Connection implements ConnectionInterface
             return $this->cacher;
         }
 
-        $configName = $this->_config['cacheMetadata'] ?? '_cake_model_';
+        $configName = $this->config['cacheMetadata'] ?? '_cake_model_';
         if (!is_string($configName)) {
             $configName = '_cake_model_';
         }
@@ -292,7 +290,7 @@ class Connection implements ConnectionInterface
      */
     public function getDriver(string $role = self::ROLE_WRITE): ElasticaClient
     {
-        return $this->_client;
+        return $this->client;
     }
 
     /**
@@ -306,6 +304,6 @@ class Connection implements ConnectionInterface
     {
         $defaultIndex = $this->config()['index'] ?? $this->configName;
 
-        return $this->_client->getIndex($name ?: $defaultIndex);
+        return $this->client->getIndex($name ?: $defaultIndex);
     }
 }

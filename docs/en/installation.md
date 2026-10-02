@@ -3,7 +3,7 @@
 Install the plugin with Composer from your application's root directory:
 
 ```bash
-composer require cakephp/elastic-search:^5.0
+composer require cakephp/elastic-search:^6.0
 ```
 
 Load the plugin in your application bootstrap:

@@ -3,7 +3,7 @@ name: Documentation Validation
 on:
     push:
         branches:
-            - 5.x
+            - 6.x
         paths:
             - 'docs/**'
             - '.github/**'
@@ -14,7 +14,7 @@ on:
 
 jobs:
     validate:
-        uses: cakephp/.github/.github/workflows/docs-validation.yml@5.x
+        uses: cakephp/.github/.github/workflows/docs-validation.yml@6.x
         with:
             docs-path: 'docs'
             vitepress-path: 'docs/.vitepress'
@@ -24,4 +24,4 @@ jobs:
             enable-spell-check: true
             enable-markdown-lint: true
             enable-link-check: true
-            tools-ref: '5.x'
+            tools-ref: '6.x'
