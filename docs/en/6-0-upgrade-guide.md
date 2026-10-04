@@ -13,7 +13,7 @@ CakePHP ElasticSearch `6.x` requires CakePHP `6.0+`, Elasticsearch `9.x`, Elasti
 
 ## Breaking Changes
 
-Version `6.x` ports the plugin to CakePHP `6.x` and drops all CakePHP `5.x` support.
+Version `6.x` requires CakePHP `6.x`.
 The Elasticsearch, Elastica and PHP version requirements are unchanged from `5.x`,
 apart from the PHP version bump required by CakePHP `6`.
 
