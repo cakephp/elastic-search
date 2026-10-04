@@ -107,7 +107,6 @@ class ResultSetTest extends TestCase
         // Read the wrapped results so we can compare method outputs.
         // This is not ideal but better than using mocks.
         $reflect = new ReflectionProperty($results, 'resultSet');
-        $reflect->setAccessible(true);
 
         $elasticResult = $reflect->getValue($results);
 

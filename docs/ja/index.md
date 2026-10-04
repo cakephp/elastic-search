@@ -7,7 +7,7 @@ ElasticSearch プラグインは、[Elasticsearch](https://www.elastic.co/produc
 アプリケーションのルートディレクトリーで Composer を使ってインストールします。
 
 ```bash
-composer require cakephp/elastic-search:^5.0
+composer require cakephp/elastic-search:^6.0
 ```
 
 `src/Application.php` でプラグインを読み込みます。

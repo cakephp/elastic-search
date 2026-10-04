@@ -140,7 +140,7 @@ class MarshallerTest extends TestCase
     }
 
     /**
-     * test marshalling with accessibleFields
+     * test marshalling with patchableFields
      */
     public function testOneAccessibleFields(): void
     {
@@ -158,7 +158,7 @@ class MarshallerTest extends TestCase
         $this->assertNull($result->body);
         $this->assertNull($result->user_id);
 
-        $result = $marshaller->one($data, ['accessibleFields' => ['body' => true]]);
+        $result = $marshaller->one($data, ['patchableFields' => ['body' => true]]);
 
         $this->assertSame($data['title'], $result->title);
         $this->assertSame($data['body'], $result->body);
@@ -475,7 +475,7 @@ class MarshallerTest extends TestCase
     public function testMergeFieldList(): void
     {
         $doc = $this->index->get(1);
-        $doc->setAccess('*', false);
+        $doc->setPatchable('*', false);
 
         $data = [
             'title' => 'New title',
@@ -866,13 +866,13 @@ class MarshallerTest extends TestCase
             ],
         ];
         $options = [
-            'accessibleFields' => ['remove_this' => false],
+            'patchableFields' => ['remove_this' => false],
             'associated' => [
                 'User' => [
-                    'accessibleFields' => ['last_name' => false],
+                    'patchableFields' => ['last_name' => false],
                     'associated' => [
                         'UserType' => [
-                            'accessibleFields' => ['level' => false],
+                            'patchableFields' => ['level' => false],
                         ],
                     ],
                 ],
@@ -1235,7 +1235,6 @@ class MarshallerTest extends TestCase
 
         $reflection = new ReflectionClass($marshaller);
         $method = $reflection->getMethod('fieldValue');
-        $method->setAccessible(true);
 
         $result = $method->invoke($marshaller, $entity, 'title');
         $this->assertSame('Test', $result);
@@ -1254,7 +1253,6 @@ class MarshallerTest extends TestCase
 
         $reflection = new ReflectionClass($marshaller);
         $method = $reflection->getMethod('fieldValue');
-        $method->setAccessible(true);
 
         $result = $method->invoke($marshaller, $entity, 'nonexistent');
         $this->assertNull($result, 'Should return null for missing fields');
@@ -1270,7 +1268,6 @@ class MarshallerTest extends TestCase
 
         $reflection = new ReflectionClass($marshaller);
         $method = $reflection->getMethod('fieldValue');
-        $method->setAccessible(true);
 
         $result = $method->invoke($marshaller, $entity, 'title');
         $this->assertNull($result);

@@ -7,7 +7,7 @@ use Cake\ElasticSearch\Document;
 
 class ProtectedArticle extends Document
 {
-    protected array $_accessible = [
+    protected array $patchable = [
         'title' => true,
     ];
 }

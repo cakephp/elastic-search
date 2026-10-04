@@ -31,7 +31,7 @@ class IsUnique
     /**
      * The list of fields to check
      */
-    protected array $_fields;
+    protected array $fields;
 
     /**
      * Constructor.
@@ -45,7 +45,7 @@ class IsUnique
      */
     public function __construct(array $fields)
     {
-        $this->_fields = $fields;
+        $this->fields = $fields;
     }
 
     /**
@@ -62,11 +62,11 @@ class IsUnique
      */
     public function __invoke(EntityInterface $entity, array $options): bool
     {
-        if (!$entity->extract($this->_fields, true)) {
+        if (!$entity->extract($this->fields, true)) {
             return true;
         }
 
-        $fields = $entity->extract($this->_fields);
+        $fields = $entity->extract($this->fields);
         $conditions = [];
 
         foreach ($fields as $field => $value) {

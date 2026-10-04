@@ -40,7 +40,6 @@ class DeleteQueryStrategyTest extends TestCase
         // Use reflection to verify helper was initialized
         $reflection = new ReflectionClass($strategy);
         $helperProperty = $reflection->getProperty('helper');
-        $helperProperty->setAccessible(true);
 
         $helper = $helperProperty->getValue($strategy);
 
@@ -48,7 +47,6 @@ class DeleteQueryStrategyTest extends TestCase
 
         // Test that fixtures array is initialized empty
         $fixturesProperty = $reflection->getProperty('fixtures');
-        $fixturesProperty->setAccessible(true);
 
         $fixtures = $fixturesProperty->getValue($strategy);
 
@@ -76,7 +74,6 @@ class DeleteQueryStrategyTest extends TestCase
         // Verify fixtures are stored internally
         $reflection = new ReflectionClass($strategy);
         $fixturesProperty = $reflection->getProperty('fixtures');
-        $fixturesProperty->setAccessible(true);
 
         $fixtures = $fixturesProperty->getValue($strategy);
 
@@ -96,7 +93,6 @@ class DeleteQueryStrategyTest extends TestCase
         // Verify fixtures array remains empty
         $reflection = new ReflectionClass($strategy);
         $fixturesProperty = $reflection->getProperty('fixtures');
-        $fixturesProperty->setAccessible(true);
 
         $fixtures = $fixturesProperty->getValue($strategy);
 
@@ -132,7 +128,6 @@ class DeleteQueryStrategyTest extends TestCase
         // Verify it doesn't crash and fixtures are updated
         $reflection = new ReflectionClass($strategy);
         $fixturesProperty = $reflection->getProperty('fixtures');
-        $fixturesProperty->setAccessible(true);
 
         $fixtures = $fixturesProperty->getValue($strategy);
 
@@ -173,7 +168,6 @@ class DeleteQueryStrategyTest extends TestCase
         // Verify fixtures array is still empty
         $reflection = new ReflectionClass($strategy);
         $fixturesProperty = $reflection->getProperty('fixtures');
-        $fixturesProperty->setAccessible(true);
 
         $fixtures = $fixturesProperty->getValue($strategy);
 
@@ -294,7 +288,6 @@ class DeleteQueryStrategyTest extends TestCase
         // Verify fixtures are loaded
         $reflection = new ReflectionClass($strategy);
         $fixturesProperty = $reflection->getProperty('fixtures');
-        $fixturesProperty->setAccessible(true);
 
         $fixtures = $fixturesProperty->getValue($strategy);
         $this->assertNotEmpty($fixtures);
@@ -319,7 +312,6 @@ class DeleteQueryStrategyTest extends TestCase
         // Verify fixtures were cleared
         $reflection = new ReflectionClass($strategy);
         $fixturesProperty = $reflection->getProperty('fixtures');
-        $fixturesProperty->setAccessible(true);
 
         $fixtures = $fixturesProperty->getValue($strategy);
         $this->assertEmpty($fixtures, 'Fixtures should be cleared after teardown');

@@ -1,13 +1,13 @@
 # Elasticsearch Datasource for CakePHP
 
-![Build Status](https://github.com/cakephp/elastic-search/actions/workflows/ci.yml/badge.svg?branch=5.x)
+![Build Status](https://github.com/cakephp/elastic-search/actions/workflows/ci.yml/badge.svg?branch=6.x)
 [![Latest Stable Version](https://img.shields.io/github/v/release/cakephp/elastic-search?sort=semver&style=flat-square)](https://packagist.org/packages/cakephp/elastic-search)
 [![Total Downloads](https://img.shields.io/packagist/dt/cakephp/elastic-search?style=flat-square)](https://packagist.org/packages/cakephp/elastic-search/stats)
-[![codecov](https://codecov.io/gh/cakephp/elastic-search/branch/5.x/graph/badge.svg?token=G3Tcg116OX)](https://app.codecov.io/gh/cakephp/elastic-search/tree/5.x)
+[![codecov](https://codecov.io/gh/cakephp/elastic-search/branch/6.x/graph/badge.svg?token=G3Tcg116OX)](https://app.codecov.io/gh/cakephp/elastic-search/tree/6.x)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat-square)](https://phpstan.org/)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
-Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 5.2+.
+Use [Elastic Search](https://www.elastic.co/) as an alternative ORM backend in CakePHP 6.0+.
 
 You can [find the documentation for the plugin in the Cake Book](https://book.cakephp.org/elasticsearch).
 
@@ -17,7 +17,7 @@ You can install Elasticsearch into your project using
 [composer](https://getcomposer.org). For existing applications you can run:
 
 ```bash
-composer require cakephp/elastic-search:^5.0
+composer require cakephp/elastic-search:^6.0
 ```
 
 ### Versions Table
@@ -30,8 +30,9 @@ composer require cakephp/elastic-search:^5.0
 | [>=3.4.0](https://github.com/cakephp/elastic-search/tree/3.x)      | 4.0+      | 7.x           | 7.x       |
 | [4.x](https://github.com/cakephp/elastic-search/tree/4.x)          | 5.0+      | 7.x           | 7.x       |
 | [5.x](https://github.com/cakephp/elastic-search/tree/5.x)          | 5.2+      | 9.x           | 9.x       |
+| [6.x](https://github.com/cakephp/elastic-search/tree/6.x)          | 6.0+      | 9.x           | 9.x       |
 
-You are seeing the 5.x version.
+You are seeing the 6.x version.
 
 ## Connecting the Plugin to your Application
 
@@ -42,7 +43,7 @@ use Cake\ElasticSearch\Plugin as ElasticSearchPlugin;
 
 class Application extends BaseApplication
 {
-    public function bootstrap()
+    public function bootstrap(): void
     {
         $this->addPlugin(ElasticSearchPlugin::class);
 

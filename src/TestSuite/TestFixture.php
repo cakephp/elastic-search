@@ -161,11 +161,11 @@ class TestFixture implements FixtureInterface
      *
      * @param \Cake\Datasource\ConnectionInterface $connection The Elasticsearch connection
      */
-    public function insert(ConnectionInterface $connection): bool
+    public function insert(ConnectionInterface $connection): void
     {
         assert($connection instanceof Connection, 'Requires an elasticsearch connection');
         if ($this->records === []) {
-            return false;
+            return;
         }
 
         $documents = [];
@@ -183,8 +183,6 @@ class TestFixture implements FixtureInterface
 
         $esIndex->addDocuments($documents);
         $esIndex->refresh();
-
-        return true;
     }
 
     /**
@@ -211,7 +209,7 @@ class TestFixture implements FixtureInterface
      *
      * @param \Cake\Datasource\ConnectionInterface $connection The Elasticsearch connection
      */
-    public function truncate(ConnectionInterface $connection): bool
+    public function truncate(ConnectionInterface $connection): void
     {
         $query = new MatchAll();
         assert($connection instanceof Connection, 'Requires an elasticsearch connection');
@@ -219,8 +217,6 @@ class TestFixture implements FixtureInterface
         $esIndex = $connection->getIndex($this->getIndex()->getName());
         $esIndex->deleteByQuery($query);
         $esIndex->refresh();
-
-        return true;
     }
 
     /**
