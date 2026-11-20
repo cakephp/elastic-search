@@ -23,6 +23,7 @@ use Cake\Datasource\ConnectionManager;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Datasource\RepositoryInterface;
 use Cake\Datasource\ResultSetInterface;
+use Cake\ElasticSearch\Datasource\Connection;
 use Cake\ElasticSearch\Datasource\IndexLocatorAwareTrait;
 use Cake\ElasticSearch\Index;
 use Cake\ElasticSearch\Query;
@@ -33,10 +34,16 @@ use Elastica\Aggregation\Avg;
 use Elastica\Aggregation\Max as MaxAggregation;
 use Elastica\Aggregation\Min as MinAggregation;
 use Elastica\Collapse;
+use Elastica\Index as ElasticaIndex;
 use Elastica\Query as ElasticaQuery;
 use Elastica\Query\BoolQuery;
 use Elastica\Query\Term;
+use Elastica\Response;
+use Elastica\Result;
+use Elastica\ResultSet as ElasticaResultSet;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
+use ReflectionProperty;
 use Traversable;
 use TypeError;
 
@@ -1004,6 +1011,146 @@ class QueryTest extends TestCase
     }
 
     /**
+     * Tests first() method when the query has not been executed before
+     */
+    public function testFirstDirtyQuery(): void
+    {
+        $sizes = [];
+        $Query = new Query($this->getRecordingIndex($sizes));
+        $result = $Query->first();
+        $this->assertSame('1', $result->id);
+        $this->assertSame(1, $Query->clause('limit'));
+        $result = $Query->select(['title'])->first();
+        $this->assertSame('1', $result->id);
+        $this->assertSame([1, 1], $sizes);
+    }
+
+    /**
+     * Tests that first can be called again on an already executed query
+     */
+    public function testFirstCleanQuery(): void
+    {
+        $sizes = [];
+        $Query = new Query($this->getRecordingIndex($sizes));
+        $Query->limit(5)->toArray();
+
+        $first = $Query->select(['title'])->first();
+        $this->assertSame('1', $first->id);
+        $this->assertSame(1, $Query->clause('limit'));
+        $this->assertSame([5, 1], $sizes);
+    }
+
+    /**
+     * Tests that first() will not execute the same query twice
+     */
+    public function testFirstSameResult(): void
+    {
+        $sizes = [];
+        $Query = new Query($this->getRecordingIndex($sizes));
+        $Query->limit(5)->toArray();
+
+        $first = $Query->first();
+        $resultSet = $Query->all();
+        $this->assertSame('1', $first->id);
+        $this->assertSame($resultSet, $Query->all());
+        $this->assertCount(5, $resultSet);
+        $this->assertSame('1', $Query->first()->id);
+        $this->assertSame(5, $Query->clause('limit'));
+        $this->assertSame([5], $sizes);
+    }
+
+    /**
+     * Tests that first can be called against a query with a mapReduce
+     */
+    public function testFirstMapReduce(): void
+    {
+        $map = static function ($row, $key, $mapReduce): void {
+            $mapReduce->emitIntermediate($row['id'], 'id');
+        };
+        $reduce = static function ($values, $key, $mapReduce): void {
+            $mapReduce->emit(array_sum($values));
+        };
+
+        $sizes = [];
+        $Query = new Query($this->getRecordingIndex($sizes));
+        $Query->select(['title'])
+            ->mapReduce($map, $reduce);
+
+        $first = $Query->first();
+        $this->assertEquals(1, $first);
+    }
+
+    /**
+     * Methods that change the query
+     *
+     * @return array<string, array{\Closure}>
+     */
+    public static function queryChangeProvider(): array
+    {
+        return [
+            'select' => [static fn(Query $Query) => $Query->select(['title'])],
+            'limit' => [static fn(Query $Query) => $Query->limit(5)],
+            'offset' => [static fn(Query $Query) => $Query->offset(5)],
+            'page' => [static fn(Query $Query) => $Query->page(2)],
+            'orderBy' => [static fn(Query $Query) => $Query->orderBy(['title' => 'asc'])],
+            'where' => [static fn(Query $Query) => $Query->where(['title' => 'First article'])],
+            'andWhere' => [static fn(Query $Query) => $Query->andWhere(['title' => 'First article'])],
+            'queryMust' => [static fn(Query $Query) => $Query->queryMust(['title' => 'First article'])],
+            'queryShould' => [static fn(Query $Query) => $Query->queryShould(['title' => 'First article'])],
+            'postFilter' => [static fn(Query $Query) => $Query->postFilter(['title' => 'First article'])],
+            'setFullQuery' => [static fn(Query $Query) => $Query->setFullQuery(new Term(['title' => 'first']))],
+            'collapse' => [static fn(Query $Query) => $Query->collapse('title')],
+            'aggregate' => [static fn(Query $Query) => $Query->aggregate((new Avg('average'))->setField('score'))],
+            'highlight' => [static fn(Query $Query) => $Query->highlight(['fields' => ['title' => []]])],
+            'withMinScore' => [static fn(Query $Query) => $Query->withMinScore(0.5)],
+            'searchOptions' => [static fn(Query $Query) => $Query->searchOptions(['routing' => 'first'])],
+            'trackTotalHits' => [static fn(Query $Query) => $Query->trackTotalHits(true)],
+            'applyOptions' => [static fn(Query $Query) => $Query->applyOptions(['limit' => 5])],
+            'setRepository' => [static fn(Query $Query) => $Query->setRepository($Query->getRepository())],
+        ];
+    }
+
+    /**
+     * Tests that executing the query clears the dirty flag, and that a method that changes
+     * the query sets it again and drops the loaded results
+     */
+    #[DataProvider('queryChangeProvider')]
+    public function testChangingQueryMarksItDirty(Closure $change): void
+    {
+        $sizes = [];
+        $Query = new Query($this->getRecordingIndex($sizes));
+        $Query->all();
+
+        $reflect = new ReflectionProperty($Query, '_dirty');
+        $this->assertFalse($reflect->getValue($Query));
+
+        $change($Query);
+        $this->assertTrue($reflect->getValue($Query));
+
+        $Query->all();
+        $this->assertCount(2, $sizes);
+    }
+
+    /**
+     * Tests that reading the query, compiling it included, leaves an executed query clean
+     */
+    public function testReadingQueryKeepsItClean(): void
+    {
+        $sizes = [];
+        $Query = new Query($this->getRecordingIndex($sizes));
+        $Query->where(['title' => 'First article'])->all();
+        $Query->compileQuery();
+        $Query->clause('filter');
+        $Query->searchOptions();
+
+        $reflect = new ReflectionProperty($Query, '_dirty');
+        $this->assertFalse($reflect->getValue($Query));
+
+        $Query->all();
+        $this->assertCount(1, $sizes);
+    }
+
+    /**
      * Test getMapReducers method
      */
     public function testGetMapReducers(): void
@@ -1181,6 +1328,40 @@ class QueryTest extends TestCase
             'className' => Index::class,
             'connection' => $connection,
         ]);
+    }
+
+    /**
+     * Helper method to get an index whose searches are answered without Elasticsearch.
+     * A search returns as many hits as its size asks for, or 10, the Elasticsearch default,
+     * when the request has no size
+     *
+     * @param array<int|null> $sizes Collects the size of each query sent to Elasticsearch, null when it has none
+     */
+    protected function getRecordingIndex(array &$sizes): Index
+    {
+        $ElasticaIndex = $this->getMockBuilder(ElasticaIndex::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['search'])
+            ->getMock();
+        $ElasticaIndex->method('search')->willReturnCallback(
+            function (ElasticaQuery $Query) use (&$sizes): ElasticaResultSet {
+                $size = $Query->hasParam('size') ? $Query->getParam('size') : null;
+                $sizes[] = $size;
+                $results = [];
+                for ($i = 1; $i <= ($size ?? 10); $i++) {
+                    $results[] = new Result(['_id' => (string)$i, '_source' => ['title' => 'Article ' . $i]]);
+                }
+
+                return new ElasticaResultSet(new Response([], 200), $Query, $results);
+            },
+        );
+
+        $Connection = $this->getMockBuilder(Connection::class)
+            ->onlyMethods(['getIndex'])
+            ->getMock();
+        $Connection->method('getIndex')->willReturn($ElasticaIndex);
+
+        return new Index(['name' => 'articles', 'connection' => $Connection]);
     }
 
     /**
