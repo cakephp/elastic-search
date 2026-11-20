@@ -164,6 +164,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function select(Closure|array|string|int|float $fields, bool $overwrite = false)
     {
+        $this->_dirty();
         if (!$overwrite) {
             $currentFields = $this->_queryParts['fields'];
             if (!is_array($currentFields)) {
@@ -191,6 +192,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function limit(?int $limit)
     {
+        $this->_dirty();
         $this->_queryParts['limit'] = (int)$limit;
 
         return $this;
@@ -205,6 +207,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function offset(?int $offset)
     {
+        $this->_dirty();
         $this->_queryParts['offset'] = (int)$offset;
 
         return $this;
@@ -305,6 +308,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function orderBy(array|Closure|string $fields, bool $overwrite = false)
     {
+        $this->_dirty();
         if (is_array($fields) && is_numeric(key($fields))) {
             if ($overwrite) {
                 $this->_queryParts['order'] = $fields;
@@ -535,6 +539,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function setFullQuery(AbstractQuery $query)
     {
+        $this->_dirty();
         $this->_queryParts['query'] = $query;
 
         return $this;
@@ -548,6 +553,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function collapse(Collapse|string $collapse)
     {
+        $this->_dirty();
         if (is_string($collapse)) {
             $collapse = (new Collapse())->setFieldname($collapse);
         }
@@ -565,6 +571,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function aggregate(AbstractAggregation|array $aggregation)
     {
+        $this->_dirty();
         if (is_array($aggregation)) {
             foreach ($aggregation as $aggregationItem) {
                 $this->aggregate($aggregationItem);
@@ -587,6 +594,7 @@ class Query implements IteratorAggregate, QueryInterface
             return $this->_searchOptions;
         }
 
+        $this->_dirty();
         $this->_searchOptions = $options;
 
         return $this;
@@ -608,6 +616,7 @@ class Query implements IteratorAggregate, QueryInterface
         bool $overwrite,
         string $type = 'addMust',
     ) {
+        $this->_dirty();
         if (!isset($this->_queryParts[$partType]) || $overwrite) {
             $this->_queryParts[$partType] = new ElasticaQuery\BoolQuery();
         }
@@ -712,6 +721,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function highlight(array $highlight)
     {
+        $this->_dirty();
         $this->_queryParts['highlight'] = $highlight;
 
         return $this;
@@ -726,6 +736,7 @@ class Query implements IteratorAggregate, QueryInterface
      */
     public function withMinScore(float $score)
     {
+        $this->_dirty();
         $this->_elasticQuery->setMinScore($score);
 
         return $this;
@@ -753,10 +764,20 @@ class Query implements IteratorAggregate, QueryInterface
             );
         }
 
+        $this->_dirty();
         $this->_queryParts['trackTotalHits'] = $trackTotalHits;
-        $this->_dirty = true;
 
         return $this;
+    }
+
+    /**
+     * Marks the query as modified and drops the loaded results, so that
+     * the next all() or first() sends the changed query to Elasticsearch.
+     */
+    protected function _dirty(): void
+    {
+        $this->_dirty = true;
+        $this->_results = null;
     }
 
     /**
@@ -771,8 +792,10 @@ class Query implements IteratorAggregate, QueryInterface
         $esIndex = $connection->getIndex($index);
 
         $query = $this->compileQuery();
+        $results = new ResultSet($esIndex->search($query, $this->_searchOptions), $this);
+        $this->_dirty = false;
 
-        return new ResultSet($esIndex->search($query, $this->_searchOptions), $this);
+        return $results;
     }
 
     /**
@@ -887,6 +910,7 @@ class Query implements IteratorAggregate, QueryInterface
     public function setRepository(RepositoryInterface $repository)
     {
         assert($repository instanceof Index, 'ElasticSearch\Query requires an Index subclass');
+        $this->_dirty();
         $this->_repository = $repository;
 
         return $this;
